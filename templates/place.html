@@ -1,0 +1,39 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Social Painter</title>
+    <meta name="viewport" content="width=device-width, height=device-height initial-scale=0.86, maximum-scale=1.0, minimum-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js" integrity="sha256-OgiHfllOBEOiWQ2OcBsDncRG2k7QBW9Rs1dB7MH2N2s=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+    <link rel="stylesheet" type="text/css" href="/files/place.css">
+    <script src="/files/place.js"></script>
+    <link rel="shortcut icon" href="/favicon.ico">
+</head>
+<body>
+    <div id="board-container"><div id="board-zoomer"><div id="board-mover">
+        <canvas id="board" class='pixelate' width='1000', height='1000'>Wait, Loading...</canvas>
+    </div></div></div>
+    <div id="toolbox" class="selectnone">
+        <img id='toggle-toolbox-button' class='center-x' state='0' />
+        <div id="color-table-box">
+            <div id=colorTable class='center'>
+                {% for i in range(16) %}<div class='colorBtn' state='0' value='{{i}}'></div>
+                {% endfor %}                
+            </div>
+        </div>
+        <div id="logout-button" class="center-y">logout</div>
+        <div id="zoom" state="zoom-in"></div>
+        <div id="time-prog" class="nonselect" state="0">
+            <div id="prog-fill"></div>
+            <div id="prog-text" class="center">0:00</div>
+        </div>
+    </div>
+    <div id="coords" class="center-x selectnone">
+        <span id="coordX" class="coordSpan">none</span><span id="coord-slicer" class="coordText">,</span><span id="coordY" class="coordSpan">none</span>
+    </div>
+</body>
+</html>
