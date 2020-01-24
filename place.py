@@ -6,8 +6,8 @@ from flask_wtf.csrf import CSRFProtect
 
 __all__ = ['app.py']
 app = Flask(__name__, static_folder='', static_url_path='')
-app = init_settings(app)
 app = init_alchemy(app)
+app = init_settings(app)
 crsf = CSRFProtect(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -60,8 +60,7 @@ def signup():
 @app.route('/place', methods=('GET',))
 @login_required
 def place(user_id):
-
-@login_manager.user_loader
+    pass
 
 @app.route('/files/<path:key>', methods=('GET',))
 def serve_static(key):
