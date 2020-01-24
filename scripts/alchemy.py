@@ -9,8 +9,9 @@ class User(db.Model, UserMixin):
 
     id = db.Column(db.Integer, primary_key=True, unique=True, autoincrement=True)
     name = db.Column(db.String(15), unique=True)
-    password = db.Column(db.String(128))
-
+    password = db.Column(db.LargeBinary(64))
+    email = db.Column(db.String(254), unique=True)
+    
     def __repr__(self):
         return f"<User(name={self.name}>"
 
@@ -21,7 +22,3 @@ class User(db.Model, UserMixin):
         self.password = encrypt_password(username, self.password)
         self.username = username
         
-    
-def init_app(app):
-    db.init_app(app)
-    return app

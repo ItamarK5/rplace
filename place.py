@@ -6,10 +6,9 @@ from flask_wtf.csrf import CSRFProtect
 
 
 app = Flask(__name__, static_folder='', static_url_path='', template_folder='web/templates')
-app = init_alchemy(app)
 app = init_settings(app)
+db.init_app(app)
 crsf = CSRFProtect(app)
-login_manager = LoginManager()
 login_manager.init_app(app)
 
 
@@ -23,19 +22,17 @@ def login():
     """
     added in version 1.0.0
     """
-    if request.method == 'GET':
-        return render_template('forms/index.html', form=LoginForm(crsf_enabled=False))
     form = LoginForm()
     error_message = None
     if form.validate_on_submit():
         name, pswd = form.username.data, form.password.data
         pswd = encrypt_password(name, pswd)
         user = User.query.filter_by(name=name, password=pswd).first()
-        if user is None:
-            error_message = 'username or password dont match'
-        else:
+        if user is not None:
             login_user(user)
-            return redirect('/place')
+            return redirect('place')
+        else:
+            error_message = 'username or password dont match'
     form.password.data = ''
     return render_template('forms/index.html', form=form, message=error_message)
 
@@ -62,7 +59,7 @@ def signup():
 def place(user_id):
     pass
 
-
+JOINED_PATH = path_join('web', 'static')
 @app.route('/files/<path:key>', methods=('GET',))
 def serve_static(key):
     if key.rfind('.') == -1:
@@ -74,9 +71,10 @@ def serve_static(key):
     # return file
     try:
         return send_from_directory(
-            path_join('static', key.split(".")[-1]), key,
+            path_join(JOINED_PATH, key.split(".")[-1]), key,
             mimetype=mimetype
         )
     except Exception as e:
         print('error', e)
     abort(404, 'file dont found')
+
