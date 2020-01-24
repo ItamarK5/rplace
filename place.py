@@ -1,13 +1,16 @@
 from scripts import *
-from flask import Flask, redirect, render_template, abort, send_from_directory
+from flask import Flask, redirect, render_template, abort, send_from_directory, request
 from os.path import join as path_join
-from flask_login import login_user
-
+from flask_login import login_user, LoginManager, login_required
+from flask_wtf.csrf import CSRFProtect
 
 __all__ = ['app.py']
 app = Flask(__name__, static_folder='', static_url_path='')
 app = init_settings(app)
 app = init_alchemy(app)
+crsf = CSRFProtect(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
 
 
 @app.route('/', methods=('GET', ),)
@@ -20,12 +23,14 @@ def login():
     """
     added in version 1.0.0
     """
+    if request.method == 'GET':
+        return render_template('forms/index.html', form=LoginForm(crsf_enabled=False))
     form = LoginForm()
     error_message = None
     if form.validate_on_submit():
         name, pswd = form.username.data, form.password.data
         pswd = encrypt_password(name, pswd)
-        user = User.query.filter_by(username=name, password=pswd).first()
+        user = User.query.filter_by(name=name, password=pswd).first()
         if user is None:
             error_message = 'username or password dont match'
         else:
@@ -52,6 +57,12 @@ def signup():
     return render_template('forms/signup.html', form=form)
 
             
+@app.route('/place', methods=('GET',))
+@login_required
+def place(user_id):
+
+@login_manager.user_loader
+
 @app.route('/files/<path:key>', methods=('GET',))
 def serve_static(key):
     if key.rfind('.') == -1:

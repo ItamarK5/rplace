@@ -1,6 +1,4 @@
-from flask_wtf.csrf import CSRFProtect
-
-SETTINGS = {
+CONFIG = {
     'ENV': 'development',
     'SEND_FILE_MAX_AGE_DEFAULT': 1,
     'SQLALCHEMY_DATABASE_URI':'sqlite:///C:\\Cyber\\2020\\project5\\database.db',
@@ -9,6 +7,5 @@ SETTINGS = {
 }
 
 def init_app(app):
-    crsf = CSRFProtect(app)
-    app.config.update(SETTINGS)
+    app.config.update(CONFIG)
     return app
