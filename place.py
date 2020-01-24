@@ -1,9 +1,8 @@
+from scripts import *
 from flask import Flask, redirect, render_template, abort, send_from_directory
-from scripts.alchemy import init_app as init_alchemy
-from scripts.functions import encrypt_password
-from scripts.settings import init_app as init_settings
-from scripts.forms import *
 from os.path import join as path_join
+
+
 
 __all__ = ['app.py']
 app = Flask(__name__, static_folder='', static_url_path='')
@@ -28,12 +27,6 @@ def login():
     form.password.data = ''
     return render_template('forms/index.html', form=form, message=error_message)
 
-mimetypes = {
-    'png': 'image/png',
-    'ico': 'image/x-icon',
-    'css': 'text/css',
-    'js' : 'text/javascript'
-}
 
 @app.route('/files/<path:key>', methods=('GET',))
 def serve_static(key):
