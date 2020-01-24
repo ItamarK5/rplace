@@ -57,7 +57,7 @@ def signup():
 @app.route('/place', methods=('GET',))
 @login_required
 def place(user_id):
-    pass
+    return render_template('place.js')
 
 JOINED_PATH = path_join('web', 'static')
 @app.route('/files/<path:key>', methods=('GET',))

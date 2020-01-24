@@ -18,7 +18,7 @@
         <canvas id="board" class='pixelate' width='1000', height='1000'>Wait, Loading...</canvas>
     </div></div></div>
     <div id="toolbox" class="selectnone">
-        <img id='toggle-toolbox-button' class='center-x' state='0' />
+        <img id='toggle-toolbox-button' class='center-x' state='1' />   {# state == 1 so it be open at start #}
         <div id="color-table-box">
             <div id=colorTable class='center'>
                 {% for i in range(16) %}<div class='colorBtn' state='0' value='{{i}}'></div>
