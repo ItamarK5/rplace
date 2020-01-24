@@ -1,4 +1,19 @@
+from flask_socketio import SocketIO as FSkio
+import os
+import numpy as np
+sio = FSkio()
+board = np.ndarray()
 
+def open_board() -> np.ndarray()
+    #  save board
+    print(os.path.exists(r'resources\img.npy'))
+    if os.path.exists(r'resources\img.npy'):
+        place_board = np.load(r'..\\resources\img.npy')
+        print(place_board.shape)
+    else:
+        place_board = np.zeros((1000, 500), dtype=np.uint8)
+        # board = np.random.randint(0, 255, (1000, 500), np.uint8) - used for testing
+    return place_board
 
 
 """

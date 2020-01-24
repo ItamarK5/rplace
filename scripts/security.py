@@ -1,5 +1,7 @@
 from flask_login import LoginManager
 from .alchemy import User
+# crsf protection
+crsf = CSRFProtect()
 
 # login manager
 login_manager = LoginManager()

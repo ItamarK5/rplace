@@ -8,7 +8,6 @@ from flask_wtf.csrf import CSRFProtect
 app = Flask(__name__, static_folder='', static_url_path='', template_folder='web/templates')
 app = init_settings(app)
 db.init_app(app)
-crsf = CSRFProtect(app)
 login_manager.init_app(app)
 
 
@@ -23,7 +22,7 @@ def login():
     added in version 1.0.0
     """
     form = LoginForm()
-    error_message = None
+    error_message = None    # will be used in the future for better autherazetion and login forms
     if form.validate_on_submit():
         name, pswd = form.username.data, form.password.data
         pswd = encrypt_password(name, pswd)
@@ -56,8 +55,8 @@ def signup():
             
 @app.route('/place', methods=('GET',))
 @login_required
-def place(user_id):
-    return render_template('place.js')
+def place():
+    return render_template('place.html')
 
 JOINED_PATH = path_join('web', 'static')
 @app.route('/files/<path:key>', methods=('GET',))
@@ -78,3 +77,9 @@ def serve_static(key):
         print('error', e)
     abort(404, 'file dont found')
 
+@app.route('/favicon.ico')
+def serve_icon():
+    return send_from_directory(
+        path_join(JOINED_PATH, 'ico'), 'favicon.ico',
+        mimetype=MIMETYPES['ico']
+    )
