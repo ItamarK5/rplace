@@ -4,8 +4,8 @@ from os.path import join as path_join
 from flask_login import login_user, LoginManager, login_required
 from flask_wtf.csrf import CSRFProtect
 
-__all__ = ['app.py']
-app = Flask(__name__, static_folder='', static_url_path='')
+
+app = Flask(__name__, static_folder='', static_url_path='', template_folder='web/templates')
 app = init_alchemy(app)
 app = init_settings(app)
 crsf = CSRFProtect(app)
@@ -61,6 +61,7 @@ def signup():
 @login_required
 def place(user_id):
     pass
+
 
 @app.route('/files/<path:key>', methods=('GET',))
 def serve_static(key):
