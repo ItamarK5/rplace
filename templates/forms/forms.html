@@ -1,7 +1,7 @@
-{% macro field_render(field) %}
+{% macro field_render(field, force_errors=False) %}
 <div class="form-row mb-1">
     <div class="input-group">
-        {% if field.errors %}
+        {% if field.errors or force_errors%}
         {% set extra_class = "danger" %}
         {% else %}
         {% set extra_class = "primary" %}
@@ -18,20 +18,20 @@
     </div>
     {% endif %}
 </div></div>
-{% if field.description %}
-<div class="form-row mb-2">
-    <div class="bg-secondary text-white"><small>{{field.description}}</small></div>
-</div>
-{% endif %}
 {% endmacro %}
+
 {% macro field_errors(field, form) %}
-{% if field.errors %}
+{% if field.errors or varargs %}
 {% for err in field.errors %}
 <div class="form-row mb-1">
     <div class="col rounded alert-danger text-justify ml-5 mr-5" style="text-anchor:middle;">{{ err }}</div>
 </div>
 {% endfor %}
 {% endif %}
+{% endmacro %}
+
+{% macro link(id, text, path) %}
+<a class="primary-text mb-3" id={{id}} href="{{path}}">{{text}}</a>
 {% endmacro %}
 <html>
 <head>
@@ -46,6 +46,7 @@
         <!-- bootstrap styles-->
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+        <script src="files\auth.js"></script>
         <style>
         .vertical-center {
             min-height: 100%;  /* Fallback for browsers do NOT support vh unit */
@@ -69,15 +70,15 @@
 <body>
     {% block Body %}
     <div class="jumbotron vertical-center">
-            <form class="container justify-content-center w-50" method="POST" url="/login">
+            <form class="container justify-content-center w-75" method="POST" url="/login">
             {{ form.csrf_token  }}
             {% block fields %}
             {% endblock %}
-            <div class="justify-content-center form-row">
-                <a class="col-6 primary-text mb-3" id="reset-link" href="{#{{ url('sign-up') }}#}">New to the Site?</a>
+            <div class="justify-content-space-between form-row row">
+                {% block links %}{% endblock %}
             </div>
                 <div class="form-row justify-content-center">
-                    <button type=submit class="btn btn-primary" id="login-button">Login</button>
+                    <button type=submit class="btn btn-primary" id="submit-button">{% block submit %}{% endblock %}</button>
                 </div>
                 {% if form.non_field_errors %}
                 <div class="d-flex flex-column justify-content-center mt-2">
@@ -87,29 +88,7 @@
                 </div>
                 {% endif %}
                 </form>
-            </div>
-        <script>
-            $(document).ready(function(){
-              $('[data-toggle="tooltip"]').tooltip();
-              $('#login-button').click(function(e){
-                  this.innerHTML='<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Loading...';
-                  // also change passwords back to normal
-                  $('.password-button').parent().siblings('input').attr('type', 'password');
-                  // submit form
-                  $('form').submit()
-              });
-              $('.password-button').click(function(e){
-                  e.preventDefault();
-                  if($(this).children('i').hasClass('fa-eye-slash')){   // if is hidden, remove slashed eye
-                      $(this).parent().siblings('input').attr('type', 'password');
-                      $(this).children('i').removeClass('fa-eye-slash').addClass('fa-eye')
-                  } else {
-                    $(this).parent().siblings('input').attr('type', 'text');
-                    $(this).children('i').removeClass('fa-eye').addClass('fa-eye-slash');
-                  }
-              });
-            });
-        </script>
-        {% endblock %}
+    </div>
+    {% endblock %}
 </body>
 </html>

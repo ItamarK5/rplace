@@ -1,7 +1,7 @@
 from scripts import *
 from flask import Flask, redirect, render_template, abort, send_from_directory
 from os.path import join as path_join
-
+from flask_login import login_user
 
 
 __all__ = ['app.py']
@@ -9,7 +9,13 @@ app = Flask(__name__, static_folder='', static_url_path='')
 app = init_settings(app)
 app = init_alchemy(app)
 
-@app.route('/', methods=('GET', 'POST'),)
+
+@app.route('/', methods=('GET', ),)
+def first():
+    return redirect('login')
+
+
+@app.route('/login', methods=('GET', 'POST'),)
 def login():
     """
     added in version 1.0.0
@@ -23,17 +29,35 @@ def login():
         if user is None:
             error_message = 'username or password dont match'
         else:
+            login_user(user)
             return redirect('/place')
     form.password.data = ''
     return render_template('forms/index.html', form=form, message=error_message)
 
 
+@app.route('/signup', methods=('GET', 'POST'))
+def signup():
+    form = SignUpForm()
+    if form.validate_on_submit():
+        name, pswd, pswd2 = form.username.data, form.password.data, form.confirm_password.data
+        if pswd != pswd2:
+            form.confirm_password.errors.append('')
+        elif User.query.filter_by(name=name).first() is not None:
+            form.username.errors.append('username already exists')
+        else:
+           user = User(name=name, password=encrypt_password(name, pswd))
+           db.session.add(user)
+           db.session.commit()
+           return redirect('/')
+    return render_template('forms/signup.html', form=form)
+
+            
 @app.route('/files/<path:key>', methods=('GET',))
 def serve_static(key):
     if key.rfind('.') == -1:
         abort(405, 'unvalid file format')
     # else
-    mimetype = mimetypes.get(key.split('.')[-1], None)
+    mimetype = MIMETYPES.get(key.split('.')[-1], None)
     if mimetype is None:
         abort(405, 'type not supported')
     # return file

@@ -1,4 +1,5 @@
-from scripts.alchemy import init_app as init_alchemy
-from scripts.functions import encrypt_password
-from scripts.settings import init_app as init_settings
-from scripts.forms import *
+from .alchemy import init_app as init_alchemy, db, User
+from .functions import encrypt_password
+from .settings import init_app as init_settings
+from .forms import *
+from .consts import *

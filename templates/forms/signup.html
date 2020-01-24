@@ -4,8 +4,7 @@
 {{ field_errors(form.username, form) }}
 {{ field_render(form.password)}}
 {{ field_errors(form.password, form) }}
+{{ field_render(form.confirm_password)}}
+{{ field_errors(form.confirm_password, form) }}
 {% endblock %}
-{% block links %}
-{{ link('signup-link', 'Are you new?', url_for('signup')) }}
-{% endblock %}
-{% block submit %}Login{% endblock %}
+{% block submit %}Sign Up{% endblock %}
