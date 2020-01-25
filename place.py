@@ -15,7 +15,7 @@ crsf.init_app(app)
 db.init_app(app)
 login_manager.init_app(app)
 app.register_blueprint(auth_router)
-
+# app.register_blueprint(meme_router)
 def get_rules():
     rules = []
     for rule in app.url_map.iter_rules():
