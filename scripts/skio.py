@@ -1,24 +1,52 @@
-from flask_socketio import SocketIO, send, emit
-import os
+from flask_login import current_user
+from flask_socketio import SocketIO, send, emit, disconnect
+from os import path
 import numpy as np
+from .consts import WEB_FOLDER
 
-def open_board() -> np.ndarray:
-    #  save board
-    print(os.path.exists(r'resources\img.npy'))
-    if os.path.exists(r'resources\img.npy'):
-        place_board = np.load(r'..\\resources\img.npy')
+
+BOARD_PATH = path.join(WEB_FOLDER, 'resoucres', 'board.npy')
+
+
+def open_board():
+    """
+        save board
+    """
+    if path.exists(BOARD_PATH):
+        place_board = np.load(BOARD_PATH)
         print(place_board.shape)
     else:
         place_board = np.zeros((1000, 500), dtype=np.uint8)
-        # board = np.random.randint(0, 255, (1000, 500), np.uint8) - used for testing
+        # board = np.random.randint(0, 255, (1000, 500), np.uint8)
     return place_board
 
 
 sio = SocketIO()
 board = open_board()
 
+@sio.on('connect')
+def connect_handler() -> None:
+    if not current_user.is_authenticated:
+        return False
+    # else
+    emit({
+        'board' : board.tobytes(),
+        'time': current_user.last_time.fromtimestamp()
+    })
 
 
+
+"""
+    username = await authorized_userid(environ['aiohttp.request'])  # get request
+    async with aiosqlite.connect(DATABASE) as db:
+        async with db.execute('SELECT (time) FROM Users WHERE name==\'{name}\''.format(name=username)) as cursor:
+            last_time_user = await cursor.fetchone()
+            if last_time_user is not None:
+                await sio.save_session(sid, {
+                    'username': username,
+                    'time': datetime.fromtimestamp(last_time_user[0])
+                })
+"""
 
 """
 code from the past
