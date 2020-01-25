@@ -28,8 +28,8 @@ class User(db.Model, UserMixin):
         self.password = encrypt_password(username, self.password)
         self.username = username
 
-    def get_last_datetime():
+    def get_time(self):
         return datetime.fromtimestamp(self.last_time)
         
-    def set_last_datetime(tm: float):
+    def set_time(self, tm: float):
         self.last_time = datetime(tm)

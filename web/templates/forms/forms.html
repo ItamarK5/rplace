@@ -7,7 +7,7 @@
         {% set extra_class = "primary" %}
         {% endif %}    
         <div class="input-group-prepend">
-            <span id='{{field.label.id}}' class='input-group-text non-select border-{{extra_class}}' for={{field.id}}>{{field.name}}</span>
+            <span id='{{field.label.id}}' class='input-group-text non-select border-{{extra_class}}' for={{field.id}}>{{field.label.text}}</span>
         </div>
     {{field(class_ = 'form-control border-'+ extra_class)}}
     {% if field.widget.input_type == 'password' %}

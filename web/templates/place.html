@@ -17,7 +17,7 @@
     <div id="board-container"><div id="board-zoomer"><div id="board-mover">
         <canvas id="board" class='pixelate' width='1000', height='1000'>Wait, Loading...</canvas>
     </div></div></div>
-    <div id="toolbox" class="selectnone">
+    <div id="toolbox" class="selectnone" hide='0'>
         <img id='toggle-toolbox-button' class='center-x' state='1' />   {# state == 1 so it be open at start #}
         <div id="color-table-box">
             <div id=colorTable class='center'>
@@ -27,7 +27,7 @@
         </div>
         <div id="logout-button" class="center-y">logout</div>
         <div id="zoom" state="zoom-in"></div>
-        <div id="time-prog" class="nonselect" state="0">
+        <div id="time-prog" class="nonselect" state="1">
             <div id="prog-fill"></div>
             <div id="prog-text" class="center">0:00</div>
         </div>

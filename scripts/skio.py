@@ -1,14 +1,16 @@
+import numpy as np
 from flask_login import current_user
 from flask_socketio import SocketIO, send, emit, disconnect
 from os import path
-import numpy as np
 from .consts import WEB_FOLDER
-
+from typing import Optional
+from datetime import datetime, timedelta
+MIN_COOLDOWN = timedelta(minutes=5)
 
 BOARD_PATH = path.join(WEB_FOLDER, 'resoucres', 'board.npy')
 
 
-def open_board():
+def open_board() -> np.ndarray:
     """
         save board
     """
@@ -24,16 +26,17 @@ def open_board():
 sio = SocketIO()
 board = open_board()
 
+
 @sio.on('connect')
 def connect_handler() -> None:
     if not current_user.is_authenticated:
-        return False
+        disconnect()
+        return
     # else
-    emit({
-        'board' : board.tobytes(),
-        'time': current_user.last_time.fromtimestamp()
+    tm = current_user.get_time() + MIN_COOLDOWN
+    sio.emit('place-start', {
+        'board': board.tobytes(), 'cooldown_target': str(tm)
     })
-
 
 
 """

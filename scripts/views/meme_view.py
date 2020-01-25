@@ -4,11 +4,12 @@ from ..consts import MIMETYPES, WEB_FOLDER
 from os import path, listdir
 
 
-meme_router = Blueprint('meme_views',
-                        'meme_views',
-                        static_folder=path.join(WEB_FOLDER, 'memes'),
-                        template_folder=path.join(WEB_FOLDER, 'templates', 'memes')
-                        )
+meme_router = Blueprint(
+    'meme_views',
+    'meme_views',
+    static_folder=path.join(WEB_FOLDER, 'memes'),
+    template_folder=path.join(WEB_FOLDER, 'templates', 'memes')
+)
 
 
 @meme_router.route('/meme//<string:http_error>')

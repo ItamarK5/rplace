@@ -7,7 +7,7 @@ from flask_login import login_user, LoginManager, login_required
 app = Flask(__name__, static_folder='', static_url_path='', template_folder=path_join(WEB_FOLDER))
 
 """
-    initilazetion
+initilazetion
 """
 
 app = init_settings(app)

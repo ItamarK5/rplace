@@ -67,6 +67,21 @@ async function throw_position_input_box(){
       });
 }
 
+//https://pietschsoft.com/post/2008/01/15/javascript-inttryparse-equivalent
+function TryParseInt(str, defaultValue) {
+    var retValue = defaultValue;
+    if(!_.isNull(str)) {
+        if(str.length > 0) {
+            console.log(retValue)
+            if (!isNaN(str)) {
+                retValue = parseInt(str);
+                console.log(retValue);
+            }
+        }
+    }
+    return retValue;
+}
+
 const throw_message = (msg, speed = 1000, keep_speed = 100, exit_speed = null, cls = null) =>
     $("<div></div>")
         .addClass(`pop-up-message center nonselect${_.isString(cls) ? ' ' + cls : ''}`)
@@ -406,14 +421,12 @@ $(document).ready(function () {
     Colors.init();
     query.init();
     board.init();
-    sock = io();
-    sock.on('connect', function(){
-        // callback[0] - board in bytes
-        // callback[1] - time
-        sock.emit('get-first', callback = function (buffer, time_to_end_cooldown) {
-            board.buildBoard(new Uint8Array(buffer));
-            progress.set_time(time_to_end_cooldown)
-        })
+    var sock = io();
+    sock.on('place-start',  function(data) {
+        // buffer - board in bytes
+        // time - time
+        board.buildBoard(new Uint8Array(data.board));
+        progress.set_time(data.cooldown_target)
     })
     
     sock.on('set-board', function (params) {
@@ -542,8 +555,8 @@ $(document).ready(function () {
     // change toggle button
     $('#toggle-toolbox-button').click(function (e) {
         e.preventDefault();
-        this.setAttribute('state', this.getAttribute('state') == 1 ? '0' : '1');
-        $('#toolbox').css('bottom', this.getAttribute('state') == 1 ? '0px' : '-40px');
+        let toolbox = $('#toolbox')[0];
+        toolbox.setAttribute('hide', 1 - (1 * TryParseInt(toolbox.getAttribute('hide'), 0)))
     });
     // hash change
     $(window).bind('hashchange', function (e) {

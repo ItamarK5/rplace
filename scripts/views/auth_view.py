@@ -42,5 +42,5 @@ def signup():
            user = User(name=name, password=encrypt_password(name, pswd))
            db.session.add(user)
            db.session.commit()
-           return redirect()
+           return redirect(url_for('auth.login'))
     return render_template('forms/signup.html', form=form)
