@@ -1,10 +1,15 @@
-from flask import Flask, url_for
+from flask import Blueprint, url_for, render_template, redirect
+from ..alchemy import db
 from ..forms import *
 from ..alchemy import User
 from flask_login import login_user
+from ..consts import WEB_FOLDER, path
+from ..functions import encrypt_password
 
-auth_router = Flask('accounts', 'routing')
-@app.route('/login', methods=('GET', 'POST'),)
+auth_router = Blueprint('auth', 'auth', template_folder=path.join(WEB_FOLDER, 'templates'))
+
+
+@auth_router.route('/login', methods=('GET', 'POST'),)
 def login():
     """
     added in version 1.0.0
@@ -24,7 +29,7 @@ def login():
     return render_template('forms/index.html', form=form, message=error_message)
 
 
-@app.route('/signup', methods=('GET', 'POST'))
+@auth_router.route('/signup', methods=('GET', 'POST'))
 def signup():
     form = SignUpForm()
     if form.validate_on_submit():
@@ -39,5 +44,3 @@ def signup():
            db.session.commit()
            return redirect()
     return render_template('forms/signup.html', form=form)
-
-            

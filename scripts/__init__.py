@@ -4,4 +4,5 @@ from .settings import init_app as init_settings
 from .forms import *
 from .consts import *
 from .security import login_manager, crsf
-from .views import *
+from .views.auth_view import auth_router
+from .views.meme_view import meme_router

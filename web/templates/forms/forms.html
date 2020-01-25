@@ -71,7 +71,7 @@
 <body>
     {% block Body %}
     <div class="jumbotron vertical-center">
-            <form class="container justify-content-center w-75" method="POST" url="/login">
+            <form class="container justify-content-center w-75" method="POST" url="{{ request.url }}">
             {{ form.csrf_token  }}
             {% block fields %}
             {% endblock %}
@@ -79,7 +79,7 @@
                 {% block links %}{% endblock %}
             </div>
                 <div class="form-row justify-content-center">
-                    <button type=submit class="btn btn-primary" id="submit-button">{% block submit %}{% endblock %}</button>
+                    <button type="submit" class="btn btn-primary" id="submit-button">{% block submit %}{% endblock %}</button>
                 </div>
                 {% if form.non_field_errors %}
                 <div class="d-flex flex-column justify-content-center mt-2">
