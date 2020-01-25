@@ -1,10 +1,12 @@
-from flask_socketio import SocketIO as FSkio
+from flask_socketio import SocketIO, send, emit
 import os
 import numpy as np
-sio = FSkio()
-board = np.ndarray()
 
-def open_board() -> np.ndarray()
+
+sio = SocketIO()
+board = open_board()
+
+def open_board() -> np.ndarray:
     #  save board
     print(os.path.exists(r'resources\img.npy'))
     if os.path.exists(r'resources\img.npy'):
@@ -14,6 +16,9 @@ def open_board() -> np.ndarray()
         place_board = np.zeros((1000, 500), dtype=np.uint8)
         # board = np.random.randint(0, 255, (1000, 500), np.uint8) - used for testing
     return place_board
+
+
+
 
 
 """
