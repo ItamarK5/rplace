@@ -2,7 +2,7 @@ import urllib
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from .functions import encrypt_password
-
+import sqlalchemy
 
 db = SQLAlchemy()
 
@@ -13,7 +13,9 @@ class User(db.Model, UserMixin):
     name = db.Column(db.String(15), unique=True)
     password = db.Column(db.LargeBinary(64))
     email = db.Column(db.String(254), unique=True)
-    
+    #last_time_update = db.Column(db.Float())
+
+
     def __repr__(self):
         return f"<User(name={self.name}>"
 

@@ -6,7 +6,12 @@ from flask_wtf.csrf import CSRFProtect
 
 
 app = Flask(__name__, static_folder='', static_url_path='', template_folder='web/templates')
+"""
+    initilazetion
+"""
+
 app = init_settings(app)
+crsf.init_app(app)
 db.init_app(app)
 login_manager.init_app(app)
 
@@ -16,47 +21,12 @@ def first():
     return redirect('login')
 
 
-@app.route('/login', methods=('GET', 'POST'),)
-def login():
-    """
-    added in version 1.0.0
-    """
-    form = LoginForm()
-    error_message = None    # will be used in the future for better autherazetion and login forms
-    if form.validate_on_submit():
-        name, pswd = form.username.data, form.password.data
-        pswd = encrypt_password(name, pswd)
-        user = User.query.filter_by(name=name, password=pswd).first()
-        if user is not None:
-            login_user(user)
-            return redirect('place')
-        else:
-            error_message = 'username or password dont match'
-    form.password.data = ''
-    return render_template('forms/index.html', form=form, message=error_message)
 
-
-@app.route('/signup', methods=('GET', 'POST'))
-def signup():
-    form = SignUpForm()
-    if form.validate_on_submit():
-        name, pswd, pswd2 = form.username.data, form.password.data, form.confirm_password.data
-        if pswd != pswd2:
-            form.confirm_password.errors.append('')
-        elif User.query.filter_by(name=name).first() is not None:
-            form.username.errors.append('username already exists')
-        else:
-           user = User(name=name, password=encrypt_password(name, pswd))
-           db.session.add(user)
-           db.session.commit()
-           return redirect('/')
-    return render_template('forms/signup.html', form=form)
-
-            
 @app.route('/place', methods=('GET',))
 @login_required
 def place():
     return render_template('place.html')
+
 
 JOINED_PATH = path_join('web', 'static')
 @app.route('/files/<path:key>', methods=('GET',))
@@ -77,9 +47,11 @@ def serve_static(key):
         print('error', e)
     abort(404, 'file dont found')
 
-@app.route('/favicon.ico')
+
+@app.route('/favicon.ico', methods=('GET',))
 def serve_icon():
     return send_from_directory(
         path_join(JOINED_PATH, 'ico'), 'favicon.ico',
         mimetype=MIMETYPES['ico']
     )
+

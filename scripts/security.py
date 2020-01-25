@@ -1,5 +1,6 @@
 from flask_login import LoginManager
 from .alchemy import User
+from flask_wtf.csrf import CSRFProtect
 # crsf protection
 crsf = CSRFProtect()
 
