@@ -13,7 +13,7 @@ meme_router = Blueprint(
 
 
 @meme_router.route('/meme//<string:http_error>')
-def error_meme(http_error):    
+def error_meme(http_error: str):    
     if str(http_error) not in listdir(path.join(meme_router.static_folder)):
         return send_from_directory(path.join(meme_router.static_folder, '404'), 'images.jfif', mimetype=None)
     # else
@@ -44,8 +44,7 @@ def error_meme_render(http_error: str):
 def error_handler():
     return error_meme_render('404')
 
-
-@meme_router.app_url_defaults
+@meme_router.route("/<path:arg>")
 def default_route(*args):
     print(args)
     return error_meme_render('404')

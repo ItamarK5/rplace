@@ -180,6 +180,7 @@ body {
     pointer-events: none;
     z-index: 2;
 }
+
 #toolbox[hide="1"] {
     bottom:-40px;
 }
@@ -194,6 +195,7 @@ body {
     width: 60px;
     height: 30px;
 }
+
 #toolbox[hide="1"] > #toggle-toolbox-button { content: url('/files/slideup.png');}
 #toolbox[hide="0"] > #toggle-toolbox-button { content: url('/files/slidedown.png');}
 

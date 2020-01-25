@@ -2,9 +2,12 @@ import numpy as np
 from flask_login import current_user
 from flask_socketio import SocketIO, send, emit, disconnect
 from os import path
-from typing import Optional
-from datetime import datetime, timedelta
-from . import User, MINUTES_COOLDOWN, WEB_FOLDER, db
+from datetime import datetime
+from . import MINUTES_COOLDOWN, WEB_FOLDER, db
+from threading import Thread
+import time
+from typing import Any, Dict
+from threading import Thread
 BOARD_PATH = path.join(WEB_FOLDER, 'resoucres', 'board.npy')
 
 
@@ -36,8 +39,9 @@ def connect_handler() -> None:
         'board': board.tobytes(), 'cooldown_target': str(tm)
     })
 
+
 @sio.on('set-board')
-def set_board(params) -> None:
+def set_board(params: Dict[str, Any]) -> None:
     current_time = datetime.now()
     if current_user.get_next_time() > current_time:
         emit('update-timer', str(current_user.get_next_time()))
@@ -60,9 +64,13 @@ def set_board(params) -> None:
     next_time = current_time+MINUTES_COOLDOWN
     current_user.set_next_time(next_time)
     db.session.commit()
-    sio.emit('update-timer', str(current_time))
+    emit('update-timer', str(current_time), brodcast=False)
     sio.emit('set-board', params, broadcast=True)
 
+def save_board():
+    while True:
+        time.sleep(10)
+        np.save(BOARD_PATH, board)
 
 
 """

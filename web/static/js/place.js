@@ -176,9 +176,7 @@ var progress = {
         console.log(time)
         let self = this;       
         self.time = Date.parse(time);
-        console.log(this.time)
         if (_.isNull(self.handler)) {
-            console.log(5);
             self.is_working = true;
             self.handler = setInterval(function () { self.update_timer() }, 100);
        } 
@@ -430,7 +428,7 @@ $(document).ready(function () {
         // time - time
         board.buildBoard(new Uint8Array(data.board));
         progress.set_time(data.cooldown_target)
-    })
+    });
     
     sock.on('set-board', function (params) {
         let color_idx = parseInt(params['color']);
@@ -440,7 +438,6 @@ $(document).ready(function () {
     });
     
     sock.on('update-timer', function(time){
-        console.log(time);
         progress.set_time(time);
     })
 
@@ -571,7 +568,7 @@ $(document).ready(function () {
     $('#logout-button').click(function(e){
         const Http = new XMLHttpRequest();
         $.ajax({
-            url:'/accounts/forget',
+            url:'/logout',
             method:'GET',
             data:'',
             success(data, status, xhr){
