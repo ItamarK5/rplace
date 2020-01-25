@@ -2,11 +2,9 @@ import numpy as np
 from flask_login import current_user
 from flask_socketio import SocketIO, send, emit, disconnect
 from os import path
-from .consts import WEB_FOLDER
 from typing import Optional
 from datetime import datetime, timedelta
-MIN_COOLDOWN = timedelta(minutes=5)
-
+from . import User, MINUTES_COOLDOWN, WEB_FOLDER, db
 BOARD_PATH = path.join(WEB_FOLDER, 'resoucres', 'board.npy')
 
 
@@ -33,23 +31,39 @@ def connect_handler() -> None:
         disconnect()
         return
     # else
-    tm = current_user.get_time() + MIN_COOLDOWN
+    tm = current_user.get_next_time()
     sio.emit('place-start', {
         'board': board.tobytes(), 'cooldown_target': str(tm)
     })
 
+@sio.on('set-board')
+def set_board(params) -> None:
+    current_time = datetime.now()
+    if current_user.get_next_time() > current_time:
+        emit('update-timer', str(current_time))
+        return
+    # validating parameter
+    if 'x' not in params or (not isinstance(params['x'], int)) or not (0 <= params['x'] < 1000):
+        return
+    if 'y' not in params or (not isinstance(params['y'], int)) or not (0 <= params['y'] < 1000):
+        return
+    if 'color' not in params or (not isinstance(params['color'], int)) or not (0 <= params['color'] < 16):
+        return
+    
+    x, y, clr = params['x'], params['y'], params['color']
+    if x % 2 == 0:
+        board[y, x // 2] &= 0xF0
+        board[y, x // 2] |= clr
+    else:
+        board[y, x // 2] &= 0x0F
+        board[y, x // 2] |= clr << 4
+    next_time = current_time+MINUTES_COOLDOWN
+    current_user.set_next_time(next_time)
+    db.session.commit()
+    sio.emit('update-timer', str(current_time))
+    sio.emit('set-board', params, broadcast=True)
 
-"""
-    username = await authorized_userid(environ['aiohttp.request'])  # get request
-    async with aiosqlite.connect(DATABASE) as db:
-        async with db.execute('SELECT (time) FROM Users WHERE name==\'{name}\''.format(name=username)) as cursor:
-            last_time_user = await cursor.fetchone()
-            if last_time_user is not None:
-                await sio.save_session(sid, {
-                    'username': username,
-                    'time': datetime.fromtimestamp(last_time_user[0])
-                })
-"""
+
 
 """
 code from the past

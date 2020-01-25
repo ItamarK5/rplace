@@ -1,5 +1,6 @@
-import os
 from os import path
+from datetime import timedelta
+
 MIMETYPES = {
     'png': 'image/png',
     'ico': 'image/x-icon',
@@ -12,8 +13,10 @@ MIMETYPES = {
 WEB_FOLDER = path.join(
     path.dirname(
         path.dirname(
-            os.path.abspath(__file__)
+            path.abspath(__file__)
             )
         ),
     'web'
 )
+
+MINUTES_COOLDOWN = timedelta(minutes=5)

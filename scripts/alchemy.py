@@ -4,9 +4,10 @@ from flask_login import UserMixin
 from .functions import encrypt_password
 import sqlalchemy
 from datetime import datetime
-
+from .consts import *
 
 db = SQLAlchemy()
+
 
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
@@ -15,8 +16,7 @@ class User(db.Model, UserMixin):
     name = db.Column(db.String(15), unique=True)
     password = db.Column(db.LargeBinary(64))
     email = db.Column(db.String(254), unique=True)
-    last_time = db.Column(db.Float(), default=0.0)
-
+    next_time = db.Column(db.Float(), default=0.0)
 
     def __repr__(self):
         return f"<User(name={self.name}>"
@@ -28,8 +28,8 @@ class User(db.Model, UserMixin):
         self.password = encrypt_password(username, self.password)
         self.username = username
 
-    def get_time(self):
-        return datetime.fromtimestamp(self.last_time)
+    def get_next_time(self):
+        return datetime.fromtimestamp(self.next_time)
         
-    def set_time(self, tm: float):
-        self.last_time = datetime(tm)
+    def set_next_time(self, next_time: datetime):
+        self.time_to_set = next_time.timestamp()
