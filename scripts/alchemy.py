@@ -32,4 +32,4 @@ class User(db.Model, UserMixin):
         return datetime.fromtimestamp(self.next_time)
         
     def set_next_time(self, next_time: datetime):
-        self.time_to_set = next_time.timestamp()
+        self.next_time = next_time.timestamp()

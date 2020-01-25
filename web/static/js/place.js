@@ -156,9 +156,9 @@ var Colors = {
 }
 
 var progress = {
-    time: 0,
-    state: 0,
-    handler: null,
+    time: 0,        // time when cooldown ends
+    state: 0,       // state of progress bar
+    handler: null,  // handler of progress update interval
     current_min_time:null,
     adjust_progress(seconds_left) {  
         $('#prog-text').text([
@@ -173,9 +173,12 @@ var progress = {
     },
     
     set_time(time) {
+        console.log(time)
         let self = this;       
         self.time = Date.parse(time);
+        console.log(this.time)
         if (_.isNull(self.handler)) {
+            console.log(5);
             self.is_working = true;
             self.handler = setInterval(function () { self.update_timer() }, 100);
        } 
@@ -436,8 +439,9 @@ $(document).ready(function () {
         board.buffer[getOffset(x, y)] = Colors.colors[color_idx].abgr;
     });
     
-    sock.on('update-timer', function(params){
-        progress.set_time(params);
+    sock.on('update-timer', function(time){
+        console.log(time);
+        progress.set_time(time);
     })
 
     board.canvas.mousemove(function (event) {
