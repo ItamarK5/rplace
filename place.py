@@ -14,6 +14,7 @@ app = init_settings(app)
 crsf.init_app(app)
 db.init_app(app)
 login_manager.init_app(app)
+sio.init_app(app)
 app.register_blueprint(auth_router)
 # app.register_blueprint(meme_router)
 
