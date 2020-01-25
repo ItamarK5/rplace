@@ -13,7 +13,7 @@ meme_router = Blueprint(
 
 
 @meme_router.route('/meme//<string:http_error>')
-def error_meme(http_error: str):    
+def meme_image(http_error: str):    
     if str(http_error) not in listdir(path.join(meme_router.static_folder)):
         return send_from_directory(path.join(meme_router.static_folder, '404'), 'images.jfif', mimetype=None)
     # else
@@ -33,18 +33,19 @@ needs to solve error and update mimetypes
 """
 
 
-def error_meme_render(http_error: str):
+def error_meme_render(http_error: str, reason: str):
     # future plans, add insinstance string to detect if it's string, security
     if http_error not in listdir(meme_router.static_folder):
-        error = 'meme not found'
-    return render_template('meme.html', error=http_error)
+        http_error = 'meme not found'
+    return render_template('meme.html', error=http_error, title=http_error, reason=reason)
 
 
 @meme_router.app_errorhandler(404)
-def error_handler():
-    return error_meme_render('404')
+def error_handler(reason='File not Found'):
+    return error_meme_render('404', reason)
+
 
 @meme_router.route("/<path:arg>")
 def default_route(*args):
-    print(args)
-    return error_meme_render('404')
+    return error_meme_render('404', 'File not Found')
+

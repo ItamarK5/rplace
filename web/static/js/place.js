@@ -43,6 +43,7 @@ function setpixelated(context) {
 };
 */
 
+/*
 async function throw_position_input_box(){
     //https://sweetalert2.github.io/#input-types
     const { value: formValues } = await Swal.fire({
@@ -66,6 +67,7 @@ async function throw_position_input_box(){
         }
       });
 }
+*/
 
 //https://pietschsoft.com/post/2008/01/15/javascript-inttryparse-equivalent
 function TryParseInt(str, defaultValue) {
@@ -89,7 +91,7 @@ const throw_message = (msg, speed = 1000, keep_speed = 100, exit_speed = null, c
         .appendTo("body")
         // enter
         .animate({ opacity: '70%' }, speed, function () {
-            // keep the element amout of time
+            // keep the element amount of time
             let self = this;
             setTimeout(function () {
                 let exit_sp = _.isNull(exit_speed) ? speed : exit_speed;
@@ -102,23 +104,20 @@ const throw_message = (msg, speed = 1000, keep_speed = 100, exit_speed = null, c
                 }
             }, keep_speed);
         });
-            
+
+
 class PalColor {
     constructor(r, g, b, name) {
         this.r = r;
         this.g = g;
         this.b = b;
         this.name = name;
-        this.abgr = this.__abgr_convert();
     }
-    __abgr_convert() {
+    get abgr() {
         return (0xFF000000 | this.r | this.g << 8 | this.b << 16) << 0;
     }
     get css_format() {
         return `rgba(${this.r}, ${this.g}, ${this.b}, 255)`;
-    }
-    get rgba_int() {
-        return 0xFF | this.r << 24 | this.g << 16 | this.b << 8;
     }
 }
 
@@ -148,8 +147,8 @@ var Colors = {
         this.colors.push(this.olive);   this.colors.push(this.yellow);  this.colors.push(this.green);   this.colors.push(this.lime);
         this.colors.push(this.blue);    this.colors.push(this.aqua);    this.colors.push(this.purple);  this.colors.push(this.magenta);
     },
-    findAbgr: function (abgr_int) {
-        for (let i = 0; i < this.colors.length; i++) { if (abgr_int == this.colors[i]) { return i; } }
+    findAbgr: function (abgr) {
+        for (let i = 0; i < this.colors.length; i++) { if (abgr == this.colors[i]) { return i; } }
         return -1;
     },
     clr: function (idx) { return this.colors[idx]; }
@@ -158,7 +157,7 @@ var Colors = {
 var progress = {
     time: 0,        // time when cooldown ends
     state: 0,       // state of progress bar
-    handler: null,  // handler of progress update interval
+    work: null,  // handler of progress update interval
     current_min_time:null,
     adjust_progress(seconds_left) {  
         $('#prog-text').text([
@@ -171,14 +170,13 @@ var progress = {
         this.state = Math.ceil(seconds_left/150);
         $('#time-prog').attr('state', this.state);        
     },
-    
+
     set_time(time) {
-        console.log(time)
         let self = this;       
         self.time = Date.parse(time);
-        if (_.isNull(self.handler)) {
+        if (_.isNull(self.work)) {
             self.is_working = true;
-            self.handler = setInterval(function () { self.update_timer() }, 100);
+            self.work = setInterval(function () { self.update_timer() }, 100);
        } 
     },
     update_timer() {
@@ -195,9 +193,8 @@ var progress = {
         // close for cooldown 0
         if (!seconds_left) {
             // clear Interval
-            clearInterval(self.handler);
-            self.is_working = false;
-            self.handler = null;
+            clearInterval(self.work);
+            self.work = null;
             self.current_min_time = 300;
         }       
     }
@@ -406,7 +403,7 @@ var board = {
     }},
     // using clipboard.js
     // https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/write
-    copy_coords: function() {
+    copy_coordinates: function() {
         let data = new DataTransfer();
         data.items.add("text/plain", window.location.origin + window.location.pathname + `#x=${this.x}&y=${this.y}`);
         navigator.clipboard.write(data).then(
@@ -455,7 +452,7 @@ $(document).ready(function () {
         // jquery dblclick dont work on some machines but addEventListner does 
         // source: https://github.com/Leaflet/Leaflet/issues/4127
         /*Get XY https://codepo8.github.io/canvas-images-and-pixels/#display-colour*/
-        if((progress.is_working)){
+        if(!_.isNull(progress.work)){
             Swal.fire({
                 icon: 'warning',
                 title: 'You have 2 wait',
@@ -589,16 +586,5 @@ $(document).ready(function () {
         })
     });
     // copy board
-    $('#coords').click(function(e) {board.copy_coords()});    
-    // for box messages
-    //https://stackoverflow.com/a/19067260
+    $('#coords').click(function(e) { board.copy_coordinates() })
 });
-  
-
-
-// What to do:
-// 1)check zooming option
-// 2)storage of variables
-// 3)remember what board.find_pos fucking does
-// 4)cooldowns - mouse press and holding
-// --comment entire progarm

@@ -3,11 +3,12 @@ from flask_login import current_user
 from flask_socketio import SocketIO, send, emit, disconnect
 from os import path
 from datetime import datetime
-from . import MINUTES_COOLDOWN, WEB_FOLDER, db
-from threading import Thread
+from .alchemy import db
+from .consts import WEB_FOLDER, MINUTES_COOLDOWN
 import time
 from typing import Any, Dict
-from threading import Thread
+
+
 BOARD_PATH = path.join(WEB_FOLDER, 'resoucres', 'board.npy')
 
 
@@ -65,7 +66,8 @@ def set_board(params: Dict[str, Any]) -> None:
     current_user.set_next_time(next_time)
     db.session.commit()
     emit('update-timer', str(current_time), brodcast=False)
-    sio.emit('set-board', params, broadcast=True)
+    emit('set-board', params, broadcast=True)
+
 
 def save_board():
     while True:

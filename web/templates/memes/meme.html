@@ -13,9 +13,9 @@
 <body>
     <div class="container">
     <div class="justify-content-center">
-<!--        <img src="{{url_for(" class="rounded mx-auto d-block">-->
-<!--        <p><ins>{{error-title}}</ins></p>-->
-<!--        <p><ins>{{error-description}}</ins></p>-->
+        <img src="{{ url_for('meme_views.meme_image', http_error=error) }}" class="rounded mx-auto d-block">
+        <p><ins>{{error}}</ins></p>-->
+        <p><ins>{{reason}}</ins></p>
     </div></div>
 </body>
 </html>

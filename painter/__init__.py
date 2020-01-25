@@ -1,9 +1,8 @@
-from .alchemy import db, User
-from .functions import *
+from .alchemy import db
 from .settings import init_app as init_settings
-from .forms import LoginForm, SignUpForm
-from .consts import *
+from .consts import WEB_FOLDER
 from .security import login_manager, crsf
+from .skio import sio
 from .views.auth_view import auth_router
 from .views.meme_view import meme_router
-from .skio import sio
+from .views.other_view import other_router

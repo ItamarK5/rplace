@@ -9,6 +9,10 @@ from http import HTTPStatus
 
 auth_router = Blueprint('auth', 'auth', template_folder=path.join(WEB_FOLDER, 'templates'))
 
+@auth_router.route('/', methods=('GET', ),)
+def first():
+    return redirect(url_for('auth.login'))
+
 
 @auth_router.route('/login', methods=('GET', 'POST'),)
 def login():

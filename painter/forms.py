@@ -3,6 +3,7 @@ from wtforms import *
 from flask_wtf import FlaskForm
 import re
 
+
 class LoginForm(FlaskForm):
     username = StringField('username',
                            validators=[
