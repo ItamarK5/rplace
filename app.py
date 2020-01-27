@@ -20,4 +20,4 @@ def create_app():
 
 
 if __name__ == '__main__':
-    sio.run(create_app(), port=8080, debug=True)
+    sio.run(create_app(), host='0.0.0.0', port=8080, debug=True)

@@ -339,9 +339,9 @@ coordDialog > *{
     --text-color: #800080;
 }
 #time-prog[state="1"] {
-    --aura-color: #3201fe;
-    --area-color: #0835ff;
-    --text-color: #00C0C0;
+    --aura-color: #FFFF30;
+    --area-color: #FFFF30;
+    --text-color: #080808;/*#F0F030;*/
 }
 
 
