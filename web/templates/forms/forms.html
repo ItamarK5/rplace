@@ -19,17 +19,12 @@
     {% endif %}
 </div></div>
 {% endmacro %}
-
-{% macro render_errors(errors) %}
-{% if errors %}
-{% for err in errors %}
+{% macro render_error(error) %}
 <div class="form-row mb-1">
-    <div class="col rounded alert-danger text-justify ml-3 mr-3" style="text-anchor:middle;">{{ err }}</div>
+    <div class="col rounded alert-danger text-justify ml-3 mr-3" style="text-anchor:middle;">{{ error }}</div>
 </div>
-{% endfor %}
-{% endif %}
 {% endmacro %}
-
+{% macro render_errors(errors) %}{% if errors %}{% for err in errors %}{{ render_error(err) }}{% endfor %}{% endif %}{% endmacro %}
 {% macro link(id, text, path) %}
 <a class="primary-text mb-3" id={{id}} href="{{path}}">{{text}}</a>
 {% endmacro %}

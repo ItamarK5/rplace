@@ -1,0 +1,6 @@
+Hello, {{user.name}}
+Welcome to our Social Painter,
+to continue pless enter the following line
+{{url_for('auth.complete_signup')}}
+Thanks
+From The Social Painter Community

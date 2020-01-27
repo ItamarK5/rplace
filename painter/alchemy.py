@@ -13,20 +13,17 @@ class User(db.Model, UserMixin):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True, unique=True, autoincrement=True)
-    name = db.Column(db.String(15), unique=True)
-    password = db.Column(db.LargeBinary(64))
-    email = db.Column(db.String(254), unique=True)
-    next_time = db.Column(db.Float(), default=0.0)
+    name = db.Column(db.String(15), unique=True, nullable=False)
+    password = db.Column(db.LargeBinary(64), nullable=False)
+    email = db.Column(db.String(254), unique=True, nullable=False)
+    next_time = db.Column(db.Float(), default=0.0, nullable=False)
+    is_active = db.Column(db.Boolean(), default=False, nullable=False)
 
     def __repr__(self):
         return f"<User(name={self.name}>"
 
     def set_password(self, password):
         self.password = encrypt_password(self.username, password)
-    
-    def set_username(self, username):
-        self.password = encrypt_password(username, self.password)
-        self.username = username
 
     def get_next_time(self):
         return datetime.fromtimestamp(self.next_time)

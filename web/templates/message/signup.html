@@ -1,0 +1,8 @@
+{% extends '.\basemail.html'}
+{% block Body %}
+{{ super() }}
+Hello, {{user.name}}
+Welcome to our Social Painter,
+to continue pless enter the following line
+{{ url_for('auth.complete_signup') }}
+{{% endblock %}}

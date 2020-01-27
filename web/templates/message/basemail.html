@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        span {
+            display:block;
+        }
+    </style>
+</head>
+<body>
+    <div style="position:absolute;right:0px;">
+        <span style="text-decoration-line: black solid 5px;">Hello, <b>{{user.ma,e}}</b></span>
+        <image width="400" height=400></image>
+        <span>Welcome to our Social Painter,</span>
+        <span>to continue pless press the following line</span>
+        <span>{{ url_for('auth.complete_signup') }}</span>
+    </div>
+    <div style="position: absolute;left:10px;bottom:10px;">
+        By the social painter community
+    </div>
+</body>
+</html>

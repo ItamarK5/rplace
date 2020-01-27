@@ -8,9 +8,10 @@ def create_app():
                 static_folder='',
                 static_url_path='',
                 template_folder=path_join(WEB_FOLDER))
-    app = init_settings(app)
+    app.config.from_object(Config)
     crsf.init_app(app)
     db.init_app(app)
+    mail.init_app(app)
     login_manager.init_app(app)
     app.register_blueprint(auth_router)
     # app.register_blueprint(meme_router)
