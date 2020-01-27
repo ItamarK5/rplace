@@ -1,4 +1,4 @@
-{% macro field_render(field, force_errors=False) %}
+{% macro render_field(field, force_errors=False) %}
 <div class="form-row mb-1">
     <div class="input-group">
         {% if field.errors or force_errors%}
@@ -20,11 +20,11 @@
 </div></div>
 {% endmacro %}
 
-{% macro field_errors(field, form) %}
-{% if field.errors or varargs %}
-{% for err in field.errors %}
+{% macro render_errors(errors) %}
+{% if errors %}
+{% for err in errors %}
 <div class="form-row mb-1">
-    <div class="col rounded alert-danger text-justify ml-5 mr-5" style="text-anchor:middle;">{{ err }}</div>
+    <div class="col rounded alert-danger text-justify ml-3 mr-3" style="text-anchor:middle;">{{ err }}</div>
 </div>
 {% endfor %}
 {% endif %}
@@ -71,6 +71,7 @@
 <body>
     {% block Body %}
     <div class="jumbotron vertical-center">
+        {% block form %}
             <form class="container justify-content-center w-75" method="POST" url="{{ request.url }}">
             {{ form.csrf_token  }}
             {% block fields %}
@@ -89,6 +90,7 @@
                 </div>
                 {% endif %}
                 </form>
+        {% endblock %}
     </div>
     {% endblock %}
 </body>

@@ -1,5 +1,6 @@
 from __future__ import annotations
 from wtforms import *
+from wtforms.fields.html5 import EmailField
 from flask_wtf import FlaskForm
 import re
 
@@ -20,20 +21,20 @@ class LoginForm(FlaskForm):
                                'data-placement': 'top'
                            })
 
-
     password = PasswordField('password',
-                           validators=[
+                             validators=[
                                validators.data_required('You must enter something'),
                                validators.regexp(r'^[\w\d]+$', re.I, 'Input must only contain abc characters'
                                                                      ' or digits'),
                                validators.length(6, 15, message='you have passed the length, pass name in length'
                                                                 'between 6 to 15')
-                           ],
-                           render_kw={
+                            ],
+                            render_kw={
                                'data-toggle': 'tooltip',
                                'title': 'It must only contain 6-15 abc chars or digits',
                                'data-placement': 'bottom'
-                           })
+                            })
+
 
 class SignUpForm(FlaskForm):
     username = StringField(
@@ -70,4 +71,17 @@ class SignUpForm(FlaskForm):
                 'data-toggle': 'tooltip',
                 'title': 'You must re-enter your password, so we be really sure that know your password',
                 'data-placement': 'bottom'
-        })        
+        })
+
+    email = EmailField(
+        'Email',
+        validators=[
+            validators.data_required('You must enter a email'),
+            validators.Email('Email not valid'),
+
+        ], render_kw={
+            'data-toggle': 'tooltip',
+            'title': 'You must re-enter your password, so we be really sure that know your password',
+            'data-placement': 'bottom'
+        }
+    )

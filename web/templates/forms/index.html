@@ -1,9 +1,11 @@
 {% extends "forms/forms.html" %}
 {% block fields %}
-{{ field_render(form.username)}}
-{{ field_errors(form.username, form) }}
-{{ field_render(form.password)}}
-{{ field_errors(form.password, form) }}
+{{ render_field(form.username, extra_errors)}}
+{{ render_errors(form.username.errors) }}
+{{ render_errors(extra_errors) }}
+{{ render_field(form.password, extra_errors)}}
+{{ render_errors(form.password.errors) }}
+{{ render_errors(extra_errors) }}
 {% endblock %}
 {% block links %}
 {{ link('signup-link', 'Are you new?', url_for('auth.signup')) }}

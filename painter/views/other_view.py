@@ -4,6 +4,7 @@ from os import listdir
 from ..consts import WEB_FOLDER, MIMETYPES
 from flask_login import login_required
 
+
 other_router = Blueprint('other', 'other',
                          static_folder=path_join(WEB_FOLDER, 'static'),
                          template_folder=path_join(WEB_FOLDER, 'templates'))

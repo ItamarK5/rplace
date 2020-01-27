@@ -456,7 +456,7 @@ $(document).ready(function () {
             Swal.fire({
                 icon: 'warning',
                 title: 'You have 2 wait',
-                text: 'You need to endfor your time to finish',
+                text: 'You need to end for your time to finish',
               });
         }    
         else if(_.isNull(board.color)) {

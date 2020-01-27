@@ -20,7 +20,7 @@ def login():
     added in version 1.0.0
     """
     form = LoginForm()
-    error_message = None    # will be used in the future for better autherazetion and login forms
+    extra_errors = []
     if form.validate_on_submit():
         name, pswd = form.username.data, form.password.data
         pswd = encrypt_password(name, pswd)
@@ -29,9 +29,9 @@ def login():
             print(login_user(user))
             return redirect('place')
         else:
-            error_message = 'username or password dont match'
+            extra_errors.append('username or password dont match')
     form.password.data = ''
-    return render_template('forms/index.html', form=form, message=error_message)
+    return render_template('forms/index.html',form=form, extra_errors=extra_errors)
 
 
 @auth_router.route('/signup', methods=('GET', 'POST'))
