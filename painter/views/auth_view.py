@@ -1,6 +1,6 @@
 from flask import Blueprint, url_for, render_template, redirect, abort
 from ..alchemy import db
-from ..forms import *
+from ..forms import SignUpForm, LoginForm
 from ..alchemy import User
 from flask_login import login_user, logout_user, current_user
 from ..consts import WEB_FOLDER, path
@@ -8,6 +8,7 @@ from ..functions import encrypt_password
 from http import HTTPStatus
 
 auth_router = Blueprint('auth', 'auth', template_folder=path.join(WEB_FOLDER, 'templates'))
+
 
 @auth_router.route('/', methods=('GET', ),)
 def first():
@@ -31,24 +32,41 @@ def login():
         else:
             extra_errors.append('username or password dont match')
     form.password.data = ''
-    return render_template('forms/index.html',form=form, extra_errors=extra_errors)
+    return render_template('forms/index.html',
+                           form=form,
+                           extra_errors=extra_errors)
 
 
 @auth_router.route('/signup', methods=('GET', 'POST'))
 def signup():
     form = SignUpForm()
     if form.validate_on_submit():
-        name, pswd, pswd2 = form.username.data, form.password.data, form.confirm_password.data
+        name, pswd, pswd2, email = form.username.data,\
+                                   form.password.data,\
+                                   form.confirm_password.data,\
+                                   form.email.data
         if pswd != pswd2:
-            form.confirm_password.errors.append('')
-        elif User.query.filter_by(name=name).first() is not None:
-            form.username.errors.append('username already exists')
+            form.confirm_password.errors.append('You must re-enter the same password')
         else:
-           user = User(name=name, password=encrypt_password(name, pswd))
-           db.session.add(user)
-           db.session.commit()
-           return redirect(url_for('auth.login'))
+            # no duplication
+            is_dup_name = User.query.filter_by(name=name).first() is not None
+            is_dup_email = User.query.filter_by(email=email).first() is not None
+            if is_dup_name:
+                form.username.errors.append('username already exists')
+            if is_dup_email:
+                form.email.errors.append('email already exists')
+            else:
+                # create user
+                user = User(
+                    name=name,
+                    password=encrypt_password(name, pswd),
+                    email=email
+                )
+                db.session.add(user)
+                db.session.commit()
+                return redirect(url_for('auth.login'))
     return render_template('forms/signup.html', form=form)
+
 
 @auth_router.route('/logout', methods=('GET', 'POST'))
 def logout():

@@ -6,6 +6,7 @@ import re
 
 
 class LoginForm(FlaskForm):
+    title = 'Login'
     username = StringField('username',
                            validators=[
                                validators.data_required(message='You must enter something'),
@@ -37,6 +38,8 @@ class LoginForm(FlaskForm):
 
 
 class SignUpForm(FlaskForm):
+    title = 'Sign up'
+
     username = StringField(
         'username',
         validators=[
