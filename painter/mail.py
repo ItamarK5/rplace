@@ -15,7 +15,7 @@ def email_message(f: Decorated) -> Decorated:
         message = f(*args, **kwargs)
         with mail.connect() as conn:
             conn.send(message)
-        return None
+        return 'Error'
     return wrapper
 
 
@@ -38,7 +38,7 @@ def login_mail(name: str, addr: str, token: str) -> Message:
         ),
         html=render_template(
             'message/signup.html',
-            name=name,
+            username=name,
             token=token
         )
     )
@@ -46,8 +46,8 @@ def login_mail(name: str, addr: str, token: str) -> Message:
         content_type=MIMETYPES['png'],
         data=open(path.join(WEB_FOLDER, 'static', 'png', 'favicon.png'), 'rb').read(),
         disposition='inline',
-        headers={
-            'Content-ID': 'icon'
-        }
+        headers=[
+            ('Content-ID', '<icon>'),
+        ]
     )
     return email

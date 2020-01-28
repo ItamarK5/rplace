@@ -6,7 +6,7 @@ import re
 
 
 class LoginForm(FlaskForm):
-    title = 'Login'
+    title = 'Welcome Back to Social Painter'
     username = StringField('username',
                            validators=[
                                validators.data_required(message='You must enter something'),
@@ -39,7 +39,7 @@ class LoginForm(FlaskForm):
 
 
 class SignUpForm(FlaskForm):
-    title = 'Sign up'
+    title = 'Welcome to Social Painter'
 
     username = StringField(
         'username',
@@ -50,7 +50,7 @@ class SignUpForm(FlaskForm):
             ], render_kw={
                 'data-toggle': 'tooltip',
                 'title': 'Your name, it must contain 5-15 characters and contains only abc chars\\digits',
-                'data-placement': 'top',
+                'data-placement': 'left',
             })
             
     password = PasswordField(
@@ -62,7 +62,7 @@ class SignUpForm(FlaskForm):
             ], render_kw={
                 'data-toggle': 'tooltip',
                 'title': 'It must only contain 6-15 abc chars or digits',
-                'data-placement': 'bottom'
+                'data-placement': 'left'
         })
 
     confirm_password = PasswordField(
@@ -74,7 +74,7 @@ class SignUpForm(FlaskForm):
             ], render_kw={
                 'data-toggle': 'tooltip',
                 'title': 'You must re-enter your password, so we be really sure that know your password',
-                'data-placement': 'bottom'
+                'data-placement': 'left'
         })
 
     email = EmailField(
@@ -86,6 +86,6 @@ class SignUpForm(FlaskForm):
         ], render_kw={
             'data-toggle': 'tooltip',
             'title': 'Your email address, so we can send it weekly adds',
-            'data-placement': 'bottom'
+            'data-placement': 'left'
         }
     )

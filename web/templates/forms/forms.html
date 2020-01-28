@@ -43,7 +43,7 @@
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
         <script src="\files\auth.js"></script>
-        <title>{{ form.title }}</title>
+        <title>{{ form.title }} </title>
         <style>
         .vertical-center {
             min-height: 100%;  /* Fallback for browsers do NOT support vh unit */
@@ -69,7 +69,12 @@
     <div class="jumbotron vertical-center">
         {% block form %}
             <form class="container justify-content-center w-75" method="POST" url="{{ request.url }}">
+            <div class="form-row mb-1s display-2">
+                <!-- warning was used as nice title -->
+                <h2 class="mx-auto text-warning"><u>{{form.title}}</u></h2>
+            </div>
             {{ form.csrf_token  }}
+            <img src="{{url_for('other.serve_static', key='favicon.png')}}" class="rounded mx-auto d-block mb-2">
             {% block fields %}
             {% endblock %}
             <div class="justify-content-space-between form-row row">

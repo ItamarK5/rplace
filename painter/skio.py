@@ -6,23 +6,37 @@ from datetime import datetime
 from .alchemy import db
 from .consts import WEB_FOLDER, MINUTES_COOLDOWN
 import time
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 
-BOARD_PATH = path.join(WEB_FOLDER, 'resoucres', 'board.npy')
+BOARD_PATH = path.join(WEB_FOLDER, 'resources', 'board.npy')
+COPY_BOARD_PATH = path.join(WEB_FOLDER, 'resources', 'board2.npy')
+
+
+def read_board(pth: str) -> Optional[np.ndarray]:
+    if not path.exists(pth):
+        return None
+    try:
+        return np.loads(pth)
+    finally:
+        return None
 
 
 def open_board() -> np.ndarray:
     """
         save board
     """
-    if path.exists(BOARD_PATH):
-        place_board = np.load(BOARD_PATH)
-        print(place_board.shape)
-    else:
-        place_board = np.zeros((1000, 500), dtype=np.uint8)
-        # board = np.random.randint(0, 255, (1000, 500), np.uint8)
-    return place_board
+    brd = read_board(BOARD_PATH)
+    if brd is not None:
+        return brd
+    print('Board not loaded')
+    brd = read_board(COPY_BOARD_PATH)
+    if brd is not None:
+        return brd
+    print('Board errored not loaded')
+    # else
+    # board = np.random.randint(0, 255, (1000, 500), np.uint8)
+    return np.zeros((1000, 500), dtype=np.uint8)
 
 
 sio = SocketIO()
@@ -71,5 +85,6 @@ def set_board(params: Dict[str, Any]) -> None:
 
 def save_board():
     while True:
+        np.save(COPY_BOARD_PATH, board)
         time.sleep(10)
         np.save(BOARD_PATH, board)

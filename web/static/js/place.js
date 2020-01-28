@@ -32,42 +32,6 @@ const VIEW_BUTTON_OPACITY = 1.0;
 const getOffset = (x, y) => (y * CANVAS_SIZE) + x;
 const getFirstIfAny = (group) => _.isNull(group) ? null : group[0]
 
-/*
-function setpixelated(context) {
-    //https://stackoverflow.com/a/32798277
-    context.mozImageSmoothingEnabled = board.scale > 1;
-    context.webkitImageSmoothingEnabled = board.scale > 1;
-    context.msImageSmoothingEnabled = board.scale > 1;
-    context.imageSmoothingEnabled = board.scale > 1;
-    context.oImageSmoothingEnabled = board.scale > 1;
-};
-*/
-
-/*
-async function throw_position_input_box(){
-    //https://sweetalert2.github.io/#input-types
-    const { value: formValues } = await Swal.fire({
-        title: 'Multiple inputs',
-        html:
-        `<div style="place-items:center;">X:<input class="input-box-alert" type="range" min="0" max="1000" id="input-x" value=${query.x}><span>${query.x}</span></div>` +
-        `<div style="place-items:center;">Y:<input class="input-box-alert" type="range" min="0" max="1000" id="input-y" value=${query.y}><span>${query.x}</span></div>` +
-        `<div style="place-items:center;">scale:<input class="input-box-alert" type="range" min="0" max="50" id="input-scale" value=${query.scale}><span>${query.scale}</span></div>`,
-        focusConfirm:true,
-        // special scenerio 0.5 as 0;
-        onOpen: () => $('.input-box-alert').on('change', function(e){
-            let self=this;
-            console.log(5);
-            $(this).siblings('span').text($(self).val());
-        }),
-        preConfirm: () => {
-          return [
-            document.getElementById('input-y').value,
-            document.getElementById('input-x').value
-          ]
-        }
-      });
-}
-*/
 
 //https://pietschsoft.com/post/2008/01/15/javascript-inttryparse-equivalent
 function TryParseInt(str, defaultValue) {

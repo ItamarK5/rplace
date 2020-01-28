@@ -94,3 +94,19 @@ def logout():
     logout_user()
     return redirect(url_for('.login'))
 
+
+@auth_router.route('/confirm/<token>', methods=('GET',))
+def confirm(token):
+    try:
+        email = confirm_token(token)
+    except:
+        return 'Error'
+    user = User.query.filter_by(email=email).first_or_404()
+    if user.confirmed:
+        flash('Account already confirmed. Please login.', 'success')
+    else:
+        user.is_active = True
+        db.session.add(user)
+        db.session.commit()
+        flash('You have confirmed your account. Thanks!', 'success')
+    return redirect(url_for('main.login'))

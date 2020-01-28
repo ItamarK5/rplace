@@ -1,10 +1,10 @@
 {% extends 'message//basemail.html' %}
 {% block body %}
 {{ super() }}
-<h2>Hello, <b>{{username}}</b></h2>
-<image width="400" height=400 src="cid:icon"></image>
-<h4>Welcome to our Social Painter,</h4>
-<h4>to continue pless press the following line</h4>
-<a href="{{ request.url_root }}{{url_for('auth.confirm_signup') }}">{{request.url_root }}{{url_for('auth.confirm_signup') }}</a>
+<h2 style="margin:10.640;text-decoration: underline;">Hello, <b>{{username}}</b></h2>
+<image src="cid:icon"></image>
+<h4 style="margin:10.640;">Welcome to our Social Painter</h4>
+<h4 style="margin:10.640;">to continue enter the following url</h4>
+<a style="color:blue;text-decoration: solid;font-size:105%;" href="{{ request.url_root }}{{url_for('auth.confirm', token=token) }}">{{request.url_root }}{{ url_for('auth.confirm', token=token) }}</a>
 {#<h4>to read again our guidlines pless press {{ url_for('auth.guildelines') }}</h4>#}
 {% endblock %}
