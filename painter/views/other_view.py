@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, abort, send_from_directory
 from os.path import join as path_join
 from os import listdir
-from ..consts import WEB_FOLDER, MIMETYPES
+from ..consts import WEB_FOLDER, MIME_TYPES
 from flask_login import login_required
 
 
@@ -18,11 +18,13 @@ def place():
 
 @other_router.route('/files/<path:key>', methods=('GET',))
 def serve_static(key):
-    if key in listdir(other_router.static_folder):
+    file_format = key.split('.')[-1]
+    print(file_format)
+    if file_format not in listdir(other_router.static_folder):
         abort(405, 'unvalid file format')
     # else
-    mimetype = MIMETYPES.get(key.split('.')[-1], None)
-    if mimetype is None:
+    mime_type = MIME_TYPES.get(file_format, None)
+    if mime_type is None:
         abort(405, 'type not supported')
     # return file
     try:
@@ -30,7 +32,7 @@ def serve_static(key):
             path_join(
                 other_router.static_folder,
                 key.split(".")[-1]), key,
-            mimetype=mimetype
+            mimetype=mime_type
         )
     except Exception as e:
         print('error', e)
@@ -41,5 +43,5 @@ def serve_static(key):
 def serve_icon():
     return send_from_directory(
         path_join(other_router.static_folder, 'ico'), 'favicon.ico',
-        mimetype=MIMETYPES['ico']
+        mimetype=MIME_TYPES['ico']
     )

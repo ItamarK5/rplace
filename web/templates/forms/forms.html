@@ -74,7 +74,9 @@
                 <h2 class="mx-auto text-warning"><u>{{form.title}}</u></h2>
             </div>
             {{ form.csrf_token  }}
-            <img src="{{url_for('other.serve_static', key='favicon.png')}}" class="rounded mx-auto d-block mb-2">
+            <img src="{{url_for('other.serve_static', key='favicon.gif')}}"
+                 width="190" height="250"
+                 class="rounded mx-auto d-block mb-2">
             {% block fields %}
             {% endblock %}
             <div class="justify-content-space-between form-row row">

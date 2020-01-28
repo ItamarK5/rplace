@@ -1,21 +1,25 @@
 from flask import render_template
 from functools import wraps
-from flask_mail import Message, Mail
+from flask_mail import Message, Mail, BadHeaderError
 from typing import Optional, TypeVar
-from .consts import WEB_FOLDER, path, MIMETYPES
+from .consts import WEB_FOLDER, path, MIME_TYPES
 
 
 mail = Mail()
-Decorated = TypeVar('Decoratad')
+Decorated = TypeVar('Decorated')
 
 
 def email_message(f: Decorated) -> Decorated:
     @wraps(f)
     def wrapper(*args, **kwargs) -> Optional[str]:
         message = f(*args, **kwargs)
-        with mail.connect() as conn:
-            conn.send(message)
-        return 'Error'
+        try:
+            with mail.connect() as conn:
+                conn.send(mail)
+        except BadHeaderError:
+            return 'Bad Header'
+        except
+        return None
     return wrapper
 
 
@@ -31,24 +35,13 @@ def login_mail(name: str, addr: str, token: str) -> Message:
     email = Message(
         subject='Welcome to Social Painter',
         recipients=[addr],
-        body=render_template(
-            'message/signup.txt',
-            username=name,
-            token=token
-        ),
-        html=render_template(
-            'message/signup.html',
-            username=name,
-            token=token
-        )
+        body=render_template('message/signup.txt', username=name, token=token),
+        html=render_template('message/signup.html', username=name, token=token)
     )
     email.attach(
-        'favicon.png',
-        content_type=MIMETYPES['png'],
+        content_type=MIME_TYPES['png'],
         data=open(path.join(WEB_FOLDER, 'static', 'png', 'favicon.png'), 'rb').read(),
         disposition='inline',
-        headers=[
-            ('Content-ID', '<favicon>'),
-        ]
+        headers=[('Content-ID', '<favicon>')]
     )
     return email
