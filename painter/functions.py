@@ -1,7 +1,6 @@
 from typing import Optional
 import hashlib
 
-
 def encrypt_password(username:str, password:str):
     return hashlib.pbkdf2_hmac('sha512',username.encode(), password.encode(), 10000)
 

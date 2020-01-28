@@ -1,23 +1,31 @@
-from flask import Blueprint, url_for, render_template, redirect, abort, flash
+from flask import Blueprint, url_for, render_template, redirect, abort, flash, current_app
 from ..alchemy import db
 from ..forms import SignUpForm, LoginForm
 from ..alchemy import User
 from flask_login import login_user, logout_user, current_user
 from ..consts import WEB_FOLDER, path
 from ..functions import encrypt_password
+from ..token import generate_confirmation_token, confirm_token
 from http import HTTPStatus
+from ..mail import login_mail
+
 
 auth_router = Blueprint('auth', 'auth', template_folder=path.join(WEB_FOLDER, 'templates'))
 
 
 @auth_router.route('/', methods=('GET', ),)
 def first():
+    """
+    :return: response for user enters home page / => login page
+    """
     return redirect(url_for('auth.login'))
+
 
 @auth_router.route('/login', methods=('GET', 'POST'),)
 def login():
     """
     added in version 1.0.0
+    :return: login page response
     """
     form = LoginForm()
     entire_form_error = []
@@ -38,11 +46,14 @@ def login():
                            form=form,
                            entire_form_errors=entire_form_error,
                            extra_error=extra_error
-                           )
+    )
 
 
 @auth_router.route('/signup', methods=('GET', 'POST'))
 def signup():
+    """
+    :return: sign-up response
+    """
     form = SignUpForm()
     if form.validate_on_submit():
         name, pswd, pswd2, email = form.username.data,\
@@ -61,14 +72,18 @@ def signup():
                 form.email.errors.append('email already exists')
             else:
                 # create user
-                user = User(
-                    name=name,
-                    password=encrypt_password(name, pswd),
-                    email=email
-                )
-                db.session.add(user)
-                db.session.commit()
-                return redirect(url_for('auth.login'))
+                error = login_mail(name, email, generate_confirmation_token(email))
+                if error:
+                    form.email.errors.append(error)
+                else:
+                    user = User(
+                        name=name,
+                        password=encrypt_password(name, pswd),
+                        email=email
+                    )
+                    db.session.add(user)
+                    db.session.commit()
+                    return redirect(url_for('auth.login'))
     return render_template('forms/signup.html', form=form)
 
 
@@ -79,4 +94,3 @@ def logout():
     logout_user()
     return redirect(url_for('.login'))
 
-@auth_router.route('confirm_login')

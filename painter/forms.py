@@ -10,15 +10,15 @@ class LoginForm(FlaskForm):
     username = StringField('username',
                            validators=[
                                validators.data_required(message='You must enter something'),
-                               validators.regexp(r'^[\w\d]+$', re.I, 'Input must only contain abc characters'
+                               validators.regexp(r'^[\w\d]+$', re.I, 'Input must only contain abc characters '
                                                                      ' or digits'),
-                               validators.length(5, 15, message='you have passed the length, pass name in length'
+                               validators.length(5, 15, message='you have passed the length, pass name in length '
                                                                 'between 5 to 15',)
                            ],
                            render_kw={
                                'data-toggle': 'tooltip',
-                               'title': 'Your name, it must contain 5-15 characters and'
-                                       ' contains only abc chars\\digits',
+                               'title': 'Your name, it must contain 5-15 characters and '
+                                        'contains only abc chars\\digits',
                                'data-placement': 'top'
                            })
 
@@ -32,7 +32,8 @@ class LoginForm(FlaskForm):
                             ],
                             render_kw={
                                'data-toggle': 'tooltip',
-                               'title': 'It must only contain 6-15 abc chars or digits',
+                               'title': 'One password to control your account so keep it safe, ' +
+                                        'It must only contain 6-15 abc chars or digits',
                                'data-placement': 'bottom'
                             })
 
@@ -84,7 +85,7 @@ class SignUpForm(FlaskForm):
 
         ], render_kw={
             'data-toggle': 'tooltip',
-            'title': 'You must re-enter your password, so we be really sure that know your password',
+            'title': 'Your email address, so we can send it weekly adds',
             'data-placement': 'bottom'
         }
     )
