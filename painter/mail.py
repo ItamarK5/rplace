@@ -14,11 +14,9 @@ def email_message(f: Decorated) -> Decorated:
     def wrapper(*args, **kwargs) -> Optional[str]:
         message = f(*args, **kwargs)
         try:
-            with mail.connect() as conn:
-                conn.send(mail)
+            mail.send(message)
         except BadHeaderError:
             return 'Bad Header'
-        except
         return None
     return wrapper
 

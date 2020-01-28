@@ -2,12 +2,9 @@ const CANVAS_SIZE = 1000;
 const X_AXIS = 'x';
 const Y_AXIS = 'y';
 
-const DIR_INDEXKEY_XCODE = 0;
-const DIR_INDEX_XNORMAL = 1;
-const DIR_INDEX_YNORMAL = 2;
 const MIN_STEP_SIZE = 3;
 const MAX_SCALE = 50;
-
+const DRAW_COOLDOWN = 60;
 
 const reX = /(?<=(^#|.+&)x=)\d+(?=&|$)/i
 const reY = /(?<=(^#|.+&)y=)\d+(?=&|$)/i
@@ -15,12 +12,11 @@ const reScale = /(?<=(^#|.+&)scale=)\d+(?=&|$)/i;
 //const reHash = /(?<=(?:^#|.+&))([\w|\d]+)=([\w|\d]+)(?=&|$)/i
 
 const DIRECTION_MAP = [
-    ['KeyA', -1, 0], // left
-    ['KeyD', 1, 0], // right
-    ['KeyW', 0, -1], // up
-    ['KeyS', 0, 1]  // down
+    {key:37, dx:-1, dy:0 }, // left
+    {key:39, dx: 1, dy:0 }, // right
+    {key:38, dx: 0, dy:-1}, // up
+    {key:40, dx: 0, dy:1 }  // down
 ];
-
 
 const SIMPLE_ZOOM_LEVEL = 40;
 const SIMPLE_UNZOOM_LEVEL = 4;
@@ -31,7 +27,6 @@ const VIEW_BUTTON_OPACITY = 1.0;
 
 const getOffset = (x, y) => (y * CANVAS_SIZE) + x;
 const getFirstIfAny = (group) => _.isNull(group) ? null : group[0]
-
 
 //https://pietschsoft.com/post/2008/01/15/javascript-inttryparse-equivalent
 function TryParseInt(str, defaultValue) {
@@ -86,7 +81,6 @@ class PalColor {
 }
 
 
-
 var Colors = {
     white: new PalColor(0xFF, 0xFF, 0xFF, 'White'),
     black: new PalColor(0x00, 0x00, 0x00, 'Black'),
@@ -124,26 +118,38 @@ var progress = {
     work: null,  // handler of progress update interval
     current_min_time:null,
     adjust_progress(seconds_left) {  
+        // adjust the progress bar and time display by the number of seconds left
         $('#prog-text').text([
             (Math.floor(seconds_left / 60)).toString(),
             (seconds_left % 60).toString().padStart(2, '0')
         ].join(':'))
         // update progress fill
-        $('#prog-fill').css('width', (100 - seconds_left / 3) + "%");        
-        // 1 if time less then 150 
-        this.state = Math.ceil(seconds_left/150);
+        console.log(1-seconds_left/DRAW_COOLDOWN)
+        // update area colored
+        $('#prog-fill').css('width', (100 - (seconds_left / DRAW_COOLDOWN)*100) + "%");        
+        // 1 if time less then halve the number of seconds 
+        this.state = Math.ceil(seconds_left * 2 /DRAW_COOLDOWN);
         $('#time-prog').attr('state', this.state);        
     },
-
     set_time(time) {
+        // set time
+        // handles starting the timer waiting
         let self = this;       
         self.time = Date.parse(time);
-        if (_.isNull(self.work)) {
+        if(self.time <= Date.now()){
+            $('prog-text').text('0:00');
+            $('#prog-fill').state = 1;
+            $('#time-prog').attr('state', 0);
+            if(_.isNull(self.work)){
+                clearInterval(self.work);
+            }
+        } else if (_.isNull(self.work)) {
             self.is_working = true;
-            self.work = setInterval(function () { self.update_timer() }, 100);
+            self.work = setInterval(function () { self.update_timer() }, 50);
        } 
     },
     update_timer() {
+        // Updates the prorgess bar and timer each interval
         // Math.max the time until cooldown ends in ms, compare if positive (the time has not passed),
         // ceil to round up, I want to prevent the progress showing time up to that
         let seconds_left = Math.ceil(Math.max(this.time - Date.now(), 0) / 1000);
@@ -351,9 +357,9 @@ var board = {
               let y = this.keep_inside_border(this.real_y, dir[DIR_INDEX_YNORMAL]*this.step*this.scale, rect.top, rect.bottom)/this.scale;
               console.log(x, y);
         */
-        let x = this.keep_inside_border(query.x + dir[DIR_INDEX_XNORMAL] * this.step);
-        let y = this.keep_inside_border(query.y + dir[DIR_INDEX_YNORMAL] * this.step);
-        query.set_center(x, y);
+       let x = this.keep_inside_border(query.x + dir.dx * this.step);
+       let y = this.keep_inside_border(query.y + dir.dy * this.step);
+       query.set_center(x, y);
     },
     centerOn: function (x, y) {
         x = isNaN(x) ? query.x : this.keep_inside_border(x);
@@ -361,22 +367,19 @@ var board = {
         query.set_center(x, y);
     },
     update_coords: function () {
-        if(!board.drag.active){
+        // not (A or B) == (not A) and (not B)
+        if($('#coords').is(':hover')){
+            $('#coord-slicer').text('copy')
+            $('#coordX').text('');
+            $('#coordY').text('');
+        } else if(!board.drag.active){
+            $('#coord-slicer').text(',')
             $('#coordX').text(board.x_mouse != -1 ? this.x_mouse + 1 : 'none');
             $('#coordY').text(board.y_mouse != -1 ? this.y_mouse + 1 : 'none');
-    }},
+        }
+    }
     // using clipboard.js
     // https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/write
-    copy_coordinates: function() {
-        let data = new DataTransfer();
-        data.items.add("text/plain", window.location.origin + window.location.pathname + `#x=${this.x}&y=${this.y}`);
-        navigator.clipboard.write(data).then(
-            function() {
-            throw_message('Copy Success');
-          }, function() {
-              throw_message('Error, Failed to copy');
-          });
-    }
 };
 
 $(document).ready(function () {
@@ -388,7 +391,7 @@ $(document).ready(function () {
         // buffer - board in bytes
         // time - time
         board.buildBoard(new Uint8Array(data.board));
-        progress.set_time(data.cooldown_target)
+        progress.start_timer(data.time)
     });
     
     sock.on('set-board', function (params) {
@@ -400,8 +403,11 @@ $(document).ready(function () {
     
     sock.on('update-timer', function(time){
         progress.set_time(time);
-    })
-
+    });
+    $('#coords').hover(
+        function(e){board.update_coords();},
+        function(e){board.update_coords();}
+    );
     board.canvas.mousemove(function (event) {
         let coords = board.getCoords(event);
         if (coords.x >= 0 && 1000 > coords.x && coords.y >= 0 && 1000 > coords.y) {
@@ -447,11 +453,10 @@ $(document).ready(function () {
     });    
     $(document).mousemove(function (e) {
         if (board.drag.active) {
-            let dx = (board.drag.dragX - e.pageX) / board.scale;
-            let dy = (board.drag.dragY - e.pageY) / board.scale;
+            // center board
             board.centerOn(
-                Math.round(board.drag.startX + dx),
-                Math.round(board.drag.startY + dy)
+                Math.round(board.drag.startX + (board.drag.dragX - e.pageX) / board.scale),
+                Math.round(board.drag.startY + (board.drag.dragY - e.pageY) / board.scale)
             );
         }
     }).mouseup(function (e) {
@@ -468,14 +473,7 @@ $(document).ready(function () {
     });
     $(document).keypress(function(e) {
         // first check direction
-        let dir = _.findIndex(
-            DIRECTION_MAP,
-            dir => dir[DIR_INDEXKEY_XCODE] == e.code
-        )
-        if (dir != -1) {
-             board.moveBoard(DIRECTION_MAP[dir]); return; 
-        }
-        // another options
+        // https://stackoverflow.com/a/9310900
         switch (e.code) {
             case 'KeyX': {
                 $('#toggle-toolbox-button').click();
@@ -507,6 +505,13 @@ $(document).ready(function () {
                 query.set_scale(query.scale > 1 ? query.scale - 1 : 0.5);
             }
         }
+    }).keydown(function(e){
+        a = (e || window.event).keyCode;
+        console.log(a, typeof(a))
+        let dir = _.findWhere(DIRECTION_MAP, {key: (e || window.event).keyCode})
+        console.log(dir);
+        if (!_.isUndefined(dir)) { board.moveBoard(dir); return; }
+        // another options
     });
     // change zoom level
     $('#zoom').click(function () {query.set_scale(
@@ -549,6 +554,16 @@ $(document).ready(function () {
             }
         })
     });
-    // copy board
-    $('#coords').click(function(e) { board.copy_coordinates() })
+    // copy board - https://stackoverflow.com/a/37449115
+    let clipboard = new ClipboardJS('#coords', {
+        text: function() {
+            return window.location.href;
+        }
+    });
+    clipboard.on('success', function(){
+        throw_message('Copy Success');
+    })
+    clipboard.on('error', function(){
+        throw_message('Copy Error');
+    })
 });

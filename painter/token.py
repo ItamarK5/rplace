@@ -1,23 +1,20 @@
-from itsdangerous import URLSafeTimedSerializer, BadData
+from itsdangerous import URLSafeTimedSerializer, TimedJSONWebSignatureSerializer
 from .config import Config
 from typing import Optional
 # https://realpython.com/handling-email-confirmation-in-flask/
 from .config import Config
+from typing import Tuple
 
 
-def generate_confirmation_token(email:str) -> str:
+def generate_confirmation_token(email: str) -> str:
     serializer = URLSafeTimedSerializer(Config.SECRET_KEY)
     return serializer.dumps(email, salt=Config.SECURITY_PASSWORD_SALT)
 
 
-def confirm_token(token) -> Optional[BadData]:
+def confirm_token(token: str) -> Tuple[str, float]:
     serializer = URLSafeTimedSerializer(Config.SECRET_KEY)
-    try:
-        email = serializer.loads(
+    return serializer.loads(
             token,
+            return_timestamp=True,
             salt=Config.SECURITY_PASSWORD_SALT,
-            max_age=Config.MAX_TIME_FOR_USER_TO_REGISTER
-        )
-    except BadData as e:
-        return e
-    return email
+    )

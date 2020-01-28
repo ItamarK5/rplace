@@ -1,15 +1,16 @@
+
 {% macro render_field(field, force_errors=False) %}
 <div class="form-row mb-1">
     <div class="input-group">
-        {% if field.errors or force_errors%}
+        {% if field.errors or force_errors %}
         {% set extra_class = "danger" %}
         {% else %}
         {% set extra_class = "primary" %}
         {% endif %}    
         <div class="input-group-prepend">
-            <span id='{{field.label.id}}' class='input-group-text non-select border-{{extra_class}}' for={{field.id}}>{{field.label.text}}</span>
+            <span id='{{field.label.id}}' class='text-{{extra_class}} is-invalid input-group-text field-input non-select border-{{extra_class}}' for={{field.id}}>{{field.label.text}}</span>
         </div>
-    {{field(class_ = 'form-control border-'+ extra_class)}}
+    {{field(class_ = 'form-control align-self-center border-'+ extra_class)}}
     {% if field.widget.input_type == 'password' %}
     <div class="input-group-append">
         <button class="btn btn-outline-secondary border-{{extra_class}} password-button">
@@ -35,16 +36,15 @@
         <link rel="shortcut icon" href="/favicon.ico">
         <!-- Jquery.js -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" type="text/javascript"></script>
-        <!-- popper.js - needed for bootstarp -->
-        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-        <!-- bootstarp -->
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
-        <!-- bootstrap styles-->
+        <!-- Boostrap Style -->
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
         <script src="\files\auth.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" integrity="sha256-/sdxenK1NDowSNuphgwjv8wSosSNZB0t5koXqd7XqOI=" crossorigin="anonymous" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.css" integrity="sha256-wMES50JHO82E/LjWWLWeCXXQahHeA0oemqGIfMkD5BI=" crossorigin="anonymous" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" integrity="sha256-UZFVAO0Fn854ajzdWnJ2Oze6k1X4LNqE2RJPW3MBfq8=" crossorigin="anonymous" />
         <title>{{ form.title }} </title>
         <style>
+        body,html,.container,.jumbotron { background-color: #222222 !important; }
         .vertical-center {
             min-height: 100%;  /* Fallback for browsers do NOT support vh unit */
             min-height: 100vh; /* These two lines are counted as one :-)       */
@@ -59,7 +59,17 @@
             background-color:yellowgreen !important;
         }
         .non-select {
-            user-select: none;
+            user-select: none !important;
+            -webkit-user-select: none !important;
+        }
+        .field-input {
+            background-color: #222222 !important;
+        }
+        input[type="password"],input[type="text"],input[type="email"] {
+            box-shadow: none !important; -webkit-box-shadow: none !important;
+            background-color: #2A2A2A !important;
+            color: #ffc107!important;
+            
         }
         </style>
 {% endblock %}
@@ -71,7 +81,7 @@
             <form class="container justify-content-center w-75" method="POST" url="{{ request.url }}">
             <div class="form-row mb-1s display-2">
                 <!-- warning was used as nice title -->
-                <h2 class="mx-auto text-warning"><u>{{form.title}}</u></h2>
+                <h2 class="mx-auto text-warning non-select"><u>{{form.title}}</u></h2>
             </div>
             {{ form.csrf_token  }}
             <img src="{{url_for('other.serve_static', key='favicon.gif')}}"
@@ -79,22 +89,20 @@
                  class="rounded mx-auto d-block mb-2">
             {% block fields %}
             {% endblock %}
-            <div class="justify-content-space-between form-row row">
+            <div class="justify-content-around mx-auto">
                 {% block links %}{% endblock %}
             </div>
                 <div class="form-row justify-content-center">
                     <button type="submit" class="btn btn-primary" id="submit-button">{% block submit %}{% endblock %}</button>
                 </div>
-                {% if form.non_field_errors %}
-                <div class="d-flex flex-column justify-content-center mt-2">
-                {% for err in form.non_field_errors %}
-                        <div class="p-2 alert alert-danger text-center mb-1">{{err}}</div>
-                {% endfor %}
-                </div>
-                {% endif %}
                 </form>
         {% endblock %}
     </div>
     {% endblock %}
+    <!-- Document said to put it here so it be faster -->
+    <!-- popper.js - needed for bootstarp -->
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <!-- bootstarp -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 </body>
 </html>

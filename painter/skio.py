@@ -18,8 +18,13 @@ def read_board(pth: str) -> Optional[np.ndarray]:
         return None
     try:
         return np.load(pth)
-    finally:
+    except Exception:
         return None
+
+#    except Exception as e:
+ #       print(e)
+  #  finally:
+   #     return None
 
 
 def open_board() -> np.ndarray:
@@ -51,7 +56,7 @@ def connect_handler() -> None:
     # else
     tm = current_user.get_next_time()
     sio.emit('place-start', {
-        'board': board.tobytes(), 'cooldown_target': str(tm)
+        'board': board.tobytes(), 'time': str(tm)
     })
 
 
@@ -86,5 +91,5 @@ def set_board(params: Dict[str, Any]) -> None:
 def save_board():
     while True:
         np.save(COPY_BOARD_PATH, board)
-        time.sleep(10)
+        time.sleep(5)
         np.save(BOARD_PATH, board)
