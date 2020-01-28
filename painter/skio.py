@@ -17,7 +17,7 @@ def read_board(pth: str) -> Optional[np.ndarray]:
     if not path.exists(pth):
         return None
     try:
-        return np.loads(pth)
+        return np.load(pth)
     finally:
         return None
 

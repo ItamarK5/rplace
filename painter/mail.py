@@ -43,11 +43,12 @@ def login_mail(name: str, addr: str, token: str) -> Message:
         )
     )
     email.attach(
+        'favicon.png',
         content_type=MIMETYPES['png'],
         data=open(path.join(WEB_FOLDER, 'static', 'png', 'favicon.png'), 'rb').read(),
         disposition='inline',
         headers=[
-            ('Content-ID', '<icon>'),
+            ('Content-ID', '<favicon>'),
         ]
     )
     return email

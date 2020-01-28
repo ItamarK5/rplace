@@ -2,9 +2,9 @@
 {% block body %}
 {{ super() }}
 <h2 style="margin:10.640;text-decoration: underline;">Hello, <b>{{username}}</b></h2>
-<image src="cid:icon"></image>
+<img src="cid:favicon" alt="Logo" title="Logo" style="display:block">
 <h4 style="margin:10.640;">Welcome to our Social Painter</h4>
 <h4 style="margin:10.640;">to continue enter the following url</h4>
-<a style="color:blue;text-decoration: solid;font-size:105%;" href="{{ request.url_root }}{{url_for('auth.confirm', token=token) }}">{{request.url_root }}{{ url_for('auth.confirm', token=token) }}</a>
+<a style="color:blue;text-decoration: solid;font-size:105%;" href="{{url_for('auth.confirm', token=token , _external=True)}}">{{url_for('auth.confirm', token=token , _external=True)}}</a>
 {#<h4>to read again our guidlines pless press {{ url_for('auth.guildelines') }}</h4>#}
 {% endblock %}
