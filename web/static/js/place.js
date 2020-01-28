@@ -136,7 +136,7 @@ var progress = {
         // handles starting the timer waiting
         let self = this;       
         self.time = Date.parse(time);
-        if(self.time <= Date.now()){
+        if(self.time < Date.now()){
             $('prog-text').text('0:00');
             $('#prog-fill').state = 1;
             $('#time-prog').attr('state', 0);
@@ -161,7 +161,7 @@ var progress = {
         }
         let self = this;
         // close for cooldown 0
-        if (!seconds_left) {
+        if (seconds_left <= 0) {
             // clear Interval
             clearInterval(self.work);
             self.work = null;
@@ -391,7 +391,7 @@ $(document).ready(function () {
         // buffer - board in bytes
         // time - time
         board.buildBoard(new Uint8Array(data.board));
-        progress.start_timer(data.time)
+        progress.set_time(data.time)
     });
     
     sock.on('set-board', function (params) {
@@ -532,27 +532,20 @@ $(document).ready(function () {
         }
     });
     $('#logout-button').click(function(e){
-        const Http = new XMLHttpRequest();
-        $.ajax({
-            url:'/logout',
-            method:'GET',
-            data:'',
-            success(data, status, xhr){
-                try{
-                    console.log(xhr);
-                    if(xhr.status == 302){
-                        window.history.replaceState(null, null, ' ')
-                        window.location.pathname = xhr.Location;
-                    }
-                    else {throw_message('error')}
-                }
-                catch(e)
-                {
-                    console.log(e);
-                    $('#message').text('Client Error');
-                }
-            }
-        })
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "Are you sure you want to leave now",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: 'red',
+            confirmButtonText: 'Yes',
+            cancelButtonText: 'No'
+          }).then((result) => {
+              if(result.value){
+                  window.location.href = '/logout';
+              }
+            });
     });
     // copy board - https://stackoverflow.com/a/37449115
     let clipboard = new ClipboardJS('#coords', {
