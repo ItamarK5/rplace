@@ -125,6 +125,7 @@ body {
     transition-duration: .25s;
     transition-timing-function: ease-in;
 }
+
 #zoom:hover{ background-size:75%; }
 
 #zoom:active { background-color:yellow; }
@@ -133,41 +134,12 @@ body {
 
 #zoom[state='zoom-out'] { background-image: url("/files/zoom-out.png"); }
 
-/*
-.CoordText {
-    color: white;
-    user-select: none;
-    box-sizing: border-box;
-
-}
-
-.CoordContainer {
-    background-color:transparent;
-    width:100%;
-    height:100%;
-    opacity: 1;
-}
-
-.XCoord {
-    grid-row:1 / 2;
-}
-
-.YCoord {
-    grid-row:2 / 3;
-}
-
-.AxisCoord {
-    grid-column:2 / 3;
-    margin:0px;
-    text-align:start;
-    text-indent:1mm;
-}
-*/
 .ValueCoord {
     grid-column: 3 / 4;
     margin: 0px;
     text-align: end;
 }
+
 
 #toolbox {
     position: absolute;
@@ -194,11 +166,12 @@ body {
     bottom:40px;
     width: 60px;
     height: 30px;
+    filter: invert(1%) sepia(13%) saturate(3207%) hue-rotate(130deg) contrast(80%);
 }
 
 #toolbox[hide="1"] > #toggle-toolbox-button { content: url('/files/slideup.png');}
-#toolbox[hide="0"] > #toggle-toolbox-button { content: url('/files/slidedown.png');}
 
+#toolbox[hide="0"] > #toggle-toolbox-button { content: url('/files/slidedown.png');}
 
 #data-viewer {
     position:absolute;
@@ -273,9 +246,11 @@ coordDialog > *{
     border:15px;
     background-color:rgba(0, 0, 0, .5);
     transition:background-color linear 200ms;
-    color:white;
+    color:#9FEF9F;
     text-align:center;
 }
+
+
 #coords:hover {
     background-color:rgba(0, 0, 0, .7);
 }
@@ -301,7 +276,6 @@ coordDialog > *{
     margin:0px 3px;
 }
 .coordText {
-    color: white;
     font-size: 20px;
     pointer-events:none;
 }
@@ -386,6 +360,7 @@ coordDialog > *{
     border: solid 1px black;
     opacity:.5;
 }
+
 #logout-button:hover {
     opacity:1;
 }

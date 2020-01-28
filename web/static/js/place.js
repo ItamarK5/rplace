@@ -6,9 +6,14 @@ const MIN_STEP_SIZE = 3;
 const MAX_SCALE = 50;
 const DRAW_COOLDOWN = 60;
 
-const reX = /(?<=(^#|.+&)x=)\d+(?=&|$)/i
-const reY = /(?<=(^#|.+&)y=)\d+(?=&|$)/i
-const reScale = /(?<=(^#|.+&)scale=)\d+(?=&|$)/i;
+const reHashX = /(?<=(^#|.+&)x=)\d+(?=&|$)/i;
+const reHashY = /(?<=(^#|.+&)y=)\d+(?=&|$)/i;
+const reHashScale = /(?<=(^#|.+&)scale=)\d+(?=&|$)/i;
+
+const reArgX = /(?<=(^\x3F|.+&)x=)\d+(?=&|$)/i;
+const reArgY = /(?<=(^\x3F|.+&)x=)\d+(?=&|$)/i;
+const reArgScale = /(?<=(^\x3F|.+&)scale=)\d+(?=&|$)/i;
+
 //const reHash = /(?<=(?:^#|.+&))([\w|\d]+)=([\w|\d]+)(?=&|$)/i
 
 const DIRECTION_MAP = [
@@ -23,7 +28,6 @@ const SIMPLE_UNZOOM_LEVEL = 4;
 const HIDDEN_BUTTON_OPACITY = .2;
 const VIEW_BUTTON_OPACITY = 1.0;
 
-//
 
 const getOffset = (x, y) => (y * CANVAS_SIZE) + x;
 const getFirstIfAny = (group) => _.isNull(group) ? null : group[0]
@@ -196,8 +200,14 @@ var query = {
         if (is_any_frag_unvalid){ this.set_window_hash() }
     },
     // the hash of the window
+    get __path() {
+        return `x=${this.x}&y=${this.y}&scale=${this.scale}`
+    },
     hash : function() {
-        return `#x=${this.x}&y=${this.y}&scale=${this.scale}`
+        return `#${this.__path}`
+    },
+    arguments : function() {
+        return `?${this.__path}`
     },
     // validation check fo reach attributes
     is_valid_new_x: (val) => 0 <= val && val < CANVAS_SIZE && val != this.x,
@@ -206,9 +216,10 @@ var query = {
     // use regex to get fragments
     fragments: function() {
         return {
-            x: parseInt(getFirstIfAny(window.location.hash.match(reX))),
-            y: parseInt(getFirstIfAny(window.location.hash.match(reY))),
-            scale: parseInt(getFirstIfAny(window.location.hash.match(reScale)))
+            // first checks the hash if there are none, check the location
+            x: parseInt(getFirstIfAny(window.location.hash.match(reHashX) || window.location.search.match(reArgX))),
+            y: parseInt(getFirstIfAny(window.location.hash.match(reHashY) || window.location.search.match(reArgY))),
+            scale: parseInt(getFirstIfAny(window.location.hash.match(reHashScale) || window.location.search.match(reArgScale)))
         };
     },
     // set x and
@@ -548,15 +559,12 @@ $(document).ready(function () {
             });
     });
     // copy board - https://stackoverflow.com/a/37449115
-    let clipboard = new ClipboardJS('#coords', {
+    let clipboard = new ClipboardJS(
+        '#coords', {
         text: function() {
-            return window.location.href;
+            return window.location.origin + window.location.pathname + query.arguments();
         }
     });
-    clipboard.on('success', function(){
-        throw_message('Copy Success');
-    })
-    clipboard.on('error', function(){
-        throw_message('Copy Error');
-    })
+    clipboard.on('success', function(){ throw_message('Copy Success'); })
+    clipboard.on('error', function(){ throw_message('Copy Error'); })
 });

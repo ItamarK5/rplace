@@ -91,5 +91,5 @@ def set_board(params: Dict[str, Any]) -> None:
 def save_board():
     while True:
         np.save(COPY_BOARD_PATH, board)
-        time.sleep(5)
+        time.sleep(2)
         np.save(BOARD_PATH, board)
