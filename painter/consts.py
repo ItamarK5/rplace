@@ -19,5 +19,5 @@ WEB_FOLDER = path.join(
         ),
     'web'
 )
-
+# time
 MINUTES_COOLDOWN = timedelta(minutes=1)

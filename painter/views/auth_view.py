@@ -1,14 +1,25 @@
-from flask import Blueprint, url_for, render_template, redirect, abort, flash, current_app
+from flask import Blueprint, url_for, render_template, redirect, abort, flash
 from ..alchemy import db
 from ..forms import SignUpForm, LoginForm
 from ..alchemy import User
 from flask_login import login_user, logout_user, current_user
 from ..consts import WEB_FOLDER, path
 from ..functions import encrypt_password
-from ..token import generate_confirmation_token, confirm_token
+from itsdangerous import JSONWebSignatureSerializer
 from http import HTTPStatus
 from ..mail import login_mail
 import time
+
+
+from itsdangerous import JSONWebSignatureSerializer
+from flask import current_app
+
+
+# https://realpython.com/handling-email-confirmation-in-flask/
+SIGNUP_SERIALIZER = JSONWebSignatureSerializer(
+    secret_key=current_app.config.SECRET_KEY,
+    salt=current_app.config.SECURITY_PASSWORD_SALT
+)
 
 auth_router = Blueprint('auth', 'auth', template_folder=path.join(WEB_FOLDER, 'templates'))
 
@@ -42,11 +53,7 @@ def login():
             flash('Logged in successfully.')
             return redirect('place')
     form.password.data = ''
-    return render_template('forms/index.html',
-                           form=form,
-                           entire_form_errors=entire_form_error,
-                           extra_error=extra_error
-    )
+    return render_template('forms/index.html', form=form, entire_form_errors=entire_form_error, extra_error=extra_error)
 
 
 @auth_router.route('/signup', methods=('GET', 'POST'))
@@ -72,17 +79,15 @@ def signup():
                 form.email.errors.append('email already exists')
             else:
                 # create user
-                login_error = login_mail(name, email, generate_confirmation_token(email))
+                login_error = login_mail(name, email, SIGNUP_SERIALIZER.dumps(
+                    {
+                        'email': email,
+                        'username': name,
+                        'password': pswd
+                    }
+                ))
                 if login_error is not None:
                     form.email.errors.append(login_error)
-                else:
-                    user = User(
-                        name=name,
-                        password=encrypt_password(name, pswd),
-                        email=email,
-                    )
-                    db.session.add(user)
-                    db.session.commit()
                     return render_template('transport/complete-signup.html', username=name)
     return render_template('forms/signup.html', form=form)
 
