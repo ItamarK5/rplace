@@ -16,6 +16,6 @@ class Config:
     MAIL_DEFAULT_SENDER = 'Social Painter Dash'
     SECURITY_SIGNUP_SALT = '\x20\xf8\x1a\x62\x34\x08\x48\x86\xbd\xa5\x56\x09\x34\x4a\xc5\x2c'
     SECURITY_PASSWORD_SALT = b'MsT0FcUgSOzapJi7RAbDi5q5XWdzS3NC'
-    MAX_AGE_USER_SIGN_UP_TOKEN = 1  # 7200 seconds = 2 hours
+    MAX_AGE_USER_SIGN_UP_TOKEN = 3600  # 7200 seconds = 2 hours
     MAIL_MAX_EMAILS = 10
 #    MAIL_SUPPRESS_SEND = True

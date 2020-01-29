@@ -18,7 +18,7 @@
             src="{{url_for('other.serve_static', key='favicon.gif')}}" alt="favicon wasn't load">
         </div>
         <div class="w-50 form-row mx-auto">
-        <h5 class="text-warning">{% block message %}{% endblock %}</h5>
+        <h5 class="text-warning">{% block message %}{% if message %}{{message}}{% endif %}{% endblock %}</h5>
         </div>
         {% if view_name and view_ref %}
         <div class="row justify-content-center">

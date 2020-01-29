@@ -18,8 +18,8 @@ def place():
 
 @place_router.route('/files/<path:key>', methods=('GET',))
 def serve_static(key):
-    file_format = get_file_type()
-    if file_format is None:
+    file_format = get_file_type(key)
+    if not file_format:  # include no item scenerio
         abort(405, 'Forgot placeing file type')
     if file_format not in listdir(place_router.static_folder):
         abort(405, 'unvalid file format')

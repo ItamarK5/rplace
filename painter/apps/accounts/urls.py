@@ -1,6 +1,6 @@
 import time
 from os import path
-from flask import Blueprint, url_for, render_template, redirect, abort, flash, current_app
+from flask import Blueprint, url_for, render_template, redirect, abort, current_app
 from .helpers import *
 from .forms import LoginForm, SignUpForm
 from .mail import send_sign_up_mail
@@ -9,8 +9,6 @@ from painter.models.user import User
 from flask_login import login_user, logout_user, current_user
 from painter.constants import WEB_FOLDER
 from http import HTTPStatus
-from sqlalchemy import or_
-
 
 # router blueprint -> routing all pages that relate to authorization
 accounts_router = Blueprint('auth',
@@ -37,7 +35,7 @@ def login():
     extra_error = None
     if form.validate_on_submit():
         name, pswd = form.username.data, form.password.data
-        pswd = User.encrypt_password(name, pswd)
+        pswd = User.encrypt_password(pswd)
         user = User.query.filter_by(name=name, password=pswd).first()
         if user is None:
             entire_form_error.append('username or password dont match')
@@ -97,9 +95,8 @@ def logout():
     return redirect(url_for('.login'))
 
 
-@accounts_router.route('/confirm/<token>', methods=('GET',))
-def confirm(token):
-        # else get values
+@accounts_router.route('/confirm/<string:token>', methods=('GET',))
+def confirm(token: str):
     extracted = extract_signup_signature(token)
     if extracted is None:
         return render_template(
@@ -117,10 +114,10 @@ def confirm(token):
     # check if user exists
     # https://stackoverflow.com/a/57925308
     user = db.session.query(User).filter(
-        or_(User.name==name, User.password==pswd)
+        User.name == name, User.password == pswd
     ).first()
-    # else check time
-    if time.time() - timestamp > current_app.config['MAX_AGE_USER_SIGN_UP_MAIL']:
+    # time.timezone is the different betwenn local time to gmtime d=(gm-local) => d+local = gm
+    if (time.time() + time.timezone) - timestamp >= current_app.config['MAX_AGE_USER_SIGN_UP_TOKEN']:
         return render_template(
             'transport//base.html',
             view_name='Signup',

@@ -1,17 +1,20 @@
 import re
-from itsdangerous import URLSafeTimedSerializer, BadSignature
+from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from flask import Flask
-from typing import Any, Optional, Tuple, Dict
-from wtforms.validators import Email, ValidationError
-
+from typing import Any, Optional, Tuple, Dict, Union
+from wtforms.validators import HostnameValidation
+from datetime import datetime
 
 reNAME = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
-rePSWD = re.compile(r'^[A-F0-9]{64}$', re.I)  # password hashed so get hash value
+rePSWD = re.compile(r'^[A-F0-9]{128}$', re.I)  # password hashed so get hash value
+reEMAIL = re.compile(
+    r"(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*\Z"  # dot-atom
+    r'|^"([\001-\010\013\014\016-\037!#-\[\]-\177]|\\[\001-\011\013\014\016-\177])*"\Z)',  # quoted-string
+    re.IGNORECASE)
 
 
 class TokenSerializer:
     # https://realpython.com/handling-email-confirmation-in-flask/
-
     signup: URLSafeTimedSerializer
 
     @classmethod
@@ -31,14 +34,31 @@ def validate_mail(mail_address: str) -> bool:
     """
     Using the validation
     :param mail_address: email address
-    :return: if the email is valid (includes regex validation and domain validation)
-    the Email.__call__() method
+    :return: if the email is valid
+            value = field.data
+    version of the code in wtforms.validators.Email.__call__
+        ...
+        message = self.message
+        if message is None:
+            message = field.gettext('Invalid email address.')
+
+        if not value or '@' not in value:
+            raise ValidationError(message)
+
+        user_part, domain_part = value.rsplit('@', 1)
+
+        if not self.user_regex.match(user_part):
+            raise ValidationError(message)
+
+        if not self.validate_hostname(domain_part):
+            raise ValidationError(message)
     """
-    try:
-        Email.__init__().__call__(None, mail_address)
-    except ValidationError:
+    if not mail_address or '@' not in mail_address:
         return False
-    return True
+    user_part, domain_part = mail_address.rsplit('@', 1)
+    if not reEMAIL.match(user_part):
+        return False
+    return HostnameValidation(require_tld=True)(domain_part)
 
 
 def is_valid_signup_token(token: Any) -> bool:
@@ -52,25 +72,32 @@ def is_valid_signup_token(token: Any) -> bool:
         return False
     # name
     name = token.get('name', None)
-    if name is None or not reNAME.match(name):
+    if (not name) or not reNAME.match(name):
         return False
     # pswd
     pswd = token.get('password', None)
-    if pswd is None or not rePSWD.match(pswd):
+    if (not pswd) or not rePSWD.match(pswd):
         return False
     # name
     mail_address = token.get('email', None)
-    if mail_address is None or not validate_mail(mail_address):
+    if (not mail_address) or not validate_mail(mail_address):
         return False
     return True
 
 
-def extract_signup_signature(token) -> Optional[Tuple[Any, float]]:
+def extract_signup_signature(token: str) -> Optional[Tuple[Any, float]]:
     try:
-        token, timestamp = TokenSerializer.signup.loads(token)
-    except BadSignature:    # error
+        token, timestamp = TokenSerializer.signup.loads(token, return_timestamp=True)
+    except SignatureExpired:
+        return None
+    except BadSignature as e:    # error
+        print(e)
         return None
     finally:
         if not is_valid_signup_token(token):
             return None
-    return token, timestamp
+    return token, timestamp.timestamp()
+
+"""
+must set that the function handles time
+"""

@@ -20,7 +20,7 @@ def send_sign_up_mail(name: str, address: str, token: str) -> Message:
         body=render_template('message/signup.txt', username=name, token=token),
         html=render_template('message/signup.html', username=name, token=token)
     )
-    with current_app.open_resource(path.join('web', 'static', 'png', 'favicon.png'), 'rb') as fp:
+    with current_app.open_resource(path.join('static', 'png', 'favicon.png'), 'rb') as fp:
         email.attach(
             content_type=MIME_TYPES['png'],
             data=fp.read(),
@@ -28,4 +28,3 @@ def send_sign_up_mail(name: str, address: str, token: str) -> Message:
             headers=[('Content-ID', '<favicon>')]
         )
     return email
-
