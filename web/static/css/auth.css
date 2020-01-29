@@ -1,0 +1,28 @@
+body,html, .container, .jumbotron {
+     background-color: #222222 !important; 
+}
+.vertical-center {
+    min-height: 100%;  /* Fallback for browsers do NOT support vh unit */
+    min-height: 100vh; /* These two lines are counted as one :-)       */
+    padding:0;
+    margin:auto;
+    display: flex;
+    align-items: center;
+}
+.input-group-prepend { width:25%}
+.input-group-text { width:100%;padding:none;height:100%;}
+.body-container {
+    background-color:yellowgreen !important;
+}
+.non-select {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+}
+.field-input {
+    background-color: #222222 !important;
+}
+input[type="password"],input[type="text"],input[type="email"] {
+    box-shadow: none !important; -webkit-box-shadow: none !important;
+    background-color: #2A2A2A !important;
+    color: #ffc107!important;
+}

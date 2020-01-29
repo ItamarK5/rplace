@@ -1,8 +1,8 @@
-from flask import render_template
+from flask import render_template, current_app, config
 from functools import wraps
 from flask_mail import Message, Mail, BadHeaderError
 from typing import Optional, TypeVar
-from .consts import WEB_FOLDER, path, MIME_TYPES
+from .consts import path, MIME_TYPES
 
 
 mail = Mail()
@@ -12,6 +12,8 @@ Decorated = TypeVar('Decorated')
 def email_message(f: Decorated) -> Decorated:
     @wraps(f)
     def wrapper(*args, **kwargs) -> Optional[str]:
+        if not current_app.config['MAIL_SUPPRESS_SEND']:
+            return None
         message = f(*args, **kwargs)
         try:
             mail.send(message)
@@ -36,10 +38,12 @@ def login_mail(name: str, addr: str, token: str) -> Message:
         body=render_template('message/signup.txt', username=name, token=token),
         html=render_template('message/signup.html', username=name, token=token)
     )
-    email.attach(
-        content_type=MIME_TYPES['png'],
-        data=open(path.join(WEB_FOLDER, 'static', 'png', 'favicon.png'), 'rb').read(),
-        disposition='inline',
-        headers=[('Content-ID', '<favicon>')]
-    )
+    with current_app.open_resource(path.join('web', 'static', 'png', 'favicon.png'), 'rb') as fp:
+        email.attach(
+            content_type=MIME_TYPES['png'],
+            data=fp.read(),
+            disposition='inline',
+            headers=[('Content-ID', '<favicon>')]
+        )
     return email
+

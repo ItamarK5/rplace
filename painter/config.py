@@ -15,3 +15,4 @@ class Config:
     SECURITY_PASSWORD_SALT = '\x20\xf8\x1a\x62\x34\x08\x48\x86\xbd\xa5\x56\x09\x34\x4a\xc5\x2c'
     MAX_TIME_FOR_USER_TO_REGISTER = 1  # 7200 seconds = 2 hours
     MAIL_MAX_EMAILS = 10
+    MAIL_SUPPRESS_SEND = False

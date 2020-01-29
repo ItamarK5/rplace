@@ -1,0 +1,14 @@
+img { 
+    background-color: #222222 !important;
+    border-color:#222222 !important;
+    width:160px !important;
+    height:200px !important;
+}
+body,.container { 
+    background-color: #222222 !important;
+}    
+.non-select {
+    -webkit-user-drag: none;
+    user-select: none;
+    -webkit-user-select: none;
+}

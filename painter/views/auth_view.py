@@ -8,8 +8,7 @@ from ..functions import encrypt_password
 from ..token import generate_confirmation_token, confirm_token
 from http import HTTPStatus
 from ..mail import login_mail
-from datetime import datetime, timedelta
-
+import time
 
 auth_router = Blueprint('auth', 'auth', template_folder=path.join(WEB_FOLDER, 'templates'))
 
@@ -73,9 +72,9 @@ def signup():
                 form.email.errors.append('email already exists')
             else:
                 # create user
-                error = login_mail(name, email, generate_confirmation_token(email))
-                if error:
-                    form.email.errors.append(error)
+                login_error = login_mail(name, email, generate_confirmation_token(email))
+                if login_error is not None:
+                    form.email.errors.append(login_error)
                 else:
                     user = User(
                         name=name,
@@ -84,7 +83,7 @@ def signup():
                     )
                     db.session.add(user)
                     db.session.commit()
-                    return redirect(url_for('auth.login'))
+                    return render_template('transport/complete-signup.html', username=name)
     return render_template('forms/signup.html', form=form)
 
 
@@ -102,7 +101,6 @@ def confirm(token):
     try:
         email, timestamp = confirm_token(token)
     except Exception as e:
-        print(current_app.config['MAX_TIME_FOR_USER_TO_REGISTER'])
         print(e)
     # handle timeout or user known
     user = User.query.filter_by(email=email).first_or_404()
@@ -111,7 +109,7 @@ def confirm(token):
     # don't allow a user that is already active
     elif user.is_active:
         error_text = 'User is active'
-    elif time.time() - datetime.now() > current_app.config.MAX_TIME_FOR_USER_TO_REGISTER:
+    elif time.time() - timestamp > current_app.config.MAX_TIME_FOR_USER_TO_REGISTER:
         error_text = 'timeout'
     else:
         user.is_active = True

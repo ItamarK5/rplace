@@ -1,45 +1,33 @@
-<!--{% if not title %}{% set title='Title'}{% endif %}{% if not page_title %}{% set page_title=title %}{% endif %}-->
+{% if not title %}{% set title='Title' %}{% endif %}{% if not page_title %}{% set page_title=title %}{% endif %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" charset="UTF-8">
     <!-- bootstrap styles-->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{url_for('other.serve_static', key='transport.css')}}">
     <title>{{title}}</title>
-    <style>
-    img { 
-        background-color: #222222 !important;
-        border-color:#222222 !important;
-        width:160px !important;
-        height:200px !important;
-    }
-    body,.container { 
-        background-color: yellowgreen !important;
-    }    
-    .non-select {
-        -webkit-user-drag: none;
-        user-select: none;
-        -webkit-user-select: none;
-    }
-    </style>
 </head>
 <body>
     <div class="container">
         <div class="row justify-content-center">
-            <h2 class="text-warning text-center col"><u>{{main_title}}<!--{{% if main_title %}}{{main_title}}{% else if title %}{{title}}{{% else %}--></u></h2>
+            <h2 class="text-warning text-center col"><u>{{page_title}}</u></h2>
         </div>
         <div class="row justify-content-center">
             <img class="autorounded float-right d-inline-block non-select" draggable="0"
-            src="../static/gif/favicon.gif" alt="favicon wasn't load"> <!--{{url_for('other.serve_file', 'favicon.png')}} col align-self-end-->
+            src="{{url_for('other.serve_static', key='favicon.gif')}}" alt="favicon wasn't load">
         </div>
         <div class="w-50 form-row mx-auto">
-        <h5>
-            {{message}}
-        </h5>
+        <h5 class="text-warning">{% block message %}{% endblock %}</h5>
         </div>
-        <div class="row mx-auto w-50">
-                {% block link %}<a id="login-url" href="{{url_for('auth.login')}" class="col btn btn-primary">Home</a>{% endblock %}
+        {% if view_name and view_ref %}
+        <div class="row justify-content-center">
+                <div class="btn btn-default border-warning d-inline-block text-center">
+                    <a id="view-url" href="{{url_for(view_ref)}}" class="text-primary font-weight-bold">{{view_name}}</a>
+                </div>
+            </div>
         </div>
+        {% endif %}
     </div>
     <!-- Jquery.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" type="text/javascript"></script>
