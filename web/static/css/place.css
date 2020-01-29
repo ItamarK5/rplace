@@ -166,7 +166,6 @@ body {
     bottom:40px;
     width: 60px;
     height: 30px;
-    filter: invert(1%) sepia(13%) saturate(3207%) hue-rotate(130deg) contrast(80%);
 }
 
 #toolbox[hide="1"] > #toggle-toolbox-button { content: url('/files/slideup.png');}
@@ -236,6 +235,7 @@ body {
 coordDialog > *{
     box-sizing:border-box;
 }
+
 #coords {
     top:10px;
     position:fixed;
@@ -317,7 +317,6 @@ coordDialog > *{
     --area-color: #FFFF30;
     --text-color: #080808;/*#F0F030;*/
 }
-
 
 
 #prog-text {
