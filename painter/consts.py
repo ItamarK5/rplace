@@ -1,3 +1,4 @@
+import re
 from os import path
 from datetime import timedelta
 
@@ -21,3 +22,5 @@ WEB_FOLDER = path.join(
 )
 # time
 MINUTES_COOLDOWN = timedelta(minutes=1)
+reNAME = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
+rePSWD = re.compile(r'^[A-F0-9]{64}$', re.I)  # password hashed so get hash value

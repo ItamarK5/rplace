@@ -3,7 +3,7 @@ from os.path import join as path_join
 from os import listdir
 from ..consts import WEB_FOLDER, MIME_TYPES
 from flask_login import login_required
-
+from ..functions import get_file_type
 
 other_router = Blueprint('other', 'other',
                          static_folder=path_join(WEB_FOLDER, 'static'),
@@ -18,8 +18,9 @@ def place():
 
 @other_router.route('/files/<path:key>', methods=('GET',))
 def serve_static(key):
-    file_format = key.split('.')[-1]
-    print(file_format)
+    file_format = get_file_type()
+    if file_format is None:
+        abort(405, 'Forgot placeing file type')
     if file_format not in listdir(other_router.static_folder):
         abort(405, 'unvalid file format')
     # else

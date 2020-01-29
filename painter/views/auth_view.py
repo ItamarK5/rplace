@@ -1,15 +1,17 @@
+import time
 from flask import Blueprint, url_for, render_template, redirect, abort, flash, current_app
 from ..alchemy import db
 from ..forms import SignUpForm, LoginForm
 from ..alchemy import User
 from flask_login import login_user, logout_user, current_user
-from ..consts import WEB_FOLDER, path
-from ..functions import encrypt_password
-from ..config import Config
+from ..consts import WEB_FOLDER, path, reNAME, rePSWD
+from ..functions import encrypt_password, validate_mail
+from typing import Any, Dict, Tuple, Optional
 from ..token import TokenSerializer
+from itsdangerous import BadSignature
 from http import HTTPStatus
 from ..mail import signup_mail
-import time
+from sqlalchemy import or_
 
 
 # router blueprint -> routing all pages that relate to authorization
@@ -76,8 +78,8 @@ def signup():
                 login_error = signup_mail(name, email, TokenSerializer.signup.dumps(
                     {
                         'email': email,
-                        'username': name,
-                        'password': pswd
+                        'name': name,
+                        'password': encrypt_password(pswd)
                     }
                 ))
                 if login_error is not None:
@@ -95,25 +97,87 @@ def logout():
     return redirect(url_for('.login'))
 
 
+def is_valid_signup_token(token: Any) -> bool:
+    """
+    :param token: token passed
+    :return: if the token is valid
+    the token from the signup email is suppose to be a dict
+    that contains 3 items ('username', 'password', 'email')
+    """
+    if (not isinstance(token, Dict)) or len(token) != 3:
+        return False
+    # name
+    name = token.get('name', None)
+    if name is None or not reNAME.match(name):
+        return False
+    # pswd
+    pswd = token.get('password', None)
+    if pswd is None or not rePSWD.match(pswd):
+        return False
+    # name
+    mail_address = token.get('email', None)
+    if mail_address is None or not validate_mail(mail_address):
+        return False
+    return True
+
+def extract_signup_signature(token) -> Optional[Tuple[Any, float]]:
+    try:
+        token, timestamp = TokenSerializer.signup.loads(token)
+    except BadSignature:    # error
+        return None
+    finally:
+        if not is_valid_signup_token(token):
+            return None
+    return token, timestamp
+
+
 @auth_router.route('/confirm/<token>', methods=('GET',))
 def confirm(token):
-    error_text = None
-    try:
-        email, timestamp = TokenSerializer.signup.load(token)
-    except Exception as e:
-        print(e)
-    # handle timeout or user known
-    user = User.query.filter_by(email=email).first_or_404()
-    if user is None:
-        error_text = 'Unknown User'
-    # don't allow a user that is already active
-    elif user.is_active:
-        error_text = 'User is active'
-    elif time.time() - timestamp > current_app.config.MAX_TIME_FOR_USER_TO_REGISTER:
-        error_text = 'timeout'
-    else:
-        user.is_active = True
-        db.session.add(user)
-        db.session.commit()
-        flash('You have confirmed your account. Thanks!', 'success')
-    return redirect(url_for('main.login'))
+        # else get values
+    extracted = extract_signup_signature(token)
+    if extracted is None:
+        return render_template(
+            'transport//base.html',
+            view_name='Sign Up',
+            view_ref='auth.signup',
+            title='You Made a Mess',
+            page_title='Unvalid Token',
+            message='The token you entered is not valid, did you messed with him?'
+                    ' if you can\'t access the original mail pless sign-up again'
+        )
+    # else get values
+    token, timestamp = extracted
+    name, pswd, mail = token.pop('name'), token.pop('password'), token.pop('email')
+    # check if user exists
+    # https://stackoverflow.com/a/57925308
+    user = db.session.query(User).filter(
+        or_(User.name==name, User.password==pswd)
+    ).first()
+    # else check time
+    if time.time() - timestamp > current_app.config['MAX_AGE_USER_SIGN_UP_MAIL']:
+        return render_template(
+            'transport//base.html',
+            view_name='Signup',
+            view_ref='auth.signup',
+            message="you registered over time"
+        )
+    # check if user exists
+    if user is not None:
+        return render_template(
+            'transport//base.html',
+            view_name='Login',
+            view_ref='auth.login',
+            message="you already confirmed your account, if you didn\'t "
+                    "maybe someone catch it before you completed, in this situation It should be recommended"
+        )
+    # else
+    user = User(name=name, password=pswd, email=mail)
+    db.session.add(user)
+    db.session.commit()
+    return render_template(
+        'transport//base.html',
+        view_name='Login',
+        view_ref='auth.login',
+        message='Congration, you completed registering to the social painter community,<br>'
+                'to continue pless login via the login that you be redirected by pressing the button down'
+    )

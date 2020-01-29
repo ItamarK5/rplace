@@ -2,7 +2,7 @@ import random
 from flask import Blueprint, render_template, send_from_directory
 from ..consts import MIME_TYPES, WEB_FOLDER
 from os import path, listdir
-
+from ..functions import get_file_type
 
 meme_router = Blueprint(
     'meme_views',
@@ -23,7 +23,7 @@ def meme_image(http_error: str):
     return send_from_directory(
         meme_router.static_folder,
         random_meme,
-        mimetype=MIME_TYPES[random_meme.split('.')[-1]],
+        mimetype=MIME_TYPES[get_file_type(random_meme)],
         cache_timeout=15  # five seconds top save, to prevent fast reloads request
     )
 
