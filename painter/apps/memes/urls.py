@@ -1,8 +1,8 @@
 import random
 from flask import Blueprint, render_template, send_from_directory
-from ..consts import MIME_TYPES, WEB_FOLDER
+from painter.constants import MIME_TYPES, WEB_FOLDER
 from os import path, listdir
-from ..functions import get_file_type
+from painter.functions import get_file_type
 
 meme_router = Blueprint(
     'meme_views',

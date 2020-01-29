@@ -1,10 +1,29 @@
-from .consts import WEB_FOLDER
-from .alchemy import db
-from .config import Config
-from .token import TokenSerializer
-from .security import login_manager, crsf
-from .skio import sio, save_board
-from .mail import mail
-from .views.auth_view import auth_router
-from .views.meme_view import meme_router
-from .views.other_view import other_router
+from flask import Flask
+from os import path
+from .extensions import crsf, db, mailbox
+from .config import Config  # config
+from .apps.accounts.helpers import TokenSerializer
+from .security import login_manager
+from .skio import save_board, sio
+from .apps import accounts_router, meme_router, place_router
+
+app = Flask(
+    __name__,
+    static_folder='',
+    static_url_path='',
+    template_folder=path.join(path.dirname(path.abspath(__file__)), 'web')
+)
+print(app.template_folder)
+
+app.config.from_object(Config)
+crsf.init_app(app)
+db.init_app(app)
+mailbox.init_app(app)
+TokenSerializer.init_app(app)
+sio.init_app(app)
+# insert other staff
+app.register_blueprint(accounts_router)
+app.register_blueprint(meme_router)
+app.register_blueprint(place_router)
+
+__all__ = ['save_board', 'app', 'sio']

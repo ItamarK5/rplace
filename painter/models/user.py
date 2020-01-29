@@ -1,12 +1,11 @@
-import urllib
-from flask_sqlalchemy import SQLAlchemy
+import hashlib
+from ..extensions import db
 from flask_login import UserMixin
-from .functions import encrypt_password
-import sqlalchemy
 from datetime import datetime
-from .consts import *
+from flask import current_app
+import hashlib
 
-db = SQLAlchemy()
+
 
 
 class User(db.Model, UserMixin):
@@ -23,10 +22,17 @@ class User(db.Model, UserMixin):
         return f"<User(name={self.name}>"
 
     def set_password(self, password):
-        self.password = encrypt_password(self.username, password)
+        self.password = self.encrypt_password(password)
 
     def get_next_time(self):
         return datetime.fromtimestamp(self.next_time)
-        
+
     def set_next_time(self, next_time: datetime):
         self.next_time = next_time.timestamp()
+
+    @staticmethod
+    def encrypt_password(password: str) -> str:
+        return hashlib.pbkdf2_hmac('sha512',
+                                   current_app.config['SECURITY_PASSWORD_SALT'],
+                                   password.encode(),
+                                   10000).hex()

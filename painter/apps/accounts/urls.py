@@ -1,24 +1,24 @@
 import time
+from os import path
 from flask import Blueprint, url_for, render_template, redirect, abort, flash, current_app
-from ..alchemy import db
-from ..forms import SignUpForm, LoginForm
-from ..alchemy import User
+from .helpers import *
+from .forms import LoginForm, SignUpForm
+from .mail import send_sign_up_mail
+from painter.extensions import db
+from painter.models.user import User
 from flask_login import login_user, logout_user, current_user
-from ..consts import WEB_FOLDER, path, reNAME, rePSWD
-from ..functions import encrypt_password, validate_mail
-from typing import Any, Dict, Tuple, Optional
-from ..token import TokenSerializer
-from itsdangerous import BadSignature
+from painter.constants import WEB_FOLDER
 from http import HTTPStatus
-from ..mail import signup_mail
 from sqlalchemy import or_
 
 
 # router blueprint -> routing all pages that relate to authorization
-auth_router = Blueprint('auth', 'auth', template_folder=path.join(WEB_FOLDER, 'templates'))
+accounts_router = Blueprint('auth',
+                            'auth',
+                            template_folder=path.join(WEB_FOLDER, 'templates'))
 
 
-@auth_router.route('/', methods=('GET', ),)
+@accounts_router.route('/', methods=('GET', ),)
 def first():
     """
     :return: response for user enters home page / => login page
@@ -26,7 +26,7 @@ def first():
     return redirect(url_for('auth.login'))
 
 
-@auth_router.route('/login', methods=('GET', 'POST'),)
+@accounts_router.route('/login', methods=('GET', 'POST'),)
 def login():
     """
     added in version 1.0.0
@@ -37,7 +37,7 @@ def login():
     extra_error = None
     if form.validate_on_submit():
         name, pswd = form.username.data, form.password.data
-        pswd = encrypt_password(name, pswd)
+        pswd = User.encrypt_password(name, pswd)
         user = User.query.filter_by(name=name, password=pswd).first()
         if user is None:
             entire_form_error.append('username or password dont match')
@@ -52,7 +52,7 @@ def login():
                            extra_error=extra_error)
 
 
-@auth_router.route('/signup', methods=('GET', 'POST'))
+@accounts_router.route('/signup', methods=('GET', 'POST'))
 def signup():
     """
     :return: sign-up response
@@ -75,11 +75,11 @@ def signup():
                 form.email.errors.append('email already exists')
             else:
                 # sending the mail
-                login_error = signup_mail(name, email, TokenSerializer.signup.dumps(
+                login_error = send_sign_up_mail(name, email, TokenSerializer.signup.dumps(
                     {
                         'email': email,
                         'name': name,
-                        'password': encrypt_password(pswd)
+                        'password': User.encrypt_password(pswd)
                     }
                 ))
                 if login_error is not None:
@@ -89,7 +89,7 @@ def signup():
     return render_template('forms/signup.html', form=form)
 
 
-@auth_router.route('/logout', methods=('GET', 'POST'))
+@accounts_router.route('/logout', methods=('GET', 'POST'))
 def logout():
     if current_user.is_anonymous:
         abort(HTTPStatus.NETWORK_AUTHENTICATION_REQUIRED)
@@ -97,41 +97,7 @@ def logout():
     return redirect(url_for('.login'))
 
 
-def is_valid_signup_token(token: Any) -> bool:
-    """
-    :param token: token passed
-    :return: if the token is valid
-    the token from the signup email is suppose to be a dict
-    that contains 3 items ('username', 'password', 'email')
-    """
-    if (not isinstance(token, Dict)) or len(token) != 3:
-        return False
-    # name
-    name = token.get('name', None)
-    if name is None or not reNAME.match(name):
-        return False
-    # pswd
-    pswd = token.get('password', None)
-    if pswd is None or not rePSWD.match(pswd):
-        return False
-    # name
-    mail_address = token.get('email', None)
-    if mail_address is None or not validate_mail(mail_address):
-        return False
-    return True
-
-def extract_signup_signature(token) -> Optional[Tuple[Any, float]]:
-    try:
-        token, timestamp = TokenSerializer.signup.loads(token)
-    except BadSignature:    # error
-        return None
-    finally:
-        if not is_valid_signup_token(token):
-            return None
-    return token, timestamp
-
-
-@auth_router.route('/confirm/<token>', methods=('GET',))
+@accounts_router.route('/confirm/<token>', methods=('GET',))
 def confirm(token):
         # else get values
     extracted = extract_signup_signature(token)

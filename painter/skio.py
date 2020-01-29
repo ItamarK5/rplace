@@ -3,8 +3,8 @@ from flask_login import current_user
 from flask_socketio import SocketIO, send, emit, disconnect
 from os import path
 from datetime import datetime
-from .alchemy import db
-from .consts import WEB_FOLDER, MINUTES_COOLDOWN
+from painter.extensions import db
+from painter.constants import WEB_FOLDER, MINUTES_COOLDOWN
 import time
 from typing import Any, Dict, Optional
 

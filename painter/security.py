@@ -1,19 +1,10 @@
 from flask_login import LoginManager
-from .alchemy import User
-from flask_wtf.csrf import CSRFProtect
-from itsdangerous import URLSafeTimedSerializer
+from .models.user import User as UserModel
 
-
-# crsf protection
-crsf = CSRFProtect()
-
-# login manager
 login_manager = LoginManager()
+login_manager.login_view = 'accounts.login'
 
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
-
-
-login_manager.login_view = 'auth.login'
+    return UserModel.query.get(int(user_id))
