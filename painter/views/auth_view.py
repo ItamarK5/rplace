@@ -1,26 +1,18 @@
-from flask import Blueprint, url_for, render_template, redirect, abort, flash
+from flask import Blueprint, url_for, render_template, redirect, abort, flash, current_app
 from ..alchemy import db
 from ..forms import SignUpForm, LoginForm
 from ..alchemy import User
 from flask_login import login_user, logout_user, current_user
 from ..consts import WEB_FOLDER, path
 from ..functions import encrypt_password
-from itsdangerous import JSONWebSignatureSerializer
+from ..config import Config
+from ..token import TokenSerializer
 from http import HTTPStatus
-from ..mail import login_mail
+from ..mail import signup_mail
 import time
 
 
-from itsdangerous import JSONWebSignatureSerializer
-from flask import current_app
-
-
-# https://realpython.com/handling-email-confirmation-in-flask/
-SIGNUP_SERIALIZER = JSONWebSignatureSerializer(
-    secret_key=current_app.config.SECRET_KEY,
-    salt=current_app.config.SECURITY_PASSWORD_SALT
-)
-
+# router blueprint -> routing all pages that relate to authorization
 auth_router = Blueprint('auth', 'auth', template_folder=path.join(WEB_FOLDER, 'templates'))
 
 
@@ -50,10 +42,12 @@ def login():
         elif not login_user(user):
             extra_error = 'You cant login with non active user'
         else:
-            flash('Logged in successfully.')
             return redirect('place')
     form.password.data = ''
-    return render_template('forms/index.html', form=form, entire_form_errors=entire_form_error, extra_error=extra_error)
+    return render_template('forms/index.html',
+                           form=form,
+                           entire_form_errors=entire_form_error,
+                           extra_error=extra_error)
 
 
 @auth_router.route('/signup', methods=('GET', 'POST'))
@@ -78,8 +72,8 @@ def signup():
             if is_dup_email:
                 form.email.errors.append('email already exists')
             else:
-                # create user
-                login_error = login_mail(name, email, SIGNUP_SERIALIZER.dumps(
+                # sending the mail
+                login_error = signup_mail(name, email, TokenSerializer.signup.dumps(
                     {
                         'email': email,
                         'username': name,
@@ -88,6 +82,7 @@ def signup():
                 ))
                 if login_error is not None:
                     form.email.errors.append(login_error)
+                else:
                     return render_template('transport/complete-signup.html', username=name)
     return render_template('forms/signup.html', form=form)
 
@@ -104,7 +99,7 @@ def logout():
 def confirm(token):
     error_text = None
     try:
-        email, timestamp = confirm_token(token)
+        email, timestamp = TokenSerializer.signup.load(token)
     except Exception as e:
         print(e)
     # handle timeout or user known

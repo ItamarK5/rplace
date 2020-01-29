@@ -1,6 +1,7 @@
+from .consts import WEB_FOLDER
 from .alchemy import db
 from .config import Config
-from .consts import WEB_FOLDER
+from .token import TokenSerializer
 from .security import login_manager, crsf
 from .skio import sio, save_board
 from .mail import mail

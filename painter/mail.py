@@ -12,11 +12,13 @@ Decorated = TypeVar('Decorated')
 def email_message(f: Decorated) -> Decorated:
     @wraps(f)
     def wrapper(*args, **kwargs) -> Optional[str]:
-        if not current_app.config['MAIL_SUPPRESS_SEND']:
+        if not current_app.config.get('MAIL_SUPPRESS_SEND', True):
             return None
         message = f(*args, **kwargs)
         try:
             mail.send(message)
+        except Exception as e:
+            print('Mail:', e)
         except BadHeaderError:
             return 'Bad Header'
         return None
@@ -24,7 +26,7 @@ def email_message(f: Decorated) -> Decorated:
 
 
 @email_message
-def login_mail(name: str, addr: str, token: str) -> Message:
+def signup_mail(name: str, addr: str, token: str) -> Message:
     """
     :param name: name of user
     :param addr: address to send the email
