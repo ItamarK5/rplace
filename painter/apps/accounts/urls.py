@@ -21,7 +21,7 @@ def init_tokens():
 
 
 @accounts_router.route('/', methods=('GET', ),)
-def first():
+def home():
     """
     :return: response for user enters home page / => login page
     """

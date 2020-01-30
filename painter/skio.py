@@ -16,13 +16,13 @@ COPY_BOARD_PATH = path.join(WEB_FOLDER, 'resources', 'board2.npy')
 
 
 def read_board(pth: str) -> Optional[np.ndarray]:
+    brd = None
     if not path.exists(pth):
         return None
     try:
         brd = np.load(pth)
-    except Exception:
-        return None
-    return brd
+    finally:
+        return brd
 
 
 def open_board() -> np.ndarray:
@@ -88,9 +88,11 @@ def set_board(params: Dict[str, Any]) -> None:
 
 @run_async('save board')
 def start_save_board():
-    time.sleep(5)
+    time.sleep(1)
+    brd = board.copy()
     while True:
-        np.save(COPY_BOARD_PATH, board)
+        np.save(COPY_BOARD_PATH, brd)
+        del brd
         time.sleep(2)
-        np.save(BOARD_PATH, board)
-
+        brd = board.copy()
+        np.save(BOARD_PATH, brd)

@@ -2,15 +2,32 @@
 <head>
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
-    <title>{{error_code}}</title>
+    <title>{{error}}</title>
+    <style>
+    </style>
+
 </head>
 <body>
-    <div class="container">
-    <div class="justify-content-center">
-        <img src="{{ url_for('meme_views.meme_image', http_error=error) }}" class="rounded mx-auto d-block">
-        <p><ins>{{error}}</ins></p>-->
-        <p><ins>{{reason}}</ins></p>
+    <div class="container justify-content-center">
+        <div class="row">
+            <div class="col">
+                <div class="img-container">
+                    <img src="{{ url_for('meme_views.meme_image', http_error=error) }}" class="rounded mx-auto mw-100 mh-100 d-block">
+        </div></div></div>
+        <div class="row text-center display-4">
+            <p class="text-center col">
+                    <b>
+                        <ins>{{title}}</ins></b>
+            </p>
+        </div>
+        <div class="row text-danger center-text"><h3>
+            {{description}}<br>
+            To return home, press this <a href="{{accounts.home}}">word</a>
+        </h3></div>
+
     </div></div>
+    <!-- Jquery.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" type="text/javascript"></script>
     <!-- popper.js - needed for bootstarp -->
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
     <!-- bootstarp -->

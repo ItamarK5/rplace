@@ -33,4 +33,3 @@ class User(db.Model, UserMixin):
                                    current_app.config['SECURITY_PASSWORD_SALT'],
                                    password.encode(),
                                    10000).hex()
-
