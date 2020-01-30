@@ -17,7 +17,7 @@ accounts_router = Blueprint('auth',
 
 @accounts_router.before_app_first_request
 def init_tokens():
-    TokenSerializer.init_app(current_app)
+    TokenSerializer.init_serializer(current_app)
 
 
 @accounts_router.route('/', methods=('GET', ),)

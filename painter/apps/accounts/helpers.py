@@ -1,7 +1,7 @@
 import re
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from flask import Flask
-from typing import Any, Optional, Tuple, Dict, Union
+from typing import Any, Optional, Tuple, Dict, NoReturn
 from wtforms.validators import HostnameValidation
 from datetime import datetime
 
@@ -18,7 +18,7 @@ class TokenSerializer:
     signup: URLSafeTimedSerializer
 
     @classmethod
-    def init_app(cls, app: Flask) -> None:
+    def init_serializer(cls, app: Flask) -> NoReturn:
         """
         :param app: the Application object
         :return: None
@@ -26,7 +26,7 @@ class TokenSerializer:
         """
         cls.signup = URLSafeTimedSerializer(
             secret_key=app.config['SECRET_KEY'],
-            salt=app.config['SECURITY_PASSWORD_SALT']
+            salt=app.config['SECURITY_SIGNUP_SALT']
         )
 
 

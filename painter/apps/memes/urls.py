@@ -25,7 +25,7 @@ def meme_image(http_error: str):
         error_path,
         random_meme,
         mimetype=MIME_TYPES[get_file_type(random_meme)],
-        cache_timeout=30  # five seconds top save, to prevent fast reloads request
+        cache_timeout=1  # five seconds top save, to prevent fast reloads request
     )
 
 
@@ -55,4 +55,3 @@ def error_handler(e):
 @meme_router.route("/<path:arg>")
 def default_route(*args):
     return error_meme_render('404', 'File not Found')
-

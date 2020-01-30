@@ -23,7 +23,7 @@ crsf.init_app(app)
 db.init_app(app)
 mailbox.init_app(app)
 
-TokenSerializer.init_app(app)
+TokenSerializer.init_serializer(app)
 sio.init_app(app)
 login_manager.init_app(app)
 # insert other staff
