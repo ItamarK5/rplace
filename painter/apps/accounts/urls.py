@@ -15,6 +15,10 @@ accounts_router = Blueprint('auth',
                             'auth',
                             template_folder=path.join(WEB_FOLDER, 'templates'))
 
+@accounts_router.before_app_first_request
+def init_tokens():
+    TokenSerializer.init_app(current_app)
+
 
 @accounts_router.route('/', methods=('GET', ),)
 def first():
@@ -141,6 +145,6 @@ def confirm(token: str):
         'transport//base.html',
         view_name='Login',
         view_ref='auth.login',
-        message='Congration, you completed registering to the social painter community,<br>'
+        message='Congration, you completed registering to the social painter community,\n'
                 'to continue pless login via the login that you be redirected by pressing the button down'
     )

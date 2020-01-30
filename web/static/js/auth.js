@@ -18,7 +18,7 @@ $(document).ready(function(){
       }
   });
   $('#submit-button').hover(
-    function(e){$(this).addClass('btn-success').removeClass('btn-primary');},
-    function(e){$(this).addClass('btn-primary').removeClass('btn-success');}
+    function(){$(this).addClass('btn-success').removeClass('btn-primary');},
+    function(){$(this).addClass('btn-primary').removeClass('btn-success');}
   );
 });

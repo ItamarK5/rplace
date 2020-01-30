@@ -50,7 +50,7 @@ class SignUpForm(FlaskForm):
             ], render_kw={
                 'data-toggle': 'tooltip',
                 'title': 'Your name, it must contain 5-15 characters and contains only abc chars\\digits',
-                'data-placement': 'left',
+                'data-placement': 'right',
             })
             
     password = PasswordField(
@@ -62,7 +62,7 @@ class SignUpForm(FlaskForm):
             ], render_kw={
                 'data-toggle': 'tooltip',
                 'title': 'It must only contain 6-15 abc chars or digits',
-                'data-placement': 'left'
+                'data-placement': 'right'
         })
 
     confirm_password = PasswordField(
@@ -74,7 +74,7 @@ class SignUpForm(FlaskForm):
             ], render_kw={
                 'data-toggle': 'tooltip',
                 'title': 'You must re-enter your password, so we be really sure that know your password',
-                'data-placement': 'left'
+                'data-placement': 'right'
         })
 
     email = EmailField(
@@ -86,6 +86,6 @@ class SignUpForm(FlaskForm):
         ], render_kw={
             'data-toggle': 'tooltip',
             'title': 'Your email address, so we can send it weekly adds',
-            'data-placement': 'left'
+            'data-placement': 'right'
         }
     )

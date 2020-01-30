@@ -9,7 +9,7 @@ MIME_TYPES = {
     'webp': 'image/webp',
     'jpg': 'image/jpg',
     'jfif': 'image/jpg',
-    'gif': 'image/gif'
+    'gif': 'image/gif',
 }
 WEB_FOLDER = path.join(
     path.dirname(

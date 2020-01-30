@@ -246,7 +246,7 @@ coordDialog > *{
     border:15px;
     background-color:rgba(0, 0, 0, .5);
     transition:background-color linear 200ms;
-    color:#9FEF9F;
+    color:white;
     text-align:center;
 }
 

@@ -1,13 +1,15 @@
 from flask import current_app
 from flask_mail import BadHeaderError, Message
-from typing import TypeVar, Optional, Callable
+from flask_login import login_required, current_user
+from flask_socketio import disconnect
+from typing import TypeVar, Optional, Any, Callable
 from functools import wraps
 from threading import Thread
 
 Decorated = TypeVar('Decorated')
 
 
-def send_message(f: Decorated) -> Decorated:
+def send_message(f: Callable[[Any], Message]) -> Callable[[Any], bool]:
     @wraps(f)
     def wrapper(*args, **kwargs) -> Optional[str]:
         if not current_app.config.get('MAIL_SUPPRESS_SEND', True):
@@ -23,11 +25,23 @@ def send_message(f: Decorated) -> Decorated:
     return wrapper
 
 
-def run_async(f: Decorated, name: str) -> Decorated:
+def run_async(name: str) -> Callable:
     """
-    Might be used in the future
+        run function asynchonize
     """
+    def wrapper_args(func:Decorated) -> Decorated:
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            Thread(target=func, name=name, args=args, kwargs=kwargs).start()
+        return wrapper
+    return wrapper_args
+
+
+def authenticated_only(f):
     @wraps(f)
-    def wrapper(*args, **kwargs):
-        Thread(target=f, args=args, kwargs=kwargs).start()
-    return wrapper
+    def wrapped(*args, **kwargs):
+        if not current_user.is_authenticated:
+            disconnect()
+        else:
+            return f(*args, **kwargs)
+    return wrapped

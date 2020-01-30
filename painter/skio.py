@@ -6,8 +6,9 @@ from os import path
 from datetime import datetime
 from painter.extensions import db
 from painter.constants import WEB_FOLDER, MINUTES_COOLDOWN
-import time
 from typing import Any, Dict, Optional
+from .decorators import run_async
+import time
 
 
 BOARD_PATH = path.join(WEB_FOLDER, 'resources', 'board.npy')
@@ -18,14 +19,10 @@ def read_board(pth: str) -> Optional[np.ndarray]:
     if not path.exists(pth):
         return None
     try:
-        return np.load(pth)
+        brd = np.load(pth)
     except Exception:
         return None
-
-#    except Exception as e:
- #       print(e)
-  #  finally:
-   #     return None
+    return brd
 
 
 def open_board() -> np.ndarray:
@@ -89,8 +86,11 @@ def set_board(params: Dict[str, Any]) -> None:
     emit('set-board', params, broadcast=True)
 
 
-def save_board():
+@run_async('save board')
+def start_save_board():
+    time.sleep(5)
     while True:
         np.save(COPY_BOARD_PATH, board)
         time.sleep(2)
         np.save(BOARD_PATH, board)
+

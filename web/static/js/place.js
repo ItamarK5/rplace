@@ -1,6 +1,7 @@
 const CANVAS_SIZE = 1000;
 const X_AXIS = 'x';
 const Y_AXIS = 'y';
+const ESC_KEY_CODE = 27;
 
 const MIN_STEP_SIZE = 3;
 const MAX_SCALE = 50;
@@ -37,7 +38,6 @@ function TryParseInt(str, defaultValue) {
     var retValue = defaultValue;
     if(!_.isNull(str)) {
         if(str.length > 0) {
-            console.log(retValue)
             if (!isNaN(str)) {
                 retValue = parseInt(str);
                 console.log(retValue);
@@ -46,6 +46,22 @@ function TryParseInt(str, defaultValue) {
     }
     return retValue;
 }
+function quit_painter_alert() {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "Are you sure you want to leave now",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: 'red',
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'No'
+      }).then((result) => {
+          if(result.value){
+              window.location.href = '/logout';
+          }
+      });
+};
 
 const throw_message = (msg, speed = 1000, keep_speed = 100, exit_speed = null, cls = null) =>
     $("<div></div>")
@@ -128,7 +144,6 @@ var progress = {
             (seconds_left % 60).toString().padStart(2, '0')
         ].join(':'))
         // update progress fill
-        console.log(1-seconds_left/DRAW_COOLDOWN)
         // update area colored
         $('#prog-fill').css('width', (100 - (seconds_left / DRAW_COOLDOWN)*100) + "%");        
         // 1 if time less then halve the number of seconds 
@@ -240,13 +255,11 @@ var query = {
             if(this.scale < 1)
             {
                 this.set_center(CANVAS_SIZE/2, CANVAS_SIZE/2, false);
-                console.log(board.x,board.y)
             }
             if(to_update){
                 board.updateZoom();
             }
             this.set_window_hash()
-
         }
     },
     refresh_fragments: function (to_update) {
@@ -283,8 +296,9 @@ var board = {
     scale: SIMPLE_UNZOOM_LEVEL,
     drag: { active: false, startX: 0, startY: 0, dragX: 0, dragY: 0 },
     color: null, rel_pos: { x: 0, y: 0 },
-    zoomer: null, canvas: null,
-    mover: null, container: null,init: function () {
+    zoomer: null, canvas:       null,
+    mover:  null, container:    null,
+    init: function () {
         this.zoomer = $('#board-zoomer');
         this.container = $('#board-container');
         this.canvas = $('#board');
@@ -384,15 +398,14 @@ var board = {
             $('#coordX').text('');
             $('#coordY').text('');
         } else if(!board.drag.active){
-            $('#coord-slicer').text(',')
+            $('#coord-slicer').text(',');
             $('#coordX').text(board.x_mouse != -1 ? this.x_mouse + 1 : 'none');
             $('#coordY').text(board.y_mouse != -1 ? this.y_mouse + 1 : 'none');
         }
-    }
+    },
     // using clipboard.js
     // https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/write
 };
-
 $(document).ready(function () {
     Colors.init();
     query.init();
@@ -416,20 +429,20 @@ $(document).ready(function () {
         progress.set_time(time);
     });
     $('#coords').hover(
-        function(e){board.update_coords();},
-        function(e){board.update_coords();}
+        function(){board.update_coords();},
+        function(){board.update_coords();}
     );
-    board.canvas.mousemove(function (event) {
+    board.canvas.mousemove(function (e) {
         let coords = board.getCoords(event);
         if (coords.x >= 0 && 1000 > coords.x && coords.y >= 0 && 1000 > coords.y) {
             board.x_mouse = coords.x;
             board.y_mouse = coords.y;
-        } else { board.x_mouse = board.y_mouse = -1;}
+        } else { board.x_mouse = board.y_mouse = -1;} //set the strings null 
         board.update_coords();
     }).mouseleave(function () {
-        board.x_mouse = board.y_mouse = -1;
+        board.x_mouse = board.y_mouse = -1; 
         board.update_coords();
-    })[0].addEventListener('dblclick', function (event) {   // for not breaking the 
+    })[0].addEventListener('dblclick', function () {   // for not breaking the 
         // jquery dblclick dont work on some machines but addEventListner does 
         // source: https://github.com/Leaflet/Leaflet/issues/4127
         /*Get XY https://codepo8.github.io/canvas-images-and-pixels/#display-colour*/
@@ -500,7 +513,6 @@ $(document).ready(function () {
             }
             case 'KeyZ': {
                 let button = $(".colorBtn[state='1']");
-                console.log(button)
                 if (_.isUndefined(button) || _.isUndefined(button.prev()[0])) {
                     $(".colorBtn[value='15']").click();
                 } else { $(button).prev().click() }
@@ -517,12 +529,12 @@ $(document).ready(function () {
             }
         }
     }).keydown(function(e){
-        a = (e || window.event).keyCode;
-        console.log(a, typeof(a))
-        let dir = _.findWhere(DIRECTION_MAP, {key: (e || window.event).keyCode})
-        console.log(dir);
-        if (!_.isUndefined(dir)) { board.moveBoard(dir); return; }
-        // another options
+        keyCode = (e || window.event).keyCode;
+        let dir = _.findWhere(DIRECTION_MAP, {key: keyCode})
+        if (!_.isUndefined(dir)) {
+            board.moveBoard(dir);
+        } 
+        if(keyCode == ESC_KEY_CODE){ quit_painter_alert(); }
     });
     // change zoom level
     $('#zoom').click(function () {query.set_scale(
@@ -542,23 +554,8 @@ $(document).ready(function () {
             query.refresh_fragments();
         }
     });
-    $('#logout-button').click(function(e){
-        Swal.fire({
-            title: 'Are you sure?',
-            text: "Are you sure you want to leave now",
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: 'red',
-            confirmButtonText: 'Yes',
-            cancelButtonText: 'No'
-          }).then((result) => {
-              if(result.value){
-                  window.location.href = '/logout';
-              }
-            });
-    });
-    // copy board - https://stackoverflow.com/a/37449115
+    $('#logout-button').click(quit_painter_alert);
+    // copy coords - https://stackoverflow.com/a/37449115
     let clipboard = new ClipboardJS(
         '#coords', {
         text: function() {
