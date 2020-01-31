@@ -25,14 +25,17 @@ def send_message(f: Callable[[Any], Message]) -> Callable[[Tuple[Any], Dict[str,
     return wrapper
 
 
-def run_async(name: str) -> Callable:
+def run_async(name: Optional[str] = None) -> Callable:
     """
         run function asynchonize
     """
     def wrapper_args(func: Decorated) -> Decorated:
         @wraps(func)
         def wrapper(*args, **kwargs):
-            Thread(target=func, name=name, args=args, kwargs=kwargs).start()
+            if name:
+                Thread(target=func, name=name, args=args, kwargs=kwargs).start()
+            else:
+                Thread(target=func, args=args, kwargs=kwargs).start()
         return wrapper
     return wrapper_args
 

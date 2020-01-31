@@ -349,11 +349,16 @@ coordDialog > *{
     font: "Trebuchet MS", Helvetica, sans-serif;
 }
 
+
+.redirect-buttons {
+    color:rgb(221, 149, 23);
+    background-color:rgb(34, 34, 34);
+}
+
 #logout-button {
     z-index:3;
     left:5px;
-    color:rgb(60, 60, 60);
-    background-color:rgb(190, 250, 250);
+/*    background-color:rgb(190, 250, 250);*/
     transition: opacity 0.5s;
     padding:5px;
     border: solid 1px black;
@@ -364,3 +369,17 @@ coordDialog > *{
     opacity:1;
 }
 /* references to sites*/
+.tooltip-toggle::before {
+    position: absolute;
+    top: -80px;
+    left: -80px;
+    background-color: green;
+    border-radius: 5px;
+    color: #fff;
+    content: attr(data-tooltip);
+    padding: 1rem;
+    text-transform: none;
+    -webkit-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+    width: 160px;
+}

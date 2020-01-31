@@ -21,4 +21,17 @@ $(document).ready(function(){
     function(){$(this).addClass('btn-success').removeClass('btn-primary');},
     function(){$(this).addClass('btn-primary').removeClass('btn-success');}
   );
+  $('.form-control').keypress((e) => {
+    if(e.charCode == 13 && !e.shiftkey){  // enter key
+      e.preventDefault();
+      let form_controls = $('.form-control');
+      let idx = _.indexOf(form_controls, event.currentTarget)+1;
+      if(idx == form_controls.length){
+          $('#submit-button').focus();
+      } else {
+        $(form_controls[idx]).focus();
+      }
+    }
+  });
+  $('.form-control').first().focus();
 });

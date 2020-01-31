@@ -61,6 +61,7 @@ def connect_handler() -> None:
 @sio.on('set-board')
 def set_board(params: Dict[str, Any]) -> None:
     current_time = datetime.now()
+    print(current_time, current_user.get_next_time())
     if current_user.get_next_time() > current_time:
         emit('update-timer', str(current_user.get_next_time()))
         return
@@ -71,6 +72,9 @@ def set_board(params: Dict[str, Any]) -> None:
         return
     if 'color' not in params or (not isinstance(params['color'], int)) or not (0 <= params['color'] < 16):
         return
+    next_time = current_time + MINUTES_COOLDOWN
+    current_user.set_next_time(next_time)
+    db.session.commit()
     x, y, clr = params['x'], params['y'], params['color']
     # setting the board
     if x % 2 == 0:
@@ -79,10 +83,7 @@ def set_board(params: Dict[str, Any]) -> None:
     else:
         board[y, x // 2] &= 0x0F
         board[y, x // 2] |= clr << 4
-    next_time = current_time+MINUTES_COOLDOWN
-    current_user.set_next_time(next_time)
-    db.session.commit()
-    emit('update-timer', str(next_time), brodcast=False)
+    emit('update-timer', str(next_time))
     emit('set-board', params, broadcast=True)
 
 

@@ -15,6 +15,7 @@ accounts_router = Blueprint('auth',
                             'auth',
                             template_folder=path.join(WEB_FOLDER, 'templates'))
 
+
 @accounts_router.before_app_first_request
 def init_tokens():
     TokenSerializer.init_serializer(current_app)
@@ -125,8 +126,9 @@ def confirm(token: str):
         return render_template(
             'transport//base.html',
             view_name='Signup',
+            title='Over Time',
             view_ref='auth.signup',
-            message="you registered over time"
+            message="you registered over time, you are late in " ((time.time() + time.timezone) - timestamp)
         )
     # check if user exists
     if user is not None:

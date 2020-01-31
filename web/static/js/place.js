@@ -416,9 +416,9 @@ $(document).ready(function () {
         // time - time
         board.buildBoard(new Uint8Array(data.board));
         progress.set_time(data.time)
-    });
-    
+    });    
     sock.on('set-board', function (params) {
+        console.log(new Date(Date.UTC()))
         let color_idx = parseInt(params['color']);
         let x = parseInt(params['x']);
         let y = parseInt(params['y']);
@@ -442,6 +442,8 @@ $(document).ready(function () {
     }).mouseleave(function () {
         board.x_mouse = board.y_mouse = -1; 
         board.update_coords();
+    }).bind('mousewheel', (event) => {
+        query.set_scale(Math.max(query.scale + Math.sign(event.originalEvent.wheelDelta), 0.5));
     })[0].addEventListener('dblclick', function () {   // for not breaking the 
         // jquery dblclick dont work on some machines but addEventListner does 
         // source: https://github.com/Leaflet/Leaflet/issues/4127
@@ -461,6 +463,7 @@ $(document).ready(function () {
               })
         }
         else {
+            console.log(new Date(Date.now()))
             sock.emit('set-board', {
                 'color': board.color,
                 'x': board.x_mouse,
@@ -485,8 +488,7 @@ $(document).ready(function () {
         }
     }).mouseup(function (e) {
         board.drag.active = false;
-    });
-    
+    })
     $('.colorBtn').each(function () {
         $(this).css('background-color', Colors.colors[parseInt($(this).attr('value'))].css_format); // set colors
     }).click(function (event) {
