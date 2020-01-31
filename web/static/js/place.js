@@ -289,6 +289,36 @@ var query = {
     }
 }
 
+var icons = {
+    zoom: null,
+    exit: null,
+    init() {
+        this.zoom = $('#zoom-button');
+        board.setZoomStyle()
+        // change zoom level
+        icons.zoom.click(function () {
+            query.set_scale(
+                $(this).children().hasClass('fa-search-minus')
+                ? SIMPLE_UNZOOM_LEVEL
+                : SIMPLE_ZOOM_LEVEL
+        )});
+        //logout
+        this.logout = $('#logout-button')
+        icons.logout.click(quit_painter_alert);
+        this.init_icons();
+    },
+    init_icons(){
+        $('.icon-button').each(function(idx) {
+            $(this).css('bottom', 50+(idx-1)*60)
+            console.log(this)
+        })
+    }
+
+
+}
+
+
+
 var board = {
     image: null,
     buffer: null,
@@ -360,14 +390,18 @@ var board = {
             + (this.scale <= 1 ? Math.round(this.y) : this.y) + "px)"
         );
     },
-    updateZoom: function () {
+    updateZoom() {
         this.scale = query.scale;
         this.zoomer.css('transform', `scale(${this.scale}, ${this.scale})`);
-        let zoom_state = this.scale >= 25 ? 'zoom-out' : 'zoom-in';
-        if (zoom_state != $('#zoom').attr('state')) {
-            $('#zoom').attr('state', zoom_state);
-        }
+        this.setZoomStyle()
         this.centerPos();
+    },
+    setZoomStyle(){
+        if(this.scale >= 25) { 
+            icons.zoom.children('span').addClass('fa-search-minus').removeClass('fa-search-plus');
+        } else {
+            icons.zoom.children('span').addClass('fa-search-plus').removeClass('fa-search-minus');
+        }
     },
     get step() {
         // the scale is inproportion to the step size
@@ -409,6 +443,7 @@ var board = {
 $(document).ready(function () {
     Colors.init();
     query.init();
+    icons.init();
     board.init();
     var sock = io();
     sock.on('place-start',  function(data) {
@@ -538,12 +573,6 @@ $(document).ready(function () {
         } 
         if(keyCode == ESC_KEY_CODE){ quit_painter_alert(); }
     });
-    // change zoom level
-    $('#zoom').click(function () {query.set_scale(
-            this.getAttribute('state') == 'zoom-out' 
-            ? SIMPLE_UNZOOM_LEVEL
-            : SIMPLE_ZOOM_LEVEL
-    )});
     // change toggle button
     $('#toggle-toolbox-button').click(function (e) {
         e.preventDefault();
@@ -556,7 +585,6 @@ $(document).ready(function () {
             query.refresh_fragments();
         }
     });
-    $('#logout-button').click(quit_painter_alert);
     // copy coords - https://stackoverflow.com/a/37449115
     let clipboard = new ClipboardJS(
         '#coords', {
