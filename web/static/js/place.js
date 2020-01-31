@@ -32,6 +32,7 @@ const VIEW_BUTTON_OPACITY = 1.0;
 
 const getOffset = (x, y) => (y * CANVAS_SIZE) + x;
 const getFirstIfAny = (group) => _.isNull(group) ? null : group[0]
+const clamp = (v, max, min) => Math.max(min, Math.min(v, max));
 
 //https://pietschsoft.com/post/2008/01/15/javascript-inttryparse-equivalent
 function TryParseInt(str, defaultValue) {
@@ -83,7 +84,7 @@ const throw_message = (msg, speed = 1000, keep_speed = 100, exit_speed = null, c
                 }
             }, keep_speed);
         });
-
+    
 
 class PalColor {
     constructor(r, g, b, name) {
@@ -289,33 +290,8 @@ var query = {
     }
 }
 
-var icons = {
-    zoom: null,
-    exit: null,
-    init() {
-        this.zoom = $('#zoom-button');
-        board.setZoomStyle()
-        // change zoom level
-        icons.zoom.click(function () {
-            query.set_scale(
-                $(this).children().hasClass('fa-search-minus')
-                ? SIMPLE_UNZOOM_LEVEL
-                : SIMPLE_ZOOM_LEVEL
-        )});
-        //logout
-        this.logout = $('#logout-button')
-        icons.logout.click(quit_painter_alert);
-        this.init_icons();
-    },
-    init_icons(){
-        $('.icon-button').each(function(idx) {
-            $(this).css('bottom', 50+(idx-1)*60)
-            console.log(this)
-        })
-    }
+const ICON_ANIMATION_DURATION = 1.0 // seconds
 
-
-}
 
 
 
@@ -328,6 +304,7 @@ var board = {
     color: null, rel_pos: { x: 0, y: 0 },
     zoomer: null, canvas:       null,
     mover:  null, container:    null,
+    needsdraw: false,
     init: function () {
         this.zoomer = $('#board-zoomer');
         this.container = $('#board-container');
@@ -351,13 +328,24 @@ var board = {
         });
         // copying r/place, using Uint32Array to store the values
         //console.log(Date.now()-t); deubg time
-        self.drawBoard();
+        self.updateBoard();
     },
 
-    drawBoard: function () {
-        $('#board')[0].getContext('2d').putImageData(this.image, 0, 0);
+    updateBoard: function () {
+        /* https://josephg.com/blog/rplace-in-a-weekend/*/
+        if(this.needsdraw){return;}
         let self = this;
-        window.requestAnimationFrame(function () { self.drawBoard(); });
+        requestAnimationFrame(function() {  // 1 millisecond call, for all animation
+            ctx = self.canvas[0].getContext('2d');
+            /*ctx.fillStyle = '#eee'
+            ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+            ctx.save();
+            ctx.imageSmoothingEnabled = false;
+            ctx.scale(query.scale, query.scale);
+            ctx.translate(-board.x, -board.y);
+            ctx.restore();*/
+            ctx.putImageData(self.image, 0, 0);
+        })
     },
 
     /*
@@ -398,31 +386,29 @@ var board = {
     },
     setZoomStyle(){
         if(this.scale >= 25) { 
-            icons.zoom.children('span').addClass('fa-search-minus').removeClass('fa-search-plus');
+            $('#zoom-button').children('span').addClass('fa-search-minus').removeClass('fa-search-plus');
         } else {
-            icons.zoom.children('span').addClass('fa-search-plus').removeClass('fa-search-minus');
+            $('#zoom-button').children('span').addClass('fa-search-plus').removeClass('fa-search-minus');
         }
     },
     get step() {
         // the scale is inproportion to the step size
         return MIN_STEP_SIZE * MAX_SCALE / this.scale;
     },
-    keep_inside_border: function (pos) {
-        //return change;
-        return Math.max(0, Math.min(pos, CANVAS_SIZE));
-    },
+
     moveBoard: function (dir) {
         /*      let x = this.keep_inside_border(this.real_x, dir[DIR_INDEX_XNORMAL]*this.step*this.scale, rect.left, rect.right)/this.scale;
               let y = this.keep_inside_border(this.real_y, dir[DIR_INDEX_YNORMAL]*this.step*this.scale, rect.top, rect.bottom)/this.scale;
               console.log(x, y);
         */
-       let x = this.keep_inside_border(query.x + dir.dx * this.step);
-       let y = this.keep_inside_border(query.y + dir.dy * this.step);
-       query.set_center(x, y);
+       query.set_center(
+        clamp(query.x + dir.dx * this.step, CANVAS_SIZE, 0),
+        clamp(query.y + dir.dy * this.step, CANVAS_SIZE, 0)
+       );
     },
     centerOn: function (x, y) {
-        x = isNaN(x) ? query.x : this.keep_inside_border(x);
-        y = isNaN(y) ? query.y : this.keep_inside_border(y);
+        x = isNaN(x) ? query.x : clamp(x, CANVAS_SIZE, 0);
+        y = isNaN(y) ? query.y : clamp(y, CANVAS_SIZE, 0);
         query.set_center(x, y);
     },
     update_coords: function () {
@@ -443,7 +429,6 @@ var board = {
 $(document).ready(function () {
     Colors.init();
     query.init();
-    icons.init();
     board.init();
     var sock = io();
     sock.on('place-start',  function(data) {
@@ -453,11 +438,11 @@ $(document).ready(function () {
         progress.set_time(data.time)
     });    
     sock.on('set-board', function (params) {
-        console.log(new Date(Date.UTC()))
         let color_idx = parseInt(params['color']);
         let x = parseInt(params['x']);
         let y = parseInt(params['y']);
         board.buffer[getOffset(x, y)] = Colors.colors[color_idx].abgr;
+        board.updateBoard()
     });
     
     sock.on('update-timer', function(time){
@@ -577,7 +562,13 @@ $(document).ready(function () {
     $('#toggle-toolbox-button').click(function (e) {
         e.preventDefault();
         let toolbox = $('#toolbox')[0];
-        toolbox.setAttribute('hide', 1 - (1 * TryParseInt(toolbox.getAttribute('hide'), 0)))
+        if(toolbox.getAttribute('hide') == 0){
+            $('.icon-button').fadeOut(500)
+            toolbox.setAttribute('hide', 1)
+        } else {
+            $('.icon-button').fadeIn(500)
+            toolbox.setAttribute('hide', 0)
+        }
     });
     // hash change
     $(window).bind('hashchange', function (e) {
@@ -594,4 +585,13 @@ $(document).ready(function () {
     });
     clipboard.on('success', function(){ throw_message('Copy Success'); })
     clipboard.on('error', function(){ throw_message('Copy Error'); })
+    // change zoom level
+    $('#zoom-button').click(function () {
+        query.set_scale(
+            $(this).children().hasClass('fa-search-minus')
+            ? SIMPLE_UNZOOM_LEVEL
+            : SIMPLE_ZOOM_LEVEL
+    )});
+    //logout
+    $('#logout-button').click(quit_painter_alert);
 });

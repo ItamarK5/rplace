@@ -32,8 +32,10 @@
                 {% for i in range(16) %}<div class='colorBtn' state='0' value='{{i}}'></div>{% endfor %}                
             </div>
         </div>
-        {{render_link('logout-button', 'sign-out-alt')}}
-        {{render_link('zoom-button', 'search-plus', False)}}
+        <div id="icon-container">
+            {{render_link('zoom-button', 'search-plus', False)}}
+            {{render_link('logout-button', 'sign-out-alt')}}
+        </div>
         <div id="time-prog" class="nonselect" state="1">
             <div id="prog-fill"></div>
             <div id="prog-text" class="center">0:00</div>
