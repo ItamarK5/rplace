@@ -1,6 +1,6 @@
 import time
 from os import path
-from flask import Blueprint, url_for, render_template, redirect, abort, current_app
+from flask import Blueprint, url_for, render_template, redirect, current_app
 from .helpers import *
 from .forms import LoginForm, SignUpForm
 from .mail import send_sign_up_mail
@@ -8,7 +8,7 @@ from painter.extensions import db
 from painter.models.user import User
 from flask_login import login_user, logout_user, current_user
 from painter.constants import WEB_FOLDER
-from http import HTTPStatus
+
 
 # router blueprint -> routing all pages that relate to authorization
 accounts_router = Blueprint('auth',
@@ -47,7 +47,7 @@ def login():
         elif not login_user(user):
             extra_error = 'You cant login with non active user'
         else:
-            return redirect('place')
+            return redirect(url_for('other.place'))
     form.password.data = ''
     return render_template('forms/index.html',
                            form=form,
@@ -82,7 +82,7 @@ def signup():
                     {
                         'email': email,
                         'name': name,
-                        'password': User.encrypt_password(pswd)
+                        'password': User.encrypt_password(pswd).hex()
                     }
                 ))
                 if login_error is not None:
@@ -94,9 +94,8 @@ def signup():
 
 @accounts_router.route('/logout', methods=('GET', 'POST'))
 def logout():
-    if current_user.is_anonymous:
-        abort(HTTPStatus.NETWORK_AUTHENTICATION_REQUIRED)
-    logout_user()
+    if not current_user.is_anonymous:
+        logout_user()
     return redirect(url_for('.login'))
 
 
@@ -115,7 +114,7 @@ def confirm(token: str):
         )
     # else get values
     token, timestamp = extracted
-    name, pswd, mail = token.pop('name'), token.pop('password'), token.pop('email')
+    name, pswd, mail = token.pop('name'), bytes.fromhex(token.pop('password')), token.pop('email')
     # check if user exists
     # https://stackoverflow.com/a/57925308
     user = db.session.query(User).filter(
@@ -128,7 +127,7 @@ def confirm(token: str):
             view_name='Signup',
             title='Over Time',
             view_ref='auth.signup',
-            message="you registered over time, you are late in " ((time.time() + time.timezone) - timestamp)
+            message="you registered over time, you are late"
         )
     # check if user exists
     if user is not None:
@@ -147,6 +146,6 @@ def confirm(token: str):
         'transport//base.html',
         view_name='Login',
         view_ref='auth.login',
-        message='Congration, you completed registering to the social painter community,\n'
-                'to continue pless login via the login that you be redirected by pressing the button down'
+        message='Congrats, you completed registering to the social painter community,\n'
+                'to continue, pless login via the login that you be redirected by pressing the button down'
     )

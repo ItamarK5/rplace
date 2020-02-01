@@ -9,4 +9,3 @@ db = SQLAlchemy()
 engine = create_engine(Config.SQLALCHEMY_DATABASE_URI)
 # crsf protection
 crsf = CSRFProtect()
-

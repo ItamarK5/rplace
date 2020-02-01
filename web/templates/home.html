@@ -1,44 +1,60 @@
+
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="/favicon.ico">
     <!-- Boostrap Style -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" integrity="sha256-/sdxenK1NDowSNuphgwjv8wSosSNZB0t5koXqd7XqOI=" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.css" integrity="sha256-wMES50JHO82E/LjWWLWeCXXQahHeA0oemqGIfMkD5BI=" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" integrity="sha256-UZFVAO0Fn854ajzdWnJ2Oze6k1X4LNqE2RJPW3MBfq8=" crossorigin="anonymous" />
     <style>
-    body,html, .container {
-     background-color: #222222 !important; 
-    }
-    li { list-style-type: square !important;width:fit-content }
-    ul { margin-bottom:8px !important;}
-    .no-select {
-        user-select:none !important;
-    }
-    no-select > *{
-        user-select: none !important;
-    }
+    body, .container {background-color: #222222 !important; }
+    .navbar {background-color:#444444 !important}
+    .navbar-brand{color:yellow !important;}
+    .option-list { list-style-type: none !important;width:fit-content }
+    .option-list > * { margin-bottom:8px !important;}
+    #instructions{color:yellow!important}
+    /* https://www.w3.org/Style/Examples/007/color-bullets.en.html */
+    .option-list > *::before { content: "•";display: inline-block !important; width: 1em !important; margin-left: -1em !important;}
+    .no-select {user-select:none !important;}
+    .no-select > * {user-select: none !important;}
+    .nav-item > .fas {transition: all .5s; -webkit-transition:all .5s;}
+    .fa-paint-brush:hover {background-color:yellowgreen;}
+    .fa-door-open:hover {background-color:rgb(206, 10, 10);}
+    .fa-tools:hover {background-color:cornflowerblue;}
+    .nav > * {margin-right:5px;}
+    .nav:last-child {margin-right:0px;}
     </style>
 </head>
 <body>
+    <nav class="navbar navbar-light justify-content-between">
+      <span class="navbar-brand">Social Painter</span>
+        <ul class="nav nav-pills nav-fill">
+          <li class="nav-item">
+            <a class="nav-link fas fa-paint-brush btn" data-toggle="tooltip" data-placement="bottom" title="Paint"></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link fas fa-tools" data-toggle="tooltip" data-placement="bottom" title="Admin Powers"></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link fas fa-door-open" data-toggle="tooltip" data-placement="bottom" title="Exit"></a>
+          </li>
+        </nav>
     <div class="container">
-        <div class="row">
-        <img src="C:\Cyber\2020\rplace\web\static\gif\favicon.gif"
-                    width="190" height="250"
-                    class="rounded mx-auto d-block mb-2">
-        </div>
+        
     <div class="row">
-    <div class="col text-warning mx-auto no-select">
+    <div class="col mx-auto no-select" id="instructions">
     Welcome To the Social Painter Web Page, Guide To the page:<br>
     <span>
         you can draw 1 pixel in a minute, to draw a pixel double right click with the
         <i class="fas fa-mouse-pointer" data-toggle="tooltip" data-placement="bottom" title="mouse"></i>
         on the desired pixel
     </span><br>
-    if you want to move on the board either:
-    <ul>
-        <li>Hold the <i class="fas fa-mouse-pointer"></i> and drag the board</li>
+    If you want to move on the board either:
+    <ul class="option-list">
+        <li>Hold the <i class="fas fa-mouse-pointer" data-toggle="tooltip" data-placement="left" title="mouse"></i> and drag the board</li>
         <li>Use the <span>
             <i class="fas fa-arrow-left border border-warning" data-toggle="tooltip" data-placement="left" title="left"></i>
             <i class="fas fa-arrow-down border border-warning" data-toggle="tooltip" data-placement="bottom" title="down"></i>
@@ -47,23 +63,26 @@
         Key Arrows</span></li>
     </ul>
     To zoom on the board either:
-    <ul>
-        <li>zooming with the <i class="fas fa-mouse" data-toggle="tooltip" data-placement="bottom" title="mouse"></i> wheel</li>
-        <li>zoom in with the <i class="fas fa-plus border border-warning" data-toggle="tooltip" data-placement="bottom" title="plus"></i> Key</li>
-        <li>zoom out with the <i class="fas fa-minus border border-warning" data-toggle="tooltip" data-placement="bottom" title="plus"></i> Key</li>
+    <ul class="option-list">
+        <li>zooming with the <i class="fas fa-mouse" data-toggle="tooltip" data-placement="left" title="mouse"></i> wheel</li>
+        <li>zoom in with the <i class="fas fa-plus border border-warning" data-toggle="tooltip" data-placement="top" title="plus"></i> Key</li>
+        <li>zoom out with the <i class="fas fa-minus border border-warning" data-toggle="tooltip" data-placement="top" title="minus"></i> Key</li>
     </ul>
-    <b>Remember you can't scale the board less then 0.5 and more then 50 times.</b>
-    </div></div></div>
+    <b>Remember you can't scale the board less then 0.5 and more then 50 times.</b><br>
+    The urls are in the top left corner of the screen
+    </div>
+    <div class="col">
+      <img src="C:\Cyber\2020\rplace\web\static\gif\favicon.gif"
+                    width="190" height="250"
+                    class="rounded mx-auto d-block mb-2">
+        </div>
+  </div></div>
     <!-- Jquery.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" type="text/javascript"></script>
     <!-- popper.js - needed for bootstarp -->
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
     <!-- bootstarp -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
-    <script>
-        $(document).ready(() => {
-            $('[data-toggle="tooltip"]').tooltip();
-        })
-    </script>
+    <script>$(document).ready(() => {$('[data-toggle="tooltip"]').tooltip();});</script>
 </body>
 </html>

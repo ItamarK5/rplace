@@ -28,6 +28,7 @@
     -o-user-select: none;
     user-select: none;
 }
+
 .selectnone {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -37,6 +38,7 @@
     -o-user-select: none;
     user-select: none;
 }
+
 .selectnone > * {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -113,7 +115,7 @@ body {
     left:5px;
 }
 #icon-container > * {
-    margin-left:5px;
+    margin-left:9px;
 }
 #icon-container:first-child {
     margin-left:0px;
