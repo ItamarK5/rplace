@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="shortcut icon" href="{{url_for('other.serve_icon')}}">
     <!-- Boostrap Style -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <!-- Font Awesome -->
@@ -23,10 +23,11 @@
     .nav-item > .fas {transition: all .5s; -webkit-transition:all .5s;}
     .fa-paint-brush:hover {background-color:yellowgreen;}
     .fa-door-open:hover {background-color:rgb(206, 10, 10);}
-    .fa-tools:hover {background-color:cornflowerblue;}
     .nav > * {margin-right:5px;}
     .nav:last-child {margin-right:0px;}
-    </style>
+    .nav-link {color:#212529 !important;  }
+    </style>{% if current_user.is_authericated and current_user.has_rank(current_user.Role.admin) %}
+    <style> .fa-tools:hover {background-color:cornflowerblue;}</style>{% endif %}
 </head>
 <body>
     <nav class="navbar navbar-light justify-content-between">
@@ -35,15 +36,15 @@
           <li class="nav-item">
             <a class="nav-link fas fa-paint-brush btn" data-toggle="tooltip" data-placement="bottom" title="Paint"></a>
           </li>
+          {% if current_user.is_authericated and current_user.has_rank(current_user.Role.admin) %}
           <li class="nav-item">
-            <a class="nav-link fas fa-tools" data-toggle="tooltip" data-placement="bottom" title="Admin Powers"></a>
-          </li>
+            <a class="nav-link fas fa-tools" data-toggle="tooltip" data-placement="bottom" title="Admin Powers" href="{{url_for('other.place')}}"></a>
+          </li>{% endif %}
           <li class="nav-item">
-            <a class="nav-link fas fa-door-open" data-toggle="tooltip" data-placement="bottom" title="Exit"></a>
+            <a class="nav-link fas fa-door-open" data-toggle="tooltip" data-placement="bottom" title="Exit" href="{{url_for('.logout')}}"></a>
           </li>
         </nav>
-    <div class="container">
-        
+    <div class="container">        
     <div class="row">
     <div class="col mx-auto no-select" id="instructions">
     Welcome To the Social Painter Web Page, Guide To the page:<br>
@@ -72,7 +73,7 @@
     The urls are in the top left corner of the screen
     </div>
     <div class="col">
-      <img src="C:\Cyber\2020\rplace\web\static\gif\favicon.gif"
+      <img src="{{url_for('other.serve_static', key='favicon.gif')}}"
                     width="190" height="250"
                     class="rounded mx-auto d-block mb-2">
         </div>
@@ -84,5 +85,5 @@
     <!-- bootstarp -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     <script>$(document).ready(() => {$('[data-toggle="tooltip"]').tooltip();});</script>
-</body>
+  </body>
 </html>

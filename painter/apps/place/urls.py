@@ -46,3 +46,4 @@ def serve_icon():
         path_join(place_router.static_folder, 'ico'), 'favicon.ico',
         mimetype=MIME_TYPES['ico']
     )
+

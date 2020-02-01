@@ -1,9 +1,9 @@
 from flask import Flask
 from os import path
-from .apps.accounts.helpers import TokenSerializer
 from .security import login_manager
 from .skio import start_save_board, sio
 from .apps import accounts_router, meme_router, place_router
+from .apps.accounts.helpers import TokenSerializer
 from .constants import WEB_FOLDER
 from .config import Config  # config
 from .extensions import crsf, db, mailbox

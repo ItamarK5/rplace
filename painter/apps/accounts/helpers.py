@@ -3,7 +3,7 @@ from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from flask import Flask
 from typing import Any, Optional, Tuple, Dict, NoReturn
 from wtforms.validators import HostnameValidation
-from datetime import datetime
+
 
 reNAME = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
 rePSWD = re.compile(r'^[A-F0-9]{128}$', re.I)  # password hashed so get hash value

@@ -1,5 +1,7 @@
 from os import path
 from datetime import timedelta
+from enum import IntEnum
+from .models.user import User as UserModel
 
 MIME_TYPES = {
     'png': 'image/png',
@@ -11,6 +13,7 @@ MIME_TYPES = {
     'jfif': 'image/jpg',
     'gif': 'image/gif',
 }
+
 WEB_FOLDER = path.join(
     path.dirname(
         path.dirname(

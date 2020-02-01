@@ -51,16 +51,17 @@
     <div class="jumbotron vertical-center">
         {% block form %}
             <form class="container justify-content-center w-75" method="POST" url="{{ request.url }}">
+                {{ form.csrf_token  }}{% block before_title %}{% endblock %}
             <div class="form-row mb-1s display-2">
                 <!-- warning was used as nice title -->
                 <h2 class="mx-auto text-warning non-select"><u>{{form.title}}</u></h2>
-            </div>
-            {{ form.csrf_token  }}
+            </div>{% block before_image %}{% endblock %}            
             <img src="{{url_for('other.serve_static', key='favicon.gif')}}"
                  width="190" height="250"
                  class="rounded mx-auto d-block mb-2">
             {% block fields %}
             {% endblock %}
+            {{ next }}
             <div class="row justify-content-around mx-auto">
                 {% block links %}{% endblock %}
             </div>
@@ -69,6 +70,7 @@
                 </div>
                 </form>
         {% endblock %}
+
     </div>
     {% endblock %}
     <!-- Document said to put it here so it be faster -->

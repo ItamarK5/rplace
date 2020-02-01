@@ -1,4 +1,4 @@
-from enum import IntEnum
+from enum import IntEnum as IntEnumAbstract, auto
 from ..extensions import db
 from flask_login import UserMixin
 from datetime import datetime
@@ -6,13 +6,28 @@ from flask import current_app
 import hashlib
 
 
-class Role(IntEnum):
-    user = 0
-    banned = 1
-    admin = 2
+class IntEnum(db.TypeDecorator):
+    # https://stackoverflow.com/a/41634765
+    impl = db.Integer
+
+    def __init__(self, enumtype, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._enumtype = enumtype
+
+    @staticmethod
+    def process_bind_param(value, dialect):
+        return value.value
+
+    def process_result_value(self, value, dialect):
+        return self._enumtype(value)
 
 
 class User(db.Model, UserMixin):
+    class Role(IntEnumAbstract):
+        banned = auto()
+        user = auto()
+        admin = auto()
+
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True, unique=True, autoincrement=True)
@@ -20,7 +35,7 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(64), nullable=False)
     email = db.Column(db.String(254), unique=True, nullable=False)
     next_time = db.Column(db.Float(), default=0.0, nullable=False)
-    role = db.Column(db.Enum(Role), default=0, nullable=False)
+    role = db.Column(IntEnum(Role), default=Role.user, nullable=False)
 
     def __repr__(self):
         return f"<User(name={self.name}>"
@@ -41,5 +56,6 @@ class User(db.Model, UserMixin):
                                    password.encode(),
                                    10000)
 
-
+    def has_rank(self, role):
+        return self.role >= role
 
