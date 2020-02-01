@@ -26,3 +26,7 @@ input[type="password"],input[type="text"],input[type="email"] {
     background-color: #2A2A2A !important;
     color: #ffc107!important;
 }
+#submit-button:hover{
+    background-color:rgb(73, 175, 26) !important;
+    border-color:rgb(52, 128, 17) !important;
+}

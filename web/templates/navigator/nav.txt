@@ -1,8 +1,0 @@
-#instructions{color:yellow!important}
-.navbar {background-color:#444444 !important}
-.navbar-brand{color:yellow !important;}
-.nav-item > .fas {transition: all .5s; -webkit-transition:all .5s;}
-.fa-paint-brush:hover {background-color:yellowgreen;}
-.fa-door-open:hover {background-color:rgb(206, 10, 10);}
-.fa-home:hover {background-color:green;}{% if current_user.has_rank(current_user.Role.admin) %}
-.fa-tools:hover {background-color:cornflowerblue;}{% endif %}

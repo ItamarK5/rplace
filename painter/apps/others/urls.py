@@ -3,26 +3,27 @@ from flask import (
     Blueprint, render_template, send_from_directory,
     request, abort
 )
+
 from painter.constants import MIME_TYPES, WEB_FOLDER
 from os import path, listdir
 from .helpers import get_file_type
 from werkzeug.exceptions import HTTPException
 
 other_router = Blueprint(
-    'meme_views',
-    'meme_views',
-    static_folder=path.join(WEB_FOLDER, 'memes'),
+    'other',
+    'other',
+    static_folder=path.join(WEB_FOLDER),
     template_folder=path.join(WEB_FOLDER, 'templates', 'memes')
 )
 
 
 @other_router.route('/meme/<string:http_error>')
 def meme_image(http_error: str):    
-    if str(http_error) not in listdir(path.join(other_router.static_folder)):
+    if str(http_error) not in listdir(path.join(other_router.static_folder, 'memes')):
         return send_from_directory(path.join(other_router.static_folder, '404'), 'images.jfif', mimetype=MIME_TYPES.get('jfif', None))
     # else
     # I select the image
-    error_path = path.join(other_router.static_folder, http_error)
+    error_path = path.join(other_router.static_folder, 'memes', http_error)
     random_meme = random.choice(listdir(error_path))
     return send_from_directory(
         error_path,
@@ -65,7 +66,7 @@ def serve_static(key):
     file_format = get_file_type(key)
     if not file_format:  # include no item scenerio
         abort(405, 'Forgot placeing file type')
-    if file_format not in listdir(other_router.static_folder):
+    if file_format not in listdir(path.join(other_router.static_folder, 'static')):
         abort(405, 'unvalid file format')
     # else
     mime_type = MIME_TYPES.get(file_format, None)
@@ -76,7 +77,7 @@ def serve_static(key):
         return send_from_directory(
             path.join(
                 other_router.static_folder,
-                key.split(".")[-1]), key,
+                'static', key.split(".")[-1]), key,
             mimetype=mime_type
         )
     except Exception as e:
@@ -85,8 +86,8 @@ def serve_static(key):
 
 
 @other_router.route('/favicon.ico', methods=('GET',))
-def serve_icon():
+def serve_icon() :
     return send_from_directory(
-        path.join(other_router.static_folder, 'ico'), 'favicon.ico',
+        path.join(other_router.static_folder, 'static', 'ico'), 'favicon.ico',
         mimetype=MIME_TYPES['ico']
     )

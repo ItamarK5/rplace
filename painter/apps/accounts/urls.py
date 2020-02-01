@@ -8,7 +8,7 @@ from painter.extensions import db
 from flask_login import login_user, logout_user, current_user, login_required
 from painter.constants import WEB_FOLDER
 from ...constants import UserModel
-
+from werkzeug.wrappers import Response
 # router blueprint -> routing all pages that relate to authorization
 accounts_router = Blueprint('auth',
                             'auth',
@@ -22,7 +22,7 @@ def init_tokens():
 
 @accounts_router.route('/', methods=('GET',))
 @login_required
-def home():
+def home() -> Response:
     """
     :return: return the home page
     """
@@ -30,7 +30,7 @@ def home():
 
 
 @accounts_router.route('/login', methods=('GET', 'POST'),)
-def login():
+def login() -> Response:
     """
     added in version 1.0.0
     :return: login page response
@@ -57,7 +57,7 @@ def login():
 
 
 @accounts_router.route('/signup', methods=('GET', 'POST'))
-def signup():
+def signup() -> Response:
     """
     :return: sign-up response
     """
@@ -94,14 +94,14 @@ def signup():
 
 
 @accounts_router.route('/logout', methods=('GET', 'POST'))
-def logout():
+def logout() -> Response:
     if not current_user.is_anonymous:
         logout_user()
     return redirect(url_for('.login'))
 
 
 @accounts_router.route('/confirm/<string:token>', methods=('GET',))
-def confirm(token: str):
+def confirm(token: str) -> Response:
     extracted = extract_signup_signature(token)
     if extracted is None:
         return render_template(
@@ -152,7 +152,7 @@ def confirm(token: str):
     )
 
 @accounts_router.route('/create')
-def create_user():
+def create_user() -> Response:
     user = UserModel.query.filter_by(name='socialpainter5').first()
     if user:
         db.session.delete(user)

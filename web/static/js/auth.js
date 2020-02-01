@@ -17,10 +17,6 @@ $(document).ready(function(){
         $(this).children('i').removeClass('fa-eye').addClass('fa-eye-slash');
       }
   });
-  $('#submit-button').hover(
-    function(){$(this).addClass('btn-success').removeClass('btn-primary');},
-    function(){$(this).addClass('btn-primary').removeClass('btn-success');}
-  );
   $('.form-control').keypress((e) => {
     if(e.charCode == 13 && !e.shiftkey){  // enter key
       e.preventDefault();

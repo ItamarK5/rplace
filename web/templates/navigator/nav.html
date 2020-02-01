@@ -2,12 +2,11 @@
     <span class="navbar-brand">Social Painter</span>
       <ul class="nav nav-pills nav-fill">
         <li class="nav-item">
-            <a class="nav-link fas fa-home btn" data-toggle="tooltip" data-placement="bottom" title="Home" href="{{url_for('other.place')}}"></a>
-          </li>  
-        <li class="nav-item">
-          <a class="nav-link fas fa-paint-brush btn" data-toggle="tooltip" data-placement="bottom" title="Paint" href={{url_for('other.place')}}></a>
+          <a class="nav-link fas fa-paint-brush btn" data-toggle="tooltip" data-placement="bottom" title="Paint" href="{{url_for('place.place')}}"></a>
         </li>
-        {% if current_user.is_authenticated and current_user.has_rank(current_user.Role.admin) %}
+        <li class="nav-item">
+          <a class="nav-link fas fa-home btn {% if current_page =='home' %}active{% endif %}" data-toggle="tooltip" data-placement="bottom" title="Home" href="{{url_for('auth.home')}}"><span><span class="sr-only">(current)</span></a>
+        </li>{% if current_user.is_authenticated and current_user.has_rank(current_user.Role.admin) %}
         <li class="nav-item">
           <a class="nav-link fas fa-tools" data-toggle="tooltip" data-placement="bottom" title="Admin Powers" href=""></a>
         </li>{% endif %}
