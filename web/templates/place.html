@@ -1,5 +1,5 @@
 ﻿{% macro render_link(id, icon, non_top_icon=True) %}
-<div id="{{id}}" class="icon-button {%if non_top_icon%}non-top-icon{%endif%}">
+<div id="{{id}}" class="icon-button">
     <span class="fas fa-{{icon}}"></span>
 </div>
 {% endmacro %}
@@ -33,7 +33,8 @@
             </div>
         </div>
         <div id="icon-container">
-            {{render_link('zoom-button', 'search-plus', False)}}
+            {{render_link('zoom-button', 'search-plus')}}
+            {{render_link('home-button', 'home')}}
             {{render_link('logout-button', 'sign-out-alt')}}
         </div>
         <div id="time-prog" class="nonselect" state="1">

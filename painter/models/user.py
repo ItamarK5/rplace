@@ -36,6 +36,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(254), unique=True, nullable=False)
     next_time = db.Column(db.Float(), default=0.0, nullable=False)
     role = db.Column(IntEnum(Role), default=Role.user, nullable=False)
+    pixels = db.relationship('Pixel', backref='users', lazy=True)
 
     def __repr__(self):
         return f"<User(name={self.name}>"
@@ -58,4 +59,3 @@ class User(db.Model, UserMixin):
 
     def has_rank(self, role):
         return self.role >= role
-

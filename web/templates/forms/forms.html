@@ -61,7 +61,7 @@
                  class="rounded mx-auto d-block mb-2">
             {% block fields %}
             {% endblock %}
-            {{ next }}
+            <input type="hidden" name="next" value="{{ request.args.get('next', '') }}"/>
             <div class="row justify-content-around mx-auto">
                 {% block links %}{% endblock %}
             </div>

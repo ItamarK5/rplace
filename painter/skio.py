@@ -5,6 +5,7 @@ from flask_socketio import SocketIO, emit, disconnect
 from os import path
 from datetime import datetime
 from painter.extensions import db
+from .models.pixel import Pixel
 from painter.constants import WEB_FOLDER, MINUTES_COOLDOWN
 from typing import Any, Dict, Optional
 from .decorators import run_async
@@ -74,8 +75,9 @@ def set_board(params: Dict[str, Any]) -> None:
         return
     next_time = current_time + MINUTES_COOLDOWN
     current_user.set_next_time(next_time)
-    db.session.commit()
     x, y, clr = params['x'], params['y'], params['color']
+    db.session.add(Pixel(x=x, y=y, color=clr, drawer=current_user.id, drawn=current_time.timestamp()))
+    db.session.commit()
     # setting the board
     if x % 2 == 0:
         board[y, x // 2] &= 0xF0

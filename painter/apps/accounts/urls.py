@@ -1,6 +1,6 @@
 import time
 from os import path
-from flask import Blueprint, url_for, render_template, redirect, current_app
+from flask import Blueprint, url_for, render_template, redirect, current_app, request
 from .helpers import *
 from .forms import LoginForm, SignUpForm
 from .mail import send_sign_up_mail
@@ -47,8 +47,8 @@ def login():
         elif not login_user(user):
             extra_error = 'You cant login with non active user'
         else:
-            print(url_for('.home'))
             return redirect(url_for('.home'))
+    # clear password
     form.password.data = ''
     return render_template('forms/index.html',
                            form=form,
@@ -161,6 +161,7 @@ def create_user():
         name='socialpainter5',
         password=UserModel.encrypt_password('QWEASDZXC123'),
         email='socialpainterdash@gmail.com',
+        role=UserModel.Role.admin
     )
     db.session.add(user)
     db.session.commit()

@@ -594,4 +594,20 @@ $(document).ready(function () {
     )});
     //logout
     $('#logout-button').click(quit_painter_alert);
+    $('#home-button').click(function(){
+        Swal.fire({
+            title: 'return Home?',
+            text: "Are you sure you want to leave to the home page",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: 'red',
+            confirmButtonText: 'Yes',
+            cancelButtonText: 'No'
+          }).then((result) => {
+              if(result.value){
+                  window.location.href = '/';
+              }
+          });
+    });
 });

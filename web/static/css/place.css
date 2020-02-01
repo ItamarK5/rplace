@@ -136,6 +136,7 @@ body {
 }
 #zoom-button:hover {color:#428bca; border-color:#428bca;}
 #logout-button:hover {color:red; border-color:red;}
+#home-button:hover {color:green;border-color: green;}
 
 /* https://stackoverflow.com/a/13836276*/
 .icon-button > span {
