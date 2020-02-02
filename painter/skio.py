@@ -8,7 +8,7 @@ from painter.extensions import db
 from .models.pixel import Pixel
 from painter.constants import WEB_FOLDER, MINUTES_COOLDOWN
 from typing import Any, Dict, Optional
-from .decorators import run_async
+from .functions import run_async
 import time
 
 
@@ -60,12 +60,10 @@ def connect_handler() -> None:
 
 
 @sio.on('set-board')
-def set_board(params: Dict[str, Any]) -> None:
-    current_time = datetime.now()
-    print(current_time, current_user.get_next_time())
+def set_board(params: Dict[str, Any]) -> Optional[str]:
+    current_time = datetime.utcnow()
     if current_user.get_next_time() > current_time:
-        emit('update-timer', str(current_user.get_next_time()))
-        return
+        return current_user.get_next_time()
     # validating parameter
     if 'x' not in params or (not isinstance(params['x'], int)) or not (0 <= params['x'] < 1000):
         return
@@ -85,8 +83,8 @@ def set_board(params: Dict[str, Any]) -> None:
     else:
         board[y, x // 2] &= 0x0F
         board[y, x // 2] |= clr << 4
-    emit('update-timer', str(next_time))
-    emit('set-board', params, broadcast=True)
+    run_async(emit('set-board', params, broadcast=True))
+    return next_time.timestamp()
 
 
 @run_async('save board')

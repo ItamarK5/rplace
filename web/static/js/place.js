@@ -2,7 +2,7 @@ const CANVAS_SIZE = 1000;
 const X_AXIS = 'x';
 const Y_AXIS = 'y';
 const ESC_KEY_CODE = 27;
-
+const TIMEZONE_FACTOR = 60*1000;    // 60000
 const MIN_STEP_SIZE = 3;
 const MAX_SCALE = 50;
 const DRAW_COOLDOWN = 60;
@@ -138,6 +138,10 @@ var progress = {
     state: 0,       // state of progress bar
     work: null,  // handler of progress update interval
     current_min_time:null,
+    current_utc_time(){
+        let ct = new Date()
+        return ct.getTime() + (ct.getTimezoneOffset()*TIMEZONE_FACTOR)
+    },
     adjust_progress(seconds_left) {  
         // adjust the progress bar and time display by the number of seconds left
         $('#prog-text').text([
@@ -155,8 +159,8 @@ var progress = {
         // set time
         // handles starting the timer waiting
         let self = this;       
-        self.time = Date.parse(time);
-        if(self.time < Date.now()){
+        self.time = Date.parse(time)
+        if(self.time < self.current_utc_time()) {
             $('prog-text').text('0:00');
             $('#prog-fill').state = 1;
             $('#time-prog').attr('state', 0);
@@ -172,7 +176,8 @@ var progress = {
         // Updates the prorgess bar and timer each interval
         // Math.max the time until cooldown ends in ms, compare if positive (the time has not passed),
         // ceil to round up, I want to prevent the progress showing time up to that
-        let seconds_left = Math.ceil(Math.max(this.time - Date.now(), 0) / 1000);
+        let now = new Date(Date.now());
+        let seconds_left = Math.ceil(Math.max(this.time - this.current_utc_time(), 0) / 1000);
         // adjust progress
         if (this.current_min_time != seconds_left){
             this.adjust_progress(seconds_left);
@@ -444,7 +449,6 @@ $(document).ready(function () {
         board.buffer[getOffset(x, y)] = Colors.colors[color_idx].abgr;
         board.updateBoard()
     });
-    
     sock.on('update-timer', function(time){
         progress.set_time(time);
     });
@@ -488,6 +492,11 @@ $(document).ready(function () {
                 'color': board.color,
                 'x': board.x_mouse,
                 'y': board.y_mouse,
+            }, callback=(next_time)=>{
+                console.log(next_time)
+                if(!_.isUndefined(next_time)){
+                    progress.set_time(next_time)
+                }
             })
         }
     });
