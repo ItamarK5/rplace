@@ -1,6 +1,6 @@
 .navbar {background-color:#444444 !important}
 .navbar-brand{color:yellow !important;}
-.nav-item > .fas {transition: all .5s; -webkit-transition:all .5s;}
+.nav-item > .fas {transition: background-color .5s; -webkit-transition:background-color .5s;}
 .fa-paint-brush:hover {background-color:yellow;}
 .fa-door-open:hover {background-color:rgb(241, 3, 3);}
 .fa-home .active-focus{background-color:yellowgreen;}

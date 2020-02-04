@@ -138,6 +138,23 @@ var progress = {
     state: 0,       // state of progress bar
     work: null,  // handler of progress update interval
     current_min_time:null,
+    set_time(time) {
+        // set time
+        // handles starting the timer waiting
+        let self = this;       
+        self.time = Date.parse(time);
+        if(self.time < self.current_utc_time()) {
+            $('prog-text').text('0:00');
+            $('#prog-fill').state = 1;
+            $('#time-prog').attr('state', 0);
+            if(_.isNull(self.work)){
+                clearInterval(self.work);
+            }
+        } else if (_.isNull(self.work)) {
+            self.is_working = true;
+            self.work = setInterval(function () { self.update_timer() }, 50);
+       } 
+    },
     current_utc_time(){
         let ct = new Date()
         return ct.getTime() + (ct.getTimezoneOffset()*TIMEZONE_FACTOR)
@@ -155,28 +172,10 @@ var progress = {
         this.state = Math.ceil(seconds_left * 2 /DRAW_COOLDOWN);
         $('#time-prog').attr('state', this.state);        
     },
-    set_time(time) {
-        // set time
-        // handles starting the timer waiting
-        let self = this;       
-        self.time = Date.parse(time)
-        if(self.time < self.current_utc_time()) {
-            $('prog-text').text('0:00');
-            $('#prog-fill').state = 1;
-            $('#time-prog').attr('state', 0);
-            if(_.isNull(self.work)){
-                clearInterval(self.work);
-            }
-        } else if (_.isNull(self.work)) {
-            self.is_working = true;
-            self.work = setInterval(function () { self.update_timer() }, 50);
-       } 
-    },
     update_timer() {
         // Updates the prorgess bar and timer each interval
         // Math.max the time until cooldown ends in ms, compare if positive (the time has not passed),
         // ceil to round up, I want to prevent the progress showing time up to that
-        let now = new Date(Date.now());
         let seconds_left = Math.ceil(Math.max(this.time - this.current_utc_time(), 0) / 1000);
         // adjust progress
         if (this.current_min_time != seconds_left){
@@ -289,6 +288,7 @@ var query = {
         //  update location
         if (window.location.hash != this.hash) {
             // change hash without triggering events
+            // https://stackoverflow.com/a/49373716
             history.replaceState(null, null, document.location.pathname  + this.hash());
             //window.location.hash = this.hash;
         }
@@ -435,35 +435,36 @@ $(document).ready(function () {
     Colors.init();
     query.init();
     board.init();
-    var sock = io();
-    sock.on('place-start',  function(data) {
+    let sock = io();
+    sock.on('place-start', (data) => {
         // buffer - board in bytes
         // time - time
         board.buildBoard(new Uint8Array(data.board));
         progress.set_time(data.time)
     });    
-    sock.on('set-board', function (params) {
-        let color_idx = parseInt(params['color']);
-        let x = parseInt(params['x']);
-        let y = parseInt(params['y']);
+    sock.on('set-board', (params) => {
+        console.log(params);
+        let color_idx = parseInt(params.color);
+        let x = parseInt(params.x);
+        let y = parseInt(params.y);
         board.buffer[getOffset(x, y)] = Colors.colors[color_idx].abgr;
         board.updateBoard()
     });
-    sock.on('update-timer', function(time){
+    sock.on('update-timer',(time) =>{
         progress.set_time(time);
     });
     $('#coords').hover(
-        function(){board.update_coords();},
-        function(){board.update_coords();}
+        () => {board.update_coords();},
+        () => {board.update_coords();}
     );
-    board.canvas.mousemove(function (e) {
+    board.canvas.mousemove(() => {
         let coords = board.getCoords(event);
         if (coords.x >= 0 && 1000 > coords.x && coords.y >= 0 && 1000 > coords.y) {
             board.x_mouse = coords.x;
             board.y_mouse = coords.y;
         } else { board.x_mouse = board.y_mouse = -1;} //set the strings null 
         board.update_coords();
-    }).mouseleave(function () {
+    }).mouseleave(() => {
         board.x_mouse = board.y_mouse = -1; 
         board.update_coords();
     }).bind('mousewheel', (event) => {
@@ -492,9 +493,9 @@ $(document).ready(function () {
                 'color': board.color,
                 'x': board.x_mouse,
                 'y': board.y_mouse,
-            }, callback=(next_time)=>{
+            }, (next_time)=> {
                 console.log(next_time)
-                if(!_.isUndefined(next_time)){
+                if(next_time != 'null'){
                     progress.set_time(next_time)
                 }
             })

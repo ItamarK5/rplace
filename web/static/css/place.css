@@ -68,9 +68,7 @@ body, html {
     -ms-text-size-adjust: 100%;
     text-size-adjust: 100%;
 }
-body {
-    background-color:yellowgreen;
-}
+body { background-color:gray; }
 
 #board-container {
     z-index:1;
