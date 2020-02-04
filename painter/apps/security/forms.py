@@ -2,10 +2,11 @@ from __future__ import annotations
 from wtforms import *
 from wtforms.fields.html5 import EmailField
 from flask_wtf import FlaskForm
+from flask_security import RegisterForm, LoginForm
 import re
 
 
-class LoginForm(FlaskForm):
+class ExtendLoginForm(LoginForm):
     title = 'Welcome Back to Social Painter'
     username = StringField('username',
                            validators=[
@@ -38,7 +39,7 @@ class LoginForm(FlaskForm):
                             })
 
 
-class SignUpForm(FlaskForm):
+class ExtendSignUpForm(RegisterForm):
     title = 'Welcome to Social Painter'
 
     username = StringField(
@@ -65,8 +66,8 @@ class SignUpForm(FlaskForm):
                 'data-placement': 'right'
         })
 
-    confirm_password = PasswordField(
-        'confirm password',
+    password_confirm = PasswordField(
+        'password confirm',
         validators=[
             validators.data_required('You must re-enter the same password'),
             validators.regexp(r'^[\w\d]+$', re.I, 'You must re-enter the same password'),

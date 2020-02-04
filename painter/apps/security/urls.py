@@ -1,32 +1,24 @@
 import time
 from os import path
-from flask import Blueprint, url_for, render_template, redirect, current_app, request
+from flask import Blueprint, url_for, render_template, redirect, current_app
 from .helpers import *
 from .forms import LoginForm, SignUpForm
 from .mail import send_sign_up_mail
 from painter.extensions import db
 from flask_login import login_user, logout_user, current_user, login_required
 from painter.constants import WEB_FOLDER
-from ...constants import UserModel
 from werkzeug.wrappers import Response
-# router blueprint -> routing all pages that relate to authorization
-accounts_router = Blueprint('auth',
-                            'auth',
+from .security import datastore
+
+# router blueprint -> routing all pages that relate to securityorization
+accounts_router = Blueprint('security',
+                            'security',
                             template_folder=path.join(WEB_FOLDER, 'templates'))
 
 
 @accounts_router.before_app_first_request
 def init_tokens():
     TokenSerializer.init_serializer(current_app)
-
-
-@accounts_router.route('/', methods=('GET',))
-@login_required
-def home() -> Response:
-    """
-    :return: return the home page
-    """
-    return render_template('home.html')
 
 
 @accounts_router.route('/login', methods=('GET', 'POST'),)
@@ -40,8 +32,7 @@ def login() -> Response:
     extra_error = None
     if form.validate_on_submit():
         name, pswd = form.username.data, form.password.data
-        pswd = UserModel.encrypt_password(pswd)
-        user = UserModel.query.filter_by(name=name, password=pswd).first()
+        user = datastore.find_user(name=name, password=pswd)
         if user is None:
             entire_form_error.append('username or password dont match')
         elif not login_user(user):
@@ -71,8 +62,8 @@ def signup() -> Response:
             form.confirm_password.errors.append('You must re-enter the same password')
         else:
             # no duplication
-            is_dup_name = UserModel.query.filter_by(name=name).first() is not None
-            is_dup_email = UserModel.query.filter_by(email=email).first() is not None
+            is_dup_name = datastore.find_user(username=name) is not None
+            is_dup_email = datastore.find_user(email=email) is not None
             if is_dup_name:
                 form.username.errors.append('username already exists')
             if is_dup_email:
@@ -82,8 +73,8 @@ def signup() -> Response:
                 login_error = send_sign_up_mail(name, email, TokenSerializer.signup.dumps(
                     {
                         'email': email,
-                        'name': name,
-                        'password': UserModel.encrypt_password(pswd).hex()
+                        'username': name,
+                        'password': pswd
                     }
                 ))
                 if login_error is not None:
@@ -107,7 +98,7 @@ def confirm(token: str) -> Response:
         return render_template(
             'transport//base.html',
             view_name='Sign Up',
-            view_ref='auth.signup',
+            view_ref='security.signup',
             title='You Made a Mess',
             page_title='Unvalid Token',
             message='The token you entered is not valid, did you messed with him?'
@@ -127,7 +118,7 @@ def confirm(token: str) -> Response:
             'transport//base.html',
             view_name='Signup',
             title='Over Time',
-            view_ref='auth.signup',
+            view_ref='security.signup',
             message="you registered over time, you are late"
         )
     # check if user exists
@@ -135,34 +126,35 @@ def confirm(token: str) -> Response:
         return render_template(
             'transport//base.html',
             view_name='Login',
-            view_ref='auth.login',
+            view_ref='security.login',
             message="you already confirmed your account, if you didn\'t "
                     "maybe someone catch it before you completed, in this situation It should be recommended"
         )
     # else
-    user = UserModel(name=name, password=pswd, email=mail)
+    user = datastore.create_user(username=name, hash_password=pswd, email=mail)
     db.session.add(user)
     db.session.commit()
     return render_template(
         'transport//base.html',
         view_name='Login',
-        view_ref='auth.login',
+        view_ref='security.login',
         message='Congrats, you completed registering to the social painter community,\n'
                 'to continue, pless login via the login that you be redirected by pressing the button down'
     )
 
+
 @accounts_router.route('/create')
 def create_user() -> Response:
-    user = UserModel.query.filter_by(name='socialpainter5').first()
+    user = datastore.find_user(username='socialpainter5')
     if user:
-        db.session.delete(user)
+        datastore.delete_user(user)
     db.session.commit()
-    user = UserModel(
-        name='socialpainter5',
-        password=UserModel.encrypt_password('QWEASDZXC123'),
-        email='socialpainterdash@gmail.com',
-        role=UserModel.Role.admin
-    )
-    db.session.add(user)
-    db.session.commit()
+    try:
+        datastore.create_user(
+            username='socialpainter5',
+            password='QWEASDZXC123',
+            email='socialpainterdash@gmail.com'
+        )
+    except Exception as e:
+        print(e)
     return redirect(url_for('.login'))
