@@ -1,4 +1,4 @@
-{% from "security/_macros.html" import render_field, render_link, render_error %}
+{% from "security/_macros.html" import render_field, render_link, render_errors %}
 <html>
 <head>
 {% block head %}
@@ -21,7 +21,7 @@
     {% block Body %}
     <div class="jumbotron vertical-center">
         {% block form %}
-            <form class="container justify-content-center w-75" method="POST" url="{{ request.url }}">
+            <form class="container justify-content-center w-75" method="POST">
                 {{ form.csrf_token  }}{% block before_title %}{% endblock %}
             <div class="form-row mb-1s display-2">
                 <!-- warning was used as nice title -->
@@ -30,18 +30,15 @@
             <img src="{{url_for('other.serve_static', key='favicon.gif')}}"
                  width="190" height="250"
                  class="rounded mx-auto d-block mb-2">
-            {% block fields %}
-            {% endblock %}
-            <input type="hidden" name="next" value="{{ request.args.get('next', '') }}"/>
+            {% block fields %}{% endblock %}
             <div class="row justify-content-around mx-auto">
-                {% block links %}{% endblock %}
+            {% block links %}{% endblock %}
             </div>
-                <div class="form-row justify-content-center">
-                    <button type="submit" class="btn" id="submit-button">{% block submit %}{% endblock %}</button>
-                </div>
-                </form>
+            <div class="form-row justify-content-center">
+                <button type="submit" class="btn" id="submit-button">{% block submit %}{% endblock %}</button>
+            </div>
+        </form>
         {% endblock %}
-
     </div>
     {% endblock %}
     <!-- Document said to put it here so it be faster -->

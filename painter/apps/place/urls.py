@@ -12,6 +12,7 @@ place_router = Blueprint('place', 'place',
 def place():
     return render_template('place.html')
 
+
 @place_router.route('/', methods=('GET',))
 @login_required
 def home() -> Response:

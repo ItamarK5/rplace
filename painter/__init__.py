@@ -8,6 +8,7 @@ from .config import Config  # config
 from .extensions import crsf, db, mailbox, engine, babel
 from .security import init_security
 
+
 app = Flask(
     __name__,
     static_folder='',
@@ -28,3 +29,4 @@ sio.init_app(app)
 # insert other staff
 app.register_blueprint(other_router)
 app.register_blueprint(place_router)
+app.before_first_request(start_save_board)

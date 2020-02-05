@@ -3,7 +3,7 @@ from flask_security import UserMixin, RoleMixin
 from datetime import datetime
 from flask import current_app
 import hashlib
-from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, Boolean
 from sqlalchemy.orm import relationship, backref
 
 
@@ -24,13 +24,14 @@ class Role(db.Model, RoleMixin):
 class User(db.Model, UserMixin):
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True, unique=True)
-    name = Column(String(15), unique=True, nullable=False)
+    username = Column(String(15), unique=True, nullable=False)
     password = Column(String(64), nullable=False)
     email = Column(String(254), unique=True, nullable=False)
     next_time = Column(Float(), default=0.0, nullable=False)
     pixels = relationship('Pixel', backref='users', lazy=True)
     roles = relationship('Role', secondary='roles_users',
                          backref=backref('users', lazy='dynamic'))
+    active = Column(Boolean(), default=True)
     sqlite_autoincrement = True
 
     def __repr__(self):

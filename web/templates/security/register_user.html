@@ -1,13 +1,15 @@
 {% extends "security/forms.html" %}
 {% block fields %}
-{{ render_field(register_user_form.password)}}
-{{ render_errors(register_user_form.password.errors) }}
-{{ render_field(register_user_form.password_confirm)}}
-{{ render_errors(register_user_form.password_confirm.errors) }}
-{{ render_field(register_user_form.email)}}
-{{ render_errors(register_user_form.email.errors) }}
+{{ render_field(form.username)}}
+{{ render_errors(form.username.errors) }}
+{{ render_field(form.password)}}
+{{ render_errors(form.password.errors) }}
+{{ render_field(form.password_confirm)}}
+{{ render_errors(form.password_confirm.errors) }}
+{{ render_field(form.email)}}
+{{ render_errors(form.email.errors) }}
 {% endblock %}
 {% block submit %}Sign Up{% endblock %}
 {% block links %}
-{{ link('signup-link', 'Already have an account?', url_for('security.login')) }}
+{{ render_link('signup-link', 'Already have an account?', url_for_security('login')) }}
 {% endblock %}

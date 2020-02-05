@@ -4,11 +4,16 @@
 {{ render_errors(form.username.errors) }}
 {{ render_field(form.password)}}
 {{ render_errors(form.password.errors) }}
-{% if extra_error %}
+<div class="form-row form-group custom-control custom-checkbox text-center non-select">
+    {{ form.remember(class="custom-control-input") }}
+    <label class="custom-control-label text-warning" for="{{form.remember.id}}">{{form.remember.label.text}}</label>
+</div>
+{#{% if extra_error %}
 {{ render_error(extra_error) }}
-{% endif %}
+{% endif %}#}
 {% endblock %}
 {% block links %}
 {{ render_link('signup-link', 'Are you new?', url_for_security('register')) }}
+
 {% endblock %}
 {% block submit %}Login{% endblock %}
