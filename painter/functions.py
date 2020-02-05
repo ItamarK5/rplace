@@ -47,3 +47,15 @@ def authenticated_only(f):
         else:
             return f(*args, **kwargs)
     return wrapped
+
+
+def role_required(role: UserModel.Role) -> Callable:
+    def wrapper(f: Callable) -> Callable:
+        @wraps(f)
+        def wrapped(*args, **kwargs):
+            if current_user.is_authenticated and current_user.has_rank(role):
+                abort(404)  # prevent them realise this is admin url
+            else:
+                return f(*args, **kwargs)
+        return wrapped
+    return wrapper

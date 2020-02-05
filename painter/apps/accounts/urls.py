@@ -1,6 +1,6 @@
 import time
 from os import path
-from flask import Blueprint, url_for, render_template, redirect, current_app
+from flask import Blueprint, url_for, render_template, redirect, current_app, request
 from .helpers import *
 from painter.security.forms import LoginForm, SignUpForm
 from .mail import send_sign_up_mail
