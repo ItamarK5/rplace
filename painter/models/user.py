@@ -61,7 +61,7 @@ class User(db.Model, UserMixin):
 
     __tablename__ = 'users'
 
-    id = db.Column(db.Integer, primary_key=True, unique=True)
+    id = db.Column(db.Integer, primary_key=True, unique=True, autoincrement=True)
     name = db.Column(db.String(15), unique=True, nullable=False)
     password = db.Column(db.String(64), nullable=False)
     email = db.Column(db.String(254), unique=True, nullable=False)
@@ -69,9 +69,12 @@ class User(db.Model, UserMixin):
     role = db.Column(IntEnum(Role), default=Role.user, nullable=False)
     pixels = db.relationship('Pixel', backref='users', lazy=True)
 
+<<<<<<< HEAD
 >>>>>>> parent of 9614fde... 2.4.3
     sqlite_autoincrement = True
 
+=======
+>>>>>>> parent of 300245e... 2.4.2
     def __repr__(self):
         return f"<User(name={self.name}>"
 

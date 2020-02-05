@@ -5,7 +5,6 @@ from flask import request, session
 from sqlalchemy import create_engine
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy, declarative_base
-from flask_admin import Admin
 from flask_wtf import CSRFProtect
 from .config import Config
 from flask_babelex import Babel

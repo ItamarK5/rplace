@@ -17,7 +17,7 @@ def send_sign_up_mail(name: str, address: str, token: str) -> Message:
     email = Message(
         subject='Welcome to Social Painter',
         recipients=[address],
-        body=render_template('message/signup.jinja', username=name, token=token),
+        body=render_template('message/signup.txt', username=name, token=token),
         html=render_template('message/signup.html', username=name, token=token)
     )
     with current_app.open_resource(path.join('static', 'png', 'favicon.png'), 'rb') as fp:

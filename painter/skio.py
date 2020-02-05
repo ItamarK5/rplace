@@ -1,3 +1,4 @@
+from flask import current_app
 import numpy as np
 from flask_login import current_user
 from flask_socketio import SocketIO, emit, disconnect
@@ -62,14 +63,14 @@ def connect_handler() -> None:
 def set_board(params: Dict[str, Any]) -> Optional[str]:
     current_time = datetime.utcnow()
     if current_user.get_next_time() > current_time:
-        return str(current_user.get_next_time())
+        return current_user.get_next_time()
     # validating parameter
     if 'x' not in params or (not isinstance(params['x'], int)) or not (0 <= params['x'] < 1000):
-        return 'null'
+        return
     if 'y' not in params or (not isinstance(params['y'], int)) or not (0 <= params['y'] < 1000):
-        return 'null'
+        return
     if 'color' not in params or (not isinstance(params['color'], int)) or not (0 <= params['color'] < 16):
-        return 'null'
+        return
     next_time = current_time + MINUTES_COOLDOWN
     current_user.set_next_time(next_time)
     x, y, clr = params['x'], params['y'], params['color']
@@ -83,7 +84,7 @@ def set_board(params: Dict[str, Any]) -> Optional[str]:
         board[y, x // 2] &= 0x0F
         board[y, x // 2] |= clr << 4
     run_async(emit('set-board', params, broadcast=True))
-    return str(next_time)
+    return next_time.timestamp()
 
 
 @run_async('save board')
