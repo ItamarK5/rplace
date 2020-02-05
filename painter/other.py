@@ -4,8 +4,6 @@ from flask_login import LoginManager
 from .constants import UserModel
 from flask_babelex import Babel
 
-<<<<<<< HEAD
-=======
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 babel = Babel()
@@ -21,4 +19,3 @@ def get_locale():
     if request.args.get('lang'):
         session['lang'] = request.args.get('lang')
     return session.get('lang', 'en')
->>>>>>> parent of 9614fde... 2.4.3
