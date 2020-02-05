@@ -1,8 +1,8 @@
 import time
 from os import path
-from flask import Blueprint, url_for, render_template, redirect, current_app, request
+from flask import Blueprint, url_for, render_template, redirect, current_app
 from .helpers import *
-from .forms import LoginForm, SignUpForm
+from painter.security.forms import LoginForm, SignUpForm
 from .mail import send_sign_up_mail
 from painter.extensions import db
 from flask_login import login_user, logout_user, current_user, login_required

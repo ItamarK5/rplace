@@ -5,6 +5,6 @@
 .fa-door-open:hover {background-color:rgb(241, 3, 3);}
 .fa-home .active-focus{background-color:yellowgreen;}
 .nav-link.active, .nav-pills .show>.nav-link .fa-home{background-color:yellowgreen !important;}
-.fa-home:hover {background-color:yellowgreen;}{% if current_user.has_rank(current_user.Role.admin) %}
+.fa-home:hover {background-color:yellowgreen;}
 .fa-tools .active, .fa-tools:hover {background-color:cornflowerblue;}
-.nav-link.active, .nav-pills .show>.nav-link .fa-tool{background-color: cornflowerblue;{% endif %}
+.nav-link.active, .nav-pills .show>.nav-link .fa-tool{background-color: cornflowerblue;

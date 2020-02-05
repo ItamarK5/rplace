@@ -13,15 +13,3 @@ login_manager.login_view = 'security.login'
 def load_user(user_id):
     return UserModel.query.get(int(user_id))
 
-
-datastore = SQLAlchemyUserDatastore(
-    db=db,
-    user_model=User,
-    role_model=Role
-)
-
-security = Security(
-    datastore=datastore,
-    register_form=ExtendSignUpForm,
-    login_form=ExtendLoginForm
-)
