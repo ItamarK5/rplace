@@ -1,33 +1,4 @@
-{% macro render_field(field, force_errors=False) %}
-<div class="register_user_form-row mb-1">
-    <div class="input-group">
-        {% if field.errors or force_errors %}
-        {% set extra_class = "danger" %}
-        {% else %}
-        {% set extra_class = "primary" %}
-        {% endif %}    
-        <div class="input-group-prepend">
-            <span id='{{field.label.id}}' class='text-{{extra_class}} is-invalid input-group-text field-input non-select border-{{extra_class}}' for={{field.id}}>{{field.label.text}}</span>
-        </div>
-    {{field(class_ = 'register_user_form-control align-self-center border-'+ extra_class)}}
-    {% if field.widget.input_type == 'password' %}
-    <div class="input-group-append">
-        <button class="btn btn-outline-secondary border-{{extra_class}} password-button">
-            <i class="fa fa-eye"></i>
-        </button>
-    </div>
-    {% endif %}
-</div></div>
-{% endmacro %}
-{% macro render_error(error) %}
-<div class="register_user_form-row mb-1">
-    <div class="col rounded alert-danger text-justify ml-3 mr-3" style="text-anchor:middle;">{{ error }}</div>
-</div>
-{% endmacro %}
-{% macro render_errors(errors) %}{% if errors %}{% for err in errors %}{{ render_error(err) }}{% endfor %}{% endif %}{% endmacro %}
-{% macro link(id, text, path) %}
-<a class="primary-text mb-3" id={{id}} href="{{path}}">{{text}}</a>
-{% endmacro %}
+{% from "security/_macros.html" import render_field, render_link, render_error %}
 <html>
 <head>
 {% block head %}
@@ -43,18 +14,18 @@
         <link rel="stylesheet" href="{{url_for('other.serve_static', key='auth.css')}}">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore.js" integrity="sha256-O4179En8zabOlPYBNvGp8cF0uh0vnSZpW4Q6Ul1h+8c=" crossorigin="anonymous"></script>
         <script src="\files\auth.js"></script>
-        <title>{{ register_user_form.title }} </title>
+        <title>{{ form.title }} </title>
 {% endblock %}
 </head>
 <body>
     {% block Body %}
     <div class="jumbotron vertical-center">
-        {% block register_user_form %}
-            <register_user_form class="container justify-content-center w-75" method="POST" url="{{ request.url }}">
-                {{ register_user_form.csrf_token  }}{% block before_title %}{% endblock %}
-            <div class="register_user_form-row mb-1s display-2">
+        {% block form %}
+            <form class="container justify-content-center w-75" method="POST" url="{{ request.url }}">
+                {{ form.csrf_token  }}{% block before_title %}{% endblock %}
+            <div class="form-row mb-1s display-2">
                 <!-- warning was used as nice title -->
-                <h2 class="mx-auto text-warning non-select"><u>{{register_user_form.title}}</u></h2>
+                <h2 class="mx-auto text-warning non-select"><u>{{form.title}}</u></h2>
             </div>{% block before_image %}{% endblock %}            
             <img src="{{url_for('other.serve_static', key='favicon.gif')}}"
                  width="190" height="250"
@@ -65,10 +36,10 @@
             <div class="row justify-content-around mx-auto">
                 {% block links %}{% endblock %}
             </div>
-                <div class="register_user_form-row justify-content-center">
+                <div class="form-row justify-content-center">
                     <button type="submit" class="btn" id="submit-button">{% block submit %}{% endblock %}</button>
                 </div>
-                </register_user_form>
+                </form>
         {% endblock %}
 
     </div>

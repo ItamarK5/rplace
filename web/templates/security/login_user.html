@@ -1,16 +1,14 @@
 {% extends "security/forms.html" %}
 {% block fields %}
-{{ render_field(login_user_form.username, entire_login_user_form_errors)}}
-{{ render_errors(login_user_form.username.errors) }}
-{{ render_errors(entire_login_user_form_errors) }}
-{{ render_field(login_user_form.password, entire_login_user_form_errors)}}
-{{ render_errors(login_user_form.password.errors) }}
-{{ render_errors(entire_login_user_form_errors) }}
+{{ render_field(form.username)}}
+{{ render_errors(form.username.errors) }}
+{{ render_field(form.password)}}
+{{ render_errors(form.password.errors) }}
 {% if extra_error %}
 {{ render_error(extra_error) }}
 {% endif %}
 {% endblock %}
 {% block links %}
-{{ link('signup-link', 'Are you new?', url_for('security.register')) }}
+{{ render_link('signup-link', 'Are you new?', url_for_security('register')) }}
 {% endblock %}
 {% block submit %}Login{% endblock %}

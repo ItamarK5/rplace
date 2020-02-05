@@ -1,11 +1,10 @@
-from __future__ import annotations
-from wtforms import *
-from wtforms.fields.html5 import EmailField
-from flask_wtf import FlaskForm
+from flask_security.forms import NextFormMixin, PasswordFormMixin, UserEmailFormMixin, validators, Length, BaseForm
+from typing import List
 import re
 
 
-class LoginForm(FlaskForm):
+
+class LoginForm(PasswordFormMixin, UsernameFormMixin):
     title = 'Welcome Back to Social Painter'
     username = StringField('username',
                            validators=[

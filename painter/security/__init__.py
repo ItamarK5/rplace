@@ -1,14 +1,5 @@
-from flask_security import Security, SQLAlchemyUserDatastore
-from painter.models.user import User, Role
-from ..extensions import db
-
-datastore = SQLAlchemyUserDatastore(
-    db=db,
-    user_model=User,
-    role_model=Role
-)
-
-security = Security(datastore=datastore)
+from .security import security, datastore
+from .mixins import LoginForm
 
 
 def init_security(app):
