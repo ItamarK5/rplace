@@ -1,4 +1,5 @@
-from flask_login import LoginManager
+from flask import request, session
+from flask_babelex import Babel
 from sqlalchemy import create_engine
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
@@ -11,3 +12,11 @@ db = SQLAlchemy()
 engine = create_engine(Config.SQLALCHEMY_DATABASE_URI)
 # crsf protection
 crsf = CSRFProtect()
+babel = Babel()
+
+
+@babel.localeselector
+def get_locale():
+    if request.args.get('lang'):
+        session['lang'] = request.args.get('lang')
+    return session.get('lang', 'en')

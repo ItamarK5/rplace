@@ -11,5 +11,5 @@
 {% endblock %}
 {% block submit %}Sign Up{% endblock %}
 {% block links %}
-{{ render_link('signup-link', 'Already have an account?', url_for_security('login')) }}
+{{ render_link('signup-link', 'Already have an account?', url_for('security.login')) }}
 {% endblock %}

@@ -1,6 +1,5 @@
-from flask import current_app
 import numpy as np
-from flask_login import current_user
+from flask_security import current_user
 from flask_socketio import SocketIO, emit, disconnect
 from os import path
 from datetime import datetime

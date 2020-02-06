@@ -1,6 +1,6 @@
 from flask import current_app, abort
 from flask_mail import BadHeaderError, Message
-from flask_login import current_user
+from flask_security import current_user
 from flask_socketio import disconnect
 from typing import Optional, Any, Callable, Tuple, Dict
 from functools import wraps
