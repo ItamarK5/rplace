@@ -2,10 +2,10 @@ from flask import current_app, abort
 from flask_mail import BadHeaderError, Message
 from flask_security import current_user
 from flask_socketio import disconnect
-from typing import Optional, Any, Callable, Tuple, Dict
+from typing import TypeVar, Optional, Any, Callable, Tuple, Dict
 from functools import wraps
 from threading import Thread
-from .models.user import User
+from .constants import UserModel
 
 
 def send_message(f: Callable[[Any], Message]) -> Callable[[Tuple[Any], Dict[str, Any]], Optional[str]]:
@@ -47,3 +47,15 @@ def authenticated_only(f):
         else:
             return f(*args, **kwargs)
     return wrapped
+
+
+def role_required(role: UserModel.Role) -> Callable:
+    def wrapper(f: Callable) -> Callable:
+        @wraps(f)
+        def wrapped(*args, **kwargs):
+            if current_user.is_authenticated and current_user.has_rank(role):
+                abort(404)  # prevent them realise this is admin url
+            else:
+                return f(*args, **kwargs)
+        return wrapped
+    return wrapper

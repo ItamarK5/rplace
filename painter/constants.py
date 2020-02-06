@@ -1,5 +1,7 @@
 from os import path
 from datetime import timedelta
+from enum import IntEnum
+from .models.user import User as UserModel
 
 MIME_TYPES = {
     'png': 'image/png',

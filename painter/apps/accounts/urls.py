@@ -2,25 +2,22 @@ import time
 from os import path
 from flask import Blueprint, url_for, render_template, redirect, current_app, request
 from .helpers import *
-from .forms import SignUpForm, LoginForm
+from painter.security.forms import LoginForm, SignUpForm
 from .mail import send_sign_up_mail
 from painter.extensions import db
 from flask_login import login_user, logout_user, current_user, login_required
 from painter.constants import WEB_FOLDER
-from painter.models.user import User
+from ...constants import UserModel
 from werkzeug.wrappers import Response
-from .accounts import login_manager
 # router blueprint -> routing all pages that relate to authorization
 accounts_router = Blueprint('auth',
                             'auth',
                             template_folder=path.join(WEB_FOLDER, 'templates'))
 
 
-@accounts_router
-def init_accounts(app: Flask) -> NoReturn:
-    app.register_blueprint(accounts_router)
+@accounts_router.before_app_first_request
+def init_tokens():
     TokenSerializer.init_serializer(current_app)
-    login_manager.init_app(app)
 
 
 @accounts_router.route('/', methods=('GET',))
@@ -43,8 +40,8 @@ def login() -> Response:
     extra_error = None
     if form.validate_on_submit():
         name, pswd = form.username.data, form.password.data
-        pswd = User.encrypt_password(pswd)
-        user = User.query.filter_by(name=name, password=pswd).first()
+        pswd = UserModel.encrypt_password(pswd)
+        user = UserModel.query.filter_by(name=name, password=pswd).first()
         if user is None:
             entire_form_error.append('username or password dont match')
         elif not login_user(user):
@@ -74,8 +71,8 @@ def signup() -> Response:
             form.confirm_password.errors.append('You must re-enter the same password')
         else:
             # no duplication
-            is_dup_name = User.query.filter_by(name=name).first() is not None
-            is_dup_email = User.query.filter_by(email=email).first() is not None
+            is_dup_name = UserModel.query.filter_by(name=name).first() is not None
+            is_dup_email = UserModel.query.filter_by(email=email).first() is not None
             if is_dup_name:
                 form.username.errors.append('username already exists')
             if is_dup_email:
@@ -86,7 +83,7 @@ def signup() -> Response:
                     {
                         'email': email,
                         'name': name,
-                        'password': User.encrypt_password(pswd).hex()
+                        'password': UserModel.encrypt_password(pswd).hex()
                     }
                 ))
                 if login_error is not None:
@@ -121,8 +118,8 @@ def confirm(token: str) -> Response:
     name, pswd, mail = token.pop('name'), bytes.fromhex(token.pop('password')), token.pop('email')
     # check if user exists
     # https://stackoverflow.com/a/57925308
-    user = db.session.query(User).filter(
-        User.name == name, User.password == pswd
+    user = db.session.query(UserModel).filter(
+        UserModel.name == name, UserModel.password == pswd
     ).first()
     # time.timezone is the different betwenn local time to gmtime d=(gm-local) => d+local = gm
     if (time.time() + time.timezone) - timestamp >= current_app.config['MAX_AGE_USER_SIGN_UP_TOKEN']:
@@ -143,7 +140,7 @@ def confirm(token: str) -> Response:
                     "maybe someone catch it before you completed, in this situation It should be recommended"
         )
     # else
-    user = User(name=name, password=pswd, email=mail)
+    user = UserModel(name=name, password=pswd, email=mail)
     db.session.add(user)
     db.session.commit()
     return render_template(
@@ -156,15 +153,15 @@ def confirm(token: str) -> Response:
 
 @accounts_router.route('/create')
 def create_user() -> Response:
-    user = User.query.filter_by(name='socialpainter5').first()
+    user = UserModel.query.filter_by(name='socialpainter5').first()
     if user:
         db.session.delete(user)
     db.session.commit()
-    user = User(
+    user = UserModel(
         name='socialpainter5',
-        password=User.encrypt_password('QWEASDZXC123'),
+        password=UserModel.encrypt_password('QWEASDZXC123'),
         email='socialpainterdash@gmail.com',
-        role=User.Role.admin
+        role=UserModel.Role.admin
     )
     db.session.add(user)
     db.session.commit()
