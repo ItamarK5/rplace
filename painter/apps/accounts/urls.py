@@ -16,7 +16,6 @@ accounts_router = Blueprint('auth',
                             template_folder=path.join(WEB_FOLDER, 'templates'))
 
 
-@accounts_router
 def init_accounts(app: Flask) -> NoReturn:
     app.register_blueprint(accounts_router)
     TokenSerializer.init_serializer(current_app)
