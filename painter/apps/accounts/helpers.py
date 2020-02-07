@@ -27,7 +27,7 @@ class TokenSerializer:
         """
         cls.signup = URLSafeTimedSerializer(
             secret_key=app.config['SECRET_KEY'],
-            salt=app.config['SECURITY_SIGNUP_SALT']
+            salt=app.config['TOKEN_SIGNUP_SALT']
         )
 
 

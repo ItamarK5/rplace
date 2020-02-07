@@ -1,15 +1,16 @@
 import time
 from os import path
-from flask import Blueprint, url_for, render_template, redirect, current_app, request
+from flask import Blueprint, url_for, render_template, redirect, current_app
 from .helpers import *
-from painter.security.forms import LoginForm, SignUpForm
+from .forms import LoginForm, SignUpForm
 from .mail import send_sign_up_mail
 from painter.extensions import db
 from flask_login import login_user, logout_user, current_user, login_required
 from painter.constants import WEB_FOLDER
-from ...constants import UserModel
 from werkzeug.wrappers import Response
-# router blueprint -> routing all pages that relate to authorization
+from painter.models.user import User
+
+# router blueprint -> routing all pages that relate to securityorization
 accounts_router = Blueprint('auth',
                             'auth',
                             template_folder=path.join(WEB_FOLDER, 'templates'))
@@ -18,15 +19,6 @@ accounts_router = Blueprint('auth',
 @accounts_router.before_app_first_request
 def init_tokens():
     TokenSerializer.init_serializer(current_app)
-
-
-@accounts_router.route('/', methods=('GET',))
-@login_required
-def home() -> Response:
-    """
-    :return: return the home page
-    """
-    return render_template('home.html')
 
 
 @accounts_router.route('/login', methods=('GET', 'POST'),)
@@ -39,15 +31,14 @@ def login() -> Response:
     entire_form_error = []
     extra_error = None
     if form.validate_on_submit():
-        name, pswd = form.username.data, form.password.data
-        pswd = UserModel.encrypt_password(pswd)
-        user = UserModel.query.filter_by(name=name, password=pswd).first()
+        name, pswd = form.username.data, User.encrypt_password(form.password.data)
+        user = User.query.filter_by(username=name, password=pswd).first()
         if user is None:
-            entire_form_error.append('username or password dont match')
+            pass
         elif not login_user(user):
             extra_error = 'You cant login with non active user'
         else:
-            return redirect(url_for('.home'))
+            return redirect(url_for('place.home'))
     # clear password
     form.password.data = ''
     return render_template('forms/index.html',
@@ -67,29 +58,18 @@ def signup() -> Response:
                                    form.password.data,\
                                    form.confirm_password.data,\
                                    form.email.data
-        if pswd != pswd2:
-            form.confirm_password.errors.append('You must re-enter the same password')
+        # sending the mail
+        login_error = send_sign_up_mail(name, email, TokenSerializer.signup.dumps(
+            {
+                'email': email,
+                'username': name,
+                'password': pswd
+            }
+        ))
+        if login_error is not None:
+            form.email.errors.append(login_error)
         else:
-            # no duplication
-            is_dup_name = UserModel.query.filter_by(name=name).first() is not None
-            is_dup_email = UserModel.query.filter_by(email=email).first() is not None
-            if is_dup_name:
-                form.username.errors.append('username already exists')
-            if is_dup_email:
-                form.email.errors.append('email already exists')
-            else:
-                # sending the mail
-                login_error = send_sign_up_mail(name, email, TokenSerializer.signup.dumps(
-                    {
-                        'email': email,
-                        'name': name,
-                        'password': UserModel.encrypt_password(pswd).hex()
-                    }
-                ))
-                if login_error is not None:
-                    form.email.errors.append(login_error)
-                else:
-                    return render_template('transport/complete-signup.html', username=name)
+            return render_template('transport/complete-signup.html', username=name)
     return render_template('forms/signup.html', form=form)
 
 
@@ -118,8 +98,8 @@ def confirm(token: str) -> Response:
     name, pswd, mail = token.pop('name'), bytes.fromhex(token.pop('password')), token.pop('email')
     # check if user exists
     # https://stackoverflow.com/a/57925308
-    user = db.session.query(UserModel).filter(
-        UserModel.name == name, UserModel.password == pswd
+    user = db.session.query(User).filter(
+        User.name == name, User.password == pswd
     ).first()
     # time.timezone is the different betwenn local time to gmtime d=(gm-local) => d+local = gm
     if (time.time() + time.timezone) - timestamp >= current_app.config['MAX_AGE_USER_SIGN_UP_TOKEN']:
@@ -140,29 +120,29 @@ def confirm(token: str) -> Response:
                     "maybe someone catch it before you completed, in this situation It should be recommended"
         )
     # else
-    user = UserModel(name=name, password=pswd, email=mail)
+    user = User(username=name, hash_password=pswd, email=email)
     db.session.add(user)
     db.session.commit()
     return render_template(
         'transport//base.html',
         view_name='Login',
-        view_ref='auth.login',
+        view_ref='security.login',
         message='Congrats, you completed registering to the social painter community,\n'
                 'to continue, pless login via the login that you be redirected by pressing the button down'
     )
 
+
 @accounts_router.route('/create')
 def create_user() -> Response:
-    user = UserModel.query.filter_by(name='socialpainter5').first()
+    user = User.query.filter_by(username='socialpainter5').first()
     if user:
         db.session.delete(user)
-    db.session.commit()
-    user = UserModel(
-        name='socialpainter5',
-        password=UserModel.encrypt_password('QWEASDZXC123'),
-        email='socialpainterdash@gmail.com',
-        role=UserModel.Role.admin
-    )
+        db.session.commit()
+    user = User(
+            username='socialpainter5',
+            hash_password='QWEASDZXC123',
+            email='socialpainterdash@gmail.com'
+        )
     db.session.add(user)
     db.session.commit()
     return redirect(url_for('.login'))

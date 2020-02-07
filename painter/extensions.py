@@ -1,40 +1,27 @@
-<<<<<<< HEAD
-from flask import request, session
-from flask_babelex import Babel
-=======
-<<<<<<< HEAD
-from flask import request, session
-=======
->>>>>>> parent of 9614fde... 2.4.3
->>>>>>> parent of cc4db7e... 2.4.2
 from sqlalchemy import create_engine
 from flask_mail import Mail
-from flask_sqlalchemy import SQLAlchemy, declarative_base
+from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect
 from .config import Config
-from flask_babelex import Babel
+from flask_login import LoginManager
 
 mailbox = Mail()
 db = SQLAlchemy()
 engine = create_engine(Config.SQLALCHEMY_DATABASE_URI)
 # crsf protection
 crsf = CSRFProtect()
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-
->>>>>>> parent of cc4db7e... 2.4.2
-babel = Babel()
 
 
-@babel.localeselector
-def get_locale():
-    if request.args.get('lang'):
-        session['lang'] = request.args.get('lang')
-<<<<<<< HEAD
-    return session.get('lang', 'en')
-=======
-    return session.get('lang', 'en')
-=======
->>>>>>> parent of 9614fde... 2.4.3
->>>>>>> parent of cc4db7e... 2.4.2
+# only after creating the UserModel
+
+from painter.models import user
+login_manager = LoginManager()
+login_manager.login_view = 'auth.login'
+login_manager.refresh_view = 'auth.signup'
+login_manager.needs_refresh_message = 'Someone has logined to your acccount, if you dont know who' \
+                                      'pless consider changing your account'
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return user.User.query.get(int(user_id))
