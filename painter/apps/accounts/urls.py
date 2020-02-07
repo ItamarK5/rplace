@@ -10,7 +10,7 @@ from painter.constants import WEB_FOLDER
 from werkzeug.wrappers import Response
 from painter.models.user import User
 
-# router blueprint -> routing all pages that relate to securityorization
+# router blueprint -> routing all pages that relate to authorization
 accounts_router = Blueprint('auth',
                             'auth',
                             template_folder=path.join(WEB_FOLDER, 'templates'))
@@ -54,16 +54,16 @@ def signup() -> Response:
     """
     form = SignUpForm()
     if form.validate_on_submit():
-        name, pswd, pswd2, email = form.username.data,\
-                                   form.password.data,\
-                                   form.confirm_password.data,\
-                                   form.email.data
+        name, pswd, email = form.username.data,\
+                            form.password.data,\
+                            form.email.data
         # sending the mail
         login_error = send_sign_up_mail(name, email, TokenSerializer.signup.dumps(
             {
                 'email': email,
                 'username': name,
-                'password': pswd
+                # to hex to prevent any chance of decode the key and then changing it to SQL function
+                'password': User.encrypt_password(pswd)
             }
         ))
         if login_error is not None:
@@ -95,11 +95,11 @@ def confirm(token: str) -> Response:
         )
     # else get values
     token, timestamp = extracted
-    name, pswd, mail = token.pop('name'), bytes.fromhex(token.pop('password')), token.pop('email')
+    name, pswd, email = token.pop('username'), token.pop('password'), token.pop('email')
     # check if user exists
     # https://stackoverflow.com/a/57925308
     user = db.session.query(User).filter(
-        User.name == name, User.password == pswd
+        User.username == name, User.password == pswd
     ).first()
     # time.timezone is the different betwenn local time to gmtime d=(gm-local) => d+local = gm
     if (time.time() + time.timezone) - timestamp >= current_app.config['MAX_AGE_USER_SIGN_UP_TOKEN']:
@@ -120,13 +120,14 @@ def confirm(token: str) -> Response:
                     "maybe someone catch it before you completed, in this situation It should be recommended"
         )
     # else
-    user = User(username=name, hash_password=pswd, email=email)
+    user = User(username=name, password=pswd, email=email)
     db.session.add(user)
     db.session.commit()
     return render_template(
         'transport//base.html',
+        title='Congrats',
         view_name='Login',
-        view_ref='security.login',
+        view_ref='auth.login',
         message='Congrats, you completed registering to the social painter community,\n'
                 'to continue, pless login via the login that you be redirected by pressing the button down'
     )

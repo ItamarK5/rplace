@@ -6,7 +6,7 @@ from wtforms.validators import HostnameValidation
 
 
 reNAME = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
-rePSWD = re.compile(r'^[A-F0-9]{128}$', re.I)  # password hashed so get hash value
+rePSWD = re.compile(r'^[a-f0-9]{128}$')  # password hashed so get hash value
 reEMAIL = re.compile(
     r"(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*\Z"  # dot-atom
     r'|^"([\001-\010\013\014\016-\037!#-\[\]-\177]|\\[\001-\011\013\014\016-\177])*"\Z)',  # quoted-string
@@ -72,7 +72,7 @@ def is_valid_signup_token(token: Any) -> bool:
     if (not isinstance(token, Dict)) or len(token) != 3:
         return False
     # name
-    name = token.get('name', None)
+    name = token.get('username', None)
     if (not name) or not reNAME.match(name):
         return False
     # pswd

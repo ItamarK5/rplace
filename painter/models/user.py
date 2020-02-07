@@ -11,25 +11,27 @@ class User(db.Model, UserMixin):
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
     username = Column(String(15), unique=True, nullable=False)
-    password = Column(String(64), nullable=False)
+    password = Column(String(128), nullable=False)
     email = Column(String(254), unique=True, nullable=False)
     next_time = Column(Float(), default=0.0, nullable=False)
     pixels = relationship('Pixel', backref='users', lazy=True)
     sqlite_autoincrement = True
 
     def __init__(self, password=None, hash_password=None, **kwargs):
+        print(password)
         if hash_password is not None and password is None:
             password = self.encrypt_password(hash_password)
+        print(password)
         super().__init__(password=password, **kwargs)
 
     @staticmethod
-    def encrypt_password(password: str) -> bytes:
+    def encrypt_password(password: str) -> str:
         return pbkdf2_hmac(
             'sha512',
             password.encode(),
             Config.USER_PASSWORD_SALT,
             Config.USER_PASSWORD_ROUNDS
-        )
+        ).hex()
 
     def __repr__(self):
         return f"<User(name={self.name}>"

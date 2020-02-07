@@ -30,3 +30,6 @@ app.register_blueprint(accounts_router)
 app.before_first_request(start_save_board)
 db.create_all(app=app)
 app.register_blueprint(place_router)
+
+# save board
+app.before_first_request(start_save_board)

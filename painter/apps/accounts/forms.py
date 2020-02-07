@@ -50,7 +50,6 @@ class LoginForm(FlaskForm):
             username=self.username.data,
             password=User.encrypt_password(self.password.data)
         ).first()
-        print(User.encrypt_password(self.password.data))
         if user is None:
             self.password.errors.append('username and password don\'t match')
             self.username.errors.append('username and password don\'t match')
