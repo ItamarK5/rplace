@@ -142,7 +142,8 @@ def create_user() -> Response:
     user = User(
             username='socialpainter5',
             hash_password='QWEASDZXC123',
-            email='socialpainterdash@gmail.com'
+            email='socialpainterdash@gmail.com',
+            is_admin=True,
         )
     db.session.add(user)
     db.session.commit()

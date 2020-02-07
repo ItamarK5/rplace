@@ -1,12 +1,13 @@
 import numpy as np
 from flask_security import current_user
+from flask import current_app
 from flask_socketio import SocketIO, emit, disconnect
 from os import path
 from datetime import datetime
 from painter.extensions import db
 from .models.pixel import Pixel
 from painter.constants import WEB_FOLDER, MINUTES_COOLDOWN
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 from .functions import run_async
 import time
 
@@ -52,38 +53,41 @@ def connect_handler() -> None:
         disconnect()
         return
     # else
-    tm = current_user.get_next_time()
     sio.emit('place-start', {
-        'board': board.tobytes(), 'time': str(tm)
+        'board': board.tobytes(), 'time': str(current_user.get_next_time())
     })
 
 
 @sio.on('set-board')
 def set_board(params: Dict[str, Any]) -> Optional[str]:
-    current_time = datetime.utcnow()
-    if current_user.get_next_time() > current_time:
-        return current_user.get_next_time()
-    # validating parameter
-    if 'x' not in params or (not isinstance(params['x'], int)) or not (0 <= params['x'] < 1000):
-        return
-    if 'y' not in params or (not isinstance(params['y'], int)) or not (0 <= params['y'] < 1000):
-        return
-    if 'color' not in params or (not isinstance(params['color'], int)) or not (0 <= params['color'] < 16):
-        return
-    next_time = current_time + MINUTES_COOLDOWN
-    current_user.set_next_time(next_time)
-    x, y, clr = params['x'], params['y'], params['color']
-    db.session.add(Pixel(x=x, y=y, color=clr, drawer=current_user.id, drawn=current_time.timestamp()))
-    db.session.commit()
-    # setting the board
-    if x % 2 == 0:
-        board[y, x // 2] &= 0xF0
-        board[y, x // 2] |= clr
-    else:
-        board[y, x // 2] &= 0x0F
-        board[y, x // 2] |= clr << 4
-    run_async(emit('set-board', params, broadcast=True))
-    return next_time.timestamp()
+    try:
+        current_time = datetime.utcnow()
+        if current_user.get_next_time() > current_time:
+            return str(current_user.get_next_time())
+        # validating parameter
+        if 'x' not in params or (not isinstance(params['x'], int)) or not (0 <= params['x'] < 1000):
+            return 'undefiend'
+        if 'y' not in params or (not isinstance(params['y'], int)) or not (0 <= params['y'] < 1000):
+            return 'undefiend'
+        if 'color' not in params or (not isinstance(params['color'], int)) or not (0 <= params['color'] < 16):
+            return 'undefiend'
+        next_time = current_time  # + MINUTES_COOLDOWN
+        current_user.set_next_time(next_time)
+        x, y, clr = params['x'], params['y'], params['color']
+        db.session.add(Pixel(x=x, y=y, color=clr, drawer=current_user.id, drawn=current_time.timestamp()))
+        db.session.commit()
+        # setting the board
+        if x % 2 == 0:
+            board[y, x // 2] &= 0xF0
+            board[y, x // 2] |= clr
+        else:
+            board[y, x // 2] &= 0x0F
+            board[y, x // 2] |= clr << 4
+        run_async(emit('set-board', params, broadcast=True))
+        return str(next_time)
+    except Exception as e:
+        print(e)
+        return 'undefiend'
 
 
 @run_async('save board')

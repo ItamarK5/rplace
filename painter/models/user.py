@@ -1,6 +1,6 @@
 from ..extensions import db
 from flask_login import UserMixin
-from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy import Column, Integer, String, Float, Boolean
 from datetime import datetime
 from sqlalchemy.orm import relationship, backref
 from ..config import Config
@@ -15,13 +15,12 @@ class User(db.Model, UserMixin):
     email = Column(String(254), unique=True, nullable=False)
     next_time = Column(Float(), default=0.0, nullable=False)
     pixels = relationship('Pixel', backref='users', lazy=True)
+    is_admin = Column(Boolean(), default=False, nullable=False)
     sqlite_autoincrement = True
 
     def __init__(self, password=None, hash_password=None, **kwargs):
-        print(password)
         if hash_password is not None and password is None:
             password = self.encrypt_password(hash_password)
-        print(password)
         super().__init__(password=password, **kwargs)
 
     @staticmethod

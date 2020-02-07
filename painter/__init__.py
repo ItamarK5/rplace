@@ -1,7 +1,7 @@
 from flask import Flask
 from os import path
 from .skio import start_save_board, sio
-from .apps import other_router, place_router, accounts_router
+from .apps import other_router, place_router, accounts_router, admin_router
 from .constants import WEB_FOLDER
 from .config import Config  # config
 from .extensions import crsf, db, mailbox, engine, login_manager
@@ -27,9 +27,7 @@ login_manager.init_app(app)
 app.register_blueprint(other_router)
 app.register_blueprint(place_router)
 app.register_blueprint(accounts_router)
-app.before_first_request(start_save_board)
-db.create_all(app=app)
-app.register_blueprint(place_router)
+app.register_blueprint(admin_router)
 
-# save board
+db.create_all(app=app)
 app.before_first_request(start_save_board)

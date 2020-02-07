@@ -7,13 +7,13 @@ const MIN_STEP_SIZE = 3;
 const MAX_SCALE = 50;
 const DRAW_COOLDOWN = 60;
 
-const reHashX = /(?<=(^#|.+&)x=)\d+(?=&|$)/i;
-const reHashY = /(?<=(^#|.+&)y=)\d+(?=&|$)/i;
-const reHashScale = /(?<=(^#|.+&)scale=)\d+(?=&|$)/i;
+const reHashX = /(?<=(^#|.+&)x=)\d+(?=[&$])/i;
+const reHashY = /(?<=(^#|.+&)y=)\d+(?=[&$])/i;
+const reHashScale = /(?<=(^#|.+&)scale=)\d+(?=[&$])/i;
 
-const reArgX = /(?<=(^\x3F|.+&)x=)\d+(?=&|$)/i;
-const reArgY = /(?<=(^\x3F|.+&)x=)\d+(?=&|$)/i;
-const reArgScale = /(?<=(^\x3F|.+&)scale=)\d+(?=&|$)/i;
+const reArgX = /(?<=(^\x3F|.+&)x=)\d+(?=[&$])/i;
+const reArgY = /(?<=(^\x3F|.+&)x=)\d+(?=[&$])/i;
+const reArgScale = /(?<=(^\x3F|.+&)scale=)\d+(?=[&$])/i;
 
 //const reHash = /(?<=(?:^#|.+&))([\w|\d]+)=([\w|\d]+)(?=&|$)/i
 
@@ -33,6 +33,18 @@ const VIEW_BUTTON_OPACITY = 1.0;
 const getOffset = (x, y) => (y * CANVAS_SIZE) + x;
 const getFirstIfAny = (group) => _.isNull(group) ? null : group[0]
 const clamp = (v, max, min) => Math.max(min, Math.min(v, max));
+const getUTCTimestamp = () => {
+    let tm = new Date();
+    return Date.UTC(
+        tm.getUTCFullYear(),
+        tm.getUTCMonth(),
+        tm.getUTCDate(),
+        tm.getUTCHours(),
+        tm.getUTCMinutes(),
+        tm.getUTCSeconds(),
+        tm.getUTCMilliseconds()
+    )
+}
 
 //https://pietschsoft.com/post/2008/01/15/javascript-inttryparse-equivalent
 function TryParseInt(str, defaultValue) {
@@ -41,7 +53,6 @@ function TryParseInt(str, defaultValue) {
         if(str.length > 0) {
             if (!isNaN(str)) {
                 retValue = parseInt(str);
-                console.log(retValue);
             }
         }
     }
@@ -138,10 +149,6 @@ var progress = {
     state: 0,       // state of progress bar
     work: null,  // handler of progress update interval
     current_min_time:null,
-    current_utc_time(){
-        let ct = new Date()
-        return ct.getTime() + (ct.getTimezoneOffset()*TIMEZONE_FACTOR)
-    },
     adjust_progress(seconds_left) {  
         // adjust the progress bar and time display by the number of seconds left
         $('#prog-text').text([
@@ -158,9 +165,9 @@ var progress = {
     set_time(time) {
         // set time
         // handles starting the timer waiting
-        let self = this;       
-        self.time = Date.parse(time)
-        if(self.time < self.current_utc_time()) {
+        let self = this;
+        self.time = Date.parse(time + ' UTC');
+        if(self.timestamp < getUTCTimestamp()) {
             $('prog-text').text('0:00');
             $('#prog-fill').state = 1;
             $('#time-prog').attr('state', 0);
@@ -170,14 +177,13 @@ var progress = {
         } else if (_.isNull(self.work)) {
             self.is_working = true;
             self.work = setInterval(function () { self.update_timer() }, 50);
-       } 
+       }
     },
     update_timer() {
         // Updates the prorgess bar and timer each interval
         // Math.max the time until cooldown ends in ms, compare if positive (the time has not passed),
         // ceil to round up, I want to prevent the progress showing time up to that
-        let now = new Date(Date.now());
-        let seconds_left = Math.ceil(Math.max(this.time - this.current_utc_time(), 0) / 1000);
+        let seconds_left = Math.ceil(Math.max(this.time - getUTCTimestamp(), 0) / 1000);
         // adjust progress
         if (this.current_min_time != seconds_left){
             this.adjust_progress(seconds_left);
@@ -487,14 +493,12 @@ $(document).ready(function () {
               })
         }
         else {
-            console.log(new Date(Date.now()))
             sock.emit('set-board', {
                 'color': board.color,
                 'x': board.x_mouse,
                 'y': board.y_mouse,
             }, callback=(next_time)=>{
-                console.log(next_time)
-                if(!_.isUndefined(next_time)){
+                if(!(_.isUndefined(next_time) || next_time == 'undefiend')){
                     progress.set_time(next_time)
                 }
             })
@@ -517,6 +521,7 @@ $(document).ready(function () {
         }
     }).mouseup(function (e) {
         board.drag.active = false;
+        board.drag.active
     })
     $('.colorBtn').each(function () {
         $(this).css('background-color', Colors.colors[parseInt($(this).attr('value'))].css_format); // set colors
