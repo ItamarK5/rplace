@@ -458,6 +458,22 @@ $(document).ready(function () {
     sock.on('update-timer', function(time){
         progress.set_time(time);
     });
+    // Lost connection
+    sock.on('disconnect', () => {
+        Swal.fire({
+            icon: 'error',
+            title: 'Lost connection with the server',
+            text: 'Server Lost Connection',
+          })
+    });
+    // Connection on
+    sock.on('reconnect', () => {
+        Swal.fire({
+            icon: 'success',
+            title: 'Reconnected to the server',
+            text: 'Server Connection returned',
+          })
+    });
     $('#coords').hover(
         function(){board.update_coords();},
         function(){board.update_coords();}

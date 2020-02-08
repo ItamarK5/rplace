@@ -1,50 +1,90 @@
 import numpy as np
-from flask_security import current_user
-from flask import current_app
+from flask_login import current_user
+from flask import Flask
 from flask_socketio import SocketIO, emit, disconnect
 from os import path
 from datetime import datetime
 from painter.extensions import db
 from .models.pixel import Pixel
 from painter.constants import WEB_FOLDER, MINUTES_COOLDOWN
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, NoReturn
 from .functions import run_async
-import time
+from queue import Queue
+from threading import Timer, Thread, Lock
 
 
 BOARD_PATH = path.join(WEB_FOLDER, 'resources', 'board.npy')
 COPY_BOARD_PATH = path.join(WEB_FOLDER, 'resources', 'board2.npy')
 
 
-def read_board(pth: str) -> Optional[np.ndarray]:
-    brd = None
-    if not path.exists(pth):
-        return None
-    try:
-        brd = np.load(pth)
-    finally:
-        return brd
-
-
-def open_board() -> np.ndarray:
-    """
-        save board
-    """
-    brd = read_board(BOARD_PATH)
-    if brd is not None:
-        return brd
-    print('Board not loaded')
-    brd = read_board(COPY_BOARD_PATH)
-    if brd is not None:
-        return brd
-    print('Board errored not loaded')
-    # else
-    # board = np.random.randint(0, 255, (1000, 500), np.uint8)
-    return np.zeros((1000, 500), dtype=np.uint8)
-
-
 sio = SocketIO()
-board = open_board()
+
+
+class Board:
+    def __init__(self) -> None:
+        self.board = self.open_board()
+        self.__queue = Queue()
+        self.__lock = Lock()
+
+    @staticmethod
+    def read_board(pth: str) -> Optional[np.ndarray]:
+        brd = None
+        if not path.exists(pth):
+            return None
+        try:
+            brd = np.load(pth)
+        finally:
+            return brd
+
+    @classmethod
+    def open_board(cls) -> np.ndarray:
+        """
+            save board
+        """
+        brd = cls.read_board(BOARD_PATH)
+        if brd is not None:
+            return brd
+        print('Board not loaded')
+        brd = cls.read_board(COPY_BOARD_PATH)
+        if brd is not None:
+            return brd
+        print('Board errored not loaded')
+        # else
+        # board = np.random.randint(0, 255, (1000, 500), np.uint8)
+        return np.zeros((1000, 500), dtype=np.uint8)
+
+    def init_app(self, app: Flask) -> NoReturn:
+        app.before_first_request(self.save_board)
+        app.before_first_request(self.process_board)
+
+    @run_async('process-board')
+    def process_board(self) -> None:
+        while True:
+            # currently no more function with board
+            x, y, color = self.__queue.get(block=True)
+            print(x, y, color)
+            self.__lock.acquire()
+            self.board[y, x // 2] &= 0x1111 << (x % 2) * 4
+            self.board[y, x // 2] |= color << (1 - (x % 2)) * 4
+            sio.start_background_task(emit, ('set-board', (x, y, color), {'brodcast':True}))
+            self.__lock.release()
+
+    def set_at(self, x, y, color) -> NoReturn:
+        self.__queue.put((x, y, color))
+
+    def save_board(self) -> NoReturn:
+        self.__lock.acquire()
+        brd = self.board.copy()
+        self.__lock.release()
+        np.save(BOARD_PATH, brd)
+        np.save(COPY_BOARD_PATH, brd)
+        Timer(5, self.save_board)
+
+    def get_bytes(self) -> bytes:
+        return self.board.tobytes()
+
+
+board = Board()
 
 
 @sio.on('connect')
@@ -54,7 +94,7 @@ def connect_handler() -> None:
         return
     # else
     sio.emit('place-start', {
-        'board': board.tobytes(), 'time': str(current_user.get_next_time())
+        'board': board.get_bytes(), 'time': str(current_user.get_next_time())
     })
 
 
@@ -75,28 +115,19 @@ def set_board(params: Dict[str, Any]) -> Optional[str]:
         current_user.set_next_time(next_time)
         x, y, clr = params['x'], params['y'], params['color']
         db.session.add(Pixel(x=x, y=y, color=clr, drawer=current_user.id, drawn=current_time.timestamp()))
+        board.set_at(x, y, clr)
         db.session.commit()
         # setting the board
+        """
         if x % 2 == 0:
             board[y, x // 2] &= 0xF0
             board[y, x // 2] |= clr
         else:
             board[y, x // 2] &= 0x0F
             board[y, x // 2] |= clr << 4
-        run_async(emit('set-board', params, broadcast=True))
+        """
+#        board.set_at(x, y, color)
         return str(next_time)
     except Exception as e:
         print(e)
         return 'undefiend'
-
-
-@run_async('save board')
-def start_save_board():
-    time.sleep(1)
-    brd = board.copy()
-    while True:
-        np.save(COPY_BOARD_PATH, brd)
-        del brd
-        time.sleep(2)
-        brd = board.copy()
-        np.save(BOARD_PATH, brd)

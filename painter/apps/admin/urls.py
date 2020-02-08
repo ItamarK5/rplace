@@ -10,5 +10,8 @@ admin_router = Blueprint(
 
 @admin_router.route('/admin', methods=('GET',))
 @admin_only
-def admin():
+def admin() -> str:
+    """
+    :return: return's admin template
+    """
     return render_template('admin/admin.html')

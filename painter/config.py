@@ -19,3 +19,5 @@ class Config:
     TOKEN_SIGNUP_SALT = b'MsT0FcUgSOzapJi7RAbDi5q5XWdzS3NC'
     MAX_AGE_USER_SIGN_UP_TOKEN = 3600  # 3600 seconds = 1 hour
     MAIL_MAX_EMAILS = 10
+    # https://stackoverflow.com/a/54802481
+    WERKZEUG_RUN_MAIN = True

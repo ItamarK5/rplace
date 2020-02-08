@@ -1,5 +1,5 @@
 {% macro nav_item(fa, title, url, page=None) %}<li class="nav-item">{% with set_navigator = page and page==current_page %}
-<a class="nav-link fas {{fa}} btn {% if set_navigator %}active{% endif %}" data-toggle="tooltip" data-placement="bottom" title="{{title|striptags|title}}" href="{{url_for(url)}}">{% if set_navigator %}<span><span class="sr-only">(current)</span>{% endif %}</a>
+<a class="nav-link fas {{fa}} btn {% if set_navigator %}set{% endif %}" data-toggle="tooltip" data-placement="bottom" title="{{title|striptags|title}}" href="{{url_for(url)}}">{% if set_navigator %}<span><span class="sr-only">(current)</span>{% endif %}</a>
 </li>{% endwith %}{% endmacro %}
 <nav class="navbar navbar-light justify-content-between">
     <span class="navbar-brand">Social Painter</span>

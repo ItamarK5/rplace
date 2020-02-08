@@ -13,15 +13,9 @@ crsf = CSRFProtect()
 
 
 # only after creating the UserModel
-
-from painter.models import user
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 login_manager.refresh_view = 'auth.signup'
 login_manager.needs_refresh_message = 'Someone has logined to your acccount, if you dont know who' \
                                       'pless consider changing your account'
 
-
-@login_manager.user_loader
-def load_user(user_id):
-    return user.User.query.get(int(user_id))

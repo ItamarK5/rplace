@@ -1,10 +1,11 @@
-from ..extensions import db
+from ..extensions import db, login_manager
 from flask_login import UserMixin
 from sqlalchemy import Column, Integer, String, Float, Boolean
 from datetime import datetime
 from sqlalchemy.orm import relationship, backref
 from ..config import Config
 from hashlib import pbkdf2_hmac
+from typing import NoReturn
 
 
 class User(db.Model, UserMixin):
@@ -32,11 +33,16 @@ class User(db.Model, UserMixin):
             Config.USER_PASSWORD_ROUNDS
         ).hex()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<User(name={self.name}>"
 
-    def get_next_time(self):
+    def get_next_time(self) -> datetime:
         return datetime.fromtimestamp(self.next_time)
 
-    def set_next_time(self, next_time: datetime):
+    def set_next_time(self, next_time: datetime) -> NoReturn:
         self.next_time = next_time.timestamp()
+
+
+@login_manager.user_loader
+def load_user(user_id: str) -> int:
+    return User.query.get(int(user_id))

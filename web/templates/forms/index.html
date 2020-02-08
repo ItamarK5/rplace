@@ -1,12 +1,12 @@
 {% extends "forms/forms.html" %}
 {% block fields %}
-{{ render_field(form.username, entire_form_errors)}}
+{{ render_field(form.username)}}
 {{ render_errors(form.username.errors) }}
-{{ render_field(form.password, entire_form_errors)}}
+{{ render_field(form.password)}}
 {{ render_errors(form.password.errors) }}
 {{ render_errors(form.non_field_errors, 'warning') }}
 {% endblock %}
 {% block links %}
-{{ link('signup-link', 'Are you new?', url_for('auth.signup')) }}
+{{ render_link('signup-link', 'Are you new?', url_for('auth.signup')) }}
 {% endblock %}
 {% block submit %}Login{% endblock %}

@@ -1,13 +1,14 @@
 import random
 from flask import (
     Blueprint, render_template, send_from_directory,
-    request, abort
+    request, abort, Response
 )
 
 from painter.constants import MIME_TYPES, WEB_FOLDER
 from os import path, listdir
 from .helpers import get_file_type
-from werkzeug.exceptions import HTTPException
+from werkzeug.exceptions import HTTPException, NotFound
+from typing import Union
 
 other_router = Blueprint(
     'other',
@@ -18,11 +19,11 @@ other_router = Blueprint(
 
 
 @other_router.route('/meme/<string:http_error>')
-def meme_image(http_error: str):    
+def meme_image(http_error: str) -> Response:
     if str(http_error) not in listdir(path.join(other_router.static_folder, 'memes')):
         return send_from_directory(path.join(other_router.static_folder, '404'), 'images.jfif', mimetype=MIME_TYPES.get('jfif', None))
     # else
-    # I select the image
+    # select random matches image
     error_path = path.join(other_router.static_folder, 'memes', http_error)
     random_meme = random.choice(listdir(error_path))
     return send_from_directory(
@@ -39,19 +40,7 @@ needs to solve error and update mimetypes
 """
 
 
-@other_router.app_errorhandler(404)
-def error_handler(e):
-    if 'text/html' in request.accept_mimetypes:
-        return error_meme_render(e)
-    return e
-
-
-@other_router.route("/<path:arg>")
-def default_route(*args):
-    return error_meme_render('404', 'File not Found')
-
-
-def error_meme_render(e: HTTPException):
+def error_meme_render(e: HTTPException) -> str:
     # future plans, add isinstance string to detect if it's string, security
     if str(e.code) not in listdir(other_router.static_folder):
         http_error = 'meme not found'
@@ -61,8 +50,15 @@ def error_meme_render(e: HTTPException):
                            description=e.description if e.description is not None else e.name)
 
 
+@other_router.app_errorhandler(404)
+def error_handler(e: NotFound) -> Union[str, NotFound]:
+    if 'text/html' in request.accept_mimetypes:
+        return error_meme_render(e)
+    return e
+
+
 @other_router.route('/files/<path:key>', methods=('GET',))
-def serve_static(key):
+def serve_static(key: str) -> Response:
     file_format = get_file_type(key)
     if not file_format:  # include no item scenerio
         abort(405, 'Forgot placeing file type')
@@ -86,7 +82,7 @@ def serve_static(key):
 
 
 @other_router.route('/favicon.ico', methods=('GET',))
-def serve_icon() :
+def serve_icon() -> Response:
     return send_from_directory(
         path.join(other_router.static_folder, 'static', 'ico'), 'favicon.ico',
         mimetype=MIME_TYPES['ico']
