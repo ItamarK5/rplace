@@ -1,17 +1,16 @@
+from __future__ import annotations
 import numpy as np
 from flask_login import current_user
 from flask import Flask
 from flask_socketio import SocketIO, emit, disconnect
 from os import path
+from . import app
 from datetime import datetime
 from painter.extensions import db
 from .models.pixel import Pixel
 from painter.constants import WEB_FOLDER, MINUTES_COOLDOWN
 from typing import Any, Dict, Optional, NoReturn
-from .functions import run_async
-from queue import Queue
-from threading import Timer, Thread, Lock
-
+from threading import Lock, Timer
 
 BOARD_PATH = path.join(WEB_FOLDER, 'resources', 'board.npy')
 COPY_BOARD_PATH = path.join(WEB_FOLDER, 'resources', 'board2.npy')
@@ -23,7 +22,7 @@ sio = SocketIO()
 class Board:
     def __init__(self) -> None:
         self.board = self.open_board()
-        self.__queue = Queue()
+#        self.__queue = Queue()
         self.__lock = Lock()
 
     @staticmethod
@@ -55,22 +54,18 @@ class Board:
 
     def init_app(self, app: Flask) -> NoReturn:
         app.before_first_request(self.save_board)
-        app.before_first_request(self.process_board)
+#        app.before_first_request(self.process_board)
 
-    @run_async('process-board')
-    def process_board(self) -> None:
-        while True:
-            # currently no more function with board
-            x, y, color = self.__queue.get(block=True)
-            print(x, y, color)
+    def set_at(self, x, y, color) -> NoReturn:
+        sio.start_background_task(self.__set_at, x=x, y=y, color=color)
+
+    def __set_at(self, x, y, color) -> NoReturn:
+        with app.test_request_context():
             self.__lock.acquire()
             self.board[y, x // 2] &= 0x1111 << (x % 2) * 4
             self.board[y, x // 2] |= color << (1 - (x % 2)) * 4
-            sio.start_background_task(emit, ('set-board', (x, y, color), {'brodcast':True}))
+            emit('set-board', (x, y, color), {'brodcast': True})
             self.__lock.release()
-
-    def set_at(self, x, y, color) -> NoReturn:
-        self.__queue.put((x, y, color))
 
     def save_board(self) -> NoReturn:
         self.__lock.acquire()
