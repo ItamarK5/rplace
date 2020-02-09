@@ -85,9 +85,8 @@ body {background-color:#777777;}
     justify-content: center;
 }
 
-#board {display:block; z-index:1;}
+#board {z-index:1;}
 #board-zoomer {flex:0 0 100;}
-
 #icon-container {
     position: absolute;
     display:flex;
@@ -206,7 +205,7 @@ body {background-color:#777777;}
 }
 
 
-.colorBtn {
+.colorButton {
     image-rendering: pixelated;
     box-sizing: border-box;
     width: 30px;
@@ -214,11 +213,11 @@ body {background-color:#777777;}
     transition: bottom 0.5s;
 }
 
-.colorBtn[state='1'] {
+.colorButton[state='1'] {
     border: steelblue 3px solid;
 }
 
-.colorBtn[state='0'] {
+.colorButton[state='0'] {
     border:none;
 }
 
@@ -348,4 +347,12 @@ body {background-color:#777777;}
     pointer-events: none;
     opacity:0%;
     font: "Trebuchet MS", Helvetica, sans-serif;
+}
+#pen {
+    position:absolute;
+    z-index:2;
+    padding:none;
+    left:0;
+    top:0;
+    pointer-events:none;
 }

@@ -7,21 +7,27 @@ const MIN_STEP_SIZE = 3;
 const MAX_SCALE = 50;
 const DRAW_COOLDOWN = 60;
 
-const reHashX = /(?<=(^#|.+&)x=)\d+(?=[&$])/i;
-const reHashY = /(?<=(^#|.+&)y=)\d+(?=[&$])/i;
-const reHashScale = /(?<=(^#|.+&)scale=)\d+(?=[&$])/i;
+const reHashX = /(?<=(^#|.+&)x=)\d+(?=&|$)/i;
+const reHashY = /(?<=(^#|.+&)y=)\d+(?=&|$)/i;
+const reHashScale = /(?<=(^#|.+&)scale=)\d{1,2}(\x2E\d+)?(?=&|$)/i;
 
-const reArgX = /(?<=(^\x3F|.+&)x=)\d+(?=[&$])/i;
-const reArgY = /(?<=(^\x3F|.+&)x=)\d+(?=[&$])/i;
-const reArgScale = /(?<=(^\x3F|.+&)scale=)\d+(?=[&$])/i;
+const reArgX = /(?<=(^\x3F|.+&)x=)\d+(?=&|$)/i;
+const reArgY = /(?<=(^\x3F|.+&)x=)\d+(?=&|$)/i;
+const reArgScale = /(?<=(^\x3F|.+&)scale=)\d{1,2}(\x2E\d+)?(?=&|$)/i;
+
+// indexes for set-board package
+const SET_BOARD_PARAM_Y_IDX = 0;
+const SET_BOARD_PARAM_X_IDX = 1
+const SET_BOARD_PARAMS_COLOR_IDX = 2;
 
 //const reHash = /(?<=(?:^#|.+&))([\w|\d]+)=([\w|\d]+)(?=&|$)/i
 
+
 const DIRECTION_MAP = [
-    {key:37, dx:-1, dy:0 }, // left
-    {key:39, dx: 1, dy:0 }, // right
-    {key:38, dx: 0, dy:-1}, // up
-    {key:40, dx: 0, dy:1 }  // down
+    {key:37, dir:[-1,  0], set:false}, // left
+    {key:39, dir:[ 1,  0], set:false}, // right
+    {key:38, dir:[ 0, -1], set:false}, // up
+    {key:40, dir:[ 0,  1], set:false}  // :own
 ];
 
 const SIMPLE_ZOOM_LEVEL = 40;
@@ -48,7 +54,7 @@ const getUTCTimestamp = () => {
 
 //https://pietschsoft.com/post/2008/01/15/javascript-inttryparse-equivalent
 function TryParseInt(str, defaultValue) {
-    var retValue = defaultValue;
+    let retValue = defaultValue;
     if(!_.isNull(str)) {
         if(str.length > 0) {
             if (!isNaN(str)) {
@@ -58,6 +64,7 @@ function TryParseInt(str, defaultValue) {
     }
     return retValue;
 }
+
 function quit_painter_alert() {
     Swal.fire({
         title: 'Are you sure?',
@@ -96,7 +103,6 @@ const throw_message = (msg, speed = 1000, keep_speed = 100, exit_speed = null, c
             }, keep_speed);
         });
     
-
 class PalColor {
     constructor(r, g, b, name) {
         this.r = r;
@@ -107,8 +113,8 @@ class PalColor {
     get abgr() {
         return (0xFF000000 | this.r | this.g << 8 | this.b << 16) << 0;
     }
-    get css_format() {
-        return `rgba(${this.r}, ${this.g}, ${this.b}, 255)`;
+    css_format(alpha=255) {
+        return `rgba(${this.r}, ${this.g}, ${this.b}, ${alpha})`;
     }
 }
 
@@ -209,20 +215,32 @@ var query = {
     // initialize the 
     init: function () {
         // replace default position by fragments
-        let frags = this.fragments();
         let is_any_frag_unvalid = false;
         // x
-        if((!_.isNull(frags.x)) && this.is_valid_new_x(frags.x)){
-            this.x = Math.round(frags.x);            
-        } else {is_any_frag_unvalid = true;}
-        //y
-        if((!_.isNull(frags.y)) && this.is_valid_new_y(frags.y)){
-            this.y = Math.round(frags.y);            
-        } else {is_any_frag_unvalid = true;}
-        /// scale
-        if ((!_.isNull(frags.scale)) && this.is_valid_new_scale(frags.scale)) {
-            this.scale = frags.scale;
-        } else {is_any_frag_unvalid = true;}
+        _.pairs(this.fragments()).forEach((frag, idx) => {
+            let key = frag[0]; let val = frag[1];
+            if(_.isNull(val)){ return; /* return breaks loop operation */ }
+            switch(key){
+                case('x'):{
+                    if(this.is_valid_new_x(val)){
+                        this.x = Math.round(val);            
+                    } else {is_any_frag_unvalid = true;}
+                    break;
+                }
+                case('y'):{
+                    if(this.is_valid_new_y(val)){
+                        this.y = Math.round(val);            
+                    } else {is_any_frag_unvalid = true;}            
+                    break;
+                }
+                case('scale'): {
+                    if (this.is_valid_new_scale(val)) {
+                        this.scale = val
+                    } else {is_any_frag_unvalid = true;}
+                    break;
+                }
+            }
+        })
         // if didn't refresh, update page
         if (is_any_frag_unvalid){ this.set_window_hash() }
     },
@@ -246,7 +264,7 @@ var query = {
             // first checks the hash if there are none, check the location
             x: parseInt(getFirstIfAny(window.location.hash.match(reHashX) || window.location.search.match(reArgX))),
             y: parseInt(getFirstIfAny(window.location.hash.match(reHashY) || window.location.search.match(reArgY))),
-            scale: parseInt(getFirstIfAny(window.location.hash.match(reHashScale) || window.location.search.match(reArgScale)))
+            scale: parseFloat(getFirstIfAny(window.location.hash.match(reHashScale) || window.location.search.match(reArgScale)))
         };
     },
     // set x and
@@ -301,8 +319,84 @@ var query = {
     }
 }
 
-const ICON_ANIMATION_DURATION = 1.0 // seconds
 
+const pen = {
+    x:null,
+    y:null,
+    reminderX:null,
+    reminderY:null,
+    __color:0,
+    canvas:null,
+    needsdraw:false,
+    init() {
+        this.color = $('.colorButton').index('[state="1"]')
+        this.canvas = $('#pen');
+        let ctx = this.canvas[0].getContext('2d');
+        ctx.globalAlpha = 0.9;
+        ctx.fillStyle = 'rgba(0,0,0,0)'
+        ctx.fillRect(0,0,1000,1000);
+    },
+    update_offset(canvas_event) {
+        /*this.x = canvas_event.offsetX;
+        this.y = canvas_event.offsetY;*/
+        let x = Math.floor((canvas_event.pageX - board.mover[0].getClientRects()[0].left) / board.scale);
+        let y = Math.floor((canvas_event.pageY - board.mover[0].getClientRects()[0].top) / board.scale)-1 // because reasons, during debugging it come to this;
+        if (!(x >= 0 && 1000 > x && y >= 0 && 1000 > y)) {
+           this.clear_pos(); // set values to -1
+        } else if(x != this.x || y != this.y){
+            this.x = x;
+            this.y = y;
+            this.updatePen()
+        }
+    },
+    
+    set_pos(canvas_event){
+        this.update_offset(canvas_event);
+        board.update_coords();   
+        this.updatePen()  
+    },
+    clear_pos(){
+        this.x = this.y = -1;
+        board.update_coords();
+    },
+    get has_color(){ return this.__color != -1; },
+    // color getter ans setter
+    get color(){return this.__color;},
+    set color(color){
+        this.__color = color;
+        board.updateBoard()
+    },
+    is_at_board() {
+        return this.x != -1 && this.y != -1
+    },
+    has_old_xy() {
+        return !(_.isNull(this.oldX) || _.isNull(this.oldY))
+    },
+    canUpdatePen() {
+        return (!this.needsdraw) && this.has_color && this.is_at_board() && this.has_old_xy()
+    },
+    updatePen(){
+        if(!this.canUpdatePen()){
+            return;
+        }
+        this.needsdraw = true;
+        let self =this;
+        window.requestAnimationFrame(() => {
+            let ctx = self.canvas[0].getContext('2d');
+            // must check
+            if(!(_.isNull(pen.reminderX) || _.isNull(pen.reminderY))){
+                ctx.clearRect(pen.reminderX, pen.reminderY, 1, 1);
+            }
+            pen.reminderX = pen.x;
+            pen.reminderY = pen.y;
+            if(self.has_color){
+                ctx.fillStyle = ctx.fillStyle = Colors.colors[self.color].css_format(0.5)
+                ctx.fillRect(pen.x,pen.y,1,1);
+                self.needsdraw =false;
+            }
+        })
+    }
+}
 
 
 
@@ -315,7 +409,9 @@ var board = {
     color: null, rel_pos: { x: 0, y: 0 },
     zoomer: null, canvas:       null,
     mover:  null, container:    null,
-    needsdraw: false,
+    needsdraw: false, move_vector: [0,0],
+    keymove_interval:null,
+    ready:false,
     init: function () {
         this.zoomer = $('#board-zoomer');
         this.container = $('#board-container');
@@ -323,6 +419,36 @@ var board = {
         this.mover = $('#board-mover');
         this.canvas.attr('alpha', 0);
         this.updateZoom();      // also centers
+        this.startKeyMoveLoop()
+    },
+    startKeyMoveLoop(){
+        board.moveBoard(
+            this.move_vector[0],
+            this.move_vector[1]
+        )
+        if(_.isNull(this.keymove_interval)){
+            this.keymove_interval = setInterval(() => {
+                board.moveBoard(
+                    this.move_vector[0],
+                    this.move_vector[1]
+                )
+            }, 100);
+        }
+    },
+    addMovement(dir){
+        dir.set = true;
+        this.move_vector[0] += dir.dir[0]
+        this.move_vector[1] += dir.dir[1]
+        this.startKeyMoveLoop()
+    },
+    subMovement(dir){
+        dir.set = false;
+        this.move_vector[0] -= dir.dir[0]
+        this.move_vector[1] -= dir.dir[1]
+        if(this.move_vector[0] == 0 && this.move_vector[1] == 0){
+            clearInterval(this.keymove_interval);
+            this.keymove_interval = null;
+        }
     },
     // on chrome takes ~1552 ms -- even less
     buildBoard: function (buffer) {
@@ -339,12 +465,13 @@ var board = {
         });
         // copying r/place, using Uint32Array to store the values
         //console.log(Date.now()-t); deubg time
+        this.ready = true;
         self.updateBoard();
     },
 
     updateBoard: function () {
         /* https://josephg.com/blog/rplace-in-a-weekend/*/
-        if(this.needsdraw){return;}
+        if(this.needsdraw || !this.ready){return;}
         let self = this;
         requestAnimationFrame(function() {  // 1 millisecond call, for all animation
             ctx = self.canvas[0].getContext('2d');
@@ -373,12 +500,12 @@ var board = {
         return undefined;
         },*/
 
-    getCoords: function (e) {
+    /*getCoords: function (e) {
         return {
             x: Math.floor((e.pageX - this.mover[0].getClientRects()[0].left) / board.scale),
             y: Math.floor((e.pageY - this.mover[0].getClientRects()[0].top) / board.scale)-1 // because reasons, during debugging it come to this;
         };
-    },
+    },*/
     get windowBounding() { return CANVAS_SIZE * this.scale / 2; },
     // sets the board position
     centerPos: function () {
@@ -407,14 +534,14 @@ var board = {
         return MIN_STEP_SIZE * MAX_SCALE / this.scale;
     },
 
-    moveBoard: function (dir) {
+    moveBoard: function (dx, dy) {
         /*      let x = this.keep_inside_border(this.real_x, dir[DIR_INDEX_XNORMAL]*this.step*this.scale, rect.left, rect.right)/this.scale;
               let y = this.keep_inside_border(this.real_y, dir[DIR_INDEX_YNORMAL]*this.step*this.scale, rect.top, rect.bottom)/this.scale;
               console.log(x, y);
         */
        query.set_center(
-        clamp(query.x + dir.dx * this.step, CANVAS_SIZE, 0),
-        clamp(query.y + dir.dy * this.step, CANVAS_SIZE, 0)
+        clamp(query.x + dx/10 * this.step, CANVAS_SIZE, 0),
+        clamp(query.y + dy/10 * this.step, CANVAS_SIZE, 0)
        );
     },
     centerOn: function (x, y) {
@@ -430,8 +557,8 @@ var board = {
             $('#coordY').text('');
         } else if(!board.drag.active){
             $('#coord-slicer').text(',');
-            $('#coordX').text(board.x_mouse != -1 ? this.x_mouse + 1 : 'none');
-            $('#coordY').text(board.y_mouse != -1 ? this.y_mouse + 1 : 'none');
+            $('#coordX').text(pen.x != -1 ? pen.x : 'none');
+            $('#coordY').text(pen.y != -1 ? pen.y : 'none');
         }
     },
     // using clipboard.js
@@ -441,6 +568,7 @@ $(document).ready(function () {
     Colors.init();
     query.init();
     board.init();
+    pen.init();
     var sock = io();
     sock.on('place-start',  function(data) {
         // buffer - board in bytes
@@ -448,10 +576,11 @@ $(document).ready(function () {
         board.buildBoard(new Uint8Array(data.board));
         progress.set_time(data.time)
     });    
-    sock.on('set-board', function (params) {
-        let color_idx = parseInt(params['color']);
-        let x = parseInt(params['x']);
-        let y = parseInt(params['y']);
+    sock.on('set-board', function (x, y, color_idx) {
+        //let x = params[SET_BOARD_PARAM_X_IDX];
+        //let y = params[SET_BOARD_PARAM_Y_IDX];
+        //let color_idx = params[SET_BOARD_PARAMS_COLOR_IDX];
+        console.log(x,y, color_idx);
         board.buffer[getOffset(x, y)] = Colors.colors[color_idx].abgr;
         board.updateBoard()
     });
@@ -478,22 +607,16 @@ $(document).ready(function () {
         function(){board.update_coords();},
         function(){board.update_coords();}
     );
-    board.canvas.mousemove(function (e) {
-        let coords = board.getCoords(event);
-        if (coords.x >= 0 && 1000 > coords.x && coords.y >= 0 && 1000 > coords.y) {
-            board.x_mouse = coords.x;
-            board.y_mouse = coords.y;
-        } else { board.x_mouse = board.y_mouse = -1;} //set the strings null 
-        board.update_coords();
-    }).mouseleave(function () {
-        board.x_mouse = board.y_mouse = -1; 
-        board.update_coords();
-    }).bind('mousewheel', (event) => {
-        query.set_scale(Math.max(query.scale + Math.sign(event.originalEvent.wheelDelta), 0.5));
-    })[0].addEventListener('dblclick', function () {   // for not breaking the 
+    board.canvas
+    .mousemove((event) => pen.set_pos(event))
+    .mouseleave(() => pen.clear_pos())
+    .bind('mousewheel', (event) => {
+        query.set_scale(Math.max(query.scale + Math.sign(event.originalEvent.wheelDelta), 0.9));
+    })[0].addEventListener('dblclick', (event) => {   // for not breaking the 
         // jquery dblclick dont work on some machines but addEventListner does 
         // source: https://github.com/Leaflet/Leaflet/issues/4127
         /*Get XY https://codepo8.github.io/canvas-images-and-pixels/#display-colour*/
+        pen.set_pos(event);
         if(!_.isNull(progress.work)){
             Swal.fire({
                 icon: 'warning',
@@ -501,7 +624,7 @@ $(document).ready(function () {
                 text: 'You need to end for your time to finish',
               });
         }    
-        else if(_.isNull(board.color)) {
+        else if(_.isNull(pen.color)) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Select Color',
@@ -510,11 +633,11 @@ $(document).ready(function () {
         }
         else {
             sock.emit('set-board', {
-                'color': board.color,
-                'x': board.x_mouse,
-                'y': board.y_mouse,
+                'color': pen.color,
+                'x': pen.x,
+                'y': pen.y,
             }, callback=(next_time)=>{
-                if(!(_.isUndefined(next_time) || next_time == 'undefiend')){
+                if(!(_.isUndefined(next_time) || next_time == 'undefined')){
                     progress.set_time(next_time)
                 }
             })
@@ -535,16 +658,18 @@ $(document).ready(function () {
                 Math.round(board.drag.startY + (board.drag.dragY - e.pageY) / board.scale)
             );
         }
-    }).mouseup(function (e) {
+    }).mouseup(() => {
         board.drag.active = false;
-        board.drag.active
     })
-    $('.colorBtn').each(function () {
-        $(this).css('background-color', Colors.colors[parseInt($(this).attr('value'))].css_format); // set colors
-    }).click(function (event) {
+    $('.colorButton')
+    .each(function () {
+        $(this).css('background-color',
+        Colors.colors[parseInt($(this).attr('value'))].css_format()); // set colors
+    })
+    .click(function (event) {
         event.preventDefault(); // prevent default clicking
-        board.color = parseInt($(this).attr('value'));
-        $('.colorBtn[state="1"]').attr('state', '0');
+        pen.color = parseInt($(this).attr('value'));
+        $('.colorButton[state="1"]').attr('state', '0');
         $(this).attr('state', '1');
     });
     $(document).keypress(function(e) {
@@ -556,17 +681,17 @@ $(document).ready(function () {
                 break;
             }
             case 'KeyC': {
-                let button = $(".colorBtn[state='1']").first();
+                let button = $(".colorButton[state='1']").first();
                 // if any of the is undefiend - reset
                 if (_.isUndefined(button[0]) || _.isUndefined(button.next()[0])) {
-                    $(".colorBtn[value='0']").click();
+                    $(".colorButton[value='0']").click();
                 } else { $(button).next().click() }
                 break;
             }
             case 'KeyZ': {
-                let button = $(".colorBtn[state='1']");
+                let button = $(".colorButton[state='1']");
                 if (_.isUndefined(button) || _.isUndefined(button.prev()[0])) {
-                    $(".colorBtn[value='15']").click();
+                    $(".colorButton[value='15']").click();
                 } else { $(button).prev().click() }
                 break;
             }
@@ -580,14 +705,20 @@ $(document).ready(function () {
                 query.set_scale(query.scale > 1 ? query.scale - 1 : 0.5);
             }
         }
-    }).keydown(function(e){
+    }).keydown((e) => {
         keyCode = (e || window.event).keyCode;
         let dir = _.findWhere(DIRECTION_MAP, {key: keyCode})
-        if (!_.isUndefined(dir)) {
-            board.moveBoard(dir);
-        } 
+        if ((!_.isUndefined(dir)) && !dir.set) {
+            board.addMovement(dir)
+        }
         if(keyCode == ESC_KEY_CODE){ quit_painter_alert(); }
-    });
+    }).keyup((e) => {
+        keyCode = (e || window.event).keyCode;
+        let dir = _.findWhere(DIRECTION_MAP, {key: keyCode})
+        if ((!_.isUndefined(dir)) && dir.set) {
+            board.subMovement(dir);
+        };
+    })
     // change toggle button
     $('#toggle-toolbox-button').click(function (e) {
         e.preventDefault();

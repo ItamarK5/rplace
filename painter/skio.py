@@ -60,12 +60,11 @@ class Board:
         sio.start_background_task(self.__set_at, x=x, y=y, color=color)
 
     def __set_at(self, x, y, color) -> NoReturn:
-        with app.test_request_context():
-            self.__lock.acquire()
-            self.board[y, x // 2] &= 0x1111 << (x % 2) * 4
-            self.board[y, x // 2] |= color << (1 - (x % 2)) * 4
-            emit('set-board', (x, y, color), {'brodcast': True})
-            self.__lock.release()
+        self.__lock.acquire()
+        self.board[y, x // 2] &= 0x1111 << (x % 2) * 4
+        self.board[y, x // 2] |= color << (1 - (x % 2)) * 4
+        emit('set-board', (x, y, color), brodcast=True)
+        self.__lock.release()
 
     def save_board(self) -> NoReturn:
         self.__lock.acquire()
@@ -73,7 +72,7 @@ class Board:
         self.__lock.release()
         np.save(BOARD_PATH, brd)
         np.save(COPY_BOARD_PATH, brd)
-        Timer(5, self.save_board)
+        Timer(60, self.save_board)
 
     def get_bytes(self) -> bytes:
         return self.board.tobytes()
@@ -101,17 +100,18 @@ def set_board(params: Dict[str, Any]) -> Optional[str]:
             return str(current_user.get_next_time())
         # validating parameter
         if 'x' not in params or (not isinstance(params['x'], int)) or not (0 <= params['x'] < 1000):
-            return 'undefiend'
+            return 'undefined'
         if 'y' not in params or (not isinstance(params['y'], int)) or not (0 <= params['y'] < 1000):
-            return 'undefiend'
+            return 'undefined'
         if 'color' not in params or (not isinstance(params['color'], int)) or not (0 <= params['color'] < 16):
-            return 'undefiend'
+            return 'undefined'
         next_time = current_time  # + MINUTES_COOLDOWN
         current_user.set_next_time(next_time)
-        x, y, clr = params['x'], params['y'], params['color']
+        x, y, clr = int(params['x']), int(params['y']), int(params['color'])
         db.session.add(Pixel(x=x, y=y, color=clr, drawer=current_user.id, drawn=current_time.timestamp()))
-        board.set_at(x, y, clr)
+        #board.set_at(x, y, clr)
         db.session.commit()
+        emit('set-board', (x, y, clr), brodcast=True)
         # setting the board
         """
         if x % 2 == 0:
@@ -122,7 +122,8 @@ def set_board(params: Dict[str, Any]) -> Optional[str]:
             board[y, x // 2] |= clr << 4
         """
 #        board.set_at(x, y, color)
+        print(next_time)
         return str(next_time)
     except Exception as e:
         print(e)
-        return 'undefiend'
+        return 'undefined'

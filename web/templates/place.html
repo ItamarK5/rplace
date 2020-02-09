@@ -24,13 +24,14 @@
 </head>
 <body>
     <div id="board-container"><div id="board-zoomer"><div id="board-mover">
+        <canvas id="pen" class="pixelate" width="1000" height="1000"></canvas>
         <canvas id="board" class='pixelate' width='1000', height='1000'>Wait, Loading...</canvas>
     </div></div></div>
     <div id="toolbox" class="selectnone" hide='0'>
         <div id='toggle-toolbox-button' class='center-x' state='1'></div>   {# state == 1 so it be open at start #}
         <div id="color-table-box">
             <div id=colorTable class='center'>
-                {% for i in range(16) %}<div class='colorBtn' state='0' value='{{i}}'></div>{% endfor %}                
+                {% for i in range(16) %}<div class='colorButton' state='0' value='{{i}}'></div>{% endfor %}                
             </div>
         </div>
         <div id="icon-container">
