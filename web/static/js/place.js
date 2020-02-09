@@ -389,7 +389,7 @@ const pen = {
             }
             pen.reminderX = pen.x;
             pen.reminderY = pen.y;
-            if(self.has_color){
+            if(self.has_color && this.is_at_board()){
                 ctx.fillStyle = ctx.fillStyle = Colors.colors[self.color].css_format(0.5)
                 ctx.fillRect(pen.x,pen.y,1,1);
                 self.needsdraw =false;
