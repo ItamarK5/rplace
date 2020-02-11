@@ -11,6 +11,7 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" integrity="sha256-/sdxenK1NDowSNuphgwjv8wSosSNZB0t5koXqd7XqOI=" crossorigin="anonymous" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.css" integrity="sha256-wMES50JHO82E/LjWWLWeCXXQahHeA0oemqGIfMkD5BI=" crossorigin="anonymous" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" integrity="sha256-UZFVAO0Fn854ajzdWnJ2Oze6k1X4LNqE2RJPW3MBfq8=" crossorigin="anonymous" />
+        <link rel="stylesheet" href="{{url_for('other.serve_static', key='admin.css')}}">
         <style>{% include 'menu/nav.css' %}</style>
     </head>
     <body>
@@ -18,7 +19,7 @@
         {% include "menu/nav.html" %}
         {% endwith %}
         <div class="container">
-        <div class="row justify-content-center center-text"><h2 id="title" class="display-4"><u>Admin Privilage<i class="fas fa-hand-middle-finger"></i></u></h2></div>
+        <div class="row justify-content-center center-text"><h2 id="title" class="display-4 no-select"><u>Admin Privilage<i class="fas fa-hand-middle-finger"></i></u></h2></div>
         <div class="row justify-content-center">
             <button id='server-button' state="1" class="btn round-rect">
                 <h6>Turn Off Painter</h6>

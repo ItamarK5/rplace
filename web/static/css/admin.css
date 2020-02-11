@@ -12,3 +12,4 @@ tr td .fa-user-shield {color:#e884e8;}
 tr:hover td .fa-user-shield {color:#af42af;}
 .fa-user {color:green;}
 tr, td, th {user-select:none;}
+.user-select-none {user-select:none;}

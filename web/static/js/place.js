@@ -1,8 +1,5 @@
 const CANVAS_SIZE = 1000;
-const X_AXIS = 'x';
-const Y_AXIS = 'y';
 const ESC_KEY_CODE = 27;
-const TIMEZONE_FACTOR = 60*1000;    // 60000
 const MIN_STEP_SIZE = 3;
 const MAX_SCALE = 50;
 const DRAW_COOLDOWN = 60;
@@ -113,7 +110,7 @@ class PalColor {
     get abgr() {
         return (0xFF000000 | this.r | this.g << 8 | this.b << 16) << 0;
     }
-    css_format(alpha=255) {
+    css_format(alpha=1) {
         return `rgba(${this.r}, ${this.g}, ${this.b}, ${alpha})`;
     }
 }
@@ -213,7 +210,7 @@ var query = {
     y: 500,        // the y of the center pixel in the canvas on screen
     scale: 4,
     // initialize the 
-    init: function () {
+    init() {
         // replace default position by fragments
         let is_any_frag_unvalid = false;
         // x
@@ -248,16 +245,16 @@ var query = {
     get __path() {
         return `x=${this.x}&y=${this.y}&scale=${this.scale}`
     },
-    hash : function() {
+    hash() {
         return `#${this.__path}`
     },
-    arguments : function() {
+    arguments() {
         return `?${this.__path}`
     },
     // validation check fo reach attributes
-    is_valid_new_x: (val) => 0 <= val && val < CANVAS_SIZE && val != this.x,
-    is_valid_new_y: (val) => 0 <= val && val < CANVAS_SIZE && val != this.y,
-    is_valid_new_scale: (val) => 0.5 <= val && val <= MAX_SCALE && val != this.scale,
+    is_valid_new_x(val) { 0 <= val && val < CANVAS_SIZE && val != this.x },
+    is_valid_new_y(val) { 0 <= val && val < CANVAS_SIZE && val != this.y },
+    is_valid_new_scale(val) { 0.5 <= val && val <= MAX_SCALE && val != this.scale },
     // use regex to get fragments
     fragments: function() {
         return {
@@ -323,37 +320,31 @@ var query = {
 const pen = {
     x:null,
     y:null,
-    reminderX:null,
-    reminderY:null,
+    reminderX:0,
+    reminderY:0,
     __color:0,
     canvas:null,
-    needsdraw:false,
     init() {
         this.color = $('.colorButton').index('[state="1"]')
-        this.canvas = $('#pen');
-        let ctx = this.canvas[0].getContext('2d');
-        ctx.globalAlpha = 0.9;
-        ctx.fillStyle = 'rgba(0,0,0,0)'
-        ctx.fillRect(0,0,1000,1000);
     },
     update_offset(canvas_event) {
         /*this.x = canvas_event.offsetX;
         this.y = canvas_event.offsetY;*/
-        let x = Math.floor((canvas_event.pageX - board.mover[0].getClientRects()[0].left) / board.scale);
-        let y = Math.floor((canvas_event.pageY - board.mover[0].getClientRects()[0].top) / board.scale)-1 // because reasons, during debugging it come to this;
+        // read this shit https://stackoverflow.com/a/12142675
+        let x = Math.floor((canvas_event.pageX - $(board.canvas).offset().left) / board.scale);
+        let y = Math.floor((canvas_event.pageY - $(board.canvas).offset().top) / board.scale)-1 // because reasons, during debugging it come to this;
         if (!(x >= 0 && 1000 > x && y >= 0 && 1000 > y)) {
            this.clear_pos(); // set values to -1
         } else if(x != this.x || y != this.y){
             this.x = x;
             this.y = y;
-            this.updatePen()
+            board.updateScreen()
         }
-    },
-    
+    }, 
     set_pos(canvas_event){
         this.update_offset(canvas_event);
         board.update_coords();   
-        this.updatePen()  
+        board.updateScreen()
     },
     clear_pos(){
         this.x = this.y = -1;
@@ -365,7 +356,7 @@ const pen = {
     set color(color){
         console.log(color);
         this.__color = color;
-        board.updateBoard()
+        board.updateScreen()
     },
     is_at_board() {
         return this.x != -1 && this.y != -1
@@ -374,29 +365,8 @@ const pen = {
         return !(_.isNull(this.oldX) || _.isNull(this.oldY))
     },
     canUpdatePen() {
-        return (!this.needsdraw) && this.has_color && this.is_at_board() && this.has_old_xy()
+        return this.has_color && this.is_at_board()
     },
-    updatePen(){
-        if(!this.canUpdatePen()){
-            return;
-        }
-        this.needsdraw = true;
-        let self =this;
-        window.requestAnimationFrame(() => {
-            let ctx = self.canvas[0].getContext('2d');
-            // must check
-            if(!(_.isNull(pen.reminderX) || _.isNull(pen.reminderY))){
-                ctx.clearRect(pen.reminderX, pen.reminderY, 1, 1);
-            }
-            pen.reminderX = pen.x;
-            pen.reminderY = pen.y;
-            if(self.has_color && this.is_at_board()){
-                ctx.fillStyle = ctx.fillStyle = Colors.colors[self.color].css_format(0.5)
-                ctx.fillRect(pen.x,pen.y,1,1);
-                self.needsdraw =false;
-            }
-        })
-    }
 }
 
 
@@ -407,16 +377,16 @@ var board = {
     x: 0, y: 0,
     scale: SIMPLE_UNZOOM_LEVEL,
     drag: { active: false, startX: 0, startY: 0, dragX: 0, dragY: 0 },
-    color: null, rel_pos: { x: 0, y: 0 },
     zoomer: null, canvas:       null,
     mover:  null, container:    null,
     needsdraw: false, move_vector: [0,0],
-    keymove_interval:null,
+    keymove_interval:null, ctx:null,
     ready:false,
     init: function () {
         this.zoomer = $('#board-zoomer');
         this.container = $('#board-container');
         this.canvas = $('#board');
+        this.ctx = this.canvas[0].getContext('2d');
         this.mover = $('#board-mover');
         this.canvas.attr('alpha', 0);
         this.updateZoom();      // also centers
@@ -467,24 +437,7 @@ var board = {
         // copying r/place, using Uint32Array to store the values
         //console.log(Date.now()-t); deubg time
         this.ready = true;
-        self.updateBoard();
-    },
-
-    updateBoard: function () {
-        /* https://josephg.com/blog/rplace-in-a-weekend/*/
-        if(this.needsdraw || !this.ready){return;}
-        let self = this;
-        requestAnimationFrame(function() {  // 1 millisecond call, for all animation
-            ctx = self.canvas[0].getContext('2d');
-            /*ctx.fillStyle = '#eee'
-            ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-            ctx.save();
-            ctx.imageSmoothingEnabled = false;
-            ctx.scale(query.scale, query.scale);
-            ctx.translate(-board.x, -board.y);
-            ctx.restore();*/
-            ctx.putImageData(self.image, 0, 0);
-        })
+        this.updateScreen()
     },
 
     /*
@@ -562,9 +515,33 @@ var board = {
             $('#coordY').text(pen.y != -1 ? pen.y : 'none');
         }
     },
-    // using clipboard.js
-    // https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/write
+    updateScreen(){
+        if(board.needsdraw || !board.ready){return;}
+        this.needsdraw=true;
+        requestAnimationFrame(() => {  // 1 millisecond call, for all animation
+            /*ctx.fillStyle = '#eee'
+            ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+            ctx.save();
+            ctx.imageSmoothingEnabled = false;
+            ctx.scale(query.scale, query.scale);
+            ctx.translate(-board.x, -board.y);
+            ctx.restore();*/
+            t = Date.now()
+            this.ctx.fillStyle = 'gray'
+            this.ctx.fillRect(1000, 1000, 0, 0)
+            this.needsdraw=false;
+            this.ctx.putImageData(this.image, 0, 0);
+            if(pen.canUpdatePen()){
+                this.ctx.fillStyle = Colors.colors[pen.color].css_format(0.5)
+                this.ctx.fillRect(pen.x,pen.y,1,1);
+            }
+        });
+    }
 };
+
+
+
+
 $(document).ready(function () {
     Colors.init();
     query.init();
@@ -583,7 +560,7 @@ $(document).ready(function () {
         //let color_idx = params[SET_BOARD_PARAMS_COLOR_IDX];
         console.log(x,y, color_idx);
         board.buffer[getOffset(x, y)] = Colors.colors[color_idx].abgr;
-        board.updateBoard()
+        board.updateScreen()
     });
     sock.on('update-timer', function(time){
         progress.set_time(time);

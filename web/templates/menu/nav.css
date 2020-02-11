@@ -1,3 +1,6 @@
+.nav > * {margin-right:5px;}
+.nav:last-child {margin-right:0px;}
+.nav-link {color:#212529 !important;  }
 .navbar {background-color:#444444 !important}
 .navbar-brand{color:yellow !important;}
 .nav-item > .fas {transition: background-color .5s; -webkit-transition:background-color .5s;}

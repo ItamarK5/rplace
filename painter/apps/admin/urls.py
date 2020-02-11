@@ -20,5 +20,4 @@ def admin() -> str:
     """
 
     pagination = User.query.paginate(1, 20)
-    print(pagination)
     return render_template('admin/admin.html', pagination=pagination)
