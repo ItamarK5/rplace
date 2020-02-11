@@ -34,7 +34,7 @@ class User(db.Model, UserMixin):
         ).hex()
 
     def __repr__(self) -> str:
-        return f"<User(name={self.name}>"
+        return f"<User(name={self.username}>"
 
     def get_next_time(self) -> datetime:
         return datetime.fromtimestamp(self.next_time)

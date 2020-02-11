@@ -363,6 +363,7 @@ const pen = {
     // color getter ans setter
     get color(){return this.__color;},
     set color(color){
+        console.log(color);
         this.__color = color;
         board.updateBoard()
     },

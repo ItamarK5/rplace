@@ -1,0 +1,14 @@
+body, html { background-color:#222222 !important; }
+#title {color:rgb(56, 221, 56);}
+#server-button[state="1"]{background-color:greenyellow;color:green;}
+#server-button[state="2"]{background-color:rgb(170, 36, 36);color:red;}
+th {color:whitesmoke !important;}
+.user-row > * {background-color:#3270b3 !important;}
+tr:hover td{ background-color:yellowgreen !important; }
+.fit-column {width:1 !important;white-space:nowrap !important;}
+.table th, .table tr {padding:8px !important;}
+.user-row {background-color#1478e3; color:black;}
+tr td .fa-user-shield {color:#e884e8;}
+tr:hover td .fa-user-shield {color:#af42af;}
+.fa-user {color:green;}
+tr, td, th {user-select:none;}

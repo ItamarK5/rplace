@@ -1,0 +1,7 @@
+{% macro user_privilage(user) %}
+{% if user.is_admin %}
+    <i class="fa fa-user-shield" data-toggle="tooltip" data-placement="left" title="admin"></i>
+{% else %}
+    <i class="fa fa-user" data-toggle="tooltip" data-placement="left" title="user"></i></td>
+{% endif %}
+{% endmacro %}
