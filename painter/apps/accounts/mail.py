@@ -1,6 +1,8 @@
-from flask_mail import Mail, Message
 from os import path
+
 from flask import current_app, render_template
+from flask_mail import Message
+
 from painter.constants import MIME_TYPES
 from painter.functions import send_message
 

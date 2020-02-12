@@ -1,14 +1,16 @@
 import time
 from os import path
+
 from flask import Blueprint, url_for, render_template, redirect, current_app
-from .helpers import *
-from .forms import LoginForm, SignUpForm
-from .mail import send_sign_up_mail
-from painter.extensions import db
-from flask_login import login_user, logout_user, current_user, login_required
-from painter.constants import WEB_FOLDER
+from flask_login import login_user, logout_user, current_user
 from werkzeug.wrappers import Response
-from painter.models.user import User
+
+from painter.constants import WEB_FOLDER
+from painter.extensions import db
+from painter.models.user import User, Role
+from .forms import LoginForm, SignUpForm
+from .helpers import *
+from .mail import send_sign_up_mail
 
 # router blueprint -> routing all pages that relate to authorization
 accounts_router = Blueprint('auth',
@@ -21,7 +23,7 @@ def init_tokens():
     TokenSerializer.init_serializer(current_app)
 
 
-@accounts_router.route('/login', methods=('GET', 'POST'),)
+@accounts_router.route('/login', methods=('GET', 'POST'), )
 def login() -> Response:
     """
     added in version 1.0.0
@@ -54,8 +56,8 @@ def signup() -> Response:
     """
     form = SignUpForm()
     if form.validate_on_submit():
-        name, pswd, email = form.username.data,\
-                            form.password.data,\
+        name, pswd, email = form.username.data, \
+                            form.password.data, \
                             form.email.data
         # sending the mail
         login_error = send_sign_up_mail(name, email, TokenSerializer.signup.dumps(
@@ -89,7 +91,7 @@ def confirm(token: str) -> Response:
             view_name='Sign Up',
             view_ref='auth.signup',
             title='You Made a Mess',
-            page_title='Unvalid Token',
+            page_title='non valid Token',
             message='The token you entered is not valid, did you messed with him?'
                     ' if you can\'t access the original mail pless sign-up again'
         )
@@ -140,11 +142,11 @@ def create_user() -> Response:
         db.session.delete(user)
         db.session.commit()
     user = User(
-            username='socialpainter5',
-            hash_password='QWEASDZXC123',
-            email='socialpainterdash@gmail.com',
-            is_admin=True,
-        )
+        username='socialpainter5',
+        hash_password='QWEASDZXC123',
+        email='socialpainterdash@gmail.com',
+        role=Role.admin,
+    )
     db.session.add(user)
     db.session.commit()
     return redirect(url_for('.login'))

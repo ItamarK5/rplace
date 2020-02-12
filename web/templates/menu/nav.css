@@ -6,6 +6,6 @@
 .nav-item > .fas {transition: background-color .5s; -webkit-transition:background-color .5s;}
 .fa-paint-brush:hover {background-color:yellow;}
 .fa-door-open:hover {background-color:rgb(241, 3, 3);}
-.fa-home.set, .fa-home:hover {background-color:yellowgreen !important;}{% if current_user.is_admin %}
+.fa-home.set, .fa-home:hover {background-color:yellowgreen !important;}{% if current_user|is_admin %}
 .fa-tools.set, .fa-tools:hover {background-color:#007bff !important;}
 {% endif %}

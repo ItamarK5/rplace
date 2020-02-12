@@ -1,0 +1,15 @@
+#instructions{color:yellow!important;overflow-wrap: default;}
+kbd{color:yellow!important;}
+body, .container {background-color: #222222 !important; }
+.option-list { list-style-type: none !important;width:fit-content;}
+.option-list > * { margin-bottom:8px !important;}
+.option-list > *::before { content: "•";display: inline-block !important; width: 1em !important; margin-left: -1em !important;}/* https://www.w3.org/Style/Examples/007/color-bullets.en.html */
+.no-select {user-select:none !important;}
+.no-select > * {user-select: none !important;}
+img {
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
+} /* https://stackoverflow.com/a/32548403*/

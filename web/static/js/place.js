@@ -252,9 +252,9 @@ var query = {
         return `?${this.__path}`
     },
     // validation check fo reach attributes
-    is_valid_new_x(val) { 0 <= val && val < CANVAS_SIZE && val != this.x },
-    is_valid_new_y(val) { 0 <= val && val < CANVAS_SIZE && val != this.y },
-    is_valid_new_scale(val) { 0.5 <= val && val <= MAX_SCALE && val != this.scale },
+    is_valid_new_x(val) {return 0 <= val && val < CANVAS_SIZE && val != this.x },
+    is_valid_new_y(val) {return 0 <= val && val < CANVAS_SIZE && val != this.y },
+    is_valid_new_scale(val) {return 0.5 <= val && val <= MAX_SCALE && val != this.scale },
     // use regex to get fragments
     fragments: function() {
         return {
@@ -265,7 +265,7 @@ var query = {
         };
     },
     // set x and
-    set_center: function (x = undefined, y = undefined, to_update = true) {
+    set_center(x = undefined, y = undefined, to_update = true) {
         let flag = false;
         if(this.scale >= 1){
             x = Math.round(x);
@@ -276,10 +276,10 @@ var query = {
         if (to_update && flag) { board.centerPos(); this.set_window_hash() }
         return flag;
     },
-    set_scale: function(scale, to_update = true) {
+    set_scale(scale, to_update = true) {
         if(this.is_valid_new_scale(scale)){
             this.scale = scale;
-            if(this.scale < 1)
+            if(this.scale < Math.min(innerWidth/board.width, innerHeight/board.height))
             {
                 this.set_center(CANVAS_SIZE/2, CANVAS_SIZE/2, false);
             }
@@ -289,7 +289,7 @@ var query = {
             this.set_window_hash()
         }
     },
-    refresh_fragments: function (to_update) {
+    refresh_fragments(to_update) {
         /*  refresh_fragments(bool) -> void
          *  refresh the query object by the current hash values if they are valid
          */
@@ -306,7 +306,7 @@ var query = {
         }
     },
     // set the window.loaction.hash to the query hash value
-    set_window_hash: function() {
+    set_window_hash() {
         //  update location
         if (window.location.hash != this.hash) {
             // change hash without triggering events
@@ -382,7 +382,7 @@ var board = {
     needsdraw: false, move_vector: [0,0],
     keymove_interval:null, ctx:null,
     ready:false,
-    init: function () {
+    init(){
         this.zoomer = $('#board-zoomer');
         this.container = $('#board-container');
         this.canvas = $('#board');
@@ -422,7 +422,7 @@ var board = {
         }
     },
     // on chrome takes ~1552 ms -- even less
-    buildBoard: function (buffer) {
+    buildBoard(buffer) {
         this.image = new ImageData(CANVAS_SIZE, CANVAS_SIZE);
         this.buffer = new Uint32Array(this.image.data.buffer);
         let self = this;
@@ -469,6 +469,8 @@ var board = {
             + (this.scale <= 1 ? Math.round(this.x) : this.x) + "px, "
             + (this.scale <= 1 ? Math.round(this.y) : this.y) + "px)"
         );
+        console.log(this.x, this.y);
+        board.updateScreen();
     },
     updateZoom() {
         this.scale = query.scale;
@@ -689,13 +691,14 @@ $(document).ready(function () {
         if ((!_.isUndefined(dir)) && !dir.set) {
             board.addMovement(dir)
         }
-        if(keyCode == ESC_KEY_CODE){ quit_painter_alert(); }
+        
     }).keyup((e) => {
         keyCode = (e || window.event).keyCode;
         let dir = _.findWhere(DIRECTION_MAP, {key: keyCode})
         if ((!_.isUndefined(dir)) && dir.set) {
             board.subMovement(dir);
         };
+        if(keyCode == ESC_KEY_CODE){ $('#logout-button') }
     })
     // change toggle button
     $('#toggle-toolbox-button').click(function (e) {

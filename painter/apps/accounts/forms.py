@@ -1,10 +1,13 @@
 from __future__ import annotations
+
+import re
+
+from flask_login import login_user
+from flask_wtf import FlaskForm
 from wtforms import *
 from wtforms.fields.html5 import EmailField
-from flask_wtf import FlaskForm
+
 from painter.models.user import User
-from flask_login import login_user
-import re
 
 
 class LoginForm(FlaskForm):

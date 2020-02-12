@@ -3,8 +3,7 @@ $(document).ready(() => {
     $('td').click(function() {
         window.location.href = `/edit/${
             $(this)
-            .parent()
-            .children('.privilage-name')
+            .siblings('.name-col')
             .text()}`;
     });
 });

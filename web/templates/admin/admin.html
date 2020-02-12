@@ -36,15 +36,17 @@
             <tbody>
             {% for user in pagination.items %}
                 <tr{% if current_user == user %} class="user-row"{% endif %}>
-                    <td class="text-center privilage-cell">{{ user_privilage(user) }}</td>
-                    <td class="text-center privilage-name"><b>{{user.username}}</b></td>
-                    <td class="text-center privilage-mail">{{user.email}}</td>
-                    <td class="text-center privilage-time">{{user|draw_time}}</td>
+                    <td class="text-center privilage-col">{{ user_privilage(user) }}</td>
+                    <td class="text-center name-col">{{user.username}}</td>
+                    <td class="text-center mail-col">{{user.email}}</td>
+                    <td class="text-center time-col">{{user|draw_time}}</td>
                 </tr>
             </tbody>
             {% endfor %}
             <div class="modal" tabindex></div>
         </table>
+        </div>
+        <div class="row">
         </div>
     </div>
     <!-- Document said to put it here so it be faster -->

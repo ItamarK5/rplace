@@ -1,8 +1,7 @@
 from flask import Blueprint, render_template
 from os.path import join as join_path
 from painter.functions import admin_only
-from painter.models.user import User
-from .filters import draw_time
+from .filters import *  # also import User class
 
 admin_router = Blueprint(
     'admin',
@@ -10,6 +9,7 @@ admin_router = Blueprint(
 )
 
 admin_router.add_app_template_filter(draw_time, 'draw_time')
+admin_router.add_app_template_filter(is_admin, 'is_admin')
 
 
 @admin_router.route('/admin', methods=('GET',))
@@ -21,3 +21,12 @@ def admin() -> str:
 
     pagination = User.query.paginate(1, 20)
     return render_template('admin/admin.html', pagination=pagination)
+
+
+"""
+@admin_router.route('/edit/<user_id:int>', methods=('GET',))
+@admin_only
+def admin_only(user_id:int) -> str:
+    user = User.query.get(id=user_id).first()
+    if user 
+"""

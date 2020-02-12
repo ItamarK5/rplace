@@ -1,7 +1,9 @@
 {% macro user_privilage(user) %}
-{% if user.is_admin %}
+{% if user.role == user.role.admin %}
     <i class="fa fa-user-shield" data-toggle="tooltip" data-placement="left" title="admin"></i>
-{% else %}
-    <i class="fa fa-user" data-toggle="tooltip" data-placement="left" title="user"></i></td>
+{% elif user.role == user.role.common %}
+    <i class="fa fa-user" data-toggle="tooltip" data-placement="left" title="user"></i>
+{% else %}{# else if must be banned #}
+    <i class="fa fa-ban" data-toggle="tooltip" data-placement="left" title="banned"></i>
 {% endif %}
 {% endmacro %}

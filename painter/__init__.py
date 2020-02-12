@@ -1,6 +1,8 @@
-from .constants import WEB_FOLDER
-from flask import Flask
 from os import path
+
+from flask import Flask
+
+from .constants import WEB_FOLDER
 
 app = Flask(
     __name__,
@@ -9,7 +11,6 @@ app = Flask(
     template_folder=path.join(WEB_FOLDER, 'templates'),
     root_path=WEB_FOLDER
 )
-
 
 from .apps import other_router, place_router, accounts_router, admin_router
 from .config import Config  # config

@@ -1,9 +1,9 @@
 import re
-from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
-from flask import Flask
 from typing import Any, Optional, Tuple, Dict, NoReturn
-from wtforms.validators import HostnameValidation
 
+from flask import Flask
+from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
+from wtforms.validators import HostnameValidation
 
 reNAME = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
 rePSWD = re.compile(r'^[a-f0-9]{128}$')  # password hashed so get hash value
@@ -90,14 +90,10 @@ def extract_signup_signature(token: str) -> Optional[Tuple[Any, float]]:
         token, timestamp = TokenSerializer.signup.loads(token, return_timestamp=True)
     except SignatureExpired:
         return None
-    except BadSignature as e:    # error
+    except BadSignature as e:  # error
         print(e)
         return None
     finally:
         if not is_valid_signup_token(token):
             return None
     return token, timestamp.timestamp()
-
-"""
-must set that the function handles time
-"""

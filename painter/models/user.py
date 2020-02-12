@@ -1,11 +1,48 @@
-from ..extensions import db, login_manager
-from flask_login import UserMixin
-from sqlalchemy import Column, Integer, String, Float, Boolean
 from datetime import datetime
-from sqlalchemy.orm import relationship, backref
-from ..config import Config
+from enum import IntEnum, auto
 from hashlib import pbkdf2_hmac
-from typing import NoReturn
+from typing import NoReturn, Any, Type
+
+from flask_login import UserMixin
+from sqlalchemy import Column, Integer, String, Float, SmallInteger, TypeDecorator
+from sqlalchemy.orm import relationship
+
+from ..config import Config
+from ..extensions import db, login_manager
+
+
+class Role(IntEnum):
+    # https://docs.python.org/3/library/enum.html
+    banned = auto()
+    common = auto()
+    admin = auto()
+
+
+class SmallEnum(TypeDecorator):
+    """
+    Enables passing in a Python enum and storing the enum's *value* in the db.
+    The default would have stored the enum's *name* (ie the string).
+    """
+    impl = SmallInteger
+
+    def __init__(self, enum_type: Type[IntEnum], *args, **kwargs) -> None:
+        super(SmallEnum, self).__init__(*args, **kwargs)
+        self._enum_type = enum_type
+
+    def process_bind_param(self, value: Any, dialect) -> int:
+        # https://www.michaelcho.me/article/using-python-enums-in-sqlalchemy-models
+        if isinstance(value, int):
+            return value
+        elif isinstance(value, self._enum_type):
+            return value.value
+        # else
+        raise ValueError()
+
+    def process_result_value(self, value, dialect) -> IntEnum:
+        try:
+            return self._enum_type(value)
+        except ValueError:
+            raise ValueError('user privilage value isnt valid: %s' % value)
 
 
 class User(db.Model, UserMixin):
@@ -16,7 +53,7 @@ class User(db.Model, UserMixin):
     email = Column(String(254), unique=True, nullable=False)
     next_time = Column(Float(), default=0.0, nullable=False)
     pixels = relationship('Pixel', backref='users', lazy=True)
-    is_admin = Column(Boolean(), default=False, nullable=False)
+    role = Column(SmallEnum(Role), default=Role.common, nullable=False)
     sqlite_autoincrement = True
 
     def __init__(self, password=None, hash_password=None, **kwargs):

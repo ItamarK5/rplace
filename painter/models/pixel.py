@@ -1,6 +1,5 @@
-from ..extensions import db
-from datetime import datetime
 from sqlalchemy import Integer, ForeignKey, SmallInteger, Column
+from ..extensions import db
 
 
 class Pixel(db.Model):

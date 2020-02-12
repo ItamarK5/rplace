@@ -1,20 +1,21 @@
 from __future__ import annotations
-import numpy as np
-from flask_login import current_user
-from flask import Flask
-from flask_socketio import SocketIO, emit, disconnect
-from os import path
-from . import app
+
 from datetime import datetime
+from os import path
+from threading import Lock, Timer
+from typing import Any, Dict, Optional, NoReturn
+
+import numpy as np
+from flask import Flask
+from flask_login import current_user
+from flask_socketio import SocketIO, emit, disconnect
+
+from painter.constants import WEB_FOLDER
 from painter.extensions import db
 from .models.pixel import Pixel
-from painter.constants import WEB_FOLDER, MINUTES_COOLDOWN
-from typing import Any, Dict, Optional, NoReturn
-from threading import Lock, Timer
 
 BOARD_PATH = path.join(WEB_FOLDER, 'resources', 'board.npy')
 COPY_BOARD_PATH = path.join(WEB_FOLDER, 'resources', 'board2.npy')
-
 
 sio = SocketIO()
 
@@ -22,7 +23,7 @@ sio = SocketIO()
 class Board:
     def __init__(self) -> None:
         self.board = self.open_board()
-#        self.__queue = Queue()
+        #        self.__queue = Queue()
         self.__lock = Lock()
 
     @staticmethod
@@ -54,7 +55,8 @@ class Board:
 
     def init_app(self, app: Flask) -> NoReturn:
         app.before_first_request(self.save_board)
-#        app.before_first_request(self.process_board)
+
+    #        app.before_first_request(self.process_board)
 
     def set_at(self, x, y, color) -> NoReturn:
         sio.start_background_task(self.__set_at, x=x, y=y, color=color)
@@ -109,7 +111,7 @@ def set_board(params: Dict[str, Any]) -> Optional[str]:
         current_user.set_next_time(next_time)
         x, y, clr = int(params['x']), int(params['y']), int(params['color'])
         db.session.add(Pixel(x=x, y=y, color=clr, drawer=current_user.id, drawn=current_time.timestamp()))
-        #board.set_at(x, y, clr)
+        # board.set_at(x, y, clr)
         db.session.commit()
         emit('set-board', (x, y, clr), brodcast=True)
         # setting the board
@@ -121,7 +123,7 @@ def set_board(params: Dict[str, Any]) -> Optional[str]:
             board[y, x // 2] &= 0x0F
             board[y, x // 2] |= clr << 4
         """
-#        board.set_at(x, y, color)
+        #        board.set_at(x, y, color)
         print(next_time)
         return str(next_time)
     except Exception as e:
