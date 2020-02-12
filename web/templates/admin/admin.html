@@ -19,7 +19,7 @@
         {% include "menu/nav.html" %}
         {% endwith %}
         <div class="container">
-        <div class="row justify-content-center center-text"><h2 id="title" class="display-4 no-select"><u>Admin Privilage<i class="fas fa-hand-middle-finger"></i></u></h2></div>
+        <div class="row justify-content-center center-text"><h2 id="title" class="display-4 no-select"><u>Admin Privilage<i class="fas fa-shield-alt"></i></u></h2></div>
         <div class="row justify-content-center">
             <button id='server-button' state="1" class="btn round-rect">
                 <h6>Turn Off Painter</h6>
@@ -43,10 +43,18 @@
                 </tr>
             </tbody>
             {% endfor %}
-            <div class="modal" tabindex></div>
         </table>
         </div>
-        <div class="row">
+        <!-- Page List -->
+        <div class="row justify-content-cnter">
+            <div class="list-group list-group-horizontal" id="page-list">
+            <a class="list-group-item list-group-action" href="{{url_for('admin.admin', page=pagination.prev_num|string)}}">Prev</a>
+            {% if pagination.has_prev or pagination.has_next %}
+            {% for page in pagination.iter_pages() %}
+            <a class="list-group-item list-group-action" href="{{url_for('admin.admin', page=page|string)}}">{{page}}</a>
+            {% endfor %}
+            {% endif %}
+            <a class = "list-group-item list-group-action" href="{{url_for('admin.admin', page=pagination.prev_num|string)}}">Next</a>
         </div>
     </div>
     <!-- Document said to put it here so it be faster -->

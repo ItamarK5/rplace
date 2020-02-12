@@ -1,7 +1,9 @@
 body, html { background-color:#222222 !important; }
 #title {color:rgb(56, 221, 56);}
+/* button colors */
 #server-button[state="1"]{background-color:greenyellow;color:green;}
 #server-button[state="2"]{background-color:rgb(170, 36, 36);color:red;}
+/* thread colors - col headers */
 th {color:whitesmoke !important;}
 .user-row > * {background-color:#3270b3 !important;}
 tr:hover td{ background-color:yellowgreen !important; color:black;}
@@ -13,3 +15,6 @@ tr td .fa-user-shield {color:#e884e8;}
 tr:hover td .fa-user-shield {color:#af42af;}
 tr, td, th {user-select:none;}
 .user-select-none {user-select:none;}
+/* page list*/
+#page-list > a {background-color:#888888; color:#DDDDDD;}
+#page-list > a:hover {background-color:#666666; color:lime}

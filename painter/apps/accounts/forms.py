@@ -11,7 +11,7 @@ from painter.models.user import User
 
 
 class LoginForm(FlaskForm):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.non_field_errors = []
 

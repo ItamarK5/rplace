@@ -1,6 +1,5 @@
 from painter.models.user import User, Role
 from painter.constants import MINUTES_COOLDOWN
-from typing import Dict, Any
 
 
 def draw_time(user: User) -> str:

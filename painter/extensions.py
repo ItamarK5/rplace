@@ -15,7 +15,4 @@ crsf = CSRFProtect()
 # only after creating the UserModel
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
-login_manager.refresh_view = 'auth.signup'
-login_manager.needs_refresh_message = 'Someone has logined to your acccount, if you dont know who' \
-                                      'pless consider changing your account'
-
+login_manager.refresh_view = 'auth.login'
