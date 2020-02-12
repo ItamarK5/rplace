@@ -1,6 +1,8 @@
 const CANVAS_SIZE = 1000;
 const ESC_KEY_CODE = 27;
+const HOME_KEY_CODE = 36;
 const MIN_STEP_SIZE = 3;
+const MIN_SCALE = 0.5;
 const MAX_SCALE = 50;
 const DRAW_COOLDOWN = 60;
 
@@ -36,6 +38,8 @@ const VIEW_BUTTON_OPACITY = 1.0;
 const getOffset = (x, y) => (y * CANVAS_SIZE) + x;
 const getFirstIfAny = (group) => _.isNull(group) ? null : group[0]
 const clamp = (v, max, min) => Math.max(min, Math.min(v, max));
+const is_valid_scale = (scale) => MIN_SCALE <= scale && scale <= MAX_SCALE;
+const is_valid_pos = (v) => 0 <= v < CANVAS_SIZE;
 const getUTCTimestamp = () => {
     let tm = new Date();
     return Date.UTC(
@@ -62,22 +66,6 @@ function TryParseInt(str, defaultValue) {
     return retValue;
 }
 
-function quit_painter_alert() {
-    Swal.fire({
-        title: 'Are you sure?',
-        text: "Are you sure you want to leave now",
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: 'red',
-        confirmButtonText: 'Yes',
-        cancelButtonText: 'No'
-      }).then((result) => {
-          if(result.value){
-              window.location.href = '/logout';
-          }
-      });
-};
 
 const throw_message = (msg, speed = 1000, keep_speed = 100, exit_speed = null, cls = null) =>
     $("<div></div>")
@@ -116,7 +104,7 @@ class PalColor {
 }
 
 
-var Colors = {
+const Colors = {
     white: new PalColor(0xFF, 0xFF, 0xFF, 'White'),
     black: new PalColor(0x00, 0x00, 0x00, 'Black'),
     gray: new PalColor(0x80, 0x80, 0x80, 'Gray'),
@@ -147,7 +135,7 @@ var Colors = {
     clr: function (idx) { return this.colors[idx]; }
 }
 
-var progress = {
+let progress = {
     time: 0,        // time when cooldown ends
     state: 0,       // state of progress bar
     work: null,  // handler of progress update interval
@@ -179,10 +167,10 @@ var progress = {
             }
         } else if (_.isNull(self.work)) {
             self.is_working = true;
-            self.work = setInterval(function () { self.update_timer() }, 50);
+            self.work = setInterval(function () { self.updateTimer() }, 50);
        }
     },
-    update_timer() {
+    updateTimer() {
         // Updates the prorgess bar and timer each interval
         // Math.max the time until cooldown ends in ms, compare if positive (the time has not passed),
         // ceil to round up, I want to prevent the progress showing time up to that
@@ -205,7 +193,7 @@ var progress = {
 }
 
 
-var query = {
+const query = {
     x: 500,        // the x of the center pixel in the canvas on screen
     y: 500,        // the y of the center pixel in the canvas on screen
     scale: 4,
@@ -252,11 +240,11 @@ var query = {
         return `?${this.__path}`
     },
     // validation check fo reach attributes
-    is_valid_new_x(val) {return 0 <= val && val < CANVAS_SIZE && val != this.x },
-    is_valid_new_y(val) {return 0 <= val && val < CANVAS_SIZE && val != this.y },
-    is_valid_new_scale(val) {return 0.5 <= val && val <= MAX_SCALE && val != this.scale },
+    is_valid_new_x(val) {return is_valid_pos(val) && val != this.x },
+    is_valid_new_y(val) {return is_valid_pos(val) && val != this.y },
+    is_valid_new_scale(val) {return is_valid_scale(val) && val != this.scale },
     // use regex to get fragments
-    fragments: function() {
+    fragments() {
         return {
             // first checks the hash if there are none, check the location
             x: parseInt(getFirstIfAny(window.location.hash.match(reHashX) || window.location.search.match(reArgX))),
@@ -318,12 +306,7 @@ var query = {
 
 
 const pen = {
-    x:null,
-    y:null,
-    reminderX:0,
-    reminderY:0,
-    __color:0,
-    canvas:null,
+    x:null, y:null, canvas:null,
     init() {
         this.color = $('.colorButton').index('[state="1"]')
     },
@@ -361,9 +344,6 @@ const pen = {
     is_at_board() {
         return this.x != -1 && this.y != -1
     },
-    has_old_xy() {
-        return !(_.isNull(this.oldX) || _.isNull(this.oldY))
-    },
     canUpdatePen() {
         return this.has_color && this.is_at_board()
     },
@@ -371,7 +351,7 @@ const pen = {
 
 
 
-var board = {
+const board = {
     image: null,
     buffer: null,
     x: 0, y: 0,
@@ -381,7 +361,7 @@ var board = {
     mover:  null, container:    null,
     needsdraw: false, move_vector: [0,0],
     keymove_interval:null, ctx:null,
-    ready:false,
+    ready:false, queue:null,
     init(){
         this.zoomer = $('#board-zoomer');
         this.container = $('#board-container');
@@ -490,7 +470,7 @@ var board = {
         return MIN_STEP_SIZE * MAX_SCALE / this.scale;
     },
 
-    moveBoard: function (dx, dy) {
+    moveBoard(dx, dy) {
         /*      let x = this.keep_inside_border(this.real_x, dir[DIR_INDEX_XNORMAL]*this.step*this.scale, rect.left, rect.right)/this.scale;
               let y = this.keep_inside_border(this.real_y, dir[DIR_INDEX_YNORMAL]*this.step*this.scale, rect.top, rect.bottom)/this.scale;
               console.log(x, y);
@@ -542,8 +522,6 @@ var board = {
 };
 
 
-
-
 $(document).ready(function () {
     Colors.init();
     query.init();
@@ -560,7 +538,6 @@ $(document).ready(function () {
         //let x = params[SET_BOARD_PARAM_X_IDX];
         //let y = params[SET_BOARD_PARAM_Y_IDX];
         //let color_idx = params[SET_BOARD_PARAMS_COLOR_IDX];
-        console.log(x,y, color_idx);
         board.buffer[getOffset(x, y)] = Colors.colors[color_idx].abgr;
         board.updateScreen()
     });
@@ -590,8 +567,9 @@ $(document).ready(function () {
     board.canvas
     .mousemove((event) => pen.set_pos(event))
     .mouseleave(() => pen.clear_pos())
-    .bind('mousewheel', (event) => {
-        query.set_scale(Math.max(query.scale + Math.sign(event.originalEvent.wheelDelta), 0.9));
+    .bind('mousewheel', (e) => {
+        e.preventDefault();
+        query.set_scale(clamp(query.scale + Math.sign(e.originalEvent.wheelDelta)*0.5, MAX_SCALE, MIN_SCALE));
     })[0].addEventListener('dblclick', (event) => {   // for not breaking the 
         // jquery dblclick dont work on some machines but addEventListner does 
         // source: https://github.com/Leaflet/Leaflet/issues/4127
@@ -679,10 +657,10 @@ $(document).ready(function () {
         if(e.originalEvent.shiftKey){
             if(e.originalEvent.key == '+')      // Plues
             {
-                query.set_scale(query.scale >= 1 ? query.scale + 1 : 1);
+                query.set_scale(query.scale >= 1 ? query.scale + 0.5 : 1);
             }
             else if(e.originalEvent.key == '_'){        // key for minus
-                query.set_scale(query.scale > 1 ? query.scale - 1 : 0.5);
+                query.set_scale(query.scale > 1 ? query.scale - 0.5 : MIN_SCALE);
             }
         }
     }).keydown((e) => {
@@ -698,16 +676,19 @@ $(document).ready(function () {
         if ((!_.isUndefined(dir)) && dir.set) {
             board.subMovement(dir);
         };
-        if(keyCode == ESC_KEY_CODE){ $('#logout-button') }
+        if(keyCode == ESC_KEY_CODE){ $('#logout-button').click(); }
+        else if(keyCode == HOME_KEY_CODE) { $('#home-button').click(); }
     })
     // change toggle button
     $('#toggle-toolbox-button').click(function (e) {
         e.preventDefault();
         let toolbox = $('#toolbox')[0];
+        // fade icons and move the toolbox down by setting its hide attribute to 1
         if(toolbox.getAttribute('hide') == 0){
             $('.icon-button').fadeOut(500)
             toolbox.setAttribute('hide', 1)
         } else {
+        // reveal icons
             $('.icon-button').fadeIn(500)
             toolbox.setAttribute('hide', 0)
         }
@@ -735,7 +716,25 @@ $(document).ready(function () {
             : SIMPLE_ZOOM_LEVEL
     )});
     //logout
-    $('#logout-button').click(quit_painter_alert);
+    $('#logout-button').click((e) => {
+        // if there is any keypressed
+        if(e){e.preventDefault();}
+        // swal leave event
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "Are you sure you want to leave now",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: 'red',
+            confirmButtonText: 'Yes',
+            cancelButtonText: 'No'
+        }).then((result) => {
+          if(result.value){
+              window.location.href = '/logout';
+          }
+        });
+    });
     $('#home-button').click(function(){
         Swal.fire({
             title: 'return Home?',
