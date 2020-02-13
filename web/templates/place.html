@@ -29,14 +29,7 @@
     <script src="{{url_for('other.serve_static', key='place.js')}}"></script>
 </head>
 <body>
-<div id="board-container">
-    <div id="board-zoomer">
-        <div id="board-mover">
-            <canvas class="pixelate" height="1000" id="pen" width="1000"></canvas>
-            <canvas , class='pixelate' height='1000' id="board" width='1000'>Wait, Loading...</canvas>
-        </div>
-    </div>
-</div>
+<canvas class='pixelate' height='1000' id="board" width='1000'>Wait, Loading...</canvas>
 <div class="selectnone" hide='0' id="toolbox">
     <div class='center-x' id='toggle-toolbox-button' state='1'></div>
     {# state == 1 so it be open at start #}

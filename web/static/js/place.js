@@ -432,23 +432,22 @@ const board = {
             this.keymove_interval = null;
         }
     },
-    // on chrome takes ~1552 ms -- even less
+    //uffer on chrome takes ~1552 ms -- even less
     buildBoard(buffer) {
-        this.image = new ImageData(CANVAS_SIZE, CANVAS_SIZE);
-        this.buffer = new Uint32Array(this.image.data.buffer);
-        let self = this;
-        //var t = Date.now(); deubg time
+        t = performance.now();
+        let image_data   = new ImageData(CANVAS_SIZE, CANVAS_SIZE);
+        let image_buffer = new Uint32Array(this.image.data.buffer);
         buffer.forEach(function (val, index) {
             // first version of putting data, looping over the image buffer array and not of buffer of message
             //var bit = buffer[Math.floor(index/2)];
             //self.buffer[index] = reverseRGBA(COLORS[index % 2 == 0 ? bit % 16 : bit >> 4]);
-            self.buffer[index * 2] = Colors.colors[val % 16].abgr;
-            self.buffer[index * 2 + 1] = Colors.colors[Math.floor(val / 16)].abgr;
+            image_buffer[index * 2] = Colors.colors[val % 16].abgr;
+            image_buffer[index * 2 + 1] = Colors.colors[Math.floor(val / 16)].abgr;
         });
-        // copying r/place, using Uint32Array to store the values
-        //console.log(Date.now()-t); deubg time
-        this.queue = null;
-        this.updateScreen()
+        this.putImageData(image_data,0,0);
+        console.log(performance.now()-t);
+        this.emptyBoardQueue();
+        
     },
     setAt(x, y, color_idx){
         color = Colors.colors[color_idx].abgr;
