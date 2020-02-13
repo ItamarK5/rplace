@@ -1,7 +1,7 @@
 const CANVAS_SIZE = 1000;
 const ESC_KEY_CODE = 27;
 const HOME_KEY_CODE = 36;
-const MIN_STEP_SIZE = 3;
+const MIN_STEP_SIZE = 1;
 const MIN_SCALE = 0.5;
 const MAX_SCALE = 50;
 const DRAW_COOLDOWN = 60;
@@ -306,8 +306,8 @@ const pen = {
         this.color = $('.colorButton').index('[state="1"]')
     },
     mousePos(e){
-        let x = Math.floor((e.pageX - $(board.canvas).offset().left) / board.scale);
-        let y = Math.floor((e.pageY - $(board.canvas).offset().top) / board.scale)-1; // because reasons, during debugging it come to this;
+        let x = Math.floor((e.pageX - $(board.canvas).offset().left) / query.scale);
+        let y = Math.floor((e.pageY - $(board.canvas).offset().top) / query.scale)-1; // because reasons, during debugging it come to this;
         return {x:x, y:y}
     },
     updateOffset(pos) {
@@ -341,7 +341,6 @@ const pen = {
     // color getter ans setter
     get color(){return this.__color;},
     set color(color){
-        console.log(color);
         this.__color = color;
         board.updateScreen()
     },
@@ -386,7 +385,8 @@ const board = {
     imgCanvas: null, imgctx:null,
     buffer: null,
     x: 0, y: 0,
-    scale: SIMPLE_UNZOOM_LEVEL,
+    scalex: null,
+    scaley: null,
     drag: { active: false, startX: 0, startY: 0, dragX: 0, dragY: 0 },
     zoomer: null, canvas:       null,
     mover:  null, container:    null,
@@ -432,6 +432,7 @@ const board = {
         this.move_vector[0] -= dir.dir[0]
         this.move_vector[1] -= dir.dir[1]
         if(this.move_vector[0] == 0 && this.move_vector[1] == 0){
+            console.log('clear', 'dir', dir.dir)
             clearInterval(this.keymove_interval);
             this.keymove_interval = null;
         }
@@ -451,6 +452,10 @@ const board = {
         this.imgctx.putImageData(image_data,0,0);
         this.beforeFirstDraw();
     },
+    __setAt(x, y, color){
+        this.imgctx.fillStyle = color;
+        this.imgctx.fillRect(x, y, 1, 1);
+    },
     setAt(x, y, color_idx){
         // set a pixel at a position
         // x: int (0 < x < 1000)
@@ -463,7 +468,7 @@ const board = {
         }
         color = Colors.colors[color_idx].abgr;
         if(this.is_ready){
-            board.buffer[getOffset(x, y)] = color;
+            this.__setAt()
         } else {
             this.queue.push({x:x, y:y, color:color});
         }
@@ -471,9 +476,8 @@ const board = {
     // empty the pixel queen
     beforeFirstDraw(){
         while(this.queue.length != 0){
-            setPlace = this.queue.shift();
-            console.log(this.queue.length)
-            board.buffer[getOffset(setPlace.x, setPlace.y)] = setPlace.color;
+            let obj = this.queue.shift();
+            this.__setAt(obj.x, obj.y, obj.color);
         }
         this.queue = null;
         this.updateScreen();
@@ -506,8 +510,13 @@ const board = {
         console.log(this.x, this.y);
         board.updateScreen();
     },
+    setCanvasZoom(){
+        let dpr = window.devicePixelRatio || 1;
+        this.canvas.width  = dpr * CANVAS_SIZE;
+        this.canvas.height = dpr * CANVAS_SIZE;
+    },
     updateZoom() {
-        this.scale = query.scale;
+        this.setCanvasZoom();
         this.setZoomStyle()
         this.centerPos();
     },
@@ -520,22 +529,24 @@ const board = {
     },
     get step() {
         // the scale is inproportion to the step size
-        return MIN_STEP_SIZE * MAX_SCALE / this.scale;
+        return MIN_STEP_SIZE * MAX_SCALE / query.scale;
     },
     moveBoard(dx, dy) {
         /*      let x = this.keep_inside_border(this.real_x, dir[DIR_INDEX_XNORMAL]*this.step*this.scale, rect.left, rect.right)/this.scale;
               let y = this.keep_inside_border(this.real_y, dir[DIR_INDEX_YNORMAL]*this.step*this.scale, rect.top, rect.bottom)/this.scale;
               console.log(x, y);
         */
-       query.set_center(
-        clamp(query.x + dx/10 * this.step, CANVAS_SIZE, 0),
-        clamp(query.y + dy/10 * this.step, CANVAS_SIZE, 0)
+
+        console.log(query.x+dx * this.step,query.y+dy/10*this.step);
+        query.set_center(
+            clamp(query.x + dx * this.step, CANVAS_SIZE, 0),
+            clamp(query.y + dy * this.step, CANVAS_SIZE, 0)
        );
     },
     centerOn: function (x, y) {
-        console.log(x, y);
         x = isNaN(x) ? query.x : clamp(x, CANVAS_SIZE, 0);
         y = isNaN(y) ? query.y : clamp(y, CANVAS_SIZE, 0);
+        console.log(x, y);
         query.set_center(x, y);
     },
     updateCoords: function () {
@@ -550,6 +561,9 @@ const board = {
             $('#coordY').text(pen.y != -1 ? pen.y : 'none');
         }
     },
+    get windowrootratio(){
+        return Math.sqrt(innerWidth/innerHeight);
+    },
     updateScreen(){
         if(board.needsdraw || !board.is_ready){return;}
         this.needsdraw=true;
@@ -559,8 +573,8 @@ const board = {
             this.ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
             this.ctx.save()
             this.ctx.imageSmoothingEnabled = false;
-            this.ctx.scale(query.scale, query.scale);
-            this.ctx.translate(-this.x, -this.y);
+            this.ctx.scale(query.scale/this.windowrootratio, query.scale*this.windowrootratio);
+            this.ctx.translate(this.x, this.y);
             this.ctx.drawImage(this.imgCanvas, 0, 0);
             this.ctx.restore();
             if(pen.canUpdatePen()){
@@ -622,7 +636,7 @@ $(document).ready(function () {
         pen.setMousePos(event);
         pen.setPixel()
     });
-    board.canvas.mousedown(function (e) {
+    board.zoomer.mousedown(function (e) {
         board.drag.dragX = e.pageX;
         board.drag.dragY = e.pageY;
         board.drag.startX = query.x;
@@ -633,8 +647,8 @@ $(document).ready(function () {
         if (board.drag.active) {
             // center board
             board.centerOn(
-                Math.floor(board.drag.startX + (board.drag.dragX - e.pageX)/board.scale),
-                Math.floor(board.drag.startY + (board.drag.dragY - e.pageY)/board.scale)
+                Math.floor(board.drag.startX + (board.drag.dragX - e.pageX)),
+                Math.floor(board.drag.startY + (board.drag.dragY - e.pageY))
             );
         }
     }).mouseup(() => {
