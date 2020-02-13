@@ -305,28 +305,37 @@ const pen = {
     init() {
         this.color = $('.colorButton').index('[state="1"]')
     },
-    update_offset(canvas_event) {
+    mousePos(e){
+        let x = Math.floor((e.pageX - $(board.canvas).offset().left) / board.scale);
+        let y = Math.floor((e.pageY - $(board.canvas).offset().top) / board.scale)-1; // because reasons, during debugging it come to this;
+        return {x:x, y:y}
+    },
+    updateOffset(pos) {
         /*this.x = canvas_event.offsetX;
         this.y = canvas_event.offsetY;*/
-        // read this shit https://stackoverflow.com/a/12142675
-        let x = Math.floor((canvas_event.pageX - $(board.canvas).offset().left) / board.scale);
-        let y = Math.floor((canvas_event.pageY - $(board.canvas).offset().top) / board.scale)-1 // because reasons, during debugging it come to this;
-        if (!(x >= 0 && 1000 > x && y >= 0 && 1000 > y)) {
-           this.clear_pos(); // set values to -1
-        } else if(x != this.x || y != this.y){
-            this.x = x;
-            this.y = y;
+        // read this https://stackoverflow.com/a/12142675
+        if (!(pos.x >= 0 && 1000 > pos.x && pos.y >= 0 && 1000 > pos.y)) {
+           this.clearPos(); // set values to -1
+        } else if(pos.x != this.x || pos.y != this.y){
+            this.x = pos.x;
+            this.y = pos.y;
             board.updateScreen()
         }
     }, 
-    set_pos(canvas_event){
-        this.update_offset(canvas_event);
-        board.update_coords();   
-        board.updateScreen()
+    setMousePos(canvas_event){
+        this.updatePos(this.mousePos(canvas_event));
     },
-    clear_pos(){
+    setSimplePos(){
+        this.updatePos({x:query.x, y:query.y});
+    },
+    updatePos(pos){
+        this.updateOffset(pos)
+        board.updateCoords();   
+        board.updateScreen();
+    },
+    clearPos(){
         this.x = this.y = -1;
-        board.update_coords();
+        board.updateCoords();
     },
     get has_color(){ return this.__color != -1; },
     // color getter ans setter
@@ -366,28 +375,26 @@ const board = {
         this.canvas.attr('alpha', 0);
         this.queue = [];
         this.updateZoom();      // also centers
-        this.startKeyMoveLoop()
     },
     get is_ready(){return _.isNull(this.queue);},
     startKeyMoveLoop(){
         board.moveBoard(
             this.move_vector[0],
             this.move_vector[1]
-        )
-        if(_.isNull(this.keymove_interval)){
-            this.keymove_interval = setInterval(() => {
-                board.moveBoard(
-                    this.move_vector[0],
-                    this.move_vector[1]
-                )
-            }, 100);
-        }
+        )       
+        this.keymove_interval = setInterval(() => {
+            board.moveBoard(
+                this.move_vector[0],
+                this.move_vector[1]
+            );
+            pen.setSimplePos();
+        }, 100);
     },
     addMovement(dir){
         dir.set = true;
         this.move_vector[0] += dir.dir[0]
         this.move_vector[1] += dir.dir[1]
-        this.startKeyMoveLoop()
+        this.startKeyMoveLoop();
     },
     subMovement(dir){
         dir.set = false;
@@ -501,7 +508,7 @@ const board = {
         y = isNaN(y) ? query.y : clamp(y, CANVAS_SIZE, 0);
         query.set_center(x, y);
     },
-    update_coords: function () {
+    updateCoords: function () {
         // not (A or B) == (not A) and (not B)
         if($('#coords').is(':hover')){
             $('#coord-slicer').text('copy')
@@ -516,7 +523,7 @@ const board = {
     updateScreen(){
         if(board.needsdraw || !board.is_ready){return;}
         this.needsdraw=true;
-        requestAnimationFrame(() => {  // 1 millisecond call, for all animation
+        requestAnimationFrame(() => {  // 1-4 millisecond call, for all animation
             /*ctx.fillStyle = '#eee'
             ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
             ctx.save();
@@ -524,7 +531,6 @@ const board = {
             ctx.scale(query.scale, query.scale);
             ctx.translate(-board.x, -board.y);
             ctx.restore();*/
-            t = Date.now()
             this.ctx.fillStyle = 'gray'
             this.ctx.fillRect(1000, 1000, 0, 0)
             this.needsdraw=false;
@@ -571,12 +577,12 @@ $(document).ready(function () {
           })
     });
     $('#coords').hover(
-        function(){board.update_coords();},
-        function(){board.update_coords();}
+        function(){board.updateCoords();},
+        function(){board.updateCoords();}
     );
     board.canvas
-    .mousemove((event) => pen.set_pos(event))
-    .mouseleave(() => pen.clear_pos())
+    .mousemove((event) => pen.setMousePos(event))
+    .mouseleave(() => pen.clearPos())
     .bind('mousewheel', (e) => {
         e.preventDefault();
         query.set_scale(clamp(query.scale + Math.sign(e.originalEvent.wheelDelta)*0.5, MAX_SCALE, MIN_SCALE));
@@ -584,7 +590,7 @@ $(document).ready(function () {
         // jquery dblclick dont work on some machines but addEventListner does 
         // source: https://github.com/Leaflet/Leaflet/issues/4127
         /*Get XY https://codepo8.github.io/canvas-images-and-pixels/#display-colour*/
-        pen.set_pos(event);
+        pen.setMousePos(event);
         if(!_.isNull(progress.work)){
             Swal.fire({
                 icon: 'warning',
@@ -622,8 +628,8 @@ $(document).ready(function () {
         if (board.drag.active) {
             // center board
             board.centerOn(
-                Math.round(board.drag.startX + (board.drag.dragX - e.pageX) / board.scale),
-                Math.round(board.drag.startY + (board.drag.dragY - e.pageY) / board.scale)
+                Math.floor(board.drag.startX + (board.drag.dragX - e.pageX) / board.scale),
+                Math.floor(board.drag.startY + (board.drag.dragY - e.pageY) / board.scale)
             );
         }
     }).mouseup(() => {
@@ -677,7 +683,7 @@ $(document).ready(function () {
         keyCode = (e || window.event).keyCode;
         let dir = _.findWhere(DIRECTION_MAP, {key: keyCode})
         if ((!_.isUndefined(dir)) && !dir.set) {
-            board.addMovement(dir)
+            board.addMovement(dir);
         }
         
     }).keyup((e) => {
@@ -760,5 +766,9 @@ $(document).ready(function () {
                   window.location.href = '/';
               }
           });
+    });
+    //prevent resize
+    $(window).resize(function(){
+        window.resizeTo(size[0],size[1]);
     });
 });

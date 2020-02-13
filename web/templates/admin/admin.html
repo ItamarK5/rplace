@@ -48,13 +48,13 @@
         <!-- Page List -->
         <div class="row justify-content-cnter">
             <div class="list-group list-group-horizontal" id="page-list">
-            <a class="list-group-item list-group-action" href="{{url_for('admin.admin', page=pagination.prev_num|string)}}">Prev</a>
+            <a class='list-group-item list-group-item-action {% if not pagination.has_prev %}disabled{% endif %}' {% if pagination.has_prev %}href='{{url_for("admin.admin", page=pagination.prev_num)}}{% endif %}'>Prev</a>
             {% if pagination.has_prev or pagination.has_next %}
             {% for page in pagination.iter_pages() %}
-            <a class="list-group-item list-group-action" href="{{url_for('admin.admin', page=page|string)}}">{{page}}</a>
+            <a class="list-group-item list-group-action{% if page == pagination.page %} active{% endif %}" href="{{url_for('admin.admin', page=page)}}">{{page}}</a>
             {% endfor %}
             {% endif %}
-            <a class = "list-group-item list-group-action" href="{{url_for('admin.admin', page=pagination.prev_num|string)}}">Next</a>
+            <a class = "list-group-item list-group-action" href="{{url_for('admin.admin', page=pagination.next_num)}}">Next</a>
         </div>
     </div>
     <!-- Document said to put it here so it be faster -->
