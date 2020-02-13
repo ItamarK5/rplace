@@ -383,7 +383,7 @@ const pen = {
 
 
 const board = {
-    image: null,
+    imgCanvas: null, imgctx:null,
     buffer: null,
     x: 0, y: 0,
     scale: SIMPLE_UNZOOM_LEVEL,
@@ -400,6 +400,10 @@ const board = {
         this.ctx = this.canvas[0].getContext('2d');
         this.mover = $('#board-mover');
         this.canvas.attr('alpha', 0);
+        this.imgCanvas = document.createElement('canvas');
+        this.imgCanvas.width = CANVAS_SIZE;
+        this.imgCanvas.height = CANVAS_SIZE;
+        this.imgctx = this.imgCanvas.getContext('2d');
         this.queue = [];
         this.updateZoom();      // also centers
     },
@@ -436,7 +440,7 @@ const board = {
     buildBoard(buffer) {
         t = performance.now();
         let image_data   = new ImageData(CANVAS_SIZE, CANVAS_SIZE);
-        let image_buffer = new Uint32Array(this.image.data.buffer);
+        let image_buffer = new Uint32Array(image_data.data.buffer);
         buffer.forEach(function (val, index) {
             // first version of putting data, looping over the image buffer array and not of buffer of message
             //var bit = buffer[Math.floor(index/2)];
@@ -444,32 +448,36 @@ const board = {
             image_buffer[index * 2] = Colors.colors[val % 16].abgr;
             image_buffer[index * 2 + 1] = Colors.colors[Math.floor(val / 16)].abgr;
         });
-        this.putImageData(image_data,0,0);
-        console.log(performance.now()-t);
-        this.emptyBoardQueue();
-        
+        this.imgctx.putImageData(image_data,0,0);
+        this.beforeFirstDraw();
     },
     setAt(x, y, color_idx){
+        // set a pixel at a position
+        // x: int (0 < x < 1000)
+        // y: int (0 < x < 1000)
+        if(color_idx < 0 || color_idx > 1000){
+            // swal event
+        }
+        if(!(is_valid_pos(x) && is_valid_pos(y))){
+            throw_message('given position of point isnt valid')
+        }
         color = Colors.colors[color_idx].abgr;
         if(this.is_ready){
             board.buffer[getOffset(x, y)] = color;
-            this.updateZoom()
         } else {
-            console.log(this.is_ready)
             this.queue.push({x:x, y:y, color:color});
         }
     },
     // empty the pixel queen
-    emptyBoardQueue(){async () => {
-        color = Colors.colors[color_idx].abgr;
-        while(!_.isNull(queue)){
-            setPlace = this.queue.shift()
+    beforeFirstDraw(){
+        while(this.queue.length != 0){
+            setPlace = this.queue.shift();
+            console.log(this.queue.length)
             board.buffer[getOffset(setPlace.x, setPlace.y)] = setPlace.color;
         }
         this.queue = null;
         this.updateScreen();
-    }
-},
+    },
     /*
         findPos: function() {
           var curleft = 0, curtop = 0; obj = this.canvas;
@@ -495,16 +503,11 @@ const board = {
     centerPos() {
         this.x = CANVAS_SIZE/2 - query.x;
         this.y = CANVAS_SIZE/2 - query.y;
-        this.mover.css('transform', "translate("
-            + (this.scale <= 1 ? Math.round(this.x) : this.x) + "px, "
-            + (this.scale <= 1 ? Math.round(this.y) : this.y) + "px)"
-        );
         console.log(this.x, this.y);
         board.updateScreen();
     },
     updateZoom() {
         this.scale = query.scale;
-        this.zoomer.css('transform', `scale(${this.scale}, ${this.scale})`);
         this.setZoomStyle()
         this.centerPos();
     },
@@ -530,6 +533,7 @@ const board = {
        );
     },
     centerOn: function (x, y) {
+        console.log(x, y);
         x = isNaN(x) ? query.x : clamp(x, CANVAS_SIZE, 0);
         y = isNaN(y) ? query.y : clamp(y, CANVAS_SIZE, 0);
         query.set_center(x, y);
@@ -550,17 +554,15 @@ const board = {
         if(board.needsdraw || !board.is_ready){return;}
         this.needsdraw=true;
         requestAnimationFrame(() => {  // 1-4 millisecond call, for all animation
-            /*ctx.fillStyle = '#eee'
-            ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-            ctx.save();
-            ctx.imageSmoothingEnabled = false;
-            ctx.scale(query.scale, query.scale);
-            ctx.translate(-board.x, -board.y);
-            ctx.restore();*/
-            this.ctx.fillStyle = 'gray'
-            this.ctx.fillRect(1000, 1000, 0, 0)
             this.needsdraw=false;
-            this.ctx.putImageData(this.image, 0, 0);
+            this.ctx.fillStyle = 'gray'
+            this.ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
+            this.ctx.save()
+            this.ctx.imageSmoothingEnabled = false;
+            this.ctx.scale(query.scale, query.scale);
+            this.ctx.translate(-this.x, -this.y);
+            this.ctx.drawImage(this.imgCanvas, 0, 0);
+            this.ctx.restore();
             if(pen.canUpdatePen()){
                 this.ctx.fillStyle = Colors.colors[pen.color].css_format(0.5)
                 this.ctx.fillRect(pen.x,pen.y,1,1);
@@ -620,7 +622,7 @@ $(document).ready(function () {
         pen.setMousePos(event);
         pen.setPixel()
     });
-    board.zoomer.mousedown(function (e) {
+    board.canvas.mousedown(function (e) {
         board.drag.dragX = e.pageX;
         board.drag.dragY = e.pageY;
         board.drag.startX = query.x;
@@ -631,8 +633,8 @@ $(document).ready(function () {
         if (board.drag.active) {
             // center board
             board.centerOn(
-                Math.floor(board.drag.startX + (board.drag.dragX - e.pageX) / board.scale),
-                Math.floor(board.drag.startY + (board.drag.dragY - e.pageY) / board.scale)
+                Math.floor(board.drag.startX + (board.drag.dragX - e.pageX)/board.scale),
+                Math.floor(board.drag.startY + (board.drag.dragY - e.pageY)/board.scale)
             );
         }
     }).mouseup(() => {
