@@ -14,11 +14,6 @@ const reArgX = /(?<=(^\x3F|.+&)x=)\d+(?=&|$)/i;
 const reArgY = /(?<=(^\x3F|.+&)x=)\d+(?=&|$)/i;
 const reArgScale = /(?<=(^\x3F|.+&)scale=)\d{1,2}(\x2E\d+)?(?=&|$)/i;
 
-// indexes for set-board package
-const SET_BOARD_PARAM_Y_IDX = 0;
-const SET_BOARD_PARAM_X_IDX = 1
-const SET_BOARD_PARAMS_COLOR_IDX = 2;
-
 //const reHash = /(?<=(?:^#|.+&))([\w|\d]+)=([\w|\d]+)(?=&|$)/i
 
 
@@ -240,9 +235,9 @@ const query = {
         return `?${this.__path}`
     },
     // validation check fo reach attributes
-    is_valid_new_x(val) {return is_valid_pos(val) && val != this.x },
-    is_valid_new_y(val) {return is_valid_pos(val) && val != this.y },
-    is_valid_new_scale(val) {return is_valid_scale(val) && val != this.scale },
+    is_valid_new_x(val) {return !isNaN(val) && is_valid_pos(val) && val != this.x },
+    is_valid_new_y(val) {return !isNaN(val) && is_valid_pos(val) && val != this.y },
+    is_valid_new_scale(val) {return !isNaN(val) && is_valid_scale(val) && val != this.scale },
     // use regex to get fragments
     fragments() {
         return {
@@ -361,7 +356,7 @@ const board = {
     mover:  null, container:    null,
     needsdraw: false, move_vector: [0,0],
     keymove_interval:null, ctx:null,
-    ready:false, queue:null,
+    queue:null,
     init(){
         this.zoomer = $('#board-zoomer');
         this.container = $('#board-container');
@@ -369,9 +364,11 @@ const board = {
         this.ctx = this.canvas[0].getContext('2d');
         this.mover = $('#board-mover');
         this.canvas.attr('alpha', 0);
+        this.queue = [];
         this.updateZoom();      // also centers
         this.startKeyMoveLoop()
     },
+    get is_ready(){return _.isNull(this.queue);},
     startKeyMoveLoop(){
         board.moveBoard(
             this.move_vector[0],
@@ -416,10 +413,30 @@ const board = {
         });
         // copying r/place, using Uint32Array to store the values
         //console.log(Date.now()-t); deubg time
-        this.ready = true;
+        this.queue = null;
         this.updateScreen()
     },
-
+    setAt(x, y, color_idx){
+        color = Colors.colors[color_idx].abgr;
+        if(this.is_ready){
+            board.buffer[getOffset(x, y)] = color;
+            this.updateZoom()
+        } else {
+            console.log(this.is_ready)
+            this.queue.push({x:x, y:y, color:color});
+        }
+    },
+    // empty the pixel queen
+    emptyBoardQueue(){async () => {
+        color = Colors.colors[color_idx].abgr;
+        while(!_.isNull(queue)){
+            setPlace = this.queue.shift()
+            board.buffer[getOffset(setPlace.x, setPlace.y)] = setPlace.color;
+        }
+        this.queue = null;
+        this.updateScreen();
+    }
+},
     /*
         findPos: function() {
           var curleft = 0, curtop = 0; obj = this.canvas;
@@ -442,7 +459,7 @@ const board = {
     },*/
     get windowBounding() { return CANVAS_SIZE * this.scale / 2; },
     // sets the board position
-    centerPos: function () {
+    centerPos() {
         this.x = CANVAS_SIZE/2 - query.x;
         this.y = CANVAS_SIZE/2 - query.y;
         this.mover.css('transform', "translate("
@@ -469,7 +486,6 @@ const board = {
         // the scale is inproportion to the step size
         return MIN_STEP_SIZE * MAX_SCALE / this.scale;
     },
-
     moveBoard(dx, dy) {
         /*      let x = this.keep_inside_border(this.real_x, dir[DIR_INDEX_XNORMAL]*this.step*this.scale, rect.left, rect.right)/this.scale;
               let y = this.keep_inside_border(this.real_y, dir[DIR_INDEX_YNORMAL]*this.step*this.scale, rect.top, rect.bottom)/this.scale;
@@ -498,7 +514,7 @@ const board = {
         }
     },
     updateScreen(){
-        if(board.needsdraw || !board.ready){return;}
+        if(board.needsdraw || !board.is_ready){return;}
         this.needsdraw=true;
         requestAnimationFrame(() => {  // 1 millisecond call, for all animation
             /*ctx.fillStyle = '#eee'
@@ -534,13 +550,7 @@ $(document).ready(function () {
         board.buildBoard(new Uint8Array(data.board));
         progress.set_time(data.time)
     });    
-    sock.on('set-board', function (x, y, color_idx) {
-        //let x = params[SET_BOARD_PARAM_X_IDX];
-        //let y = params[SET_BOARD_PARAM_Y_IDX];
-        //let color_idx = params[SET_BOARD_PARAMS_COLOR_IDX];
-        board.buffer[getOffset(x, y)] = Colors.colors[color_idx].abgr;
-        board.updateScreen()
-    });
+    sock.on('set-board', (x, y, color_idx) => board.setAt(x, y, color_idx));
     sock.on('update-timer', function(time){
         progress.set_time(time);
     });
