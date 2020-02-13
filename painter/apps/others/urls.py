@@ -24,31 +24,23 @@ def meme_image(http_error: str) -> Response:
     if str(http_error) not in listdir(path.join(other_router.static_folder, 'memes')):
         return send_from_directory(path.join(other_router.static_folder, '404'), 'images.jfif',
                                    mimetype=MIME_TYPES.get('jfif', None))
-    # else
-    # select random matches image
+    """
+        else
+        select random image
+    """
     error_path = path.join(other_router.static_folder, 'memes', http_error)
     random_meme = random.choice(listdir(error_path))
-    return send_from_directory(
-        error_path,
-        random_meme,
-        mimetype=MIME_TYPES[get_file_type(random_meme)],
-        cache_timeout=1  # five seconds top save, to prevent fast reloads request
-    )
-
-
-"""
-continue returning the memes
-needs to solve error and update mimetypes
-"""
+    return send_from_directory(error_path, random_meme,
+                               mimetype=MIME_TYPES[get_file_type(random_meme)],
+                               cache_timeout=1  # five seconds top save, to prevent fast reloads request
+                               )
 
 
 def error_meme_render(e: HTTPException) -> str:
-    # future plans, add isinstance string to detect if it's string, security
+    """ future plans, add isinstance string to detect if it's string, security """
     if str(e.code) not in listdir(other_router.static_folder):
-        http_error = 'meme not found'
-    return render_template('meme.html',
-                           error=e.code,
-                           title=e.name,
+        abort(404)
+    return render_template('meme.html', error=e.code, title=e.name,
                            description=e.description if e.description is not None else e.name)
 
 
@@ -63,24 +55,22 @@ def error_handler(e: NotFound) -> Union[str, NotFound]:
 def serve_static(key: str) -> Response:
     file_format = get_file_type(key)
     if not file_format:  # include no item scenerio
-        abort(405, 'Forgot placeing file type')
+        abort(404, 'Forgot placeing file type')
     if file_format not in listdir(path.join(other_router.static_folder, 'static')):
-        abort(405, 'unvalid file format')
-    # else
+        abort(404, 'unvalid file format')
+    # meme type check
     mime_type = MIME_TYPES.get(file_format, None)
     if mime_type is None:
-        abort(405, 'type not supported')
-    # return file
+        abort(404, 'type not supported')
     try:
         return send_from_directory(
-            path.join(
-                other_router.static_folder,
-                'static', key.split(".")[-1]), key,
+            path.join(other_router.static_folder, 'static', key.split(".")[-1]),
+            key,
             mimetype=mime_type
         )
     except Exception as e:
         print('error', e)
-    abort(404, 'file don\'t found')
+        abort(404, 'file don\'t found')
 
 
 @other_router.route('/favicon.ico', methods=('GET',))
