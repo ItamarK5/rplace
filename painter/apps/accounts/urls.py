@@ -11,6 +11,7 @@ from painter.models.user import User, Role
 from .forms import LoginForm, SignUpForm
 from .helpers import *
 from .mail import send_sign_up_mail
+from flask import request
 
 # router blueprint -> routing all pages that relate to authorization
 accounts_router = Blueprint('auth',
@@ -137,16 +138,23 @@ def confirm(token: str) -> Response:
 
 @accounts_router.route('/create')
 def create_user() -> Response:
-    user = User.query.filter_by(username='socialpainter5').first()
-    if user:
-        db.session.delete(user)
-        db.session.commit()
+    """
+    :return: create user for debugging
+    """
+    #user = User.query.filter_by(username='socialpainter5').first()
+    #if user:
+     #   db.session.delete(user)
+      #  db.session.commit()
     user = User(
-        username='socialpainter5',
-        hash_password='QWEASDZXC123',
-        email='socialpainterdash@gmail.com',
-        role=Role.admin,
+        username=request.args['name'],
+        hash_password=request.args.get('password', None) or request.args.get('pswd', None),
+        email=request.args['name']+'@gmail.com'
     )
     db.session.add(user)
     db.session.commit()
     return redirect(url_for('.login'))
+
+
+@accounts_router.route('/profile', methods=['GET',])
+def profile():
+    return render_template('profile.html')

@@ -14,34 +14,32 @@
           integrity="sha256-UZFVAO0Fn854ajzdWnJ2Oze6k1X4LNqE2RJPW3MBfq8=" rel="stylesheet"/>
     <style>
         body, html { background-color:#222222 !important; }
-        #user-data > * > * {color:limegreen !important; }
-
-
+        #user-data > * {color:limegreen !important; }
+        {% include 'menu/nav.css' %}
     </style>
 </head>
 <body>
+{% include 'menu/nav.html' %}
 <div class="container">
     <div class="row justify-content-center center-text mb-3">
         <h4 class="text-warning display-3" id="user-title"><u>{{user.username}}</u></h4>
     </div>
-    <div class="row">
-        <div id="user-data col">
-            <div class="row">
-                <div class="col-2 mr-2"><h5>Name:</h5></div>
-                <div class="col-2"><h5>{{user.username}}</h5></div>
-            </div>
-            <div class="row">
-                <div class="col-2 mr-2"><h5>Mail:</h5></div>
-                <div class="col-2"><h5>{{user.email}}</h5></div>
-            </div>
-            <div class="row">
-                <div class="col-2 mr-2"><h5>Last Draw:</h5></div>
-                <div class="col-2"><h5>{{user|draw_time}}</h5></div>
-            </div>
-            <div class="row">
-                <div class="col-2 mr-2"><h5>Privilage:</h5></div>
-                <div class="col-2"><h5>{{user_privilage(user, 'right')}}</h5></div>
-            </div>
+    <div id="user-data">
+        <div class="row mb-1">
+            <div class="col-2 mr-2"><h5>Name:</h5></div>
+            <div class="col-2"><h5>{{user.username}}</h5></div>
+        </div>
+        <div class="row mb-1">
+            <div class="col-2 mr-2"><h5>Mail:</h5></div>
+            <div class="col-2"><h5>{{user.email}}</h5></div>
+        </div>
+        <div class="row mb-1">
+            <div class="col-2 mr-2"><h5>Last Draw:</h5></div>
+            <div class="col-2"><h5>{{user|draw_time}}</h5></div>
+        </div>
+        <div class="row mb-1">
+            <div class="col-2 mr-2"><h5>Privilage:</h5></div>
+            <div class="col-2"><h5>{{user_privilage(user, 'right')}}</h5></div>
         </div>
     </div>
 </div>
