@@ -1,6 +1,5 @@
 import time
 from os import path
-from typing import NoReturn
 
 from flask import Blueprint, url_for, render_template, redirect, current_app
 from flask_login import login_user, logout_user, current_user
@@ -20,7 +19,7 @@ accounts_router = Blueprint('auth',
 
 
 @accounts_router.before_app_first_request
-def init_tokens() -> NoReturn:
+def init_tokens() -> None:
     TokenSerializer.init_serializer(current_app)
 
 
@@ -151,8 +150,3 @@ def create_user() -> Response:
     db.session.add(user)
     db.session.commit()
     return redirect(url_for('.login'))
-
-
-@accounts_router.route('/profile', methods=('GET', 'POST'))
-def profile():
-    return render_template('profile-page')

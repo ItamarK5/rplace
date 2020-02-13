@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from enum import IntEnum, auto
 from hashlib import pbkdf2_hmac
@@ -9,6 +10,13 @@ from sqlalchemy.orm import relationship
 
 from ..config import Config
 from ..extensions import db, login_manager
+
+reNAME = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
+rePSWD = re.compile(r'^[a-f0-9]{128}$')  # password hashed so get hash value
+reEMAIL = re.compile(
+    r"(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*\Z"  # dot-atom
+    r'|^"([\001-\010\013\014\016-\037!#-\[\]-\177]|\\[\001-\011\013\014\016-\177])*"\Z)',  # quoted-string
+    re.IGNORECASE)
 
 
 class Role(IntEnum):

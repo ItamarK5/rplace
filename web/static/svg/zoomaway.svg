@@ -1,18 +1,22 @@
 <svg width="580" height="400" xmlns="http://www.w3.org/2000/svg">
- <!-- Created with Method Draw - http://github.com/duopixel/Method-Draw/ -->
+    <!-- Created with Method Draw - http://github.com/duopixel/Method-Draw/ -->
 
- <g>
-  <title>background</title>
-  <rect x="-1" y="-1" width="582" height="402" id="canvas_background" fill="#fff"/>
-  <g id="canvasGrid" display="none">
-   <rect id="svg_1" width="100%" height="100%" x="0" y="0" stroke-width="0" fill="url(#gridpattern)"/>
-  </g>
- </g>
- <g>
-  <title>Layer 1</title>
-  <ellipse fill="#fff" stroke="#000" stroke-width="1.5" stroke-opacity="null" fill-opacity="null" cx="25" cy="25" id="svg_2" rx="25" ry="25"/>
-  <line fill="none" stroke="#000" stroke-width="1.5" stroke-opacity="null" fill-opacity="null" x1="42.67767" y1="42.67767" x2="67" y2="69" id="svg_3" stroke-linejoin="null" stroke-linecap="null"/>
-  <line fill="none" stroke="#000" stroke-width="3" stroke-opacity="null" fill-opacity="null" x1="5" y1="25" x2="45" y2="25" id="svg_6" stroke-linejoin="null" stroke-linecap="null"/>
-  <line stroke-linecap="null" stroke-linejoin="null" id="svg_4" y2="45" x2="25" y1="5" x1="25" fill-opacity="null" stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
- </g>
+    <g>
+        <title>background</title>
+        <rect x="-1" y="-1" width="582" height="402" id="canvas_background" fill="#fff"/>
+        <g id="canvasGrid" display="none">
+            <rect id="svg_1" width="100%" height="100%" x="0" y="0" stroke-width="0" fill="url(#gridpattern)"/>
+        </g>
+    </g>
+    <g>
+        <title>Layer 1</title>
+        <ellipse fill="#fff" stroke="#000" stroke-width="1.5" stroke-opacity="null" fill-opacity="null" cx="25" cy="25"
+                 id="svg_2" rx="25" ry="25"/>
+        <line fill="none" stroke="#000" stroke-width="1.5" stroke-opacity="null" fill-opacity="null" x1="42.67767"
+              y1="42.67767" x2="67" y2="69" id="svg_3" stroke-linejoin="null" stroke-linecap="null"/>
+        <line fill="none" stroke="#000" stroke-width="3" stroke-opacity="null" fill-opacity="null" x1="5" y1="25"
+              x2="45" y2="25" id="svg_6" stroke-linejoin="null" stroke-linecap="null"/>
+        <line stroke-linecap="null" stroke-linejoin="null" id="svg_4" y2="45" x2="25" y1="5" x1="25" fill-opacity="null"
+              stroke-opacity="null" stroke-width="1.5" stroke="#000" fill="none"/>
+    </g>
 </svg>

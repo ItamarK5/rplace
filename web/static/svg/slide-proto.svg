@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" version="1.1">
-  <!---
-  path attributes:        
-    M: (x0, y0) starting point of color
-  -->
-	<path id="half-circle" d="M200,100 a20,20 0 0,0 -200,0 Z" fill="black"/>
-  <path class="arrow" d="M110 50 L100 60 L90 50" stroke="white"/>
-  <path class="arrow" d="M90 40 L100 50 L110 40" stroke="white"/>
-  <path class="arrow" d="M90 40 L100 50 L110 40" stroke="white"/>
-  <path class="arrow-down" d="M110 50 L100 60 L90 50" stroke="white"/>
-  <path class="arrow-down" d="M110 50 L100 60 L90 50" stroke="white"/>
+    <!---
+    path attributes:
+      M: (x0, y0) starting point of color
+    -->
+    <path id="half-circle" d="M200,100 a20,20 0 0,0 -200,0 Z" fill="black"/>
+    <path class="arrow" d="M110 50 L100 60 L90 50" stroke="white"/>
+    <path class="arrow" d="M90 40 L100 50 L110 40" stroke="white"/>
+    <path class="arrow" d="M90 40 L100 50 L110 40" stroke="white"/>
+    <path class="arrow-down" d="M110 50 L100 60 L90 50" stroke="white"/>
+    <path class="arrow-down" d="M110 50 L100 60 L90 50" stroke="white"/>
 </svg>

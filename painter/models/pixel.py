@@ -1,4 +1,5 @@
 from sqlalchemy import Integer, ForeignKey, SmallInteger, Column
+
 from ..extensions import db
 
 
@@ -11,4 +12,3 @@ class Pixel(db.Model):
     x = Column(SmallInteger())
     y = Column(SmallInteger())
     drawn = Column(db.Float, nullable=False)
-

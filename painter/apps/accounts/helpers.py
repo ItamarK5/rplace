@@ -1,16 +1,10 @@
-import re
 from typing import Any, Optional, Tuple, Dict, NoReturn
 
 from flask import Flask
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from wtforms.validators import HostnameValidation
 
-reNAME = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
-rePSWD = re.compile(r'^[a-f0-9]{128}$')  # password hashed so get hash value
-reEMAIL = re.compile(
-    r"(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*\Z"  # dot-atom
-    r'|^"([\001-\010\013\014\016-\037!#-\[\]-\177]|\\[\001-\011\013\014\016-\177])*"\Z)',  # quoted-string
-    re.IGNORECASE)
+from painter.models.user import reNAME, rePSWD, reEMAIL
 
 
 class TokenSerializer:

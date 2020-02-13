@@ -351,6 +351,33 @@ const pen = {
     canUpdatePen() {
         return this.has_color && this.is_at_board()
     },
+    setPixel(){
+        if(!_.isNull(progress.work)){
+            Swal.fire({
+                icon: 'warning',
+                title: 'You have 2 wait',
+                text: 'You need to end for your time to finish',
+            });
+        }    
+        else if(_.isNull(pen.color)) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Select Color',
+                text: 'Pless select color from the table',
+            });
+        }
+        else {
+            sock.emit('set-board', {
+                'color': pen.color,
+                'x': pen.x,
+                'y': pen.y,
+            }, callback=(next_time)=>{
+                if(!(_.isUndefined(next_time) || next_time == 'undefined')){
+                    progress.set_time(next_time)
+                }
+            });
+        }
+    }
 }
 
 
@@ -543,13 +570,14 @@ const board = {
     }
 };
 
+const sock = io();
+
 
 $(document).ready(function () {
     Colors.init();
     query.init();
     board.init();
     pen.init();
-    var sock = io();
     sock.on('place-start',  function(data) {
         // buffer - board in bytes
         // time - time
@@ -591,31 +619,7 @@ $(document).ready(function () {
         // source: https://github.com/Leaflet/Leaflet/issues/4127
         /*Get XY https://codepo8.github.io/canvas-images-and-pixels/#display-colour*/
         pen.setMousePos(event);
-        if(!_.isNull(progress.work)){
-            Swal.fire({
-                icon: 'warning',
-                title: 'You have 2 wait',
-                text: 'You need to end for your time to finish',
-              });
-        }    
-        else if(_.isNull(pen.color)) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Select Color',
-                text: 'Pless select color from the table',
-              })
-        }
-        else {
-            sock.emit('set-board', {
-                'color': pen.color,
-                'x': pen.x,
-                'y': pen.y,
-            }, callback=(next_time)=>{
-                if(!(_.isUndefined(next_time) || next_time == 'undefined')){
-                    progress.set_time(next_time)
-                }
-            })
-        }
+        pen.setPixel()
     });
     board.zoomer.mousedown(function (e) {
         board.drag.dragX = e.pageX;
@@ -668,6 +672,9 @@ $(document).ready(function () {
                     $(".colorButton[value='15']").click();
                 } else { $(button).prev().click() }
                 break;
+            }
+            case 'KeyP': {
+                pen.setPixel();
             }
         }
         if(e.originalEvent.shiftKey){
@@ -768,7 +775,17 @@ $(document).ready(function () {
           });
     });
     //prevent resize
-    $(window).resize(function(){
-        window.resizeTo(size[0],size[1]);
-    });
+    var couponWindow = {
+        width: $(window).width(),
+        height: $(window).height(),
+        resizing: false
+      };
+      var $w=$(window);
+      $w.resize(function() {
+        if ($w.width() != couponWindow.width && !couponWindow.resizing) {
+          couponWindow.resizing = true;
+          window.resizeTo(couponWindow.width, $w.height());
+        }
+        couponWindow.resizing = false;
+      });
 });

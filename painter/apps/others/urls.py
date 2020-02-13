@@ -1,14 +1,15 @@
 import random
+from os import path, listdir
+from typing import Union
+
 from flask import (
     Blueprint, render_template, send_from_directory,
     request, abort, Response
 )
+from werkzeug.exceptions import HTTPException, NotFound
 
 from painter.constants import MIME_TYPES, WEB_FOLDER
-from os import path, listdir
 from .helpers import get_file_type
-from werkzeug.exceptions import HTTPException, NotFound
-from typing import Union
 
 other_router = Blueprint(
     'other',
@@ -21,7 +22,8 @@ other_router = Blueprint(
 @other_router.route('/meme/<string:http_error>')
 def meme_image(http_error: str) -> Response:
     if str(http_error) not in listdir(path.join(other_router.static_folder, 'memes')):
-        return send_from_directory(path.join(other_router.static_folder, '404'), 'images.jfif', mimetype=MIME_TYPES.get('jfif', None))
+        return send_from_directory(path.join(other_router.static_folder, '404'), 'images.jfif',
+                                   mimetype=MIME_TYPES.get('jfif', None))
     # else
     # select random matches image
     error_path = path.join(other_router.static_folder, 'memes', http_error)

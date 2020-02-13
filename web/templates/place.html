@@ -1,5 +1,5 @@
 ﻿{% macro render_link(id, icon, non_top_icon=True) %}
-<div id="{{id}}" class="icon-button">
+<div class="icon-button" id="{{id}}">
     <span class="fas fa-{{icon}}"></span>
 </div>
 {% endmacro %}
@@ -8,14 +8,20 @@
 <head>
     <meta charset="UTF-8">
     <title>Social Painter</title>
-    <meta name="viewport" content="width=device-width, height=device-height initial-scale=0.86, maximum-scale=1.0, minimum-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="{{url_for('other.serve_static', key='place.css')}}">
-    <link rel="shortcut icon" href="{{url_for('other.serve_icon')}}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" integrity="sha256-/sdxenK1NDowSNuphgwjv8wSosSNZB0t5koXqd7XqOI=" crossorigin="anonymous" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.css" integrity="sha256-wMES50JHO82E/LjWWLWeCXXQahHeA0oemqGIfMkD5BI=" crossorigin="anonymous" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" integrity="sha256-UZFVAO0Fn854ajzdWnJ2Oze6k1X4LNqE2RJPW3MBfq8=" crossorigin="anonymous" />
-    <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js" integrity="sha256-OgiHfllOBEOiWQ2OcBsDncRG2k7QBW9Rs1dB7MH2N2s=" crossorigin="anonymous"></script>
+    <meta content="width=device-width, height=device-height initial-scale=0.86, maximum-scale=1.0, minimum-scale=1.0"
+          name="viewport">
+    <link href="{{url_for('other.serve_static', key='place.css')}}" rel="stylesheet" type="text/css">
+    <link href="{{url_for('other.serve_icon')}}" rel="shortcut icon">
+    <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css"
+          integrity="sha256-/sdxenK1NDowSNuphgwjv8wSosSNZB0t5koXqd7XqOI=" rel="stylesheet"/>
+    <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.css"
+          integrity="sha256-wMES50JHO82E/LjWWLWeCXXQahHeA0oemqGIfMkD5BI=" rel="stylesheet"/>
+    <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css"
+          integrity="sha256-UZFVAO0Fn854ajzdWnJ2Oze6k1X4LNqE2RJPW3MBfq8=" rel="stylesheet"/>
+    <script crossorigin="anonymous"
+            integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" src="https://code.jquery.com/jquery-3.4.1.js"></script>
+    <script crossorigin="anonymous"
+            integrity="sha256-OgiHfllOBEOiWQ2OcBsDncRG2k7QBW9Rs1dB7MH2N2s=" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js"></script>
     <link href="//cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@3/dark.css" rel="stylesheet">
@@ -23,29 +29,37 @@
     <script src="{{url_for('other.serve_static', key='place.js')}}"></script>
 </head>
 <body>
-    <div id="board-container"><div id="board-zoomer"><div id="board-mover">
-        <canvas id="pen" class="pixelate" width="1000" height="1000"></canvas>
-        <canvas id="board" class='pixelate' width='1000', height='1000'>Wait, Loading...</canvas>
-    </div></div></div>
-    <div id="toolbox" class="selectnone" hide='0'>
-        <div id='toggle-toolbox-button' class='center-x' state='1'></div>   {# state == 1 so it be open at start #}
-        <div id="color-table-box">
-            <div id=colorTable class='center'>
-                {% for i in range(16) %}<div class='colorButton' state='0' value='{{i}}'></div>{% endfor %}                
-            </div>
-        </div>
-        <div id="icon-container">
-            {{render_link('zoom-button', 'search-plus')}}
-            {{render_link('home-button', 'home')}}
-            {{render_link('logout-button', 'sign-out-alt')}}
-        </div>
-        <div id="time-prog" class="nonselect" state="1">
-            <div id="prog-fill"></div>
-            <div id="prog-text" class="center">0:00</div>
+<div id="board-container">
+    <div id="board-zoomer">
+        <div id="board-mover">
+            <canvas class="pixelate" height="1000" id="pen" width="1000"></canvas>
+            <canvas , class='pixelate' height='1000' id="board" width='1000'>Wait, Loading...</canvas>
         </div>
     </div>
-    <div id="coords" class="center-x selectnone">
-        <span id="coordX" class="coordSpan">none</span><span id="coord-slicer" class="coordText">,</span><span id="coordY" class="coordSpan">none</span>
-    </div>    
+</div>
+<div class="selectnone" hide='0' id="toolbox">
+    <div class='center-x' id='toggle-toolbox-button' state='1'></div>
+    {# state == 1 so it be open at start #}
+    <div id="color-table-box">
+        <div class='center' id=colorTable>
+            {% for i in range(16) %}
+            <div class='colorButton' state='0' value='{{i}}'></div>
+            {% endfor %}
+        </div>
+    </div>
+    <div id="icon-container">
+        {{render_link('zoom-button', 'search-plus')}}
+        {{render_link('home-button', 'home')}}
+        {{render_link('logout-button', 'sign-out-alt')}}
+    </div>
+    <div class="nonselect" id="time-prog" state="1">
+        <div id="prog-fill"></div>
+        <div class="center" id="prog-text">0:00</div>
+    </div>
+</div>
+<div class="center-x selectnone" id="coords">
+    <span class="coordSpan" id="coordX">none</span><span class="coordText" id="coord-slicer">,</span><span class="coordSpan"
+                                                                                                           id="coordY">none</span>
+</div>
 </body>
 </html>

@@ -1,7 +1,10 @@
-from flask import Blueprint, render_template, Response
 from os.path import join as path_join
-from painter.constants import WEB_FOLDER
+
+from flask import Blueprint, render_template, Response
 from flask_login import login_required
+
+from painter.constants import WEB_FOLDER
+
 place_router = Blueprint('place', 'place',
                          static_folder=path_join(WEB_FOLDER, 'static'),
                          template_folder=path_join(WEB_FOLDER, 'templates'))

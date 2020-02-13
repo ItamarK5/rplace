@@ -1,6 +1,3 @@
-from os import path
-
-
 class Config:
     ENV = 'development'
     SEND_FILE_MAX_AGE_DEFAULT = 1
