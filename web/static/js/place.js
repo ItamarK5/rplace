@@ -1,3 +1,10 @@
+/*
+    level of functions
+    1) the interaction
+    2) setting the query
+    3) a function that affect the board as result of change in query
+*/
+
 const CANVAS_SIZE = 1000;
 const ESC_KEY_CODE = 27;
 const HOME_KEY_CODE = 36;
@@ -21,7 +28,7 @@ const DIRECTION_MAP = [
     {key:37, dir:[-1,  0], set:false}, // left
     {key:39, dir:[ 1,  0], set:false}, // right
     {key:38, dir:[ 0, -1], set:false}, // up
-    {key:40, dir:[ 0,  1], set:false}  // :own
+    {key:40, dir:[ 0,  1], set:false}  // down
 ];
 
 const SIMPLE_ZOOM_LEVEL = 40;
@@ -34,7 +41,7 @@ const getOffset = (x, y) => (y * CANVAS_SIZE) + x;
 const getFirstIfAny = (group) => _.isNull(group) ? null : group[0]
 const clamp = (v, max, min) => Math.max(min, Math.min(v, max));
 const is_valid_scale = (scale) => MIN_SCALE <= scale && scale <= MAX_SCALE;
-const is_valid_pos = (v) => 0 <= v < CANVAS_SIZE;
+const is_valid_pos = (v) => 0 <= v && v < CANVAS_SIZE;
 const getUTCTimestamp = () => {
     let tm = new Date();
     return Date.UTC(
@@ -202,6 +209,7 @@ const query = {
             if(_.isNull(val)){ return; /* return breaks loop operation */ }
             switch(key){
                 case('x'):{
+                    console.log(this.is_valid_new_x(val))
                     if(this.is_valid_new_x(val)){
                         this.x = Math.round(val);            
                     } else {is_any_frag_unvalid = true;}
@@ -228,16 +236,18 @@ const query = {
     get __path() {
         return `x=${this.x}&y=${this.y}&scale=${this.scale}`
     },
+    // return string represent the hash of the page
     hash() {
         return `#${this.__path}`
     },
+    // args string represent the args of the hash
     arguments() {
         return `?${this.__path}`
     },
     // validation check fo reach attributes
-    is_valid_new_x(val) {return !isNaN(val) && is_valid_pos(val) && val != this.x },
-    is_valid_new_y(val) {return !isNaN(val) && is_valid_pos(val) && val != this.y },
-    is_valid_new_scale(val) {return !isNaN(val) && is_valid_scale(val) && val != this.scale },
+    is_valid_new_x(val) {return (!isNaN(val)) && is_valid_pos(val) && val != this.x },
+    is_valid_new_y(val) {return (!isNaN(val)) && is_valid_pos(val) && val != this.y },
+    is_valid_new_scale(val) {return (!isNaN(val)) && is_valid_scale(val) && val != this.scale },
     // use regex to get fragments
     fragments() {
         return {
@@ -248,6 +258,7 @@ const query = {
         };
     },
     // set x and
+    // level 2 set query
     set_center(x = undefined, y = undefined, to_update = true) {
         let flag = false;
         if(this.scale >= 1){
@@ -259,6 +270,7 @@ const query = {
         if (to_update && flag) { board.centerPos(); this.set_window_hash() }
         return flag;
     },
+    // level 2 set query
     set_scale(scale, to_update = true) {
         if(this.is_valid_new_scale(scale)){
             this.scale = scale;
@@ -272,6 +284,7 @@ const query = {
             this.set_window_hash()
         }
     },
+    // level 1 interaction of query change
     refresh_fragments(to_update) {
         /*  refresh_fragments(bool) -> void
          *  refresh the query object by the current hash values if they are valid
@@ -284,14 +297,16 @@ const query = {
         if (isNaN(frags.scale) && this.is_valid_new_scale(parseInt(frags.scale))) {
             this.scale = this.scale;
             if (to_update) {
-                query.updateZoom()
+                board.updateZoom()
             }
         }
     },
     // set the window.loaction.hash to the query hash value
+    // level 3
     set_window_hash() {
         //  update location
-        if (window.location.hash != this.hash) {
+        console.log(window.location.hash, this.hash())
+        if (window.location.hash != this.hash()) {
             // change hash without triggering events
             history.replaceState(null, null, document.location.pathname  + this.hash());
             //window.location.hash = this.hash;
@@ -306,8 +321,9 @@ const pen = {
         this.color = $('.colorButton').index('[state="1"]')
     },
     mousePos(e){
-        let x = Math.floor((e.pageX - $(board.canvas).offset().left) / query.scale);
-        let y = Math.floor((e.pageY - $(board.canvas).offset().top) / query.scale)-1; // because reasons, during debugging it come to this;
+        // found at debugging
+        let x = null;
+        let y = null
         return {x:x, y:y}
     },
     updateOffset(pos) {
@@ -408,34 +424,40 @@ const board = {
         this.updateZoom();      // also centers
     },
     get is_ready(){return _.isNull(this.queue);},
+    // level 1
+    // interaction of key press
     startKeyMoveLoop(){
         board.moveBoard(
             this.move_vector[0],
             this.move_vector[1]
-        )       
-        this.keymove_interval = setInterval(() => {
-            board.moveBoard(
-                this.move_vector[0],
-                this.move_vector[1]
-            );
-            pen.setSimplePos();
-        }, 100);
+        )
+        if(_.isNull(this.keymove_interval)){
+            this.keymove_interval = setInterval(() => {
+                board.moveBoard(
+                    this.move_vector[0],
+                    this.move_vector[1]
+                );
+                pen.setSimplePos();
+            }, 100)
+        }
     },
+    // level 1
     addMovement(dir){
         dir.set = true;
         this.move_vector[0] += dir.dir[0]
-        this.move_vector[1] += dir.dir[1]
+        this.move_vector[1] += dir.dir[1];
         this.startKeyMoveLoop();
     },
+    // level 1
     subMovement(dir){
-        dir.set = false;
-        this.move_vector[0] -= dir.dir[0]
-        this.move_vector[1] -= dir.dir[1]
+        dir.set = false
+        console.log(this.move_vector)
+        this.move_vector[0] -= dir.dir[0];
+        this.move_vector[1] -= dir.dir[1];
         if(this.move_vector[0] == 0 && this.move_vector[1] == 0){
-            console.log('clear', 'dir', dir.dir)
-            clearInterval(this.keymove_interval);
-            this.keymove_interval = null;
-        }
+            clearInterval(this.keymove_interval)
+            this.keymove_interval = null
+        } 
     },
     //uffer on chrome takes ~1552 ms -- even less
     buildBoard(buffer) {
@@ -504,20 +526,20 @@ const board = {
     },*/
     get windowBounding() { return CANVAS_SIZE * this.scale / 2; },
     // sets the board position
+    // level 3
     centerPos() {
-        this.x = CANVAS_SIZE/2 - query.x;
-        this.y = CANVAS_SIZE/2 - query.y;
-        console.log(this.x, this.y);
+        this.x = query.x - (innerWidth/2)/query.scale //( query.x - innerWidth/2)/query.scale;
+        this.y = query.y - (innerHeight/2)/query.scale // (query.y - innerHeight/2)/query.scale;
         board.updateScreen();
     },
     setCanvasZoom(){
         let dpr = window.devicePixelRatio || 1;
-        this.canvas.width  = dpr * CANVAS_SIZE;
-        this.canvas.height = dpr * CANVAS_SIZE;
+        this.canvas.width  = dpr * innerWidth;
+        this.canvas.height = dpr * innerHeight;
     },
     updateZoom() {
-        this.setCanvasZoom();
         this.setZoomStyle()
+        this.setCanvasZoom();
         this.centerPos();
     },
     setZoomStyle(){
@@ -531,24 +553,24 @@ const board = {
         // the scale is inproportion to the step size
         return MIN_STEP_SIZE * MAX_SCALE / query.scale;
     },
+    // level 1
     moveBoard(dx, dy) {
         /*      let x = this.keep_inside_border(this.real_x, dir[DIR_INDEX_XNORMAL]*this.step*this.scale, rect.left, rect.right)/this.scale;
               let y = this.keep_inside_border(this.real_y, dir[DIR_INDEX_YNORMAL]*this.step*this.scale, rect.top, rect.bottom)/this.scale;
               console.log(x, y);
         */
-
-        console.log(query.x+dx * this.step,query.y+dy/10*this.step);
         query.set_center(
             clamp(query.x + dx * this.step, CANVAS_SIZE, 0),
             clamp(query.y + dy * this.step, CANVAS_SIZE, 0)
        );
     },
+    // level 1
     centerOn: function (x, y) {
         x = isNaN(x) ? query.x : clamp(x, CANVAS_SIZE, 0);
         y = isNaN(y) ? query.y : clamp(y, CANVAS_SIZE, 0);
-        console.log(x, y);
         query.set_center(x, y);
     },
+    // level 3 in half
     updateCoords: function () {
         // not (A or B) == (not A) and (not B)
         if($('#coords').is(':hover')){
@@ -562,19 +584,27 @@ const board = {
         }
     },
     get windowrootratio(){
-        return Math.sqrt(innerWidth/innerHeight);
+        return Math.sqrt(innerHeight/innerWidth);
+    },
+    get scalex(){
+        return query.scale * this.windowrootratio;
+    },
+    get scaley(){
+        return query.scale / this.windowrootratio
     },
     updateScreen(){
         if(board.needsdraw || !board.is_ready){return;}
         this.needsdraw=true;
         requestAnimationFrame(() => {  // 1-4 millisecond call, for all animation
+            /*this.canvas.width = window.innerWidth * devicePixelRatio;
+            this.canvas.height = window.innerHeight * devicePixelRatio;*/
             this.needsdraw=false;
             this.ctx.fillStyle = 'gray'
             this.ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
             this.ctx.save()
             this.ctx.imageSmoothingEnabled = false;
-            this.ctx.scale(query.scale/this.windowrootratio, query.scale*this.windowrootratio);
-            this.ctx.translate(this.x, this.y);
+            this.ctx.scale(this.scalex, this.scaley)
+            this.ctx.translate(-this.x,-this.y);
             this.ctx.drawImage(this.imgCanvas, 0, 0);
             this.ctx.restore();
             if(pen.canUpdatePen()){
@@ -636,7 +666,7 @@ $(document).ready(function () {
         pen.setMousePos(event);
         pen.setPixel()
     });
-    board.zoomer.mousedown(function (e) {
+    board.canvas.mousedown(function (e) {
         board.drag.dragX = e.pageX;
         board.drag.dragY = e.pageY;
         board.drag.startX = query.x;
@@ -647,8 +677,8 @@ $(document).ready(function () {
         if (board.drag.active) {
             // center board
             board.centerOn(
-                Math.floor(board.drag.startX + (board.drag.dragX - e.pageX)),
-                Math.floor(board.drag.startY + (board.drag.dragY - e.pageY))
+                Math.floor(board.drag.startX + (board.drag.dragX - e.pageX) / query.scale),
+                Math.floor(board.drag.startY + (board.drag.dragY - e.pageY) / query.scale)
             );
         }
     }).mouseup(() => {
@@ -790,7 +820,7 @@ $(document).ready(function () {
           });
     });
     //prevent resize
-    var couponWindow = {
+    /*var couponWindow = {
         width: $(window).width(),
         height: $(window).height(),
         resizing: false
@@ -802,5 +832,5 @@ $(document).ready(function () {
           window.resizeTo(couponWindow.width, $w.height());
         }
         couponWindow.resizing = false;
-      });
+      });*/
 });

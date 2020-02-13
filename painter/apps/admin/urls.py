@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, abort
 from flask_login import fresh_login_required
+
 from painter.functions import admin_only
 from painter.models.user import reNAME
 from .filters import *  # also import User class

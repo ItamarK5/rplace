@@ -1,6 +1,5 @@
 from painter.constants import MINUTES_COOLDOWN
 from painter.models.user import User, Role
-from typing import Any
 
 ROLE_ICON = {
     Role.admin: 'fa-user-shield',
@@ -25,7 +24,8 @@ def role_title(role: Role) -> str:
 def draw_time(user: User) -> str:
     # https://stackoverflow.com/a/35643540
     return (user.get_next_time() - MINUTES_COOLDOWN).strftime(
-        '%y-%m-%d %a %H:%M:%S.%f') if user.next_time != 0 else 'never'
+        '%y-%m-%d %a %H:%M:%S.%f'
+    ) if user.next_time != 0 else 'never'
 
 
 def is_admin(user: User) -> bool:

@@ -1,17 +1,16 @@
 import time
 from os import path
 
-from flask import Blueprint, url_for, render_template, redirect, current_app
+from flask import Blueprint, url_for, render_template, redirect, current_app, request
 from flask_login import login_user, logout_user, current_user
 from werkzeug.wrappers import Response
 
 from painter.constants import WEB_FOLDER
 from painter.extensions import db
-from painter.models.user import User, Role
+from painter.models.user import User
 from .forms import LoginForm, SignUpForm
 from .helpers import *
 from .mail import send_sign_up_mail
-from flask import request
 
 # router blueprint -> routing all pages that relate to authorization
 accounts_router = Blueprint('auth',

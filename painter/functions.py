@@ -5,10 +5,14 @@ from typing import Optional, Any, Callable, Tuple, Dict
 from flask import current_app, abort
 from flask_login import current_user
 from flask_mail import BadHeaderError, Message
-from flask_socketio import disconnect
+from flask_socketio import disconnect as socketio_disconnect
 
 
 def send_message(f: Callable[[Any], Message]) -> Callable[[Tuple[Any], Dict[str, Any]], Optional[str]]:
+    """
+    :param f: a function that return a Message object
+    :return: decorates the function
+    """
     @wraps(f)
     def wrapper(*args, **kwargs) -> Optional[str]:
         if not current_app.config.get('MAIL_SUPPRESS_SEND', True):
@@ -27,7 +31,7 @@ def send_message(f: Callable[[Any], Message]) -> Callable[[Tuple[Any], Dict[str,
 
 def run_async(name: Optional[str] = None) -> Callable:
     """
-    run function asynchonize
+    run function asynchronous
     """
 
     def wrapper(func: Callable) -> Callable:
@@ -47,10 +51,9 @@ def socket_io_authenticated_only(f: Callable) -> Callable:
     @wraps(f)
     def wrapped(*args, **kwargs) -> Any:
         if not current_user.is_authenticated:
-            disconnect()
+            socketio_disconnect()
         else:
             return f(*args, **kwargs)
-
     return wrapped
 
 
@@ -66,5 +69,4 @@ def admin_only(f: Callable) -> Callable:
             return f(*args, **kwargs)
         # else
         abort(404)
-
     return wrapped
