@@ -56,6 +56,8 @@ const getUTCTimestamp = () => {
 }
 
 //https://pietschsoft.com/post/2008/01/15/javascript-inttryparse-equivalent
+/*
+unused
 function TryParseInt(str, defaultValue) {
     let retValue = defaultValue;
     if(!_.isNull(str)) {
@@ -67,7 +69,7 @@ function TryParseInt(str, defaultValue) {
     }
     return retValue;
 }
-
+*/
 
 const throw_message = (msg, speed = 1000, keep_speed = 100, exit_speed = null, cls = null) =>
     $("<div></div>")
@@ -305,7 +307,6 @@ const query = {
     // level 3
     set_window_hash() {
         //  update location
-        console.log(window.location.hash, this.hash())
         if (window.location.hash != this.hash()) {
             // change hash without triggering events
             history.replaceState(null, null, document.location.pathname  + this.hash());
@@ -316,14 +317,23 @@ const query = {
 
 
 const pen = {
-    x:null, y:null, canvas:null,
+    x:null, y:null, canvas:null, color:null,
+    reminderx:null, remindery:null,
     init() {
-        this.color = $('.colorButton').index('[state="1"]')
+        this.color = $('.colorButton').index('[state="1"]');
     },
-    mousePos(e){
-        // found at debugging
-        let x = null;
-        let y = null
+    get pagePosReminder() {
+        // returns last pageX and pageY detected
+        return {pageX:this.pageX, pageY:this.pageY}
+    },
+    findMousePos(e){
+        // min pixel on screen - start of page / scale= position of mousee 
+        if(e){
+            this.reminderx = e.pageX;
+            this.reminderY = e.pageY;
+        } else { e = this.pagePosReminder();}
+        let x = Math.floor(board.x-e.pageX/query.scale);
+        let y = Math.floor(board.t-e.pageY/query.scale);
         return {x:x, y:y}
     },
     updateOffset(pos) {
@@ -338,8 +348,8 @@ const pen = {
             board.updateScreen()
         }
     }, 
-    setMousePos(canvas_event){
-        this.updatePos(this.mousePos(canvas_event));
+    updateMousePos(canvas_event){
+        this.updatePos(this.findMousePos(canvas_event));
     },
     setSimplePos(){
         this.updatePos({x:query.x, y:query.y});
@@ -401,8 +411,6 @@ const board = {
     imgCanvas: null, imgctx:null,
     buffer: null,
     x: 0, y: 0,
-    scalex: null,
-    scaley: null,
     drag: { active: false, startX: 0, startY: 0, dragX: 0, dragY: 0 },
     zoomer: null, canvas:       null,
     mover:  null, container:    null,
@@ -461,7 +469,6 @@ const board = {
     },
     //uffer on chrome takes ~1552 ms -- even less
     buildBoard(buffer) {
-        t = performance.now();
         let image_data   = new ImageData(CANVAS_SIZE, CANVAS_SIZE);
         let image_buffer = new Uint32Array(image_data.data.buffer);
         buffer.forEach(function (val, index) {
@@ -528,15 +535,24 @@ const board = {
     // sets the board position
     // level 3
     centerPos() {
-        this.x = query.x - (innerWidth/2)/query.scale //( query.x - innerWidth/2)/query.scale;
-        this.y = query.y - (innerHeight/2)/query.scale // (query.y - innerHeight/2)/query.scale;
+        // center axis - (window_axis_size / 2 / query.scale)
+        this.x = query.x - innerWidth / (2 * query.scale) //( query.x - innerWidth/2)/query.scale;
+        this.y = query.y - innerHeight / (2 * query.scale) // (query.y - innerHeight/2)/query.scale;
         board.updateScreen();
     },
+    // level 3
     setCanvasZoom(){
-        let dpr = window.devicePixelRatio || 1;
-        this.canvas.width  = dpr * innerWidth;
-        this.canvas.height = dpr * innerHeight;
+        //https://www.html5rocks.com/en/tutorials/canvas/hidpi/
+        let width = window.devicePixelRatio * innerWidth;
+        let height = window.devicePixelRatio * innerHeight
+        if(width != this.canvas[0].width || height != this.canvas[0].height){            
+            this.canvas[0].width = width;
+            this.canvas[0].height = height;
+            this.centerPos();
+            this.updateScreen();
+        }
     },
+    // level 3
     updateZoom() {
         this.setZoomStyle()
         this.setCanvasZoom();
@@ -583,6 +599,7 @@ const board = {
             $('#coordY').text(pen.y != -1 ? pen.y : 'none');
         }
     },
+    /* not used
     get windowrootratio(){
         return Math.sqrt(innerHeight/innerWidth);
     },
@@ -591,19 +608,21 @@ const board = {
     },
     get scaley(){
         return query.scale / this.windowrootratio
-    },
+    },*/
     updateScreen(){
         if(board.needsdraw || !board.is_ready){return;}
         this.needsdraw=true;
-        requestAnimationFrame(() => {  // 1-4 millisecond call, for all animation
-            /*this.canvas.width = window.innerWidth * devicePixelRatio;
-            this.canvas.height = window.innerHeight * devicePixelRatio;*/
+        requestAnimationFrame(() => {  // 1-5 millisecond call, for all animation
+            // it seems the average time of 5 operations is 0.23404487173814767 milliseconds
+            //t = performance.now();
+            this.canvas[0].width  = window.innerWidth;
+            this.canvas[0].height = window.innerHeight;
             this.needsdraw=false;
             this.ctx.fillStyle = 'gray'
             this.ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
             this.ctx.save()
             this.ctx.imageSmoothingEnabled = false;
-            this.ctx.scale(this.scalex, this.scaley)
+            this.ctx.scale(query.scale, query.scale)
             this.ctx.translate(-this.x,-this.y);
             this.ctx.drawImage(this.imgCanvas, 0, 0);
             this.ctx.restore();
@@ -611,10 +630,11 @@ const board = {
                 this.ctx.fillStyle = Colors.colors[pen.color].css_format(0.5)
                 this.ctx.fillRect(pen.x,pen.y,1,1);
             }
+            //performance_arr.push(performance.now()-t)
         });
     }
 };
-
+//const performance_arr = []
 const sock = io();
 
 
@@ -654,7 +674,7 @@ $(document).ready(function () {
         function(){board.updateCoords();}
     );
     board.canvas
-    .mousemove((event) => pen.setMousePos(event))
+    .mousemove((event) => pen.updateMousePos(event))
     .mouseleave(() => pen.clearPos())
     .bind('mousewheel', (e) => {
         e.preventDefault();
@@ -663,7 +683,7 @@ $(document).ready(function () {
         // jquery dblclick dont work on some machines but addEventListner does 
         // source: https://github.com/Leaflet/Leaflet/issues/4127
         /*Get XY https://codepo8.github.io/canvas-images-and-pixels/#display-colour*/
-        pen.setMousePos(event);
+        pen.updateMousePos(event);
         pen.setPixel()
     });
     board.canvas.mousedown(function (e) {
@@ -819,6 +839,9 @@ $(document).ready(function () {
               }
           });
     });
+    $(window).resize((e) => {
+        board.setCanvasZoom();
+    })
     //prevent resize
     /*var couponWindow = {
         width: $(window).width(),
