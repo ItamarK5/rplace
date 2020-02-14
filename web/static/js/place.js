@@ -4,7 +4,7 @@
     2) setting the query
     3) a function that affect the board as result of change in query
 */
-
+const BACKGROUND_COLOR = '#777777'
 const CANVAS_SIZE = 1000;
 const ESC_KEY_CODE = 27;
 const HOME_KEY_CODE = 36;
@@ -259,8 +259,8 @@ const query = {
         };
     },
     // set x and
-    // level 2 set query
-    set_center(x = undefined, y = undefined, to_update = true) {
+    // level 2 - set query
+    setCenter(x = undefined, y = undefined, to_update = true) {
         let flag = false;
         if(this.scale >= 1){
             x = Math.round(x);
@@ -272,12 +272,11 @@ const query = {
         return flag;
     },
     // level 2 set query
-    set_scale(scale, to_update = true) {
+    setScale(scale, to_update = true) {
         if(this.is_valid_new_scale(scale)){
             this.scale = scale;
-            if(this.scale < Math.min(innerWidth/board.width, innerHeight/board.height))
-            {
-                this.set_center(CANVAS_SIZE/2, CANVAS_SIZE/2, false);
+            if(1 > this.scale) {
+                this.setCenter(CANVAS_SIZE/2, CANVAS_SIZE/2, false);
             }
             if(to_update){
                 board.updateZoom();
@@ -292,7 +291,7 @@ const query = {
          */
         let frags = this.fragments();
         if ((!isNaN(frags.x)) || (!isNaN(frags.y))) {
-            this.set_center(parseInt(frags.x), parseInt(frags.y), to_update);
+            this.setCenter(parseInt(frags.x), parseInt(frags.y), to_update);
         }
         /// update scale
         if (isNaN(frags.scale) && this.is_valid_new_scale(parseInt(frags.scale))) {
@@ -318,84 +317,91 @@ const query = {
 const pen = {
     x:null, y:null, color:null,
     last_mouse_pos:null,
-    outofboard:true, // if the board positiong is cleared (-1, -1)
-    is_at_center:true,
+    // in keyboard state, the pen should point at the center of the screen
+    force_center:true,
+    __disable:false,
     init() {
         this.color = $('.colorButton').index('[state="1"]');
-        this.reminderpos = [innerWidth/2, innerHeight/2];
     },
-    getCenterPos(){
-        return [
-            innerWidth/(2*board.scale),
-            innerHeight/(2*board.scale)
-        ];
+    hide(){
+        if(this.__disable == false) {
+            this.__diable = true;
+            this.drawBoard();
+        }
+    },
+    show(){
+        if(this.__disable == true){
+            this.__disable = false;
+            this.drawBoard()
+        }
     },
     getMouseOffset(e){
-        // if to center the pen
-        if(pen.is_at_center){
-            return [innerWidth/2, innerHeight/2];
-        } else if(e) {
+        /*
+            if(pen.force_center){
+                return [
+                    innerWidth/(2*query.scale),
+                    innerHeight/(2*query.scale)
+                ];
+        */
+        if(e) {
             // set last_mouse_pos
             this.last_mouse_pos = [e.pageX, e.pageY]
         }
         return this.last_mouse_pos;
     },
-    findPenPos(e){
-        // finds the pen current position
-        // min pixel on screen + start of page / scale= position of mousee 
-        //console.log(e, this.reminderx, this.remindery, board.x, board.y, query.scale, e.pageX, e.pageY);
-        let pos = this.getMouseOffset(e);
-        return {
-            x:Math.floor(board.x+pos[0]/query.scale),
-            y:Math.floor(board.y+pos[1]/query.scale)
+    updateOffset(e) {
+        /* finds the pen current position
+         min pixel on screen + start of page / scale= position of mousee  */
+         let pos = null;
+        if(this.force_center){
+            pos = {x:query.x, y:query.y}   // center
+        } else {
+            // clear pos when both values arent good
+            let mouse_offset = this.getMouseOffset(e);
+            if (_.isNull(mouse_offset) || _.some(mouse_offset, _.isNull)){return;}
+            pos = {
+                x: Math.floor(board.x+mouse_offset[0]/query.scale),
+                y: Math.floor(board.y+mouse_offset[1]/query.scale)
+            }
         }
-    },
-    updateOffset(pos) {
-        /*this.x = canvas_event.offsetX;
-        this.y = canvas_event.offsetY;*/
-        // read this https://stackoverflow.com/a/12142675
-        // clear pos when both values arent good
-        if ((!this.outofboard) && !(is_valid_pos(pos.x) && is_valid_pos(pos.y))) {
+        console.log(pos,is_valid_pos(pos.x), is_valid_pos(pos.y));
+        if (_.isNull(pos) || (!is_valid_pos(pos.x)) || !is_valid_pos(pos.y)) {
             this.clearPos(); // set values to -1
         // but if not, update if the values are different
         } else if(pos.x != this.x || pos.y != this.y){
-            this.outofboard = false;
             this.x = pos.x;
             this.y = pos.y;
-            board.updateScreen();
+            board.drawBoard();
+            board.updateCoords();
         }
-    }, 
-    updateMousePos(canvas_event){
-        this.pen_at_center = false;
-        this.updatePos(this.findPenPos(this.getCanvas));
-    },
-    setCnterPos(){        
-        this.pen_at_center = true;
-        this.updatePos(this.findPenPos())
-    },
-    updatePos(pos){
-        this.updateOffset(pos)
-        board.updateCoords();   
-        board.updateScreen();
     },
     clearPos(){
         // when entered outofboard
-        this.outofboard = true;
         this.x = this.y = -1;
         board.updateCoords();
+        board.drawBoard();
+    }, 
+    setMousePos(e){
+        // update position and end use of keyboard state center
+        this.force_center = false;
+        this.updateOffset(e);
+    },
+    setCenterPos(){        
+        this.force_center = true;
+        this.updateOffset();
     },
     get has_color(){ return this.__color != -1; },
     // color getter ans setter
     get color(){return this.__color;},
     set color(color){
         this.__color = color;
-        board.updateScreen()
+        board.drawBoard()
     },
     is_at_board() {
         return this.x != -1 && this.y != -1
     },
-    canUpdatePen() {
-        return this.has_color && this.is_at_board()
+    canDrawPen() {
+        return (!this.__disable) && this.has_color && this.is_at_board()
     },
     setPixel(){
         if(!_.isNull(progress.work)){
@@ -504,7 +510,7 @@ const board = {
     __setAt(x, y, color){
         this.imgctx.fillStyle = color;
         this.imgctx.fillRect(x, y, 1, 1);
-        this.updateScreen();
+        this.drawBoard();
     },
     setAt(x, y, color_idx){
         // set a pixel at a position
@@ -517,6 +523,7 @@ const board = {
             throw_message('given position of point isnt valid')
         }
         color = Colors.colors[color_idx].css_format();
+        console.log(color)
         if(this.is_ready){
             this.__setAt(x, y, color)
         } else {
@@ -530,7 +537,7 @@ const board = {
             this.__setAt(obj.x, obj.y, obj.color);
         }
         this.queue = null;
-        this.updateScreen();
+        this.drawBoard();
     },
     /*
         findPos: function() {
@@ -557,20 +564,21 @@ const board = {
     // level 3
     centerPos() {
         // center axis - (window_axis_size / 2 / query.scale)
-        this.x = query.x - innerWidth / (2 * query.scale) //( query.x - innerWidth/2)/query.scale;
-        this.y = query.y - innerHeight / (2 * query.scale) // (query.y - innerHeight/2)/query.scale;
-        board.updateScreen();
+        this.x = Math.floor(query.x - this.canvas[0].width / 2 / query.scale) //( query.x - innerWidth/2)/query.scale;
+        this.y = Math.floor(query.y - this.canvas[0].height / 2 / query.scale) // (query.y - innerHeight/2)/query.scale;
+        pen.updateOffset()
+        board.drawBoard();
     },
     // level 3
     setCanvasZoom(){
         //https://www.html5rocks.com/en/tutorials/canvas/hidpi/
-        let width = window.devicePixelRatio * innerWidth;
-        let height = window.devicePixelRatio * innerHeight
+        let width = innerWidth * window.devicePixelRatio;
+        let height = innerHeight * window.devicePixelRatio
         if(width != this.canvas[0].width || height != this.canvas[0].height){            
             this.canvas[0].width = width;
             this.canvas[0].height = height;
             this.centerPos();
-            this.updateScreen();
+            this.drawBoard();
         }
     },
     // level 3
@@ -578,10 +586,11 @@ const board = {
         this.setZoomStyle()
         this.setCanvasZoom();
         this.centerPos();
-        pen.updateMousePos();
+        this.drawBoard();
+        pen.updateOffset();
     },
     setZoomStyle(){
-        if(this.scale >= 25) { 
+        if(query.scale >= 25) { 
             $('#zoom-button').children('span').addClass('fa-search-minus').removeClass('fa-search-plus');
         } else {
             $('#zoom-button').children('span').addClass('fa-search-plus').removeClass('fa-search-minus');
@@ -597,7 +606,7 @@ const board = {
               let y = this.keep_inside_border(this.real_y, dir[DIR_INDEX_YNORMAL]*this.step*this.scale, rect.top, rect.bottom)/this.scale;
               console.log(x, y);
         */
-        query.set_center(
+        query.setCenter(
             clamp(query.x + dx * this.step, CANVAS_SIZE, 0),
             clamp(query.y + dy * this.step, CANVAS_SIZE, 0)
        );
@@ -606,7 +615,7 @@ const board = {
     centerOn: function (x, y) {
         x = isNaN(x) ? query.x : clamp(x, CANVAS_SIZE, 0);
         y = isNaN(y) ? query.y : clamp(y, CANVAS_SIZE, 0);
-        query.set_center(x, y);
+        query.setCenter(x, y);
     },
     // level 3 in half
     updateCoords: function () {
@@ -631,25 +640,28 @@ const board = {
     get scaley(){
         return query.scale / this.windowrootratio
     },*/
-    updateScreen(){
+    drawBoard(){
         if(board.needsdraw || !board.is_ready){return;}
         this.needsdraw=true;
         requestAnimationFrame(() => {  // 1-5 millisecond call, for all animation
             // it seems the average time of 5 operations is 0.23404487173814767 milliseconds
             //t = performance.now();
-            this.canvas[0].width  = window.innerWidth;
-            this.canvas[0].height = window.innerHeight;
             this.needsdraw=false;
-            this.ctx.fillStyle = 'gray'
-            this.ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
+            this.ctx.fillStyle = BACKGROUND_COLOR
+            this.ctx.fillRect(
+                0,0,
+                // for the scale == 0.5 scenerio
+                CANVAS_SIZE*2,
+                CANVAS_SIZE*2
+            )
             this.ctx.save()
             this.ctx.imageSmoothingEnabled = false;
             this.ctx.scale(query.scale, query.scale)
-            this.ctx.translate(-this.x,-this.y);
+            this.ctx.translate(-this.x, -this.y);
             this.ctx.drawImage(this.imgCanvas, 0, 0);
-            if(pen.canUpdatePen()){
-                this.ctx.fillStyle = Colors.colors[pen.color].css_format(0.5)
-                this.ctx.fillRect(pen.x,pen.y,1,1);
+            if(pen.canDrawPen()){
+                this.ctx.fillStyle = Colors.colors[pen.color].css_format(0.5);
+                this.ctx.fillRect(pen.x, pen.y, 1,1);
             }
             this.ctx.restore();     // return to default position
             //performance_arr.push(performance.now()-t)
@@ -696,16 +708,16 @@ $(document).ready(function () {
         function(){board.updateCoords();}
     );
     board.canvas
-    .mousemove((event) => pen.updateMousePos(event))
+    .mousemove((event) => pen.setMousePos(event))
     .mouseleave(() => pen.clearPos())
     .bind('mousewheel', (e) => {
         e.preventDefault();
-        query.set_scale(clamp(query.scale + Math.sign(e.originalEvent.wheelDelta)*0.5, MAX_SCALE, MIN_SCALE));
+        query.setScale(clamp(query.scale + Math.sign(e.originalEvent.wheelDelta)*0.5, MAX_SCALE, MIN_SCALE));
     })[0].addEventListener('dblclick', (event) => {   // for not breaking the 
         // jquery dblclick dont work on some machines but addEventListner does 
         // source: https://github.com/Leaflet/Leaflet/issues/4127
         /*Get XY https://codepo8.github.io/canvas-images-and-pixels/#display-colour*/
-        pen.updateMousePos(event);
+        pen.setMousePos(event);
         pen.setPixel()
     });
     board.canvas.mousedown(function (e) {
@@ -714,6 +726,7 @@ $(document).ready(function () {
         board.drag.startX = query.x;
         board.drag.startY = query.y;
         board.drag.active = true;
+        pen.hide()
     });    
     $(document).mousemove(function (e) {
         if (board.drag.active) {
@@ -725,6 +738,7 @@ $(document).ready(function () {
         }
     }).mouseup(() => {
         board.drag.active = false;
+        pen.show()
     })
     $('.colorButton')
     .each(function () {
@@ -761,16 +775,21 @@ $(document).ready(function () {
                 break;
             }
             case 'KeyP': {
-                pen.setPixel();
+                // force keyboard if not in keyboard mode, else color a pixel
+                if(pen.force_center){
+                    pen.setPixel();
+                } else {
+                    pen.setCenterPos()
+                }
             }
         }
         if(e.originalEvent.shiftKey){
             if(e.originalEvent.key == '+')      // Plues
             {
-                query.set_scale(query.scale >= 1 ? query.scale + 0.5 : 1);
+                query.setScale(query.scale >= 1 ? query.scale + 0.5 : 1);
             }
             else if(e.originalEvent.key == '_'){        // key for minus
-                query.set_scale(query.scale > 1 ? query.scale - 0.5 : MIN_SCALE);
+                query.setScale(query.scale > 1 ? query.scale - 0.5 : MIN_SCALE);
             }
         }
     }).keydown((e) => {
@@ -820,7 +839,7 @@ $(document).ready(function () {
     clipboard.on('error', function(){ throw_message('Copy Error'); })
     // change zoom level
     $('#zoom-button').click(function () {
-        query.set_scale(
+        query.setScale(
             $(this).children().hasClass('fa-search-minus')
             ? SIMPLE_UNZOOM_LEVEL
             : SIMPLE_ZOOM_LEVEL
