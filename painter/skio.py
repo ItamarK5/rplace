@@ -95,7 +95,12 @@ def connect_handler() -> None:
 
 
 @sio.on('set-board')
-def set_board(params: Dict[str, Any]) -> Optional[str]:
+def set_board(params: Dict[str, Any]) -> str:
+    """
+    :param params: params given to the Dictionary
+    :return: string represent the next time the user can update the canvas,
+             or undefined if couldn't update the screen
+    """
     try:
         current_time = datetime.utcnow()
         if current_user.get_next_time() > current_time:

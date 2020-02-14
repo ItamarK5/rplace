@@ -211,7 +211,6 @@ const query = {
             if(_.isNull(val)){ return; /* return breaks loop operation */ }
             switch(key){
                 case('x'):{
-                    console.log(this.is_valid_new_x(val))
                     if(this.is_valid_new_x(val)){
                         this.x = Math.round(val);            
                     } else {is_any_frag_unvalid = true;}
@@ -318,26 +317,38 @@ const query = {
 
 const pen = {
     x:null, y:null, color:null,
-    reminderx:null, remindery:null,
+    last_mouse_pos:null,
     outofboard:true, // if the board positiong is cleared (-1, -1)
+    is_at_center:true,
     init() {
         this.color = $('.colorButton').index('[state="1"]');
+        this.reminderpos = [innerWidth/2, innerHeight/2];
     },
-    get pagePosReminder() {
-        // returns last pageX and pageY detected
-        return {pageX:this.pageX, pageY:this.pageY}
+    getCenterPos(){
+        return [
+            innerWidth/(2*board.scale),
+            innerHeight/(2*board.scale)
+        ];
     },
-    findMousePos(e){
+    getMouseOffset(e){
+        // if to center the pen
+        if(pen.is_at_center){
+            return [innerWidth/2, innerHeight/2];
+        } else if(e) {
+            // set last_mouse_pos
+            this.last_mouse_pos = [e.pageX, e.pageY]
+        }
+        return this.last_mouse_pos;
+    },
+    findPenPos(e){
+        // finds the pen current position
         // min pixel on screen + start of page / scale= position of mousee 
         //console.log(e, this.reminderx, this.remindery, board.x, board.y, query.scale, e.pageX, e.pageY);
-        if(e){
-            this.reminderx = e.pageX;
-            this.remindery = e.pageY;
-        } else { e = this.pagePosReminder();}
-        let x = Math.floor(board.x+e.pageX/query.scale);
-        let y = Math.floor(board.y+e.pageY/query.scale);
-        console.log(x, y);
-        return {x:x, y:y}
+        let pos = this.getMouseOffset(e);
+        return {
+            x:Math.floor(board.x+pos[0]/query.scale),
+            y:Math.floor(board.y+pos[1]/query.scale)
+        }
     },
     updateOffset(pos) {
         /*this.x = canvas_event.offsetX;
@@ -351,14 +362,16 @@ const pen = {
             this.outofboard = false;
             this.x = pos.x;
             this.y = pos.y;
-            board.updateScreen()
+            board.updateScreen();
         }
     }, 
     updateMousePos(canvas_event){
-        this.updatePos(this.findMousePos(canvas_event));
+        this.pen_at_center = false;
+        this.updatePos(this.findPenPos(this.getCanvas));
     },
-    setSimplePos(){
-        this.updatePos({x:query.x, y:query.y});
+    setCnterPos(){        
+        this.pen_at_center = true;
+        this.updatePos(this.findPenPos())
     },
     updatePos(pos){
         this.updateOffset(pos)
@@ -424,7 +437,7 @@ const board = {
     mover:  null, container:    null,
     needsdraw: false, move_vector: [0,0],
     keymove_interval:null, ctx:null,
-    queue:null,
+    queue:null, buildBoard:null,
     init(){
         this.zoomer = $('#board-zoomer');
         this.container = $('#board-container');
@@ -437,6 +450,7 @@ const board = {
         this.imgCanvas.height = CANVAS_SIZE;
         this.imgctx = this.imgCanvas.getContext('2d');
         this.queue = [];
+        this.buildBoard = _.once(this.__buildBoard)
         this.updateZoom();      // also centers
     },
     get is_ready(){return _.isNull(this.queue);},
@@ -453,7 +467,6 @@ const board = {
                     this.move_vector[0],
                     this.move_vector[1]
                 );
-                pen.setSimplePos();
             }, 100)
         }
     },
@@ -467,7 +480,6 @@ const board = {
     // level 1
     subMovement(dir){
         dir.set = false
-        console.log(this.move_vector)
         this.move_vector[0] -= dir.dir[0];
         this.move_vector[1] -= dir.dir[1];
         if(this.move_vector[0] == 0 && this.move_vector[1] == 0){
@@ -476,7 +488,7 @@ const board = {
         } 
     },
     //uffer on chrome takes ~1552 ms -- even less
-    buildBoard(buffer) {
+    __buildBoard(buffer) {
         let image_data   = new ImageData(CANVAS_SIZE, CANVAS_SIZE);
         let image_buffer = new Uint32Array(image_data.data.buffer);
         buffer.forEach(function (val, index) {
@@ -492,28 +504,29 @@ const board = {
     __setAt(x, y, color){
         this.imgctx.fillStyle = color;
         this.imgctx.fillRect(x, y, 1, 1);
+        this.updateScreen();
     },
     setAt(x, y, color_idx){
         // set a pixel at a position
         // x: int (0 < x < 1000)
         // y: int (0 < x < 1000)
-        if(color_idx < 0 || color_idx > 1000){
+        if(color_idx < 0 || color_idx > 15){
             // swal event
         }
         if(!(is_valid_pos(x) && is_valid_pos(y))){
             throw_message('given position of point isnt valid')
         }
-        color = Colors.colors[color_idx].abgr;
+        color = Colors.colors[color_idx].css_format();
         if(this.is_ready){
-            this.__setAt()
+            this.__setAt(x, y, color)
         } else {
-            this.queue.push({x:x, y:y, color:color});
+            this.queue.push({x:x, y:y, color:color});   // insert
         }
     },
     // empty the pixel queen
     beforeFirstDraw(){
         while(this.queue.length != 0){
-            let obj = this.queue.shift();
+            let obj = this.queue.shift();   // remove
             this.__setAt(obj.x, obj.y, obj.color);
         }
         this.queue = null;
@@ -565,6 +578,7 @@ const board = {
         this.setZoomStyle()
         this.setCanvasZoom();
         this.centerPos();
+        pen.updateMousePos();
     },
     setZoomStyle(){
         if(this.scale >= 25) { 

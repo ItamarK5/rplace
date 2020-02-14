@@ -70,20 +70,6 @@ body, html {
 }
 body {background-color:#777777;}
 
-#board-container {
-    z-index:1;
-    position:fixed;
-    top:0px;
-    left:0px;
-    margin:0;
-    padding:0;
-    border:none;
-    width:100vw;
-    height:100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
 
 #board {
     position:fixed;   
@@ -93,7 +79,7 @@ body {background-color:#777777;}
     left:0;
     top:0;
 }
-#board-zoomer {flex:0 0 100;}
+
 #icon-container {
     position: absolute;
     display:flex;
