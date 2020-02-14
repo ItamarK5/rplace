@@ -326,13 +326,13 @@ const pen = {
     hide(){
         if(this.__disable == false) {
             this.__diable = true;
-            this.drawBoard();
+            board.drawBoard();
         }
     },
     show(){
         if(this.__disable == true){
             this.__disable = false;
-            this.drawBoard()
+            board.drawBoard()
         }
     },
     getMouseOffset(e){
@@ -364,7 +364,6 @@ const pen = {
                 y: Math.floor(board.y+mouse_offset[1]/query.scale)
             }
         }
-        console.log(pos,is_valid_pos(pos.x), is_valid_pos(pos.y));
         if (_.isNull(pos) || (!is_valid_pos(pos.x)) || !is_valid_pos(pos.y)) {
             this.clearPos(); // set values to -1
         // but if not, update if the values are different
@@ -680,8 +679,8 @@ $(document).ready(function () {
     sock.on('place-start',  function(data) {
         // buffer - board in bytes
         // time - time
-        board.buildBoard(new Uint8Array(data.board));
         progress.set_time(data.time)
+        board.buildBoard(new Uint8Array(data.board));
     });    
     sock.on('set-board', (x, y, color_idx) => board.setAt(x, y, color_idx));
     sock.on('update-timer', function(time){
