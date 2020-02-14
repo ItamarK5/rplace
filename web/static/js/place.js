@@ -317,8 +317,9 @@ const query = {
 
 
 const pen = {
-    x:null, y:null, canvas:null, color:null,
+    x:null, y:null, color:null,
     reminderx:null, remindery:null,
+    outofboard:true, // if the board positiong is cleared (-1, -1)
     init() {
         this.color = $('.colorButton').index('[state="1"]');
     },
@@ -327,22 +328,27 @@ const pen = {
         return {pageX:this.pageX, pageY:this.pageY}
     },
     findMousePos(e){
-        // min pixel on screen - start of page / scale= position of mousee 
+        // min pixel on screen + start of page / scale= position of mousee 
+        //console.log(e, this.reminderx, this.remindery, board.x, board.y, query.scale, e.pageX, e.pageY);
         if(e){
             this.reminderx = e.pageX;
-            this.reminderY = e.pageY;
+            this.remindery = e.pageY;
         } else { e = this.pagePosReminder();}
-        let x = Math.floor(board.x-e.pageX/query.scale);
-        let y = Math.floor(board.t-e.pageY/query.scale);
+        let x = Math.floor(board.x+e.pageX/query.scale);
+        let y = Math.floor(board.y+e.pageY/query.scale);
+        console.log(x, y);
         return {x:x, y:y}
     },
     updateOffset(pos) {
         /*this.x = canvas_event.offsetX;
         this.y = canvas_event.offsetY;*/
         // read this https://stackoverflow.com/a/12142675
-        if (!(pos.x >= 0 && 1000 > pos.x && pos.y >= 0 && 1000 > pos.y)) {
-           this.clearPos(); // set values to -1
+        // clear pos when both values arent good
+        if ((!this.outofboard) && !(is_valid_pos(pos.x) && is_valid_pos(pos.y))) {
+            this.clearPos(); // set values to -1
+        // but if not, update if the values are different
         } else if(pos.x != this.x || pos.y != this.y){
+            this.outofboard = false;
             this.x = pos.x;
             this.y = pos.y;
             board.updateScreen()
@@ -360,6 +366,8 @@ const pen = {
         board.updateScreen();
     },
     clearPos(){
+        // when entered outofboard
+        this.outofboard = true;
         this.x = this.y = -1;
         board.updateCoords();
     },
@@ -625,11 +633,11 @@ const board = {
             this.ctx.scale(query.scale, query.scale)
             this.ctx.translate(-this.x,-this.y);
             this.ctx.drawImage(this.imgCanvas, 0, 0);
-            this.ctx.restore();
             if(pen.canUpdatePen()){
                 this.ctx.fillStyle = Colors.colors[pen.color].css_format(0.5)
                 this.ctx.fillRect(pen.x,pen.y,1,1);
             }
+            this.ctx.restore();     // return to default position
             //performance_arr.push(performance.now()-t)
         });
     }
