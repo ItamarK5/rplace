@@ -1,7 +1,6 @@
 import random
 from os import path, listdir
-from typing import Union
-
+from typing import Tuple, Dict, Union
 from flask import (
     Blueprint, render_template, send_from_directory,
     request, abort, Response
@@ -81,5 +80,5 @@ def serve_icon() -> Response:
 
 
 @other_router.route('/menu-style', methods=('GET',))
-def serve_menu_css() -> Response:
-    return render_template('menu/nav.css')
+def serve_menu_css() -> Tuple[str, Dict[str, str]]:
+    return render_template('menu/nav.css'), {'Content-Type': 'text/css; charset=utf-8'}

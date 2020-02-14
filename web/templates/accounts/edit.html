@@ -1,4 +1,4 @@
-{% from 'accounts/_macros.html' import user_privilage %}
+{% from 'accounts/_macros.html' import user_privilage, edit_title %}
 <html>
 <head>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" type="text/javascript"></script>
@@ -12,11 +12,8 @@
           integrity="sha256-wMES50JHO82E/LjWWLWeCXXQahHeA0oemqGIfMkD5BI=" rel="stylesheet"/>
     <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css"
           integrity="sha256-UZFVAO0Fn854ajzdWnJ2Oze6k1X4LNqE2RJPW3MBfq8=" rel="stylesheet"/>
-    <link href="{{url_for('other.serve_menu_css)}}'" rel="stylesheet">
-    <style>
-        body, html { background-color:#222222 !important; }
-        #user-data > * {color:limegreen !important; }
-    </style>
+    <link href="{{url_for('other.serve_menu_css')}}" rel="stylesheet">
+    <link href="{{url_for('other.serve_static', key='profile.css')}}" rel="stylesheet">
 </head>
 <body>
 {% with current_page = 'profile' %}
@@ -26,25 +23,26 @@
     <div class="row justify-content-center center-text mb-3">
         <h4 class="text-warning display-3" id="user-title"><u>{{user.username}}</u></h4>
     </div>
-    <div id="user-data">
-        <div class="row mb-1">
-            <div class="col-2 mr-2"><h5>Name:</h5></div>
-            <div class="col-2"><h5>{{user.username}}</h5></div>
+    <div class="row">
+        <div class="col user-data-col">
+            {% include 'accounts/abstract/profile-div.html' %}
         </div>
-        <div class="row mb-1">
-            <div class="col-2 mr-2"><h5>Mail:</h5></div>
-            <div class="col-2"><h5>{{user.email}}</h5></div>
-        </div>
-        <div class="row mb-1">
-            <div class="col-2 mr-2"><h5>Last Draw:</h5></div>
-            <div class="col-2"><h5>{{user|draw_time}}</h5></div>
-        </div>
-        <div class="row mb-1">
-            <div class="col-2 mr-2"><h5>Privilage:</h5></div>
-            <div class="col-2"><h5>{{user_privilage(user, 'right')}}</h5></div>
+        <div class="col user-data-col">
+
         </div>
     </div>
+    <div class="row justify-content-center">
+        <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+            <div class="btn-group mr-2" role="group" aria-label="Option group">
+              <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#banModal">Ban <i class="fas fa-ban"></i></button>
+              <button type="button" class="btn btn-secondary">2</button>
+              <button type="button" class="btn btn-secondary">3</button>
+              <button type="button" class="btn btn-secondary">4</button>
+            </div>
+          </div>
+    </div>
 </div>
+{% include 'accounts/abstract/banModal.html' %}
 <!-- Document said to put it here so it be faster -->
 <!-- popper.js - needed for bootstarp -->
 <script crossorigin="anonymous"

@@ -41,7 +41,7 @@ def admin_only(name: str) -> str:
     if reNAME.match(name) is None:
         abort(400, 'Name isn\'t good')
     user = User.query.filter_by(username=name).first_or_404()
-    return render_template('admin/edit.html', user=user)
+    return render_template('accounts/edit.html', user=user)
 
 
 @admin_router.after_request

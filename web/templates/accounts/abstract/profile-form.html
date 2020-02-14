@@ -1,0 +1,51 @@
+<form id="setting-form" method="post">
+    {{edit_title('Settings')}}            
+    {{form.hidden_tag()}}
+    <div class="form-row mb-2">
+        <div class="col input-group" data-toggle="tooltip" data-placement="top" title="The X position on the start of the program">
+            {{pre_input_text(form.x_start.label, form.x_start.id, 'primary')}}
+            {{form.x_start(class="form-input-number rounded-right", min=0, max=1000, value=1, type="number")}}
+        </div>
+        <div class="col input-group" data-toggle="tooltip" data-placement="top" title="The Y position on the start of the program">
+            {{pre_input_text(form.y_start.label, form.y_start.id, 'primary')}}
+            {{form.y_start(class="form-input-number rounded-right", min=0, max=1000, value=1, type="number")}}
+        </div>
+    </div>
+    <div class="form-row mb-2">
+        <div class="col input-group" data-toggle="tooltip" data-placement="top" title="The X position on the start of the program">
+            {{pre_input_text(form.scale_start.label, form.scale_start.id, 'primary')}}
+            {{form.scale_start(class="form-input-number rounded-right", min=1, max=50, value=1, type="number")}}
+        </div>
+        <div class="col input-group  rounded" data-toggle="tooltip" data-placement="top" title="The Y position on the start of the program">
+            {{pre_input_text(form.colors.label, form.colors.id, id=form.colors.id+'-label', classes='primary')}}
+            {{form.colors(class='form-control-select rounded-right')}}
+        </div>
+    </div>
+    <div class="form-row mt-3">
+        <button id="submit" class="mx-auto w-25 submit-form-control btn-primary">Save</button>
+    </div>
+</form>
+<script>
+    $(document).ready(() => {
+        $('#setting-form').submit((e) => {
+            e.preventDefault();
+        })
+        let colors = $('#colors')
+        colors.children('option').each(function(idx, elem) {
+            $(elem).css('background-color', $(elem).text().toLowerCase());   
+            if($(elem).text().toLowerCase() == 'black'){
+                $(elem).css('color', 'white');
+            }
+        });
+        colors.change(function(e) {
+            let option = $(this).siblings('option:selected').first();
+            $(this).css('background-color', $(option).text().toLowerCase());   
+            if($(option).text().toLowerCase() == 'black'){
+                $(option).css('color', 'white');
+            }
+        });
+    });
+    $(window).load(() => {
+        $('[data-toggle="tooltip"]').tooltip();
+    })
+</script>

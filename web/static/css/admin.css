@@ -17,5 +17,6 @@ tr, td, th {user-select:none;}
 .user-select-none {user-select:none;}
 /* page list*/
 #page-list > a {background-color:#888888; color:#DDDDDD;}
+#page-list > a.disabled {background-color:#AAAAAA, color:#DDDDDD;}
 #page-list > a:hover {background-color:#666666; color:lime}
 #page-list > a.active {background-color:#666666; color:lime}

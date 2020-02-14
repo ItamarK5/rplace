@@ -1,0 +1,41 @@
+{% macro checkban(val, id, text) %}
+<div class="form-check"> {# no ban - default #}
+    <input class="form-check-input" type="radio" name="ban-option" value="{{val}}" id="{{id}}">
+    <label class="form-check-label" for="{{id}}">{{text}}</label>
+</div>
+{% endmacro %}
+<div class="modal fade" id="banModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="BanTitle">Ban Options</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <form id="ban-form" method="POST">
+                <div class="d-flex flex-row">
+                <div class="col">
+                    {{checkban('0', 'not-banned', 'Free User')}}
+                    {{checkban('1', 'Banned until','Timed Ban')}}
+                    {{checkban('2', 'not-banned', 'Full Ban')}}
+                </div>
+                <div class="col" id="time-col">
+                    <input type="date" id="ban-date" name="ban-date">
+                    <input type="time" id="ban-time" name="ban-time">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div> {# https://getbootstrap.com/docs/4.0/components/modal/ #}
+  <script>
+      $(document).ready(function(){
+          
+      })
+  </script>
