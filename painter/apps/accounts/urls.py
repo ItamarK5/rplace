@@ -152,8 +152,3 @@ def create_user() -> Response:
     db.session.add(user)
     db.session.commit()
     return redirect(url_for('.login'))
-
-
-@accounts_router.route('/profile', methods=['GET',])
-def profile():
-    return render_template('profile.html')

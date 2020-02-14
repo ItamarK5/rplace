@@ -32,7 +32,7 @@ def admin() -> str:
     page = int(page)
     if not 1 <= page <= pagination.pages:
         abort(400, 'page overflow')
-    return render_template('admin/admin.html', pagination=pagination)
+    return render_template('accounts/admin.html', pagination=pagination)
 
 
 @admin_router.route('/edit/<string:name>', methods=('GET',))

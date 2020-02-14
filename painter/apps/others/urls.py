@@ -15,7 +15,6 @@ other_router = Blueprint(
     'other',
     'other',
     static_folder=path.join(WEB_FOLDER),
-    template_folder=path.join(WEB_FOLDER, 'templates', 'memes')
 )
 
 
@@ -40,7 +39,7 @@ def error_meme_render(e: HTTPException) -> str:
     """ future plans, add isinstance string to detect if it's string, security """
     if str(e.code) not in listdir(other_router.static_folder):
         abort(404)
-    return render_template('meme.html', error=e.code, title=e.name,
+    return render_template('memes/meme.html', error=e.code, title=e.name,
                            description=e.description if e.description is not None else e.name)
 
 
@@ -79,3 +78,8 @@ def serve_icon() -> Response:
         path.join(other_router.static_folder, 'static', 'ico'), 'favicon.ico',
         mimetype=MIME_TYPES['ico']
     )
+
+
+@other_router.route('/menu-style', methods=('GET',))
+def serve_menu_css() -> Response:
+    return render_template('menu/nav.css')

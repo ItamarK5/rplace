@@ -4,6 +4,8 @@ from flask import Blueprint, render_template, Response
 from flask_login import login_required
 
 from painter.constants import WEB_FOLDER
+from .forms import SettingForm
+
 
 place_router = Blueprint('place', 'place',
                          static_folder=path_join(WEB_FOLDER, 'static'),
@@ -23,3 +25,9 @@ def home() -> Response:
     :return: return the home page
     """
     return render_template('home.html')
+
+
+@place_router.route('/profile', methods=('GET',))
+def profile():
+    form = SettingForm()
+    return render_template('accounts/profile.html', form=form)

@@ -9,7 +9,7 @@
     <ul class="nav nav-pills nav-fill">
         {{nav_item('fa-paint-brush', 'paint', 'place.place')}}
         {{nav_item('fa-home', 'home', 'place.home', 'home')}}{% if current_user|is_admin %}
-        {{nav_item('fa-cog', 'profile', 'auth.profile')}}
+        {{nav_item('fa-cog', 'profile', 'place.profile')}}
         {{nav_item('fa-tools', 'admin tools', 'admin.admin', 'admin')}}{% endif %}
         {{nav_item('fa-door-open', 'exit', 'auth.logout')}}
     </ul>

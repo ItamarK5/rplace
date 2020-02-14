@@ -1,0 +1,13 @@
+{% macro user_privilage(user, dir) %}
+<i class="fa {{user.role|role_icon}}" data-placement="{{dir}}" data-toggle="tooltip" title="{{user.role|role_title}}"></i>
+{% endmacro %}
+{% macro edit_title(text) %}
+<div class="justify-content-center center-text row mb-2">
+    <h4 class="font-weight-bold"><u>{{text}}</u></h4>            
+</div>
+{% endmacro %}
+{% macro pre_input_text(text, for_input, id=None, classes="") %}
+<div class="input-group-prepend">
+    <label class="input-group-text{% if classes %} {{classes}}{% endif %}"for="{{input_for}}">{{text}}</label>
+</div>
+{% endmacro %}
