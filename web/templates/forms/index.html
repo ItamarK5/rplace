@@ -1,10 +1,36 @@
 {% extends "forms/forms.html" %}
+{% block before_title %}{% with messages = get_flashed_messages() %}
+{% if messages %}
+<div class="justify-content-center form-row">
+<ul class=flashes>
+{% for category, message in messages %}
+    <li class="">{{ message }}</li>
+{% endfor %}
+</ul></div>
+{% endif %}
+{% endwith %}{% endblock %}
 {% block fields %}
 {{ render_field(form.username)}}
 {{ render_errors(form.username.errors) }}
 {{ render_field(form.password)}}
 {{ render_errors(form.password.errors) }}
 {{ render_errors(form.non_field_errors, 'warning') }}
+<div class="form-row justify-content-center" id="remember-me-row">
+    <div class="custom-control custom-checkbox">
+        {{form.remember(class="custom-control-input")}}
+        <label class="custom-control-label text-warning non-select" for="{{form.remember.id}}">{{form.remember.label.text}}</label>
+    </div>
+</div>
+<script>
+$(document).ready(function(){
+    if(!navigator.cookieEnabled){
+        $('#remember-me-row')[0].addAttribute('disabled');
+        $('#{{form.remember.id}}').attr(
+            'title', 'You must enable cookies in this site to use the remember me feature'
+        )
+    }
+});
+</script>
 {% endblock %}
 {% block links %}
 {{ render_link('signup-link', 'Are you new?', url_for('auth.signup')) }}

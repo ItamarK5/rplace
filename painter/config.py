@@ -18,3 +18,4 @@ class Config:
     MAIL_MAX_EMAILS = 10
     # https://stackoverflow.com/a/54802481
     WERKZEUG_RUN_MAIN = True
+    REMEMBER_COOKIE_NAME = 'OrganizationWithoutaCoolAcronym'

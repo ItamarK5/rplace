@@ -34,10 +34,9 @@ def meme_image(http_error: str) -> Response:
                                )
 
 
-def error_meme_render(e: HTTPException) -> str:
-    """ future plans, add isinstance string to detect if it's string, security """
-    if str(e.code) not in listdir(other_router.static_folder):
-        abort(404)
+def error_meme_render(e: HTTPException) -> Union[str, HTTPException]:
+    if str(e.code) not in listdir(path.join(other_router.static_folder, 'memes')):
+        return e
     return render_template('memes/meme.html', error=e.code, title=e.name,
                            description=e.description if e.description is not None else e.name)
 

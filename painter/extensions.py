@@ -16,3 +16,5 @@ crsf = CSRFProtect()
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 login_manager.refresh_view = 'auth.login'
+login_manager.needs_refresh_message = 'you need to re-login to access the information'
+login_manager.needs_refresh_message_category = 'info'

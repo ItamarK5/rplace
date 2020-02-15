@@ -16,35 +16,42 @@ class LoginForm(FlaskForm):
         self.non_field_errors = []
 
     title = 'Welcome Back to Social Painter'
-    username = StringField('username',
-                           validators=[
-                               validators.data_required(message='You must enter something'),
-                               validators.regexp(r'^[\w\d]+$', re.I, 'Input must only contain abc characters '
-                                                                     ' or digits'),
-                               validators.length(5, 15, message='you have passed the length, pass name in length '
-                                                                'between 5 to 15', )
-                           ],
-                           render_kw={
-                               'data-toggle': 'tooltip',
-                               'title': 'Your name, it must contain 5-15 characters and '
-                                        'contains only abc chars\\digits',
-                               'data-placement': 'top'
-                           })
+    username = StringField(
+        'username',
+        validators=[
+            validators.data_required(message='You must enter something'),
+            validators.regexp(r'^[\w\d]+$', re.I, 'Input must only contain abc characters or digits'),
+            validators.length(5, 15, message='The Input length isnt valid, pass a name in length between 5 to 15', )
+        ],
+        render_kw={
+            'data-toggle': 'tooltip',
+            'title': 'Your name, it must contain 5-15 characters and contains only abc chars\\digits',
+            'data-placement': 'top'
+        })
 
-    password = PasswordField('password',
-                             validators=[
-                                 validators.data_required('You must enter something'),
-                                 validators.regexp(r'^[\w\d]+$', re.I, 'Input must only contain abc characters'
-                                                                       ' or digits'),
-                                 validators.length(6, 15, message='you have passed the length, pass name in length'
-                                                                  'between 6 to 15')
-                             ],
-                             render_kw={
-                                 'data-toggle': 'tooltip',
-                                 'title': 'One password to control your account so keep it safe, ' +
-                                          'It must only contain 6-15 abc chars or digits',
-                                 'data-placement': 'bottom'
-                             })
+    password = PasswordField(
+        'password',
+        validators=[
+            validators.data_required('You must enter something'),
+            validators.regexp(r'^[\w\d]+$', re.I, 'Input must only contain abc characters or digits'),
+            validators.length(6, 15, message='you have passed the length, pass name in length between 6 to 15')
+        ],
+        render_kw={
+            'data-toggle': 'tooltip',
+            'title': 'One password to control your account so keep it safe, ' +
+                     'It must only contain 6-15 abc chars or digits',
+            'data-placement': 'bottom'
+        }
+    )
+
+    remember = BooleanField(
+        'Remember me',
+        render_kw={
+            'data-toggle': 'tooltip',
+            'title': 'so the computer will remember your account, even if he is dating someone else',
+            'data-placement': 'left'
+        }
+    )
 
     def validate(self) -> bool:
         if not super().validate():

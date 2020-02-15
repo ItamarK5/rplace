@@ -3,7 +3,7 @@ from threading import Thread
 from typing import Optional, Any, Callable, Tuple, Dict
 
 from flask import current_app, abort
-from flask_login import current_user
+from flask_login import current_user, fresh_login_required
 from flask_mail import BadHeaderError, Message
 from flask_socketio import disconnect as socketio_disconnect
 
@@ -60,13 +60,14 @@ def socket_io_authenticated_only(f: Callable) -> Callable:
 def admin_only(f: Callable) -> Callable:
     """
     :param f: decorator, which decorates a view, make it admin only used
-    :return: a route that aborts 404 non-admin users that enter
+    :return: a route that aborts 404 non-admin users that enter, all actions of admin must be with refreshed login
     """
 
     @wraps(f)
     def wrapped(*args, **kwargs):
         if current_user.is_authenticated and current_user.role >= current_user.role.admin:
-            return f(*args, **kwargs)
+            # decorated by flesh_login_required
+            return fresh_login_required(f)(*args, **kwargs)
         # else
         abort(404)
     return wrapped

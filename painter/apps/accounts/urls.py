@@ -38,7 +38,7 @@ def login() -> Response:
         user = User.query.filter_by(username=name, password=pswd).first()
         if user is None:
             pass
-        elif not login_user(user):
+        elif not login_user(user, remember=form.remember):
             extra_error = 'You cant login with non active user'
         else:
             return redirect(url_for('place.home'))
