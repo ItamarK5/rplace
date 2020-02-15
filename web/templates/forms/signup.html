@@ -1,5 +1,6 @@
 {% extends "forms/forms.html" %}
 {% block fields %}
+{{super()}}
 {{ render_field(form.username)}}
 {{ render_errors(form.username.errors) }}
 {{ render_field(form.password)}}

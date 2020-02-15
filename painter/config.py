@@ -9,6 +9,7 @@ class Config:
     MAIL_PASSWORD = ',[+=dDAbg9a'
     MAIL_USE_SSL = False
     MAIL_USE_TLS = True
+    MAIL_DEBUG = True
     MAIL_PORT = 587
     MAIL_DEFAULT_SENDER = 'Social Painter Dash'
     USER_PASSWORD_SALT = b'\x20\xf8\x1a\x62\x34\x08\x48\x86\xbd\xa5\x56\x09\x34\x4a\xc5\x2c'
@@ -18,4 +19,5 @@ class Config:
     MAIL_MAX_EMAILS = 10
     # https://stackoverflow.com/a/54802481
     WERKZEUG_RUN_MAIN = True
-    REMEMBER_COOKIE_NAME = 'OrganizationWithoutaCoolAcronym'
+    REMEMBER_COOKIE_NAME = 'OrganizationWithoutaCoolAcronymPainter'
+    REMEMBER_COOKIE_HTTPONLY = True

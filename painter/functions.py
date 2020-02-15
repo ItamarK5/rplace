@@ -33,7 +33,6 @@ def run_async(name: Optional[str] = None) -> Callable:
     """
     run function asynchronous
     """
-
     def wrapper(func: Callable) -> Callable:
         @wraps(func)
         def wrapped(*args, **kwargs):
@@ -56,7 +55,6 @@ def socket_io_authenticated_only(f: Callable) -> Callable:
             return f(*args, **kwargs)
     return wrapped
 
-
 def admin_only(f: Callable) -> Callable:
     """
     :param f: decorator, which decorates a view, make it admin only used
@@ -66,7 +64,7 @@ def admin_only(f: Callable) -> Callable:
     @wraps(f)
     def wrapped(*args, **kwargs):
         if current_user.is_authenticated and current_user.role >= current_user.role.admin:
-            # decorated by flesh_login_required
+            # decorated by flesh_login_required, so that it user isnt refreshed and prevent seeing the site
             return fresh_login_required(f)(*args, **kwargs)
         # else
         abort(404)

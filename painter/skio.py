@@ -90,7 +90,7 @@ def connect_handler() -> None:
         return
     # else
     sio.emit('place-start', {
-        'board': board.get_bytes(), 'time': str(current_user.get_next_time())
+        'board': board.get_bytes(), 'time': str(current_user.next_time)
     })
 
 
@@ -103,8 +103,8 @@ def set_board(params: Dict[str, Any]) -> str:
     """
     try:
         current_time = datetime.utcnow()
-        if current_user.get_next_time() > current_time:
-            return str(current_user.get_next_time())
+        if current_user.next_time > current_time:
+            return str(current_user.next_time())
         # validating parameter
         if 'x' not in params or (not isinstance(params['x'], int)) or not (0 <= params['x'] < 1000):
             return 'undefined'
@@ -113,7 +113,7 @@ def set_board(params: Dict[str, Any]) -> str:
         if 'color' not in params or (not isinstance(params['color'], int)) or not (0 <= params['color'] < 16):
             return 'undefined'
         next_time = current_time  # + MINUTES_COOLDOWN
-        current_user.set_next_time(next_time)
+        current_user.next_time = next_time
         x, y, clr = int(params['x']), int(params['y']), int(params['color'])
         db.session.add(Pixel(x=x, y=y, color=clr, drawer=current_user.id, drawn=current_time.timestamp()))
         # board.set_at(x, y, clr)

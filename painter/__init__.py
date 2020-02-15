@@ -12,19 +12,20 @@ app = Flask(
     root_path=WEB_FOLDER
 )
 
+from flask_wtf.csrf import CSRFProtect
 from .apps import other_router, place_router, accounts_router, admin_router
 from .config import Config  # config
-from .extensions import crsf, db, mailbox, engine, login_manager
+from .extensions import db, mailbox, engine, login_manager
 from .skio import board, sio
 
 app.config.from_object(Config)
 
-crsf.init_app(app)
 db.init_app(app)
 mailbox.init_app(app)
 sio.init_app(app)
 login_manager.init_app(app)
 board.init_app(app)
+CSRFProtect(app)
 # insert other staff
 app.register_blueprint(other_router)
 app.register_blueprint(place_router)

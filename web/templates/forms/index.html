@@ -1,15 +1,6 @@
 {% extends "forms/forms.html" %}
-{% block before_title %}{% with messages = get_flashed_messages() %}
-{% if messages %}
-<div class="justify-content-center form-row">
-<ul class=flashes>
-{% for category, message in messages %}
-    <li class="">{{ message }}</li>
-{% endfor %}
-</ul></div>
-{% endif %}
-{% endwith %}{% endblock %}
 {% block fields %}
+{{super()}}
 {{ render_field(form.username)}}
 {{ render_errors(form.username.errors) }}
 {{ render_field(form.password)}}

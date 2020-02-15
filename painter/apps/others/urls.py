@@ -1,10 +1,11 @@
 import random
 from os import path, listdir
-from typing import Tuple, Dict, Union
+from typing import Tuple, Dict, Union, Optional
 from flask import (
     Blueprint, render_template, send_from_directory,
     request, abort, Response
 )
+from flask_wtf.csrf import CSRFError
 from werkzeug.exceptions import HTTPException, NotFound
 
 from painter.constants import MIME_TYPES, WEB_FOLDER
@@ -20,8 +21,8 @@ other_router = Blueprint(
 @other_router.route('/meme/<string:http_error>')
 def meme_image(http_error: str) -> Response:
     if str(http_error) not in listdir(path.join(other_router.static_folder, 'memes')):
-        return send_from_directory(path.join(other_router.static_folder, '404'), 'images.jfif',
-                                   mimetype=MIME_TYPES.get('jfif', None))
+        # funny
+        abort(404)
     """
         else
         select random image
@@ -34,11 +35,26 @@ def meme_image(http_error: str) -> Response:
                                )
 
 
-def error_meme_render(e: HTTPException) -> Union[str, HTTPException]:
-    if str(e.code) not in listdir(path.join(other_router.static_folder, 'memes')):
-        return e
-    return render_template('memes/meme.html', error=e.code, title=e.name,
-                           description=e.description if e.description is not None else e.name)
+def error_meme_render(e: HTTPException,
+                      case: Optional[str] = None,
+                      name: Optional[str] = None) -> Union[str, HTTPException]:
+    case = case or str(e.code)
+    name = name or str(e.name)
+    print(case,  listdir(path.join(other_router.static_folder, 'memes')))
+    if case not in listdir(path.join(other_router.static_folder, 'memes')):
+        return e    # return default error
+    return render_template('memes/meme.html',
+                           error=case, title=name,
+                           description=e.description or name)
+
+
+@other_router.app_errorhandler(CSRFError)
+def handle_csrf_error(e):
+    """
+    :param e: csrf error
+    :return: csrf error meme view
+    """
+    return error_meme_render(e, 'csrf', 'Cross-Site-Forgery-Key')
 
 
 @other_router.app_errorhandler(404)

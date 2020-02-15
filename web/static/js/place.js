@@ -4,6 +4,7 @@
     2) setting the query
     3) a function that affect the board as result of change in query
 */
+
 const BACKGROUND_COLOR = '#777777'
 const CANVAS_SIZE = 1000;
 const ESC_KEY_CODE = 27;
@@ -323,7 +324,10 @@ const pen = {
     init() {
         this.color = $('.colorButton').index('[state="1"]');
     },
-    hide(){
+    hide(cursor_style = undefined){
+        if(!_.isUndefiend(cursor_style)){
+            this.cursor.style = cursor_style;
+        }
         if(this.__disable == false) {
             this.__diable = true;
             board.drawBoard();
@@ -405,9 +409,11 @@ const pen = {
     setPixel(){
         if(!_.isNull(progress.work)){
             Swal.fire({
-                icon: 'warning',
                 title: 'You have 2 wait',
-                text: 'You need to end for your time to finish',
+                imageUrl:'https://aadityapurani.files.wordpress.com/2016/07/2.png',
+                imageHeight:300,
+                imageAlt:'wow that was rude',
+                text:'Wait for your cooldown to end'
             });
         }    
         else if(_.isNull(pen.color)) {
@@ -571,14 +577,14 @@ const board = {
     // level 3
     setCanvasZoom(){
         //https://www.html5rocks.com/en/tutorials/canvas/hidpi/
-        let width = innerWidth * window.devicePixelRatio;
-        let height = innerHeight * window.devicePixelRatio
-        if(width != this.canvas[0].width || height != this.canvas[0].height){            
-            this.canvas[0].width = width;
-            this.canvas[0].height = height;
-            this.centerPos();
-            this.drawBoard();
-        }
+        let width = innerWidth * devicePixelRatio;
+        let height = innerHeight * devicePixelRatio;
+        this.canvas[0].width = width;
+        this.canvas[0].height = height;
+        // found to solve this
+        this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        this.centerPos();
+        this.drawBoard();
     },
     // level 3
     updateZoom() {
@@ -650,9 +656,9 @@ const board = {
             this.ctx.fillRect(
                 0,0,
                 // for the scale == 0.5 scenerio
-                CANVAS_SIZE*2,
-                CANVAS_SIZE*2
-            )
+                this.canvas[0].width,
+                this.canvas[0].height
+            );
             this.ctx.save()
             this.ctx.imageSmoothingEnabled = false;
             this.ctx.scale(query.scale, query.scale)
@@ -830,8 +836,8 @@ $(document).ready(function () {
     // copy coords - https://stackoverflow.com/a/37449115
     let clipboard = new ClipboardJS(
         '#coords', {
-        text: function() {
-            return window.location.origin + window.location.pathname + query.arguments();
+            text: function() {
+                return window.location.origin + window.location.pathname + query.arguments();
         }
     });
     clipboard.on('success', function(){ throw_message('Copy Success'); })
@@ -881,7 +887,7 @@ $(document).ready(function () {
     });
     $(window).resize((e) => {
         board.setCanvasZoom();
-    })
+    });
     //prevent resize
     /*var couponWindow = {
         width: $(window).width(),
