@@ -1,6 +1,6 @@
 {% macro checkban(val, id, text) %}
-<div class="form-check"> {# no ban - default #}
-    <input class="form-check-input" type="radio" name="ban-option" value="{{val}}" id="{{id}}">
+<div class="form-check form-check-inline"> {# no ban - default #}
+    <input class="form-check-input form-inline" type="radio" name="ban-option" value="{{val}}" id="{{id}}">
     <label class="form-check-label" for="{{id}}">{{text}}</label>
 </div>
 {% endmacro %}
@@ -15,21 +15,27 @@
         </div>
         <div class="modal-body">
             <form id="ban-form" method="POST">
-                  <div class="col">
-                      {{checkban('0', 'not-banned', 'Free User')}}
-                      {{checkban('1', 'Banned until','Timed Ban')}}
-                      {{checkban('2', 'full-ban', 'Full Ban')}}
+                  <div class="form-row mb-1">
+                      {{checkban('0', 'ban-never', 'Free User')}}
+                      {{checkban('1', 'ban-time','Timed Ban')}}
+                      {{checkban('2', 'ban-forever', 'Full Ban')}}
                   </div>
-                  <div class="col" id="time-col">
-                    {{calender_input('date-ban')}}
+                  <div class="form-row mb-1 mt-1" id="calender-input">
+                        <div class="input-group date" id="ban-finish" data-target-input="nearest">
+                            <div class="input-group-prepend" data-target="#ban-date" data-toggle="datetimepicker">
+                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                            </div>
+                            <input type="text" class="form-control datetimepicker-input" data-target="#ban-date"/>
+                        </div>
                   </div>
-                  <div class="col">
+                  <div class="form-row mt-1 mb-1">
                     <div class="input-group">
-                    {{pre_input_text('describe', 'description')}}
-                    <input type="textarea" class="form-control">
+                      <div class="input-group-prepend">
+                          <span class="input-group-text fa fa-quote-left" id="ban-description-label"></span>
+                      </div>
+                      <input type="text" class="form-control" id="ban-description" name="ban-description"/>
                     </div>
-                </div>
-                </div>
+                  </div>
             </form>
         </div>
         <div class="modal-footer">
@@ -39,8 +45,3 @@
       </div>
     </div>
   </div> {# https://getbootstrap.com/docs/4.0/components/modal/ #}
-  <script>
-      $(document).ready(function(){
-          
-      })
-  </script>

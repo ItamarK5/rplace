@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, abort
-from flask_login import fresh_login_required
+from flask_login import fresh_login_required, current_user, login_fresh
 
 from painter.functions import admin_only
 from painter.models.user import reNAME
@@ -36,8 +36,9 @@ def admin() -> str:
 
 
 @admin_router.route('/edit/<string:name>', methods=('GET',))
-@admin_only
-def admin_only(name: str) -> str:
+def edit_user(name: str) -> str:
+
+
     if reNAME.match(name) is None:
         abort(400, 'Name isn\'t good')
     user = User.query.filter_by(username=name).first_or_404()
