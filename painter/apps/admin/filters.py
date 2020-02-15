@@ -4,9 +4,11 @@ from painter.models.user import User, Role
 ROLE_ICON = {
     Role.admin: 'fa-user-shield',
     Role.common: 'fa-user',
-    Role.banned: 'fa-ban'
+    Role.banned: 'fa-ban',
+    Role.superuser: 'fa-user-secret'
 }
 ROLE_TITLE = {
+    Role.superuser: 'Superuser',
     Role.admin: 'Admin',
     Role.common: 'User',
     Role.banned: 'Banned'
@@ -23,9 +25,12 @@ def role_title(role: Role) -> str:
 
 def draw_time(user: User) -> str:
     # https://stackoverflow.com/a/35643540
-    return (user.get_next_time() - MINUTES_COOLDOWN).strftime(
+    if user.next_time == user.creation:
+        return 'never'
+    # else
+    return user.next_time.strftime(
         '%y-%m-%d %a %H:%M:%S.%f'
-    ) if user.next_time != 0 else 'never'
+    )
 
 
 def is_admin(user: User) -> bool:

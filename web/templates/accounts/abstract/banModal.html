@@ -4,7 +4,7 @@
     <label class="form-check-label" for="{{id}}">{{text}}</label>
 </div>
 {% endmacro %}
-<div class="modal fade" id="banModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+<section class="modal fade" id="banModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -15,15 +15,20 @@
         </div>
         <div class="modal-body">
             <form id="ban-form" method="POST">
-                <div class="d-flex flex-row">
-                <div class="col">
-                    {{checkban('0', 'not-banned', 'Free User')}}
-                    {{checkban('1', 'Banned until','Timed Ban')}}
-                    {{checkban('2', 'not-banned', 'Full Ban')}}
+                  <div class="col">
+                      {{checkban('0', 'not-banned', 'Free User')}}
+                      {{checkban('1', 'Banned until','Timed Ban')}}
+                      {{checkban('2', 'full-ban', 'Full Ban')}}
+                  </div>
+                  <div class="col" id="time-col">
+                    {{calender_input('date-ban')}}
+                  </div>
+                  <div class="col">
+                    <div class="input-group">
+                    {{pre_input_text('describe', 'description')}}
+                    <input type="textarea" class="form-control">
+                    </div>
                 </div>
-                <div class="col" id="time-col">
-                    <input type="date" id="ban-date" name="ban-date">
-                    <input type="time" id="ban-time" name="ban-time">
                 </div>
             </form>
         </div>

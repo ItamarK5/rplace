@@ -1,11 +1,11 @@
 import re
-from datetime import datetime
 from enum import IntEnum, auto
 from hashlib import pbkdf2_hmac
-from typing import NoReturn, Any, Type
-
+from typing import Any, Type
+from datetime import datetime
 from flask_login import UserMixin
-from sqlalchemy import Column, Integer, String, Float, SmallInteger, TypeDecorator
+from sqlalchemy import Column, Integer, String, SmallInteger, TypeDecorator, JSON
+from sqlalchemy.dialects.sqlite import DATETIME
 from sqlalchemy.orm import relationship
 
 from ..config import Config
@@ -24,6 +24,7 @@ class Role(IntEnum):
     banned = auto()
     common = auto()
     admin = auto()
+    superuser = auto()
 
 
 class SmallEnum(TypeDecorator):
@@ -53,13 +54,21 @@ class SmallEnum(TypeDecorator):
             raise ValueError('user privilage value isnt valid: %s' % value)
 
 
+class BanTable(db.Model):
+    __tablename__ = 'banned'
+    banned_id = Column(Integer, primary_key=True)
+    banned_time = Column(DATETIME(), nullable=True)
+    description = Column(String(256), nullable=True)
+
+
 class User(db.Model, UserMixin):
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
     username = Column(String(15), unique=True, nullable=False)
     password = Column(String(128), nullable=False)
     email = Column(String(254), unique=True, nullable=False)
-    next_time = Column(Float(), default=0.0, nullable=False)
+    creation = Column(DATETIME(), default=datetime.utcnow, nullable=False)
+    next_time = Column(DATETIME(), default=datetime.utcnow, nullable=False)
     pixels = relationship('Pixel', backref='users', lazy=True)
     role = Column(SmallEnum(Role), default=Role.common, nullable=False)
     sqlite_autoincrement = True
@@ -80,12 +89,6 @@ class User(db.Model, UserMixin):
 
     def __repr__(self) -> str:
         return f"<User(name={self.username}>"
-
-    def get_next_time(self) -> datetime:
-        return datetime.fromtimestamp(self.next_time)
-
-    def set_next_time(self, next_time: datetime) -> NoReturn:
-        self.next_time = next_time.timestamp()
 
 
 @login_manager.user_loader

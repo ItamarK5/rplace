@@ -1,9 +1,6 @@
 $(document).ready(() => {
     $('[data-toggle="tooltip"]').tooltip();
-    $('td').click(function() {
-        window.location.href = `/edit/${
-            $(this)
-            .siblings('.name-col')
-            .text()}`;
+    $('tr').click(function() {
+        window.location.href = `/edit/${$(this).children('.name-col').text()}`
     });
 });

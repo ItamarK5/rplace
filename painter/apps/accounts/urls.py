@@ -10,6 +10,7 @@ from painter.extensions import db
 from painter.models.user import User
 from .forms import LoginForm, SignUpForm
 from .helpers import *
+from painter.models.user import Role
 from .mail import send_sign_up_mail
 
 # router blueprint -> routing all pages that relate to authorization
@@ -140,14 +141,34 @@ def create_user() -> Response:
     """
     :return: create user for debugging
     """
-    #user = User.query.filter_by(username='socialpainter5').first()
-    #if user:
-     #   db.session.delete(user)
-      #  db.session.commit()
+    # user = User.query.filter_by(username='socialpainter5').first()
+    # if user:
+    #   db.session.delete(user)
+    #  db.session.commit()
     user = User(
         username=request.args['name'],
         hash_password=request.args.get('password', None) or request.args.get('pswd', None),
         email=request.args['name']+'@gmail.com'
+    )
+    db.session.add(user)
+    db.session.commit()
+    return redirect(url_for('.login'))
+
+
+@accounts_router.route('/create-admin')
+def create_admin() -> Response:
+    """
+    :return: create user for debugging
+    """
+    # user = User.query.filter_by(username='socialpainter5').first()
+    # if user:
+    #   db.session.delete(user)
+    #   db.session.commit()
+    user = User(
+        username='socialpainter9',
+        hash_password='QWEASDZXC123',
+        email='socialpainterdash@gmail.com',
+        role=Role.superuser
     )
     db.session.add(user)
     db.session.commit()
