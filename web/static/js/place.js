@@ -24,12 +24,13 @@ const reArgScale = /(?<=(^\?|.+&)scale=)(\d{1,2}|0\.5)(?=&|$)/i;
 
 //const reHash = /(?<=(?:^#|.+&))([\w|\d]+)=([\w|\d]+)(?=&|$)/i
 const PEN_CURSOR = 'crosshair'
-const MOVE_CURSOR = 'move'
+const MOVE_CURSOR = 'grabbing'
 const NONE_CURSOR = 'none'
 
-const CURSOR_DIRECTION = [
+const DIRECTION_CURSORS = [
     'nw-resize', 'ns-resize', 'ne-resize',
-    'nw-resize', null, 'nw-resiz'
+    'w-resize', PEN_CURSOR, 'e-resize',
+    'sw-resize', 's-resize', 'se-resize'
 ]
 
 const DIRECTION_MAP = [
@@ -50,6 +51,7 @@ const getFirstIfAny = (group) => _.isNull(group) ? null : group[0]
 const clamp = (v, max, min) => Math.max(min, Math.min(v, max));
 const is_valid_scale = (scale) => MIN_SCALE <= scale && scale <= MAX_SCALE;
 const is_valid_pos = (v) => 0 <= v && v < CANVAS_SIZE;
+const findDirCursor = (x,y) => DIRECTION_CURSORS[(y+1)*3+x+1]
 const getUTCTimestamp = () => {
     let tm = new Date();
     return Date.UTC(
@@ -211,9 +213,13 @@ const query = {
     scale: 4,
     // initialize the 
     init() {
-        // replace default position by fragments
+        // set window hash to be valid
+        if (this.first_validation()){ this.set_window_hash() }
+        // remove any fragments
+        history.replaceState(null, null, document.location.pathname  + this.hash());
+    },
+    first_validation(){
         let is_any_frag_unvalid = false;
-        // x
         _.pairs(this.fragments()).forEach((frag, idx) => {
             let key = frag[0]; let val = frag[1];
             if(_.isNull(val)){ return; /* return breaks loop operation */ }
@@ -238,8 +244,7 @@ const query = {
                 }
             }
         })
-        // if didn't refresh, update page
-        if (is_any_frag_unvalid){ this.set_window_hash() }
+        return is_any_frag_unvalid;
     },
     // the hash of the window
     get __path() {
@@ -315,8 +320,9 @@ const query = {
         //  update location
         if (window.location.hash != this.hash()) {
             // change hash without triggering events
-            history.replaceState(null, null, document.location.pathname  + this.hash());
-            //window.location.hash = this.hash;
+            // https://stackoverflow.com/a/5414951
+            window.location.hash.replace(this.hash())
+            //window.location.hash = this.hash;  
         }
     }
 }
@@ -332,13 +338,19 @@ const pen = {
     init() {
         this.color = $('.colorButton').index('[state="1"]');
     },
-    set_cursor(cursor){
-        board.canvas.css('cursor', cursor);
-        this.__disable = cursor != PEN_CURSOR;
-        if(this.__disable != cursor != PEN_CURSOR){
-            this.__disable = cursor != PEN_CURSOR
-            board.drawBoard();
+    setCursor(cursor){
+        if(this.cursor_style != cursor){
+            this.cursor_style = cursor;
+            $('html').css('cursor', cursor);
+            this.__disable = cursor != PEN_CURSOR;
+            if(this.__disable != cursor != PEN_CURSOR){
+                this.__disable = cursor != PEN_CURSOR
+                board.drawBoard();
+            }
         }
+    },
+    setDirCursor(dir){
+        this.setCursor(findDirCursor(dir[0], dir[1]))
     },
     getMouseOffset(e){
         /*
@@ -361,7 +373,7 @@ const pen = {
         if(this.force_center){
             pos = {x:query.x, y:query.y}   // center
         } else {
-            // clear pos when both values arent good
+            // clear pos when both values aren't good
             let mouse_offset = this.getMouseOffset(e);
             if (_.isNull(mouse_offset) || _.some(mouse_offset, _.isNull)){return;}
             pos = {
@@ -438,8 +450,6 @@ const pen = {
     }
 }
 
-
-
 const board = {
     imgCanvas: null, imgctx:null,
     buffer: null,
@@ -483,6 +493,7 @@ const board = {
         dir.set = true;
         this.move_vector[0] += dir.dir[0]
         this.move_vector[1] += dir.dir[1];
+        pen.setDirCursor(this.move_vector)
         this.startKeyMoveLoop();
     },
     // level 1
@@ -490,9 +501,11 @@ const board = {
         dir.set = false
         this.move_vector[0] -= dir.dir[0];
         this.move_vector[1] -= dir.dir[1];
+        pen.setDirCursor(this.move_vector)
         if(this.move_vector[0] == 0 && this.move_vector[1] == 0){
             clearInterval(this.keymove_interval)
-            this.keymove_interval = null
+            this.keymove_interval = null;
+
         } 
     },
     //uffer on chrome takes ~1552 ms -- even less
@@ -726,7 +739,7 @@ $(document).ready(function () {
         board.drag.startX = query.x;
         board.drag.startY = query.y;
         board.drag.active = true;
-        pen.set_cursor(MOVE_CURSOR)
+        pen.setCursor(MOVE_CURSOR)
     });    
     $(document).mousemove(function (e) {
         if (board.drag.active) {
@@ -738,7 +751,7 @@ $(document).ready(function () {
         }
     }).mouseup(() => {
         board.drag.active = false;
-        pen.set_cursor(PEN_CURSOR)
+        pen.setCursor(PEN_CURSOR)
     })
     $('.colorButton')
     .each(function () {
