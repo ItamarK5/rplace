@@ -56,9 +56,9 @@ def handle_csrf_error(e):
     """
     return error_meme_render(e, 'csrf', 'Cross-Site-Forgery-Key')
 
-
+@other_router.app_errorhandler(400)
 @other_router.app_errorhandler(404)
-def error_handler(e: NotFound) -> Union[str, NotFound]:
+def error_handler(e: HTTPException) -> Union[str, NotFound]:
     if 'text/html' in request.accept_mimetypes:
         return error_meme_render(e)
     return e

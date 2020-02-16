@@ -4,13 +4,6 @@
     2) setting the query
     3) a function that affect the board as result of change in query
 */
-/*
-*fragments to work
-*Cursor
-*
-*
-*
-*/
 
 const BACKGROUND_COLOR = '#777777'
 const CANVAS_SIZE = 1000;
@@ -32,7 +25,7 @@ const reArgScale = /(?<=(^\?|.+&)scale=)(\d{1,2}|0\.5)(?=&|$)/i;
 
 //const reHash = /(?<=(?:^#|.+&))([\w|\d]+)=([\w|\d]+)(?=&|$)/i
 
-const PEN_CURSOR = 'crosshair'
+const PEN_CURSOR = 'none'
 const MOVE_CURSOR = 'grabbing'
 const NONE_CURSOR = 'none'
 
@@ -51,11 +44,9 @@ const DIRECTION_MAP = [
 
 const SIMPLE_ZOOM_LEVEL = 40;
 const SIMPLE_UNZOOM_LEVEL = 4;
-const HIDDEN_BUTTON_OPACITY = .2;
-const VIEW_BUTTON_OPACITY = 1.0;
 
 
-const getOffset = (x, y) => (y * CANVAS_SIZE) + x;
+//const getOffset = (x, y) => (y * CANVAS_SIZE) + x;
 const getFirstIfAny = (group) => _.isNull(group) ? null : group[0]
 const clamp = (v, max, min) => Math.max(min, Math.min(v, max));
 const is_valid_scale = (scale) => MIN_SCALE <= scale && scale <= MAX_SCALE;
@@ -73,6 +64,17 @@ const getUTCTimestamp = () => {
         tm.getUTCMilliseconds()
     )
 }
+/**
+ * 
+ * @param {int} flag 
+ */
+const HashChangeFlag = {
+    Needed:0,
+    Disabled:1,
+    Enabled:2
+}
+const NeededHashMask = flag => flag == HashChangeFlag.Disabled ? HashChangeFlag.Needed : flag
+
 
 //https://pietschsoft.com/post/2008/01/15/javascript-inttryparse-equivalent
 /*
@@ -90,25 +92,25 @@ function TryParseInt(str, defaultValue) {
 }
 */
 
-const throw_message = (msg, speed = 1000, keep_speed = 100, exit_speed = null, cls = null) =>
+const throw_message = (msg, enter_sec = 1000, show_sec = 100, exit_sec = null, cls = null) =>
     $("<div></div>")
         .addClass(`pop-up-message center nonselect${_.isString(cls) ? ' ' + cls : ''}`)
         .text(msg)
         .appendTo("body")
         // enter
-        .animate({ opacity: '70%' }, speed, function () {
+        .animate({ opacity: '70%' }, enter_sec, function () {
             // keep the element amount of time
             let self = this;
             setTimeout(function () {
-                let exit_sp = _.isNull(exit_speed) ? speed : exit_speed;
-                if (exit_sp > 0) {
-                    $(self).animate({ opacity: '0' }, exit_sp, function () {
+                let exit_sec = _.isNull(exit_sec) ? enter_sec : exit_sec;
+                if (exit_sec > 0) {
+                    $(self).animate({ opacity: '0' }, exit_sec, function () {
                         $(this).parent().remove(self);
                     });
                 } else {
                     $(self).parent().remove(self);
                 }
-            }, keep_speed);
+            }, show_sec);
         });
 
 
@@ -119,6 +121,9 @@ class PalColor {
         this.b = b;
         this.name = name;
     }
+    /**
+     * returns the 32-bit size int represent the reversed rgba of the color
+     */
     get abgr() {
         return (0xFF000000 | this.r | this.g << 8 | this.b << 16) << 0;
     }
@@ -178,17 +183,17 @@ const Colors = {
     purple: new PalColor(0x80, 0x00, 0x80, 'Purple'),
     magenta: new PalColor(0xFF, 0x00, 0xFF, 'Magenta'),
     colors: [],
-    init: function () {
+    init() {
         this.colors.push(this.white);   this.colors.push(this.black);   this.colors.push(this.gray);    this.colors.push(this.silver);
         this.colors.push(this.red);     this.colors.push(this.pink);    this.colors.push(this.brown);   this.colors.push(this.orange);
         this.colors.push(this.olive);   this.colors.push(this.yellow);  this.colors.push(this.green);   this.colors.push(this.lime);
         this.colors.push(this.blue);    this.colors.push(this.aqua);    this.colors.push(this.purple);  this.colors.push(this.magenta);
     },
-    findAbgr: function (abgr) {
+    findAbgr(abgr) {
         for (let i = 0; i < this.colors.length; i++) { if (abgr == this.colors[i]) { return i; } }
         return -1;
     },
-    clr: function (idx) { return this.colors[idx]; }
+    clr(idx) { return this.colors[idx]; }
 }
 
 let progress = {
@@ -252,9 +257,25 @@ let progress = {
 
 
 const query = {
-    x: 500,        // the x of the center pixel in the canvas on screen
-    y: 500,        // the y of the center pixel in the canvas on screen
+    cx: 500,        // the x of the center pixel in the canvas on screen
+    cy: 500,        // the y of the center pixel in the canvas on screen
     scale: 4,
+    __can_set_hash:HashChangeFlag.Enabled,
+    disableUpdateHash(){
+        this.__can_set_hash = HashChangeFlag.Disabled;
+    },
+    enableUpdateHash(){
+        if(this.__setHash != HashChangeFlag.Enabled){
+            let temp = this.__can_set_hash;
+            this.__can_set_hash = HashChangeFlag.Enabled
+            if(temp == HashChangeFlag.Needed){
+                 this.setHash();
+            }
+        }
+    },
+    canSetHash(){
+        return this.__can_set_hash == HashChangeFlag.Enabled
+    },
     // initialize the 
     init() {
         // set window hash to be valid
@@ -270,13 +291,13 @@ const query = {
             switch(key){
                 case('x'):{
                     if(this.is_valid_new_x(val)){
-                        this.x = Math.round(val);            
+                        this.cx = Math.round(val);            
                     } else {is_any_frag_unvalid = true;}
                     break;
                 }
                 case('y'):{
                     if(this.is_valid_new_y(val)){
-                        this.y = Math.round(val);            
+                        this.cy = Math.round(val);            
                     } else {is_any_frag_unvalid = true;}            
                     break;
                 }
@@ -292,7 +313,7 @@ const query = {
     },
     // the hash of the window
     get __path() {
-        return `x=${this.x}&y=${this.y}&scale=${this.scale}`
+        return `x=${this.cx}&y=${this.cy}&scale=${this.scale}`
     },
     // return string represent the hash of the page
     hash() {
@@ -303,8 +324,8 @@ const query = {
         return `?${this.__path}`
     },
     // validation check fo reach attributes
-    is_valid_new_x(val) {return (!isNaN(val)) && is_valid_pos(val) && val != this.x },
-    is_valid_new_y(val) {return (!isNaN(val)) && is_valid_pos(val) && val != this.y },
+    is_valid_new_x(val) {return (!isNaN(val)) && is_valid_pos(val) && val != this.cx },
+    is_valid_new_y(val) {return (!isNaN(val)) && is_valid_pos(val) && val != this.cy },
     is_valid_new_scale(val) {return (!isNaN(val)) && is_valid_scale(val) && val != this.scale },
     // use regex to get fragments
     fragments() {
@@ -319,12 +340,10 @@ const query = {
     // level 2 - set query
     setCenter(x = undefined, y = undefined, to_update = true) {
         let flag = false;
-        if(this.scale >= 1){
-            x = Math.round(x);
-            y = Math.round(y);    
-        } else {x = 500; y=500;}
-        if (this.is_valid_new_x(x)) { flag = true; this.x = x; }
-        if (this.is_valid_new_y(y)) { flag = true; this.y = y; }
+        x = this.scale >= 1 ? Math.round(x) : CANVAS_SIZE/2;
+        y = this.scale >= 1 ? Math.round(y) :CANVAS_SIZE/2;
+        if (this.is_valid_new_x(x)) { flag = true; this.cx = x; }
+        if (this.is_valid_new_y(y)) { flag = true; this.cy = y; }
         if (to_update && flag) { board.centerPos(); this.setHash() }
         return flag;
     },
@@ -362,12 +381,14 @@ const query = {
     // set the window.loaction.hash to the query hash value
     // level 3
     setHash() {
-
         //  update location
-        if (window.location.hash != this.hash()) {
+        console.log(this.__can_set_hash)
+        this.__can_set_hash = NeededHashMask(this.__can_set_hash)
+        console.log(this.__can_set_hash)
+        if (this.canSetHash() && location.hash != this.hash()) {
             // change hash without triggering events
             // https://stackoverflow.com/a/5414951
-            history.replaceState(null, null, this.hash())
+            history.replaceState(null, null, document.location.pathname  + this.hash());
             //window.location.hash = this.hash;  
         }
     }
@@ -388,9 +409,10 @@ const pen = {
     setCursor(cursor){
         if(this.cursor_style != cursor){
             this.cursor_style = cursor;
+            console.log(cursor);
             board.canvas.css('cursor', cursor);
-            if(this.__disable != cursor == MOVE_CURSOR){
-                this.__disable = cursor = MOVE_CURSOR
+            if(this.__disable != (cursor == MOVE_CURSOR)){
+                this.__disable = cursor == MOVE_CURSOR
                 board.drawBoard();
             }
         }
@@ -417,7 +439,10 @@ const pen = {
          min pixel on screen + start of page / scale= position of mouse  */
          let pos = null;
         if(this.force_center){
-            pos = {x:board.canvas[0].width, y:board.canvas[0].height}   // center
+            pos = {
+                x:Math.floor(board.canvas[0].width/2),
+                y:Math.floor(board.canvas[0].height/2)
+            }   // center
         } else {
             // clear pos when both values aren't good
             let mouse_offset = this.getMouseOffset(e);
@@ -429,7 +454,7 @@ const pen = {
                 y: Math.floor(board.y+mouse_offset[1]/query.scale)
             }
         }
-        if (_.isNull(pos) || (!is_valid_pos(pos.x)) || !is_valid_pos(pos.y)) {
+        if (_.isNull(pos) || (!is_valid_pos(pos.x)) || (!is_valid_pos(pos.y))) {
             this.clearPos(); // set values to -1
         // but if not, update if the values are different
         } else if(pos.x != this.x || pos.y != this.y){
@@ -448,7 +473,7 @@ const pen = {
     setMousePos(e, cursor=null){
         // update position and end use of keyboard state center
         if(!_.isNull(cursor)){
-            this.setCursor(PEN_CURSOR)
+            this.setCursor(cursor)
         }
         this.force_center = false;
         this.updateOffset(e);
@@ -511,11 +536,12 @@ const pen = {
     }
 }
 
+
 const board = {
     imgCanvas: null, ctx_image:null,
     buffer: null,
     x: 0, y: 0,
-    drag: { active: false, startX: 0, startY: 0, dragX: 0, dragY: 0 },
+    drag: { active: false, startX: 0, startY: 0, dragX: 0, dragY:0},
     canvas: null,
     needs_draw: false, move_vector: [0,0],
     key_move_interval:null, ctx:null,
@@ -640,8 +666,8 @@ const board = {
     // level 3
     centerPos() {
         // center axis - (window_axis_size / 2 / query.scale)
-        this.x = Math.floor(query.x - board.canvas[0].width / 2 / query.scale) //( query.x - innerWidth/2)/query.scale;
-        this.y = Math.floor(query.y - board.canvas[0].height / 2 / query.scale) // (query.y - innerHeight/2)/query.scale;
+        this.x = Math.floor(query.cx - board.canvas[0].width / 2 / query.scale) //( query.cx - innerWidth/2)/query.scale;
+        this.y = Math.floor(query.cy - board.canvas[0].height / 2 / query.scale) // (query.cy - innerHeight/2)/query.scale;
         pen.updateOffset()
         board.drawBoard();
     },
@@ -664,10 +690,14 @@ const board = {
         pen.updateOffset();
     },
     setZoomStyle(){
+        let zoom_button =$('#zoom-button')
         if(query.scale >= 25) { 
-            $('#zoom-button').children('span').addClass('fa-search-minus').removeClass('fa-search-plus');
+            zoom_button.children('span').addClass('fa-search-minus').removeClass('fa-search-plus');
+            zoom_button.css('cursor', 'zoom-out');
         } else {
-            $('#zoom-button').children('span').addClass('fa-search-plus').removeClass('fa-search-minus');
+            zoom_button.children('span').addClass('fa-search-plus').removeClass('fa-search-minus');
+            zoom_button.css('cursor', 'zoom-in');
+
         }
     },
     get step() {
@@ -681,14 +711,14 @@ const board = {
               console.log(x, y);
         */
         query.setCenter(
-            clamp(query.x + dx * this.step, CANVAS_SIZE, 0),
-            clamp(query.y + dy * this.step, CANVAS_SIZE, 0)
+            clamp(query.cx + dx * this.step, CANVAS_SIZE, 0),
+            clamp(query.cy + dy * this.step, CANVAS_SIZE, 0)
        );
     },
     // level 1
     centerOn: function (x, y) {
-        x = isNaN(x) ? query.x : clamp(x, CANVAS_SIZE, 0);
-        y = isNaN(y) ? query.y : clamp(y, CANVAS_SIZE, 0);
+        x = isNaN(x) ? query.cx : clamp(x, CANVAS_SIZE, 0);
+        y = isNaN(y) ? query.cy : clamp(y, CANVAS_SIZE, 0);
         query.setCenter(x, y);
     },
     // level 3 in half
@@ -794,28 +824,22 @@ $(document).ready(function () {
         // jquery dblclick dont work on some machines but addEventListner does 
         // source: https://github.com/Leaflet/Leaflet/issues/4127
         /*Get XY https://codepo8.github.io/canvas-images-and-pixels/#display-colour*/
-        pen.setMousePos(event);
+        pen.setMousePos(event, 'cursor');
         pen.setPixel();
     });
     board.canvas.mousedown(function (e) {
         board.drag.dragX = e.pageX;
         board.drag.dragY = e.pageY;
-        board.drag.startX = query.x;
-        board.drag.startY = query.y;
+        board.drag.startX = query.cx;
+        board.drag.startY = query.cy;
         board.drag.active = true;
-        // change cursor 100 seconds if dont move
-        setTimeout(function(){
-            if(board.drag.active){
-                pen.setCursor(MOVE_CURSOR)
-            }}, 500);
-        pen.setCursor(MOVE_CURSOR);
+        query.disableUpdateHash();
+        // change cursor 100 seconds if don't move
     });    
     $(document).mousemove(function (e) {
         if (board.drag.active) {
             // center board
-            if(Math.floor((board.drag.x - e.pageX)/board.scale) != 0 && Math.floor((board.drag.y - e.pageY)/board.scale) != 0){
-                pen.setCursor(MOVE_CURSOR);
-            }
+            pen.setCursor(MOVE_CURSOR);
             board.centerOn(
                 Math.floor(board.drag.startX + (board.drag.dragX - e.pageX) / query.scale),
                 Math.floor(board.drag.startY + (board.drag.dragY - e.pageY) / query.scale)
@@ -823,7 +847,9 @@ $(document).ready(function () {
         }
     }).mouseup(() => {
         board.drag.active = false;
-        pen.setCursor(PEN_CURSOR)
+        query.enableUpdateHash();
+        pen.setCursor(PEN_CURSOR);
+        
     })
     $('.colorButton')
     .each(function () {

@@ -36,10 +36,13 @@ def admin() -> str:
     print(pagination.pages, pagination.page)
     page = request.args.get('page', '1')
     if not page.isdigit():
-        abort(400, 'given page isn\'t a number')
+        abort(400, 'Given page isn\'t a number', description='Are you mocking this program? you'
+                                                                    ' an admin tries to edit the url')
     page = int(page)
-    if not 1 <= page <= pagination.pages:
-        abort(400, 'page overflow')
+    if not 1 <= page:
+        abort(404, 'Page index too small')
+    elif page > pagination.pages:
+        abort(404, 'Page Number Not Found')
     return render_template('accounts/admin.html', pagination=pagination)
 
 

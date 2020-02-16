@@ -16,3 +16,6 @@ painter/rsa/__init__.py
 firebase/*
 web/keys/‏‏‫מסמך טקסט ‫חדש.txt
 painter/config.py
+web/node_modules/*
+web/package-lock.json
+web/package.json

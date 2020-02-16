@@ -43,8 +43,8 @@
             <tbody>
             {% for user in pagination.items %}
             <tr{% if current_user == user %} class="user-row"{% endif %}>
-            <td class="text-center prvg-col" data-toggle="tooltip" data-placement="left" title="{{user.role|role_title}}">
-                <i class="fa {{user.role|role_icon}}"></i>
+            <td class="text-center prvg-col" data-toggle="tooltip" data-placement="left" title="{{user.role.title}}">
+                <i class="fa {{user.role.icon}}"></i>
             </td>
             <td class="text-center name-col">{{user.username}}</td>
             <td class="text-center mail-col">{{user.email}}</td>

@@ -110,8 +110,8 @@ body, html {
     transition:border-color 0.25s;
 }
 #zoom-button:hover {color:#428bca; border-color:#428bca;}
-#logout-button:hover {color:red; border-color:red;}
-#home-button:hover {color:greenyellow;border-color: greenyellow;}
+#logout-button:hover {color:red; border-color:red;cursor:pointer}
+#home-button:hover {color:greenyellow;border-color: greenyellow;cursor:pointer;}
 
 /* https://stackoverflow.com/a/13836276*/
 .icon-button > span {
