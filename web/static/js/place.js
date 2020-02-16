@@ -133,23 +133,31 @@ class SimpleInterval{
         this.__time = time;
         this.work_handler = null;
     }
-
     start(){
-        if(_.isNull(this.work_handler)){
-            this.work_handler = setInterval(this.work, this.__time);
-            return true;
-        }
-        return false;
+        this.work_handler = setInterval(this.work, this.__time);
     }
     stop(){
         clearInterval(this.work_handler)
         this.work_handler = null
     }
+    safeStart(){
+        if(_.isNull(this.work_handler)){
+            this.start()
+            return true;
+        }
+        return false;
+    }
+    safeStop(){
+        if(_.isNull(this.work_handler)){
+            return False
+        } //else 
+        this.stop();
+        return true;
+    }
     get IsWorking(){
         return _.isNull(this.work_handler);
     }
 }
-
 
 
 const Colors = {
@@ -190,7 +198,7 @@ let progress = {
     current_min_time:null,
     init(){
         let self = this;
-        this.work = new SimpleInterval(function(){self.updateTimer}, PROGRESS_COOLDOWN)
+        this.work = new SimpleInterval(function(){self.updateTimer()}, PROGRESS_COOLDOWN)
     },
     adjust_progress(seconds_left) {  
         // adjust the progress bar and time display by the number of seconds left
@@ -409,7 +417,7 @@ const pen = {
          min pixel on screen + start of page / scale= position of mouse  */
          let pos = null;
         if(this.force_center){
-            pos = {x:query.x, y:query.y}   // center
+            pos = {x:board.canvas[0].width, y:board.canvas[0].height}   // center
         } else {
             // clear pos when both values aren't good
             let mouse_offset = this.getMouseOffset(e);
@@ -450,21 +458,30 @@ const pen = {
         this.force_center = true;
         this.updateOffset();
     },
-    get has_color(){ return this.__color != -1; },
+    get hasColor(){ 
+        return this.__color != -1;
+     },
     // color getter ans setter
-    get color(){return this.__color;},
+    get color(){
+        return this.__color;
+    },
+    /**
+     * @param {number} color
+     */
     set color(color){
-        this.__color = color;
-        board.drawBoard()
+        if(this.__color != color){
+            this.__color = color;
+            board.drawBoard()
+        }
     },
     isAtBoard() {
         return this.x != -1 || this.y != -1
     },
     canDrawPen() {
-        return (!this.__disable) && this.has_color && this.isAtBoard()
+        return (!this.__disable) && this.hasColor && this.isAtBoard()
     },
     setPixel(){
-        if(_.isNull(progress.work.isWorking)){
+        if(progress.work.isWorking){
             Swal.fire({
                 title: 'You have 2 wait',
                 imageUrl:'https://aadityapurani.files.wordpress.com/2016/07/2.png',
@@ -473,7 +490,7 @@ const pen = {
                 text:'Wait for your cooldown to end'
             });
         }    
-        else if(_.isNull(pen.color)) {
+        else if(!pen.hasColor) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Select Color',
@@ -778,7 +795,7 @@ $(document).ready(function () {
         // source: https://github.com/Leaflet/Leaflet/issues/4127
         /*Get XY https://codepo8.github.io/canvas-images-and-pixels/#display-colour*/
         pen.setMousePos(event);
-        pen.setPixel()
+        pen.setPixel();
     });
     board.canvas.mousedown(function (e) {
         board.drag.dragX = e.pageX;
@@ -786,11 +803,19 @@ $(document).ready(function () {
         board.drag.startX = query.x;
         board.drag.startY = query.y;
         board.drag.active = true;
+        // change cursor 100 seconds if dont move
+        setTimeout(function(){
+            if(board.drag.active){
+                pen.setCursor(MOVE_CURSOR)
+            }}, 500);
         pen.setCursor(MOVE_CURSOR);
     });    
     $(document).mousemove(function (e) {
         if (board.drag.active) {
             // center board
+            if(Math.floor((board.drag.x - e.pageX)/board.scale) != 0 && Math.floor((board.drag.y - e.pageY)/board.scale) != 0){
+                pen.setCursor(MOVE_CURSOR);
+            }
             board.centerOn(
                 Math.floor(board.drag.startX + (board.drag.dragX - e.pageX) / query.scale),
                 Math.floor(board.drag.startY + (board.drag.dragY - e.pageY) / query.scale)
