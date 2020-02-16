@@ -10,6 +10,7 @@ MIME_TYPES = {
     'jpg': 'image/jpg',
     'jfif': 'image/jpg',
     'gif': 'image/gif',
+    'jpeg': 'image/jpeg'
 }
 
 WEB_FOLDER = path.join(

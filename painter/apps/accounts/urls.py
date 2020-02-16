@@ -7,10 +7,10 @@ from werkzeug.wrappers import Response
 
 from painter.constants import WEB_FOLDER
 from painter.extensions import db
+from painter.models.user import Role
 from painter.models.user import User
 from .forms import LoginForm, SignUpForm
 from .helpers import *
-from painter.models.user import Role
 from .mail import send_sign_up_mail
 
 # router blueprint -> routing all pages that relate to authorization

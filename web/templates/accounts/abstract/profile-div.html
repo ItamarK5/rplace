@@ -1,18 +1,18 @@
 {{edit_title('Profile')}}
 <div class="mb-3 row align-content-center">
     <div class="col-3 mr-3"><h5>Name:</h5></div>
-    <div class="col-6"><h5>{{user.username}}</h5></div>
+    <div class="col-4"><h5>{{user.username}}</h5></div>
 </div>
 <div class="mb-3 row align-content-center">
     <div class="col-3 mr-3"><h5>Mail:</h5></div>
-    <div class="col-6"><h5>{{user.email}}</h5></div>
+    <div class="col-4"><h5>{{user.email}}</h5></div>
 </div>
 <div class="mb-3 row align-content-center">
     <div class="col-3 mr-3"><h5>Last Draw:</h5></div>
-    <div class="col-6"><h5>{{user|draw_time}}</h5></div>
+    <div class="col-4"><h5>{{user|draw_time}}</h5></div>
 </div>
 <div class="mb-3 row align-content-center">
-    <div class="col-3 mr-3"><h5>Last Draw:</h5></div>
-    <div class="col-3"><h5><i class="fa {{user.role|role_icon}}"></i></h5></div>
+    <div class="col-3 mr-1"><h5>Last Draw:</h5></div>
+    <div class="col-1"><h5><i class="fa {{user.role|role_icon}}"></i></h5></div>
     <div class="col-3"><h5>{{user.role|role_title}}</h5></div>
 </div>
