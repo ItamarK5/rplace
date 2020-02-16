@@ -1,19 +1,13 @@
 from flask import Blueprint, render_template, request, abort
-from flask_login import fresh_login_required, current_user, fresh_login_required
 from painter.functions import admin_only
 from painter.models.user import reNAME
-from .filters import *  # also import User class
+from painter.filters import *  # also import User class
 from flask.wrappers import Response
 
 admin_router = Blueprint(
     'admin',
     'admin',
 )
-
-admin_router.add_app_template_filter(draw_time, 'draw_time')
-admin_router.add_app_template_filter(is_admin, 'is_admin')
-admin_router.add_app_template_filter(role_icon, 'role_icon')
-admin_router.add_app_template_filter(role_title, 'role_title')
 
 
 @admin_router.after_request
