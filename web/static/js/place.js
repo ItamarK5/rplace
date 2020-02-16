@@ -16,14 +16,21 @@ const DRAW_COOLDOWN = 60;
 
 const reHashX = /(?<=(^#|.+&)x=)\d+(?=&|$)/i;
 const reHashY = /(?<=(^#|.+&)y=)\d+(?=&|$)/i;
-const reHashScale = /(?<=(^#|.+&)scale=)\d{1,2}(\x2E\d+)?(?=&|$)/i;
+const reHashScale = /(?<=(^#|.+&)scale=)(\d{1,2}|0\.5)(?=&|$)/i;
 
-const reArgX = /(?<=(^\x3F|.+&)x=)\d+(?=&|$)/i;
-const reArgY = /(?<=(^\x3F|.+&)x=)\d+(?=&|$)/i;
-const reArgScale = /(?<=(^\x3F|.+&)scale=)\d{1,2}(\x2E\d+)?(?=&|$)/i;
+const reArgX = /(?<=(^\?|.+&)x=)\d+(?=&|$)/i;
+const reArgY = /(?<=(^\?|.+&)x=)\d+(?=&|$)/i;
+const reArgScale = /(?<=(^\?|.+&)scale=)(\d{1,2}|0\.5)(?=&|$)/i;
 
 //const reHash = /(?<=(?:^#|.+&))([\w|\d]+)=([\w|\d]+)(?=&|$)/i
+const PEN_CURSOR = 'crosshair'
+const MOVE_CURSOR = 'move'
+const NONE_CURSOR = 'none'
 
+const CURSOR_DIRECTION = [
+    'nw-resize', 'ns-resize', 'ne-resize',
+    'nw-resize', null, 'nw-resiz'
+]
 
 const DIRECTION_MAP = [
     {key:37, dir:[-1,  0], set:false}, // left
@@ -295,7 +302,7 @@ const query = {
             this.setCenter(parseInt(frags.x), parseInt(frags.y), to_update);
         }
         /// update scale
-        if (isNaN(frags.scale) && this.is_valid_new_scale(parseInt(frags.scale))) {
+        if (isNaN(frags.scale) && this.is_valid_new_scale(parseFloat(frags.scale))) {
             this.scale = this.scale;
             if (to_update) {
                 board.updateZoom()
@@ -321,22 +328,16 @@ const pen = {
     // in keyboard state, the pen should point at the center of the screen
     force_center:true,
     __disable:false,
+    cursor_style:'default',
     init() {
         this.color = $('.colorButton').index('[state="1"]');
     },
-    hide(cursor_style = undefined){
-        if(!_.isUndefined(cursor_style)){
-            this.cursor.style = cursor_style;
-        }
-        if(this.__disable == false) {
-            this.__disable = true;
+    set_cursor(cursor){
+        board.canvas.css('cursor', cursor);
+        this.__disable = cursor != PEN_CURSOR;
+        if(this.__disable != cursor != PEN_CURSOR){
+            this.__disable = cursor != PEN_CURSOR
             board.drawBoard();
-        }
-    },
-    show(){
-        if(this.__disable == true){
-            this.__disable = false;
-            board.drawBoard()
         }
     },
     getMouseOffset(e){
@@ -444,17 +445,13 @@ const board = {
     buffer: null,
     x: 0, y: 0,
     drag: { active: false, startX: 0, startY: 0, dragX: 0, dragY: 0 },
-    zoomer: null, canvas:       null,
-    mover:  null, container:    null,
+    canvas: null,
     needsdraw: false, move_vector: [0,0],
     keymove_interval:null, ctx:null,
     queue:null, buildBoard:null,
     init(){
-        this.zoomer = $('#board-zoomer');
-        this.container = $('#board-container');
         this.canvas = $('#board');
         this.ctx = this.canvas[0].getContext('2d');
-        this.mover = $('#board-mover');
         this.canvas.attr('alpha', 0);
         this.imgCanvas = document.createElement('canvas');
         this.imgCanvas.width = CANVAS_SIZE;
@@ -569,8 +566,8 @@ const board = {
     // level 3
     centerPos() {
         // center axis - (window_axis_size / 2 / query.scale)
-        this.x = Math.floor(query.x - this.canvas[0].width / 2 / query.scale) //( query.x - innerWidth/2)/query.scale;
-        this.y = Math.floor(query.y - this.canvas[0].height / 2 / query.scale) // (query.y - innerHeight/2)/query.scale;
+        this.x = Math.floor(query.x - board.canvas[0].width / 2 / query.scale) //( query.x - innerWidth/2)/query.scale;
+        this.y = Math.floor(query.y - board.canvas[0].height / 2 / query.scale) // (query.y - innerHeight/2)/query.scale;
         pen.updateOffset()
         board.drawBoard();
     },
@@ -590,8 +587,6 @@ const board = {
     updateZoom() {
         this.setZoomStyle()
         this.setCanvasZoom();
-        this.centerPos();
-        this.drawBoard();
         pen.updateOffset();
     },
     setZoomStyle(){
@@ -717,7 +712,7 @@ $(document).ready(function () {
     .mouseleave(() => pen.clearPos())
     .bind('mousewheel', (e) => {
         e.preventDefault();
-        query.setScale(clamp(query.scale + Math.sign(e.originalEvent.wheelDelta)*0.5, MAX_SCALE, MIN_SCALE));
+        query.setScale(clamp(query.scale + Math.sign(e.originalEvent.wheelDelta)*1, MAX_SCALE, MIN_SCALE));
     })[0].addEventListener('dblclick', (event) => {   // for not breaking the 
         // jquery dblclick dont work on some machines but addEventListner does 
         // source: https://github.com/Leaflet/Leaflet/issues/4127
@@ -731,7 +726,7 @@ $(document).ready(function () {
         board.drag.startX = query.x;
         board.drag.startY = query.y;
         board.drag.active = true;
-        pen.hide()
+        pen.set_cursor(MOVE_CURSOR)
     });    
     $(document).mousemove(function (e) {
         if (board.drag.active) {
@@ -743,7 +738,7 @@ $(document).ready(function () {
         }
     }).mouseup(() => {
         board.drag.active = false;
-        pen.show()
+        pen.set_cursor(PEN_CURSOR)
     })
     $('.colorButton')
     .each(function () {
@@ -789,12 +784,14 @@ $(document).ready(function () {
             }
         }
         if(e.originalEvent.shiftKey){
-            if(e.originalEvent.key == '+')      // Plues
+            if(e.originalEvent.key == '+')      // key for plus
             {
-                query.setScale(query.scale >= 1 ? query.scale + 0.5 : 1);
+                // option 0.5
+                query.setScale(query.scale >= 1 ? query.scale + 1 : 1);
             }
             else if(e.originalEvent.key == '_'){        // key for minus
-                query.setScale(query.scale > 1 ? query.scale - 0.5 : MIN_SCALE);
+                // option 0.5
+                query.setScale(query.scale > 1 ? query.scale - 1 : MIN_SCALE);
             }
         }
     }).keydown((e) => {
