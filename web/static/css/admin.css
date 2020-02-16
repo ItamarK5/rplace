@@ -9,7 +9,6 @@ th {color:whitesmoke !important;}
 tr:hover td{ background-color:yellowgreen !important; color:black;}
 .fit-column {width:1 !important;white-space:nowrap !important;}
 .table th, .table tr {padding:8px !important;}
-.user-row {background-color#1478e3; color:black;}
 .user-row > * {font-weight:bold;}
 tr td .fa-user-shield {color:#e884e8;}
 tr:hover td .fa-user-shield {color:#af42af;}
@@ -17,6 +16,6 @@ tr, td, th {user-select:none;}
 .user-select-none {user-select:none;}
 /* page list*/
 #page-list > a {background-color:#888888; color:#DDDDDD;}
-#page-list > a.disabled {background-color:#AAAAAA, color:#DDDDDD;}
+#page-list > a.disabled {background-color:#AAAAAA; color:#DDDDDD;}
 #page-list > a:hover {background-color:#666666; color:lime}
 #page-list > a.active {background-color:#666666; color:lime}

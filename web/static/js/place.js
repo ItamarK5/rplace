@@ -325,11 +325,11 @@ const pen = {
         this.color = $('.colorButton').index('[state="1"]');
     },
     hide(cursor_style = undefined){
-        if(!_.isUndefiend(cursor_style)){
+        if(!_.isUndefined(cursor_style)){
             this.cursor.style = cursor_style;
         }
         if(this.__disable == false) {
-            this.__diable = true;
+            this.__disable = true;
             board.drawBoard();
         }
     },
@@ -400,11 +400,11 @@ const pen = {
         this.__color = color;
         board.drawBoard()
     },
-    is_at_board() {
-        return this.x != -1 && this.y != -1
+    isAtBoard() {
+        return this.x != -1 || this.y != -1
     },
     canDrawPen() {
-        return (!this.__disable) && this.has_color && this.is_at_board()
+        return (!this.__disable) && this.has_color && this.isAtBoard()
     },
     setPixel(){
         if(!_.isNull(progress.work)){
@@ -630,9 +630,9 @@ const board = {
             $('#coordinateX').text('');
             $('#coordinateY').text('');
         } else if(!board.drag.active){
-            $('#coordinate-slicer').text(',');
-            $('#coordinateX').text(pen.x != -1 ? pen.x : 'null');
-            $('#coordinateY').text(pen.y != -1 ? pen.y : 'null');
+            $('#coordinate-slicer').text(pen.isAtBoard() ? ',' : 'None');
+            $('#coordinateX').text(pen.isAtBoard() ? pen.x : '');
+            $('#coordinateY').text(pen.isAtBoard() ? pen.y : '');
         }
     },
     /* not used

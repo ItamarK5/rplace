@@ -92,8 +92,3 @@ def serve_icon() -> Response:
         path.join(other_router.static_folder, 'static', 'ico'), 'favicon.ico',
         mimetype=MIME_TYPES['ico']
     )
-
-
-@other_router.route('/menu-style', methods=('GET',))
-def serve_menu_css() -> Tuple[str, Dict[str, str]]:
-    return render_template('menu/nav.css'), {'Content-Type': 'text/css; charset=utf-8'}

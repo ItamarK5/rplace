@@ -13,8 +13,8 @@
 <form id="setting-form" method="post">
     {{edit_title('Settings')}}            
     {{form.hidden_tag()}}
-    {{axis_input(form.x_start, 'The X position on the start of the program', 'arrows-alt-h', 0, 1000)}}
-    {{axis_input(form.y_start, 'The X position on the start of the program', 'arrows-alt-v', 0, 1000)}}
+    {{axis_input(form.x_start, 'The X position on the start of the program', 'arrows-alt-h', 1, 1000)}}
+    {{axis_input(form.y_start, 'The X position on the start of the program', 'arrows-alt-v', 1, 1000)}}
     {{axis_input(form.scale_start, 'How much to zoom on start', 'search', 1, 50)}}
     <div class="form-row mb-2">
         <div class="col input-group w-100 range-field" data-toggle="tooltip" data-placement="top" title="Chat URL to be redirected">

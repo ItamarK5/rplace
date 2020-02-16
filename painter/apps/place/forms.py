@@ -9,7 +9,7 @@ class SettingForm(FlaskForm):
         'X start',
         validators=[
             validators.Optional(),
-            validators.NumberRange(min=0, max=1000, message='axis out of range')
+            validators.NumberRange(min=1, max=1000, message='axis out of range')
         ],
     )
     y_start = IntegerRangeField(
@@ -23,7 +23,7 @@ class SettingForm(FlaskForm):
         'Scale start',
         validators=[
             validators.Optional(),
-            validators.NumberRange(min=0, max=1000, message='axis out of range')
+            validators.NumberRange(min=1, max=1000, message='axis out of range')
         ],
     )
     colors = SelectField(

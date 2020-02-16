@@ -14,7 +14,7 @@
     <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css"
           integrity="sha256-UZFVAO0Fn854ajzdWnJ2Oze6k1X4LNqE2RJPW3MBfq8=" rel="stylesheet"/>
     <link href="{{url_for('other.serve_static', key='home.css')}}" rel="stylesheet">
-    <style>{% include 'menu/nav.css' %}</style>
+    <link href="{{url_for('other.serve_static', key='nav.css')}}" rel="stylesheet">
 </head>
 <body>
 {% with current_page = 'home' %}

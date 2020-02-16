@@ -127,12 +127,6 @@ body, html {
     font-size:35px   
 }
 
-.ValueCoord {
-    grid-column: 3 / 4;
-    margin: 0px;
-    text-align: end;
-}
-
 
 #toolbox {
     position: absolute;
@@ -213,22 +207,7 @@ body, html {
     border:none;
 }
 
-
-#coordDialog {
-    background-color:rgba(246, 246, 246, .8);
-    grid-template-columns: 80px 120px 80px;
-    grid-template-rows: 20px 20px 20px 30px;
-    border: 3px solid;
-    grid-gap:10px 50px;
-    border-color:transparent;
-    grid-area: 'coord-text coord-text coord-text' 'x-lbl x-input x-input' 'y-lbl y-input y-input' '. move-button .';
-    display:inherit;
-}
-.coordDialog > *{
-    box-sizing:border-box;
-}
-
-#coords {
+#coordinates {
     top:10px;
     position:fixed;
     z-index:3;
@@ -243,31 +222,31 @@ body, html {
 }
 
 
-#coords:hover {
+#coordinates:hover {
     background-color:rgba(0, 0, 0, .7);
 }
 
-.coordSpan {
+.coordinateSpan {
     height: auto;
     width: 40px;
     white-space:pre;
 }
 
-#coordX {
+#coordinateX {
     text-align: right;
 }
-#coordY {
+#coordinateY {
     text-align: left;
 }
 
-#coord-slicer {
+#coordinate-slicer {
     font-size: 16px;
     font-weight: 400;
     background-color: transparent;
     vertical-align: middle;
     margin:0px 3px;
 }
-.coordText {
+.coordinateText {
     font-size: 20px;
     pointer-events:none;
 }

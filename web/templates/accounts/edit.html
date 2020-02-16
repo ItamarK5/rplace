@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
-    <link href="{{url_for('other.serve_menu_css')}}" rel="stylesheet">
+    <link href="{{url_for('other.serve_static', key='nav.css')}}" rel="stylesheet">
     <link href="{{url_for('other.serve_static', key='profile.css')}}" rel="stylesheet">
     <!-- Boostrap Style -->
     <link crossorigin="anonymous" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -75,6 +75,5 @@ $(document).ready(() => {
     });
 });
 </script>
-
 </body>
 </html>

@@ -8,6 +8,4 @@
 .fa-door-open:hover {background-color:rgb(241, 3, 3);}
 /* https://hashtagcolor.com/9300ff*/
 .fa-cog.set, .fa-cog:hover {background-color:#007bff}
-.fa-home.set, .fa-home:hover {background-color:yellowgreen !important;}{% if current_user|is_admin %}
-.fa-tools.set, .fa-tools:hover {background-color:#a933ff !important;}
-{% endif %}
+.fa-home.set, .fa-home:hover {background-color:yellowgreen !important;}
