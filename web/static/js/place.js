@@ -253,7 +253,7 @@ const query = {
     // use regex to get fragments
     fragments() {
         return {
-            // first checks the hash if there are none, check the location
+            // first checks the hash if there are null, check the location
             x: parseInt(getFirstIfAny(window.location.hash.match(reHashX) || window.location.search.match(reArgX))),
             y: parseInt(getFirstIfAny(window.location.hash.match(reHashY) || window.location.search.match(reArgY))),
             scale: parseFloat(getFirstIfAny(window.location.hash.match(reHashScale) || window.location.search.match(reArgScale)))
@@ -625,14 +625,14 @@ const board = {
     // level 3 in half
     updateCoords: function () {
         // not (A or B) == (not A) and (not B)
-        if($('#coords').is(':hover')){
-            $('#coord-slicer').text('copy')
-            $('#coordX').text('');
-            $('#coordY').text('');
+        if($('#coordinates').is(':hover')){
+            $('#coordinate-slicer').text('copy')
+            $('#coordinateX').text('');
+            $('#coordinateY').text('');
         } else if(!board.drag.active){
-            $('#coord-slicer').text(',');
-            $('#coordX').text(pen.x != -1 ? pen.x : 'none');
-            $('#coordY').text(pen.y != -1 ? pen.y : 'none');
+            $('#coordinate-slicer').text(',');
+            $('#coordinateX').text(pen.x != -1 ? pen.x : 'null');
+            $('#coordinateY').text(pen.y != -1 ? pen.y : 'null');
         }
     },
     /* not used
@@ -708,7 +708,7 @@ $(document).ready(function () {
             text: 'Server Connection returned',
           })
     });
-    $('#coords').hover(
+    $('#coordinates').hover(
         function(){board.updateCoords();},
         function(){board.updateCoords();}
     );
@@ -835,7 +835,7 @@ $(document).ready(function () {
     });
     // copy coords - https://stackoverflow.com/a/37449115
     let clipboard = new ClipboardJS(
-        '#coords', {
+        '#coordinates', {
             text: function() {
                 return window.location.origin + window.location.pathname + query.arguments();
         }

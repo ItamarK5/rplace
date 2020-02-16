@@ -21,12 +21,12 @@ def is_admin(user: User) -> bool:
 
 
 @app.template_filter('class_ftr')
-def class_ftr(classes:Optional[Union[str, List]], comma: Optional[str]) -> str:
+def class_ftr(classes: Optional[Union[str, List]], comma: Optional[str] = None) -> str:
     if classes is None:
         return ''
-    if isinstance(classes, str):
+    if isinstance(classes, list):
         classes = ' '.join(classes)
     # if comma
     if comma:
-        return f'class="{comma}{classes}{comma}'
+        return f'class={comma}{classes}{comma}'
     return f" {classes}"
