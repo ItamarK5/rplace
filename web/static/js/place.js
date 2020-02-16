@@ -4,6 +4,13 @@
     2) setting the query
     3) a function that affect the board as result of change in query
 */
+/*
+*fragments to work
+*Cursor
+*
+*
+*
+*/
 
 const BACKGROUND_COLOR = '#777777'
 const CANVAS_SIZE = 1000;
@@ -23,6 +30,7 @@ const reArgY = /(?<=(^\?|.+&)x=)\d+(?=&|$)/i;
 const reArgScale = /(?<=(^\?|.+&)scale=)(\d{1,2}|0\.5)(?=&|$)/i;
 
 //const reHash = /(?<=(?:^#|.+&))([\w|\d]+)=([\w|\d]+)(?=&|$)/i
+
 const PEN_CURSOR = 'crosshair'
 const MOVE_CURSOR = 'grabbing'
 const NONE_CURSOR = 'none'
@@ -101,7 +109,8 @@ const throw_message = (msg, speed = 1000, keep_speed = 100, exit_speed = null, c
                 }
             }, keep_speed);
         });
-    
+
+
 class PalColor {
     constructor(r, g, b, name) {
         this.r = r;
@@ -116,6 +125,30 @@ class PalColor {
         return `rgba(${this.r}, ${this.g}, ${this.b}, ${alpha})`;
     }
 }
+
+class SimpleInterval{
+    constructor(func, time){
+        this.work = func;
+        this.__time = time;
+        this.work_handler = null;
+    }
+
+    startWork(){
+        if(_.isNull(this.work_handler)){
+            this.work_handler = setInterval(this.work(), this.__time);
+            return true;
+        }
+        return false;
+    }
+    stopWork(){
+        clearInterval(this.work_handler)
+        this.work_handler = null
+    }
+    get IsWorking(){
+        return _.isNull(this.work_handler);
+    }
+}
+
 
 
 const Colors = {
@@ -214,7 +247,7 @@ const query = {
     // initialize the 
     init() {
         // set window hash to be valid
-        if (this.first_validation()){ this.set_window_hash() }
+        if (this.first_validation()){ this.setHash() }
         // remove any fragments
         history.replaceState(null, null, document.location.pathname  + this.hash());
     },
@@ -281,7 +314,7 @@ const query = {
         } else {x = 500; y=500;}
         if (this.is_valid_new_x(x)) { flag = true; this.x = x; }
         if (this.is_valid_new_y(y)) { flag = true; this.y = y; }
-        if (to_update && flag) { board.centerPos(); this.set_window_hash() }
+        if (to_update && flag) { board.centerPos(); this.setHash() }
         return flag;
     },
     // level 2 set query
@@ -294,7 +327,7 @@ const query = {
             if(to_update){
                 board.updateZoom();
             }
-            this.set_window_hash()
+            this.setHash()
         }
     },
     // level 1 interaction of query change
@@ -313,19 +346,22 @@ const query = {
                 board.updateZoom()
             }
         }
+        board.setHash()
     },
     // set the window.loaction.hash to the query hash value
     // level 3
-    set_window_hash() {
+    setHash() {
+
         //  update location
         if (window.location.hash != this.hash()) {
             // change hash without triggering events
             // https://stackoverflow.com/a/5414951
-            window.location.hash.replace(this.hash())
+            history.replaceState(null, null, this.hash())
             //window.location.hash = this.hash;  
         }
     }
 }
+
 
 
 const pen = {
@@ -341,10 +377,9 @@ const pen = {
     setCursor(cursor){
         if(this.cursor_style != cursor){
             this.cursor_style = cursor;
-            $('html').css('cursor', cursor);
-            this.__disable = cursor != PEN_CURSOR;
-            if(this.__disable != cursor != PEN_CURSOR){
-                this.__disable = cursor != PEN_CURSOR
+            board.canvas.css('cursor', cursor);
+            if(this.__disable != cursor == MOVE_CURSOR){
+                this.__disable = cursor = MOVE_CURSOR
                 board.drawBoard();
             }
         }
@@ -368,14 +403,16 @@ const pen = {
     },
     updateOffset(e) {
         /* finds the pen current position
-         min pixel on screen + start of page / scale= position of mousee  */
+         min pixel on screen + start of page / scale= position of mouse  */
          let pos = null;
         if(this.force_center){
             pos = {x:query.x, y:query.y}   // center
         } else {
             // clear pos when both values aren't good
             let mouse_offset = this.getMouseOffset(e);
-            if (_.isNull(mouse_offset) || _.some(mouse_offset, _.isNull)){return;}
+            if (_.isNull(mouse_offset) || _.some(mouse_offset, _.isNull)){
+                return;
+            }
             pos = {
                 x: Math.floor(board.x+mouse_offset[0]/query.scale),
                 y: Math.floor(board.y+mouse_offset[1]/query.scale)
@@ -392,17 +429,21 @@ const pen = {
         }
     },
     clearPos(){
-        // when entered outofboard
+        // when out of board
         this.x = this.y = -1;
         board.updateCoords();
         board.drawBoard();
-    }, 
-    setMousePos(e){
+    },
+    setMousePos(e, cursor=null){
         // update position and end use of keyboard state center
+        if(!_.isNull(cursor)){
+            this.setCursor(PEN_CURSOR)
+        }
         this.force_center = false;
         this.updateOffset(e);
     },
-    setCenterPos(){        
+    setCenterPos(){
+        this.setCursor(NONE_CURSOR)
         this.force_center = true;
         this.updateOffset();
     },
@@ -451,13 +492,13 @@ const pen = {
 }
 
 const board = {
-    imgCanvas: null, imgctx:null,
+    imgCanvas: null, ctx_image:null,
     buffer: null,
     x: 0, y: 0,
     drag: { active: false, startX: 0, startY: 0, dragX: 0, dragY: 0 },
     canvas: null,
-    needsdraw: false, move_vector: [0,0],
-    keymove_interval:null, ctx:null,
+    needs_draw: false, move_vector: [0,0],
+    key_move_interval:null, ctx:null,
     queue:null, buildBoard:null,
     init(){
         this.canvas = $('#board');
@@ -466,7 +507,7 @@ const board = {
         this.imgCanvas = document.createElement('canvas');
         this.imgCanvas.width = CANVAS_SIZE;
         this.imgCanvas.height = CANVAS_SIZE;
-        this.imgctx = this.imgCanvas.getContext('2d');
+        this.ctx_image = this.imgCanvas.getContext('2d');
         this.queue = [];
         this.buildBoard = _.once(this.__buildBoard)
         this.updateZoom();      // also centers
@@ -479,8 +520,8 @@ const board = {
             this.move_vector[0],
             this.move_vector[1]
         )
-        if(_.isNull(this.keymove_interval)){
-            this.keymove_interval = setInterval(() => {
+        if(_.isNull(this.key_move_interval)){
+            this.key_move_interval = setInterval(() => {
                 board.moveBoard(
                     this.move_vector[0],
                     this.move_vector[1]
@@ -503,8 +544,8 @@ const board = {
         this.move_vector[1] -= dir.dir[1];
         pen.setDirCursor(this.move_vector)
         if(this.move_vector[0] == 0 && this.move_vector[1] == 0){
-            clearInterval(this.keymove_interval)
-            this.keymove_interval = null;
+            clearInterval(this.key_move_interval)
+            this.key_move_interval = null;
 
         } 
     },
@@ -519,12 +560,12 @@ const board = {
             image_buffer[index * 2] = Colors.colors[val % 16].abgr;
             image_buffer[index * 2 + 1] = Colors.colors[Math.floor(val / 16)].abgr;
         });
-        this.imgctx.putImageData(image_data,0,0);
+        this.ctx_image.putImageData(image_data,0,0);
         this.beforeFirstDraw();
     },
     __setAt(x, y, color){
-        this.imgctx.fillStyle = color;
-        this.imgctx.fillRect(x, y, 1, 1);
+        this.ctx_image.fillStyle = color;
+        this.ctx_image.fillRect(x, y, 1, 1);
         this.drawBoard();
     },
     setAt(x, y, color_idx){
@@ -654,12 +695,12 @@ const board = {
         return query.scale / this.windowrootratio
     },*/
     drawBoard(){
-        if(board.needsdraw || !board.is_ready){return;}
-        this.needsdraw=true;
+        if(board.needs_draw || !board.is_ready){return;}
+        this.needs_draw=true;
         requestAnimationFrame(() => {  // 1-5 millisecond call, for all animation
             // it seems the average time of 5 operations is 0.23404487173814767 milliseconds
             //t = performance.now();
-            this.needsdraw=false;
+            this.needs_draw=false;
             this.ctx.fillStyle = BACKGROUND_COLOR
             this.ctx.fillRect(
                 0,0,
@@ -721,7 +762,9 @@ $(document).ready(function () {
         function(){board.updateCoords();}
     );
     board.canvas
-    .mousemove((event) => pen.setMousePos(event))
+    .mousemove((event) => {
+        pen.setMousePos(event);
+    })
     .mouseleave(() => pen.clearPos())
     .bind('mousewheel', (e) => {
         e.preventDefault();
@@ -739,7 +782,7 @@ $(document).ready(function () {
         board.drag.startX = query.x;
         board.drag.startY = query.y;
         board.drag.active = true;
-        pen.setCursor(MOVE_CURSOR)
+        pen.setCursor(MOVE_CURSOR);
     });    
     $(document).mousemove(function (e) {
         if (board.drag.active) {
