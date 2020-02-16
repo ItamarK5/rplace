@@ -1,15 +1,16 @@
 import re
-from hashlib import pbkdf2_hmac
 from datetime import datetime
+from hashlib import pbkdf2_hmac
+from typing import Optional
+
 from flask_login import UserMixin
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.dialects.sqlite import DATETIME
 from sqlalchemy.orm import relationship
 
+from .role import Role, SmallEnum
 from ..config import Config
 from ..extensions import db, login_manager
-from .role import Role, SmallEnum
-
 
 reNAME = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
 rePSWD = re.compile(r'^[a-f0-9]{128}$')  # password hashed so get hash value
@@ -55,7 +56,30 @@ class User(db.Model, UserMixin):
     def __repr__(self) -> str:
         return f"<User(name={self.username}>"
 
+    def get_id(self) -> str:
+        """
+        :return: the "id" of the user, the key to be used to identified it
+        """
+        return '&'.join([
+            self.password,
+            super().get_id()
+        ])
+
 
 @login_manager.user_loader
-def load_user(user_id: str) -> int:
-    return User.query.get(int(user_id))
+def load_user(user_token: str) -> Optional[User]:
+    """
+    :param user_token: the string value saved in a cookie/session of the user.
+    :return: the matched user for the token
+    """
+    # first get the id
+    identity_keys = user_token.split('&')  # password hash, email, user_id
+    if len(identity_keys) != 2 or not identity_keys[1].isdigit():
+        return None
+    pswd, user_id = identity_keys
+    # get the user
+    user = User.query.get(int(user_id))
+    print(user)
+    if (not user) or user.password != pswd:
+        return None
+    return user

@@ -1,6 +1,7 @@
 from enum import IntEnum, auto
-from sqlalchemy import SmallInteger, TypeDecorator
 from typing import Type, Any
+
+from sqlalchemy import SmallInteger, TypeDecorator
 
 
 class Role(IntEnum):
@@ -9,6 +10,7 @@ class Role(IntEnum):
     common = auto()
     admin = auto()
     superuser = auto()
+
     @property
     def icon(self):
         return ROLE_ICON[self]
@@ -19,10 +21,10 @@ class Role(IntEnum):
 
 
 ROLE_ICON = {
-            Role.admin: 'fa-user-shield',
-            Role.common: 'fa-user',
-            Role.banned: 'fa-ban',
-            Role.superuser: 'fa-user-secret'
+    Role.admin: 'fa-user-shield',
+    Role.common: 'fa-user',
+    Role.banned: 'fa-ban',
+    Role.superuser: 'fa-user-secret'
 }
 
 ROLE_TITLE = {
@@ -38,6 +40,7 @@ class SmallEnum(TypeDecorator):
     Enables passing in a Python enum and storing the enum's *value* in the db.
     The default would have stored the enum's *name* (ie the string).
     """
+
     impl = SmallInteger
 
     def __init__(self, enum_type: Type[IntEnum], *args, **kwargs) -> None:
@@ -58,4 +61,3 @@ class SmallEnum(TypeDecorator):
             return self._enum_type(value)
         except ValueError:
             raise ValueError('user privilage value isnt valid: %s' % value)
-

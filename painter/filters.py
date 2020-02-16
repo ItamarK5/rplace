@@ -10,9 +10,9 @@ def draw_time(user: User) -> str:
     if user.next_time == user.creation:
         return 'never'
     # else
-    return user.next_time.strftime(
+    return (user.next_time - MINUTES_COOLDOWN).strftime(
         '%y-%m-%d %a %H:%M:%S.%f'
-    ) - MINUTES_COOLDOWN
+    )
 
 
 @app.template_filter('is_admin')
