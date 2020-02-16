@@ -20,6 +20,7 @@ const MIN_STEP_SIZE = 1;
 const MIN_SCALE = 0.5;
 const MAX_SCALE = 50;
 const DRAW_COOLDOWN = 60;
+const PROGRESS_COOLDOWN = 50
 
 const reHashX = /(?<=(^#|.+&)x=)\d+(?=&|$)/i;
 const reHashY = /(?<=(^#|.+&)y=)\d+(?=&|$)/i;
@@ -127,20 +128,20 @@ class PalColor {
 }
 
 class SimpleInterval{
-    constructor(func, time){
-        this.work = func;
+    constructor(work, time){
+        this.work = work;
         this.__time = time;
         this.work_handler = null;
     }
 
-    startWork(){
+    start(){
         if(_.isNull(this.work_handler)){
-            this.work_handler = setInterval(this.work(), this.__time);
+            this.work_handler = setInterval(this.work, this.__time);
             return true;
         }
         return false;
     }
-    stopWork(){
+    stop(){
         clearInterval(this.work_handler)
         this.work_handler = null
     }
@@ -187,6 +188,10 @@ let progress = {
     state: 0,       // state of progress bar
     work: null,  // handler of progress update interval
     current_min_time:null,
+    init(){
+        let self = this;
+        this.work = new SimpleInterval(function(){self.updateTimer}, PROGRESS_COOLDOWN)
+    },
     adjust_progress(seconds_left) {  
         // adjust the progress bar and time display by the number of seconds left
         $('#prog-text').text([
@@ -200,21 +205,22 @@ let progress = {
         this.state = Math.ceil(seconds_left * 2 /DRAW_COOLDOWN);
         $('#time-prog').attr('state', this.state);        
     },
-    set_time(time) {
+    setTime(time) {
         // set time
         // handles starting the timer waiting
-        let self = this;
-        self.time = Date.parse(time + ' UTC');
-        if(self.timestamp < getUTCTimestamp()) {
-            $('prog-text').text('0:00');
-            $('#prog-fill').state = 1;
-            $('#time-prog').attr('state', 0);
-            if(_.isNull(self.work)){
-                clearInterval(self.work);
+        this.time = Date.parse(time + ' UTC');
+        // if current time is after end of cooldown
+        if(this.time < getUTCTimestamp()) {
+            $('prog-text').text('0:00');                // set textto 0
+            $('#prog-fill').attr('state', 1);           // prog-fill state is 9
+            $('#time-prog').attr('state', 0);           // time progress set to 1
+            if(this.work.isWorking){                    // stop work in case
+                this.work.stop();
             }
-        } else if (_.isNull(self.work)) {
-            self.is_working = true;
-            self.work = setInterval(function () { self.updateTimer() }, 50);
+        } else if (!this.work.isWorking) {
+            this.current_min_time = 300;
+            let self = this;
+            self.work.start()
        }
     },
     updateTimer() {
@@ -228,14 +234,11 @@ let progress = {
             // update current time
             this.current_min_time = seconds_left;
         }
-        let self = this;
         // close for cooldown 0
         if (seconds_left <= 0) {
             // clear Interval
-            clearInterval(self.work);
-            self.work = null;
-            self.current_min_time = 300;
-        }       
+            this.work.stop();
+        }
     }
 }
 
@@ -461,7 +464,7 @@ const pen = {
         return (!this.__disable) && this.has_color && this.isAtBoard()
     },
     setPixel(){
-        if(!_.isNull(progress.work)){
+        if(_.isNull(progress.work.isWorking)){
             Swal.fire({
                 title: 'You have 2 wait',
                 imageUrl:'https://aadityapurani.files.wordpress.com/2016/07/2.png',
@@ -484,7 +487,7 @@ const pen = {
                 'y': pen.y,
             }, callback=(next_time)=>{
                 if(!(_.isUndefined(next_time) || next_time == 'undefined')){
-                    progress.set_time(next_time)
+                    progress.setTime(next_time)
                 }
             });
         }
@@ -729,17 +732,18 @@ const sock = io();
 $(document).ready(function () {
     Colors.init();
     query.init();
+    progress.init();
     board.init();
     pen.init();
     sock.on('place-start',  function(data) {
         // buffer - board in bytes
         // time - time
-        progress.set_time(data.time)
+        progress.setTime(data.time)
         board.buildBoard(new Uint8Array(data.board));
     });    
     sock.on('set-board', (x, y, color_idx) => board.setAt(x, y, color_idx));
     sock.on('update-timer', function(time){
-        progress.set_time(time);
+        progress.setTime(time);
     });
     // Lost connection
     sock.on('disconnect', () => {

@@ -10,7 +10,7 @@ from flask import Flask
 from flask_login import current_user
 from flask_socketio import SocketIO, emit, disconnect
 
-from painter.constants import WEB_FOLDER
+from painter.constants import WEB_FOLDER, MINUTES_COOLDOWN
 from painter.extensions import db
 from .models.pixel import Pixel
 
@@ -104,7 +104,7 @@ def set_board(params: Dict[str, Any]) -> str:
     try:
         current_time = datetime.utcnow()
         if current_user.next_time > current_time:
-            return str(current_user.next_time())
+            return str(current_user.next_time)
         # validating parameter
         if 'x' not in params or (not isinstance(params['x'], int)) or not (0 <= params['x'] < 1000):
             return 'undefined'
@@ -112,7 +112,7 @@ def set_board(params: Dict[str, Any]) -> str:
             return 'undefined'
         if 'color' not in params or (not isinstance(params['color'], int)) or not (0 <= params['color'] < 16):
             return 'undefined'
-        next_time = current_time  # + MINUTES_COOLDOWN
+        next_time = current_time + MINUTES_COOLDOWN
         current_user.next_time = next_time
         x, y, clr = int(params['x']), int(params['y']), int(params['color'])
         db.session.add(Pixel(x=x, y=y, color=clr, drawer=current_user.id, drawn=current_time.timestamp()))
@@ -132,5 +132,5 @@ def set_board(params: Dict[str, Any]) -> str:
         print(next_time)
         return str(next_time)
     except Exception as e:
-        print(e)
+        print(e, e.args)
         return 'undefined'
