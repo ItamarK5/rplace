@@ -25,15 +25,6 @@ const reArgScale = /(?<=(^\?|.+&)scale=)(\d{1,2}|0\.5)(?=&|$)/i;
 
 //const reHash = /(?<=(?:^#|.+&))([\w|\d]+)=([\w|\d]+)(?=&|$)/i
 
-const PEN_CURSOR = 'none'
-const MOVE_CURSOR = 'grabbing'
-const NONE_CURSOR = 'none'
-
-const DIRECTION_CURSORS = [
-    'nw-resize', 'ns-resize', 'ne-resize',
-    'w-resize', PEN_CURSOR, 'e-resize',
-    'sw-resize', 's-resize', 'se-resize'
-]
 
 const DIRECTION_MAP = [
     {key:37, dir:[-1,  0], set:false}, // left
@@ -51,7 +42,6 @@ const getFirstIfAny = (group) => _.isNull(group) ? null : group[0]
 const clamp = (v, max, min) => Math.max(min, Math.min(v, max));
 const is_valid_scale = (scale) => MIN_SCALE <= scale && scale <= MAX_SCALE;
 const is_valid_pos = (v) => 0 <= v && v < CANVAS_SIZE;
-const findDirCursor = (x,y) => DIRECTION_CURSORS[(y+1)*3+x+1]
 const getUTCTimestamp = () => {
     let tm = new Date();
     return Date.UTC(
@@ -165,6 +155,14 @@ class SimpleInterval{
 }
 
 
+class CursorStyle {
+    constructor(cursor, hide_pen){
+        this.cursor = cursor;
+        this.hide_pen = hide_pen;
+    }
+}
+
+
 const Colors = {
     white: new PalColor(0xFF, 0xFF, 0xFF, 'White'),
     black: new PalColor(0x00, 0x00, 0x00, 'Black'),
@@ -195,6 +193,18 @@ const Colors = {
     },
     clr(idx) { return this.colors[idx]; }
 }
+
+const Cursors = {
+    Pen: new CursorStyle('none', false),
+    Wait: new CursorStyle('not-allowed', false),
+    grabbing: new CursorStyle('grabbing', true),
+/*    Vertical: new CursorStyle('ns-resize', false),
+    Horizontal: new CursorStyle('we-resize', false),
+    LinearDown: new CursorStyle('nw-resize', false),
+    LinearUp: new CursorStyle('ne-resize', false)*/
+}
+
+
 
 let progress = {
     time: 0,        // time when cooldown ends
@@ -250,8 +260,12 @@ let progress = {
         // close for cooldown 0
         if (seconds_left <= 0) {
             // clear Interval
-            this.work.stop();
+            this.work.stopProgress();
         }
+    },
+    stopProgress(){
+        cursor.setPen();
+        this.work.stop();
     }
 }
 
@@ -268,8 +282,9 @@ const query = {
         if(this.__setHash != HashChangeFlag.Enabled){
             let temp = this.__can_set_hash;
             this.__can_set_hash = HashChangeFlag.Enabled
+            let self = this;
             if(temp == HashChangeFlag.Needed){
-                 this.setHash();
+                setTimeout(function(){self.setHash()},400);
             }
         }
     },
@@ -382,9 +397,7 @@ const query = {
     // level 3
     setHash() {
         //  update location
-        console.log(this.__can_set_hash)
         this.__can_set_hash = NeededHashMask(this.__can_set_hash)
-        console.log(this.__can_set_hash)
         if (this.canSetHash() && location.hash != this.hash()) {
             // change hash without triggering events
             // https://stackoverflow.com/a/5414951
@@ -394,6 +407,56 @@ const query = {
     }
 }
 
+
+const cursor = {
+    current_cursor: 'default',
+    /**
+     * 
+     * @param {CursorStyle} cursor 
+     */
+    setCursor(cursor){
+        console.log(cursor);
+        if(this.current_cursor != cursor.cursor){
+            this.current_cursor = cursor.cursor;
+            board.canvas.css('cursor', cursor.cursor);
+            if(cursor.hide_pen){
+                pen.disable();
+            } else {
+                pen.enable();
+            }
+        }
+    },
+    setPen(){
+        this.setCursor(progress.work.isWorking ? Cursors.Work : Cursors.Pen)
+    },
+    grab(){
+        this.setCursor(Cursors.grabbing);
+    }
+    /*
+    __getDirCursor(dx, dy){
+        // x axis index = 0
+        // y axis index = 1
+        if(dx == 0 && dy == 0){
+            return null;
+        }
+        if(dx == 0){
+            return Cursors.Horizontal
+        } else if(dy == 0){
+            return Cursors.Vertical;
+        } else if(dy != dx) {
+            return Cursors.LinearUp;
+        } // else
+        return Cursors.LinearDown;
+    },
+    setDirCursor(dir){
+        let cur = this.__getDirCursor(dir[0], dir[1]);
+        if(_.isNull(cur)){
+           this.setPen();
+        } else {
+            this.setCursor(cur);
+        }
+    }*/
+}
 
 
 const pen = {
@@ -406,19 +469,17 @@ const pen = {
     init() {
         this.color = $('.colorButton').index('[state="1"]');
     },
-    setCursor(cursor){
-        if(this.cursor_style != cursor){
-            this.cursor_style = cursor;
-            console.log(cursor);
-            board.canvas.css('cursor', cursor);
-            if(this.__disable != (cursor == MOVE_CURSOR)){
-                this.__disable = cursor == MOVE_CURSOR
-                board.drawBoard();
-            }
+    disable(){
+        if(this.__disable){
+            this.__disable = true;
+            board.drawBoard();
         }
     },
-    setDirCursor(dir){
-        this.setCursor(findDirCursor(dir[0], dir[1]))
+    enable(){
+        if(this.__disable){
+            this.__disable = false;
+            board.drawBoard();
+        }
     },
     getMouseOffset(e){
         /*
@@ -470,16 +531,14 @@ const pen = {
         board.updateCoords();
         board.drawBoard();
     },
-    setMousePos(e, cursor=null){
+    setPenPos(e){
         // update position and end use of keyboard state center
-        if(!_.isNull(cursor)){
-            this.setCursor(cursor)
-        }
+        cursor.setPen();
         this.force_center = false;
         this.updateOffset(e);
     },
     setCenterPos(){
-        this.setCursor(NONE_CURSOR)
+        cursor.setPen();
         this.force_center = true;
         this.updateOffset();
     },
@@ -580,7 +639,7 @@ const board = {
         dir.set = true;
         this.move_vector[0] += dir.dir[0]
         this.move_vector[1] += dir.dir[1];
-        pen.setDirCursor(this.move_vector)
+        //cursor.setDirCursor(this.move_vector)
         this.startKeyMoveLoop();
     },
     // level 1
@@ -588,7 +647,7 @@ const board = {
         dir.set = false
         this.move_vector[0] -= dir.dir[0];
         this.move_vector[1] -= dir.dir[1];
-        pen.setDirCursor(this.move_vector)
+        //cursor.setDirCursor(this.move_vector);
         if(this.move_vector[0] == 0 && this.move_vector[1] == 0){
             clearInterval(this.key_move_interval)
             this.key_move_interval = null;
@@ -625,7 +684,6 @@ const board = {
             throw_message('given position of point isnt valid')
         }
         color = Colors.colors[color_idx].css_format();
-        console.log(color)
         if(this.is_ready){
             this.__setAt(x, y, color)
         } else {
@@ -697,7 +755,6 @@ const board = {
         } else {
             zoom_button.children('span').addClass('fa-search-plus').removeClass('fa-search-minus');
             zoom_button.css('cursor', 'zoom-in');
-
         }
     },
     get step() {
@@ -764,7 +821,7 @@ const board = {
             this.ctx.translate(-this.x, -this.y);
             this.ctx.drawImage(this.imgCanvas, 0, 0);
             if(pen.canDrawPen()){
-                this.ctx.fillStyle = Colors.colors[pen.color].css_format(0.5);
+                this.ctx.fillStyle = Colors.colors[pen.color].css_format(0.6);
                 this.ctx.fillRect(pen.x, pen.y, 1,1);
             }
             this.ctx.restore();     // return to default position
@@ -814,7 +871,7 @@ $(document).ready(function () {
     );
     board.canvas
     .mousemove((event) => {
-        pen.setMousePos(event);
+        pen.setPenPos(event);
     })
     .mouseleave(() => pen.clearPos())
     .bind('mousewheel', (e) => {
@@ -824,7 +881,8 @@ $(document).ready(function () {
         // jquery dblclick dont work on some machines but addEventListner does 
         // source: https://github.com/Leaflet/Leaflet/issues/4127
         /*Get XY https://codepo8.github.io/canvas-images-and-pixels/#display-colour*/
-        pen.setMousePos(event, 'cursor');
+        pen.setPenPos(event);
+        cursor.setPen();
         pen.setPixel();
     });
     board.canvas.mousedown(function (e) {
@@ -839,7 +897,7 @@ $(document).ready(function () {
     $(document).mousemove(function (e) {
         if (board.drag.active) {
             // center board
-            pen.setCursor(MOVE_CURSOR);
+            cursor.grab();
             board.centerOn(
                 Math.floor(board.drag.startX + (board.drag.dragX - e.pageX) / query.scale),
                 Math.floor(board.drag.startY + (board.drag.dragY - e.pageY) / query.scale)
@@ -847,8 +905,8 @@ $(document).ready(function () {
         }
     }).mouseup(() => {
         board.drag.active = false;
+        cursor.setPen();
         query.enableUpdateHash();
-        pen.setCursor(PEN_CURSOR);
         
     })
     $('.colorButton')
