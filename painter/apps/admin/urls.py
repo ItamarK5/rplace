@@ -37,7 +37,7 @@ def admin() -> str:
     page = request.args.get('page', '1')
     if not page.isdigit():
         abort(400, 'Given page isn\'t a number', description='Are you mocking this program? you'
-                                                                    ' an admin tries to edit the url')
+                                                             ' an admin tries to edit the url')
     page = int(page)
     if not 1 <= page:
         abort(404, 'Page index too small')

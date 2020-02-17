@@ -1,6 +1,6 @@
 from os.path import join as path_join
 
-from flask import Blueprint, render_template, Response
+from flask import Blueprint, render_template, Response, jsonify
 from flask_login import login_required
 
 from painter.constants import WEB_FOLDER
@@ -30,3 +30,12 @@ def home() -> Response:
 def profile():
     form = SettingForm()
     return render_template('accounts/profile.html', form=form)
+
+
+@place_router.route('/profile', methods=("POST",))
+def profile_ajax():
+    form = SettingForm()
+    if form.validate_on_submit():
+        return jsonify(valid=True)
+    print(form.errors)
+    return jsontify(valid=False)

@@ -5,7 +5,7 @@
 {% endmacro %}
 {% macro pre_input_text(text, for_input, id=None, classes="") %}
 <div class="input-group-prepend">
-    <span id="{{id}}" class="custom-input-text {{classes|class_ftr}}" for="{{for_input}}">{{text}}</span>
+    <span id="{{id}}" class="custom-input-text{{classes|class_ftr}}" for="{{for_input}}">{{text}}</span>
 </div>
 {% endmacro %}
 {% macro button_model(span, modal, fa, title='none', placement="top", classes=None) %}

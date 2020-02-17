@@ -411,11 +411,9 @@ const query = {
 const cursor = {
     current_cursor: 'default',
     /**
-     * 
      * @param {CursorStyle} cursor 
      */
     setCursor(cursor){
-        console.log(cursor);
         if(this.current_cursor != cursor.cursor){
             this.current_cursor = cursor.cursor;
             board.canvas.css('cursor', cursor.cursor);
@@ -470,7 +468,7 @@ const pen = {
         this.color = $('.colorButton').index('[state="1"]');
     },
     disable(){
-        if(this.__disable){
+        if(!this.__disable){
             this.__disable = true;
             board.drawBoard();
         }

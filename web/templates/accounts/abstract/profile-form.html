@@ -17,8 +17,18 @@
     {{axis_input(form.y_start, 'The X position on the start of the program', 'arrows-alt-v', 1, 1000)}}
     {{axis_input(form.scale_start, 'How much to zoom on start', 'search', 1, 50)}}
     <div class="form-row mb-2">
-        <div class="col input-group w-100 range-field" data-toggle="tooltip" data-placement="top" title="Chat URL to be redirected">
-            {{pre_input_text(form.chat_url.label, form.chat_url.id, id=form.chat_url.id+'-label', classes='primary')}}
+        <div class="col input-group w-100" data-toggle="tooltip" data-placement="top" title="First Color">
+            <div class="input-group-prepend">
+                <span id="{{form.colors.id+'-label'}}" class="input-group-text{{classes|class_ftr}}" for="{{form.colors.id}}">{{form.colors.label.text}}</span>
+            </div>
+            {{form.colors(class='form-control rounded-right')}}
+        </div>
+    </div>
+    <div class="form-row mb-2">
+        <div class="col input-group w-100" data-toggle="tooltip" data-placement="top" title="Chat URL to be redirected">
+            <div class="input-group-prepend">
+                <span id="{{form.chat_url.id+'-label'}}" class="input-group-text{{classes|class_ftr}}" for="{{form.chat_url.id}}">{{form.chat_url.label.text}}</span>
+            </div>
             {{form.chat_url(class='form-control-url rounded-right w-75')}}
         </div>
     </div>
