@@ -1,16 +1,17 @@
 {% macro axis_input(input, title, fa, min_range, max_range, val=None) %}
 <div class="form-row mb-2">
-<div class="col input-group">
+<div class="col form-group input-group">
     <div class="input-group-prepend mb-1">
         <span id="{{input.id+'id'}}" class="custom-input-text text-warning" for="{{input.id}}" data-toggle="tooltip" data-placement="top" title="{{title}}">
-            <i class="fas fa-{{fa}}"></i> {{input.label.text}}: <span for="{{input.id+'-val'}}" class="range-text">0</span>
+            <i class="fas fa-{{fa}}"></i> {{input.label.text}}: <span for="{{input.id}}" class="range-text">0</span>
         </span>
     </div>
+    <div class="errors" for={{input.id}}></div>
     {{input(class="custom-range range-field rounded-right", min=min_range, max=max_range, value=value or min)}}
 </div>
 </div>
 {% endmacro %}
-<form id="setting-form" method="post">
+<form id="setting-form" method="post" action="{{url_for('place.profile_ajax', _external=True)}}">
     {{edit_title('Settings')}}            
     {{form.hidden_tag()}}
     {{axis_input(form.x_start, 'The X position on the start of the program', 'arrows-alt-h', 1, 1000)}}
@@ -21,7 +22,7 @@
             <div class="input-group-prepend">
                 <span id="{{form.colors.id+'-label'}}" class="input-group-text{{classes|class_ftr}}" for="{{form.colors.id}}">{{form.colors.label.text}}</span>
             </div>
-            {{form.colors(class='form-control rounded-right')}}
+            {{form.colors(class='form-control')}}
         </div>
     </div>
     <div class="form-row mb-2">
@@ -29,7 +30,7 @@
             <div class="input-group-prepend">
                 <span id="{{form.chat_url.id+'-label'}}" class="input-group-text{{classes|class_ftr}}" for="{{form.chat_url.id}}">{{form.chat_url.label.text}}</span>
             </div>
-            {{form.chat_url(class='form-control-url rounded-right w-75')}}
+            {{form.chat_url(class='form-control rounded-right w-75')}}
         </div>
     </div>
     <div class="form-row mt-2">

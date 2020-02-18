@@ -1,6 +1,6 @@
-﻿{% macro render_link(id, icon, non_top_icon=True) %}
+﻿{% macro render_link(id, icon, path=None) %}
 <div class="icon-button" id="{{id}}">
-    <span class="fas fa-{{icon}}"></span>
+    <span class="fas fa-{{icon}}" href={{path}}></span>
 </div>
 {% endmacro %}
 <!DOCTYPE html>
@@ -36,7 +36,7 @@
     <div id="color-table-box">
         <div class='center' id=colorTable>
             {% for i in range(16) %}
-            <div class='colorButton' state='0' value='{{i}}'></div>
+            <div class='colorButton' state='{{(paint["color"]==)}}' value='{{i}}'></div>
             {% endfor %}
         </div>
     </div>
@@ -44,6 +44,7 @@
         {{render_link('zoom-button', 'search-plus')}}
         {{render_link('home-button', 'home')}}
         {{render_link('logout-button', 'sign-out-alt')}}
+        {% if site_view %}{{render_link('logout-button', 'sign-out-alt', )}}{% endif %}
     </div>
     <div class="nonselect" id="time-prog" state="1">
         <div id="prog-fill"></div>
@@ -54,6 +55,7 @@
     <span class="coordinateSpan" id="coordinateX">none</span>
     <span class="coordinateText" id="coordinate-slicer">,</span>
     <span class="coordinateSpan" id="coordinateY">none</span>
+    <span class=></span>
 </div>
 </body>
 </html>

@@ -196,7 +196,7 @@ const Colors = {
 
 const Cursors = {
     Pen: new CursorStyle('none', false),
-    Wait: new CursorStyle('not-allowed', false),
+    Wait: new CursorStyle('not-allowed', true),
     grabbing: new CursorStyle('grabbing', true),
 /*    Vertical: new CursorStyle('ns-resize', false),
     Horizontal: new CursorStyle('we-resize', false),
@@ -206,7 +206,7 @@ const Cursors = {
 
 
 
-let progress = {
+const progress = {
     time: 0,        // time when cooldown ends
     state: 0,       // state of progress bar
     work: null,  // handler of progress update interval
@@ -260,12 +260,12 @@ let progress = {
         // close for cooldown 0
         if (seconds_left <= 0) {
             // clear Interval
-            this.work.stopProgress();
+            this.stopProgress();
         }
     },
     stopProgress(){
-        cursor.setPen();
         this.work.stop();
+        cursor.setPen();
     }
 }
 
@@ -425,7 +425,7 @@ const cursor = {
         }
     },
     setPen(){
-        this.setCursor(progress.work.isWorking ? Cursors.Work : Cursors.Pen)
+        this.setCursor(progress.work.isWorking ? Cursors.Wait : Cursors.Pen)
     },
     grab(){
         this.setCursor(Cursors.grabbing);
@@ -867,6 +867,7 @@ $(document).ready(function () {
         function(){board.updateCoords();},
         function(){board.updateCoords();}
     );
+    // set color
     board.canvas
     .mousemove((event) => {
         pen.setPenPos(event);
@@ -918,6 +919,12 @@ $(document).ready(function () {
         $('.colorButton[state="1"]').attr('state', '0');
         $(this).attr('state', '1');
     });
+    // set color button
+    let color_button = $('.colorButton').filter((idx, ele) => ele.getAttribute('state')=='1').first();
+    if(!(color_button[0])){
+        color_button = $($('.colorButton')[1]);     // black button
+    }
+    color_button.click()
     $(document).keypress(function(e) {
         // first check direction
         // https://stackoverflow.com/a/9310900

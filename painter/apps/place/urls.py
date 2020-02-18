@@ -1,7 +1,7 @@
 from os.path import join as path_join
 
 from flask import Blueprint, render_template, Response, jsonify
-from flask_login import login_required
+from flask_login import login_required, current_user
 
 from painter.constants import WEB_FOLDER
 from .forms import SettingForm
@@ -14,7 +14,9 @@ place_router = Blueprint('place', 'place',
 @place_router.route('/place', methods=('GET',))
 @login_required
 def place():
-    return render_template('place.html')
+    if not current_user:
+        return render_template('place.html')
+    return render_template('place.html', paint=current_user.paint_atts)
 
 
 @place_router.route('/', methods=('GET',))
@@ -32,10 +34,12 @@ def profile():
     return render_template('accounts/profile.html', form=form)
 
 
-@place_router.route('/profile', methods=("POST",))
+@place_router.route('/settings-submit', methods=("POST",))
 def profile_ajax():
     form = SettingForm()
     if form.validate_on_submit():
         return jsonify(valid=True)
-    print(form.errors)
-    return jsontify(valid=False)
+    return jsonify(
+        valid=False,
+        **form.errors
+    )

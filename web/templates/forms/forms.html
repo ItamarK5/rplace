@@ -18,7 +18,7 @@
     <link href="{{url_for('other.serve_static', key='auth.css')}}" rel="stylesheet">
     <script crossorigin="anonymous"
             integrity="sha256-O4179En8zabOlPYBNvGp8cF0uh0vnSZpW4Q6Ul1h+8c=" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore.js"></script>
-    <script src="/files/auth.js"></script>
+    <script src="{{url_for('other.serve_static', key='auth.js')}}"></script>
     <title>{{ form.title }} </title>
     {% endblock %}
 </head>

@@ -2,7 +2,7 @@ from typing import Any, Optional, Tuple, Dict, NoReturn
 
 from flask import Flask
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
-from wtforms.validators import HostnameValidation
+from wtforms.validators import Email
 
 from painter.models.user import reNAME, rePSWD, reEMAIL
 
@@ -24,37 +24,6 @@ class TokenSerializer:
         )
 
 
-def validate_mail(mail_address: str) -> bool:
-    """
-    Using the validation
-    :param mail_address: email address
-    :return: if the email is valid
-            value = field.data
-    version of the code in wtforms.validators.Email.__call__
-        ...
-        message = self.message
-        if message is None:
-            message = field.gettext('Invalid email address.')
-
-        if not value or '@' not in value:
-            raise ValidationError(message)
-
-        user_part, domain_part = value.rsplit('@', 1)
-
-        if not self.user_regex.match(user_part):
-            raise ValidationError(message)
-
-        if not self.validate_hostname(domain_part):
-            raise ValidationError(message)
-    """
-    if not mail_address or '@' not in mail_address:
-        return False
-    user_part, domain_part = mail_address.rsplit('@', 1)
-    if not reEMAIL.match(user_part):
-        return False
-    return HostnameValidation(require_tld=True)(domain_part)
-
-
 def is_valid_signup_token(token: Any) -> bool:
     """
     :param token: token passed
@@ -74,7 +43,7 @@ def is_valid_signup_token(token: Any) -> bool:
         return False
     # name
     mail_address = token.get('email', None)
-    if (not mail_address) or not validate_mail(mail_address):
+    if (not mail_address) or not Email()(mail_address):
         return False
     return True
 
