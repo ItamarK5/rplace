@@ -28,7 +28,7 @@
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@9/dist/sweetalert2.min.js"></script>
     <script src="{{url_for('other.serve_static', key='place.js')}}"></script>
 </head>
-<body>
+<body{% if paint['x_start'] is not none %} x="{{paint['x_start']}}"{% endif %}{% if paint['y_start'] is not none %} y="{{paint['y_startd']}}"{% endif %}{% if paint['scale'] is not none %} scale="{{paint['scale']}}"{% endif %}>
 <canvas class='pixelate' height='1000' id="board" width='1000'>Wait, Loading...</canvas>
 <div class="selectnone" hide='0' id="toolbox">
     <div class='center-x' id='toggle-toolbox-button' state='1'></div>
@@ -36,7 +36,7 @@
     <div id="color-table-box">
         <div class='center' id=colorTable>
             {% for i in range(16) %}
-            <div class='colorButton' state='{{(paint["color"]==)}}' value='{{i}}'></div>
+            <div class='colorButton' value='{{i}}' picked="{{(paint['color']==i)|int}}"></div>
             {% endfor %}
         </div>
     </div>
@@ -44,7 +44,7 @@
         {{render_link('zoom-button', 'search-plus')}}
         {{render_link('home-button', 'home')}}
         {{render_link('logout-button', 'sign-out-alt')}}
-        {% if site_view %}{{render_link('logout-button', 'sign-out-alt', )}}{% endif %}
+        {% if paint['url'] %}{{render_link('logout-button', 'sign-out-alt', paint['url'])}}{% endif %}
     </div>
     <div class="nonselect" id="time-prog" state="1">
         <div id="prog-fill"></div>

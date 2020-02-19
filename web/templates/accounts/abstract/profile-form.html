@@ -1,38 +1,47 @@
-{% macro axis_input(input, title, fa, min_range, max_range, val=None) %}
-<div class="form-row mb-2">
-<div class="col form-group input-group">
-    <div class="input-group-prepend mb-1">
-        <span id="{{input.id+'id'}}" class="custom-input-text text-warning" for="{{input.id}}" data-toggle="tooltip" data-placement="top" title="{{title}}">
-            <i class="fas fa-{{fa}}"></i> {{input.label.text}}: <span for="{{input.id}}" class="range-text">0</span>
-        </span>
-    </div>
-    <div class="errors" for={{input.id}}></div>
-    {{input(class="custom-range range-field rounded-right", min=min_range, max=max_range, value=value or min)}}
-</div>
+{% macro error_list(input) %}
+<div class="form-row">
+    <div class="errors-list info-div d-none" for="{{input.id}}"><label class="text-danger">H</label></div>
 </div>
 {% endmacro %}
-<form id="setting-form" method="post" action="{{url_for('place.profile_ajax', _external=True)}}">
+{% macro axis_input(input, title, fa, min_range, max_range, value=None) %}
+<div class="form-row mb-2">
+    <div class="col form-group input-group">
+        <div class="input-group-prepend mb-1">
+            <span id="{{input.id+'id'}}" class="custom-input-text text-warning" for="{{input.id}}" data-toggle="tooltip" data-placement="top" title="{{title}}">
+                <i class="fas fa-{{fa}}"></i> {{input.label.text}}: <span for="{{input.id}}" class="range-text">0</span>
+            </span>
+        </div>
+        {{input(class="custom-range range-field rounded-right", min=min_range, max=max_range)}}
+    </div>
+</div>
+{{error_list(input)}}
+{% endmacro %}
+<form id="setting-form" method="post" action="{{url_for('place.profile_ajax', _external=True)}}" role="form">
     {{edit_title('Settings')}}            
+    <div class="form-row success-text info-div" id="success-form"></div>
     {{form.hidden_tag()}}
-    {{axis_input(form.x_start, 'The X position on the start of the program', 'arrows-alt-h', 1, 1000)}}
-    {{axis_input(form.y_start, 'The X position on the start of the program', 'arrows-alt-v', 1, 1000)}}
-    {{axis_input(form.scale_start, 'How much to zoom on start', 'search', 1, 50)}}
+    {{axis_input(form.x_start, 'The X position on the start of the program', 'arrows-alt-h', 0, 999)}}
+    {{axis_input(form.y_start, 'The X position on the start of the program', 'arrows-alt-v', 0, 999)}}
+    {{axis_input(form.scale, 'How much to zoom on start', 'search', 1, 50)}}}
     <div class="form-row mb-2">
         <div class="col input-group w-100" data-toggle="tooltip" data-placement="top" title="First Color">
             <div class="input-group-prepend">
                 <span id="{{form.colors.id+'-label'}}" class="input-group-text{{classes|class_ftr}}" for="{{form.colors.id}}">{{form.colors.label.text}}</span>
             </div>
             {{form.colors(class='form-control')}}
+            <div class="errors-list text-danger info-div d-none" for="{{form.colors.id}}"></div>
         </div>
     </div>
+    {{error_list(form.colors.id)}}
     <div class="form-row mb-2">
         <div class="col input-group w-100" data-toggle="tooltip" data-placement="top" title="Chat URL to be redirected">
             <div class="input-group-prepend">
-                <span id="{{form.chat_url.id+'-label'}}" class="input-group-text{{classes|class_ftr}}" for="{{form.chat_url.id}}">{{form.chat_url.label.text}}</span>
+                <span id="{{form.url.id+'-label'}}" class="input-group-text{{classes|class_ftr}}" for="{{form.url.id}}">{{form.url.label.text}}</span>
             </div>
-            {{form.chat_url(class='form-control rounded-right w-75')}}
+            {{form.url(class='form-control rounded-right w-75')}}
         </div>
     </div>
+    {{error_list(form.url.id)}}
     <div class="form-row mt-2">
         <button id="submit" class="mx-auto w-25 submit-form-control btn-primary">Save</button>
     </div>

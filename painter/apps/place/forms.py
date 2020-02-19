@@ -3,6 +3,7 @@ from flask_wtf import FlaskForm
 from wtforms import *
 from wtforms.fields.html5 import IntegerRangeField
 
+
 class SettingForm(FlaskForm):
     x_start = IntegerRangeField(
         'X start',
@@ -18,14 +19,13 @@ class SettingForm(FlaskForm):
             validators.NumberRange(min=0, max=999, message='coord out of range')
         ],
     )
-    scale_start = IntegerRangeField(
+    scale = IntegerRangeField(
         'Scale start',
         validators=[
             validators.Optional(),
             validators.NumberRange(min=1, max=50, message='axis out of range')
         ],
     )
-
     colors = SelectField(
         'Color start',
         choices=(
@@ -35,8 +35,8 @@ class SettingForm(FlaskForm):
             (12, 'Blue'), (13, 'Aqua'), (14, 'Purple'), (15, 'Magenta'),
         )
     )
-    chat_url = StringField(
-        'chat',
+    url = StringField(
+        'Chat URL',
         validators=[
             validators.Optional(),
             validators.URL(message="Not valid URL")

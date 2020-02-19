@@ -39,7 +39,7 @@ class User(db.Model, UserMixin):
     role = Column(SmallEnum(Role), default=Role.common, nullable=False)
     paint_attrs = Column(
         JSON(),
-        default='{"x_start": 500, "y_start": 500, "color": 1, "url": null, "scale": null}',
+        default='{"x_start": 500, "y_start": 500, "color": 1, "url": null, "scale": 4}',
         nullable=False
     )
     sqlite_autoincrement = True

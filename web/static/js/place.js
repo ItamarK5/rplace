@@ -465,7 +465,7 @@ const pen = {
     __disable:false,
     cursor_style:'default',
     init() {
-        this.color = $('.colorButton').index('[state="1"]');
+        this.color = $('.colorButton').index('[picked="1"]');
     },
     disable(){
         if(!this.__disable){
@@ -531,7 +531,6 @@ const pen = {
     },
     setPenPos(e){
         // update position and end use of keyboard state center
-        cursor.setPen();
         this.force_center = false;
         this.updateOffset(e);
     },
@@ -892,7 +891,9 @@ $(document).ready(function () {
         board.drag.active = true;
         query.disableUpdateHash();
         // change cursor 100 seconds if don't move
-    });    
+    }).mouseenter(function(e) {
+        cursor.setPen();
+    })
     $(document).mousemove(function (e) {
         if (board.drag.active) {
             // center board
@@ -908,23 +909,6 @@ $(document).ready(function () {
         query.enableUpdateHash();
         
     })
-    $('.colorButton')
-    .each(function () {
-        $(this).css('background-color',
-        Colors.colors[parseInt($(this).attr('value'))].css_format()); // set colors
-    })
-    .click(function (event) {
-        event.preventDefault(); // prevent default clicking
-        pen.color = parseInt($(this).attr('value'));
-        $('.colorButton[state="1"]').attr('state', '0');
-        $(this).attr('state', '1');
-    });
-    // set color button
-    let color_button = $('.colorButton').filter((idx, ele) => ele.getAttribute('state')=='1').first();
-    if(!(color_button[0])){
-        color_button = $($('.colorButton')[1]);     // black button
-    }
-    color_button.click()
     $(document).keypress(function(e) {
         // first check direction
         // https://stackoverflow.com/a/9310900
@@ -934,7 +918,7 @@ $(document).ready(function () {
                 break;
             }
             case 'KeyC': {
-                let button = $(".colorButton[state='1']").first();
+                let button = $(".colorButton[picked='1']").first();
                 // if any of the is undefiend - reset
                 if (_.isUndefined(button[0]) || _.isUndefined(button.next()[0])) {
                     $(".colorButton[value='0']").click();
@@ -942,7 +926,7 @@ $(document).ready(function () {
                 break;
             }
             case 'KeyZ': {
-                let button = $(".colorButton[state='1']");
+                let button = $(".colorButton[picked='1']");
                 if (_.isUndefined(button) || _.isUndefined(button.prev()[0])) {
                     $(".colorButton[value='15']").click();
                 } else { $(button).prev().click() }
@@ -1056,6 +1040,23 @@ $(document).ready(function () {
               }
           });
     });
+    $('.colorButton')
+    .each(function () {
+        $(this).css('background-color',
+        Colors.colors[parseInt($(this).attr('value'))].css_format()); // set colors
+    })
+    .click(function (event) {
+        event.preventDefault(); // prevent default clicking
+        pen.color = parseInt($(this).attr('value'));
+        $('.colorButton[picked="1"]').attr('picked', '0');
+        $(this).attr('picked', '1');
+    });
+    // set color button
+    let color_button = $('.colorButton').filter((idx, ele) => ele.getAttribute('state')=='1').first();
+    if(color_button[0]){
+        color_button = $($('.colorButton')[1]);     // black button
+    }
+    color_button.click()
     $(window).resize((e) => {
         board.setCanvasZoom();
     });

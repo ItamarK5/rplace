@@ -10,7 +10,21 @@ $(document).ready(() =>{
             type:form.attr('method'),
             data:form.serialize(),
             success: (data) => {
+                $('.info-div').addClass('d-none');
                 console.log(data);
+                if(data.valid){
+                    $('#success-form').text('values have changed').removeClass('d-none');
+                } else {
+                    data.errors.forEach((val) => {
+                        let ele = $(`.errors-list[for="${val[0]}"]`);
+                        val[1].forEach((err) => {
+                            $('<span>').text(err).appendTo(ele[0]);
+                        });
+                    });
+                    data.values.forEach((val) => {
+                        $(`#${val[0]}`).val(val[1].toString()).change();
+                    });
+                }
             }
         })
     });

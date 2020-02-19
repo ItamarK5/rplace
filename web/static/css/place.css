@@ -199,12 +199,8 @@ body, html {
     transition: bottom 0.5s;
 }
 
-.colorButton[state='1'] {
+.colorButton[picked="1"] {
     border: steelblue 3px solid;
-}
-
-.colorButton[state='0'] {
-    border:none;
 }
 
 #coordinates {
