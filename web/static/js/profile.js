@@ -1,3 +1,23 @@
+function createDialog(attrs){
+    let modal = $('<div></div>').addClass('modal').attr(
+        {
+            role:'dialog',
+            'aria-labelledby':'modalTitle',
+            'aria-hidden':'false'
+        });
+    let dialog  = $('<div></div>').addClass('modal-dialog modal-dialog-centered').appendTo(modal);
+    let content = $('<div></div>').addClass('modal-content').appendTo(dialog);
+    let header = $('<div></div>').addClass('modal-header').appendTo(content);
+    $('<h5></h5>').addClass('modal-title').text(attrs.name + ' Change').attr('id', 'modalTitle').appendTo(header).append(
+        $('<button></button').addClass('close').attr({
+            type:'button',
+            'data-dismiss':'modal',
+            'aria-label':'Close',
+        }).append(
+            $('<span></span>').attr('aria-hidden', true).text('&times;')
+    ));
+    let body = $('<div></div>').addClass('modal-body').appendTo(content);
+}
 
 $(document).ready(() =>{
     //tooltips       

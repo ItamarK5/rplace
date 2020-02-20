@@ -1056,7 +1056,8 @@ $(document).ready(function () {
     if(color_button[0]){
         color_button = $($('.colorButton')[1]);     // black button
     }
-    color_button.click()
+    console.log(color_button)
+    color_button.click();
     $(window).resize((e) => {
         board.setCanvasZoom();
     });

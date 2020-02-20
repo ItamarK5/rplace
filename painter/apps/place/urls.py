@@ -45,6 +45,13 @@ def profile():
 def profile_ajax():
     form = SettingForm()
     if form.validate_on_submit():
+        current_user.paint_attrs = json.dumps({
+            'x_start':  form.x_start.data,
+            'y_start':  form.y_start.data,
+            'scale':    form.scale.data,
+            'color':    form.color.data,
+            'url':      form.url.data
+        })
         return 200
     else:
         settings = json.loads(current_user.paint_attrs)
