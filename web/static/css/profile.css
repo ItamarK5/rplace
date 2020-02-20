@@ -1,5 +1,10 @@
 body, html { background-color:#222222 !important; }
 h4 { color: yellow !important;}
-h5 { color:limegreen !important; }
+.profile-text { color:limegreen !important; }
+.setting-text { color:rgb(243, 208, 12);}
 body, html { background-color:#222222 !important; }
+input-group > * {background-color:transparent !important;}
 #user-data > * {color:limegreen !important; }
+.setting-row {border-color:rgb(243, 208, 12) !important;}
+.input-group > * {background-color:#222222 !important;}
+.input-group > * > * {background-color:#222222 !important}

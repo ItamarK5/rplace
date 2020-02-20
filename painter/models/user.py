@@ -37,9 +37,9 @@ class User(db.Model, UserMixin):
     next_time = Column(DATETIME(), default=datetime.utcnow, nullable=False)
     pixels = relationship('Pixel', backref='users', lazy=True)
     role = Column(SmallEnum(Role), default=Role.common, nullable=False)
-    paint_attrs = Column(
+    settings = Column(
         JSON(),
-        default='{"x_start": 500, "y_start": 500, "color": 1, "url": null, "scale": 4}',
+        default='{"x": 500, "y": 500, "color": 1, "url": null, "scale": 4}',
         nullable=False
     )
     sqlite_autoincrement = True

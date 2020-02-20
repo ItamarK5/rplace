@@ -29,16 +29,11 @@ def home() -> Response:
 
 
 @place_router.route('/profile', methods=('GET',))
+@login_required
 def profile():
-    form = SettingForm()
-    settings = json.loads(current_user.paint_attrs)
-    form.x_start.default = settings['x_start']
-    form.y_start.default = settings['y_start']
-    form.scale.default = settings['scale']
-    form.colors.default = settings['color']
-    form.url.default = settings['url'] if settings['url'] else ''
-    form.process()  # https://stackoverflow.com/a/29544930
-    return render_template('accounts/profile.html', form=form)
+#    form = SettingForm()
+    settings = json.loads(current_user.settings)
+    return render_template('accounts/profile.html', settings=settings)
 
 
 @place_router.route('/settings-submit', methods=("POST",))

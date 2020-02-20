@@ -1,4 +1,4 @@
-{% from 'accounts/_macros.html' import user_privilage, edit_title, pre_input_text %}
+{% from 'accounts/_macros.html' import edit_title, pre_input_text %}
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -35,8 +35,8 @@ $.ajaxSetup({
         <h3 class="text-warning display-3 font-weight-bold" id="user-title"><u>{{current_user.username}}</u></h3>
     </div>
     <div class="row">
-        <div class="col user-data-col">{% with user=current_user %}{% include 'accounts/abstract/profile-div.html' %}{% endwith %}</div>
-        <div class="col user-data-col">{% with user=current_user %}{% include 'accounts/abstract/profile-form.html' %}{% endwith %}</div>
+        <div class="col user-data-col" id="user-col">{% with user=current_user %}{% include 'accounts/abstract/profile-div.html' %}{% endwith %}</div>
+        <div class="col user-data-col" id="settings-col">{% include 'accounts/abstract/settings-edit.html' %}</div>
     </div>
 </div>
 </body>

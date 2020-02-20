@@ -1,3 +1,10 @@
+const colors = [
+    'white', 'black', 'gray', 'silver',
+    'red', 'pink', 'brown', 'orange',
+    'olive', 'yellow', 'green', 'lime',
+    'blue', 'aqua', 'purple', 'magenta'
+]
+
 function createDialog(attrs){
     let modal = $('<div></div>').addClass('modal').attr(
         {
@@ -22,6 +29,10 @@ function createDialog(attrs){
 $(document).ready(() =>{
     //tooltips       
     $('[data-toggle="tooltip"]').tooltip();
+   
+})
+
+ /*
     $('#setting-form').submit((e) => {
         e.preventDefault();
         let form = $('#setting-form');
@@ -52,7 +63,7 @@ $(document).ready(() =>{
         let inp = $(`#${ele.getAttribute('for')}`);
         console.log(inp, ele);
         $(ele).text(inp.val());
-    })
+    });
     let colors = $('#colors')
     colors.children('option').each(function(idx, elem) {
         $(elem).css({
@@ -72,4 +83,4 @@ $(document).ready(() =>{
             color: $(option).text().toLowerCase() == 'black' ? 'white' : 'black'
         });
     })
-})
+    */

@@ -5,14 +5,14 @@ from wtforms.fields.html5 import IntegerRangeField
 
 
 class SettingForm(FlaskForm):
-    x_start = IntegerRangeField(
+    x = IntegerRangeField(
         'X start',
         validators=[
             validators.Optional(),
             validators.NumberRange(min=0, max=999, message='axis out of range')
         ],
     )
-    y_start = IntegerRangeField(
+    y = IntegerRangeField(
         'Y start',
         validators=[
             validators.Optional(),
@@ -26,7 +26,7 @@ class SettingForm(FlaskForm):
             validators.NumberRange(min=1, max=50, message='axis out of range')
         ],
     )
-    colors = SelectField(
+    color = SelectField(
         'Color start',
         choices=(
             (0, 'White'), (1, 'Black'), (2, 'Gray'), (3, 'Silver'),
