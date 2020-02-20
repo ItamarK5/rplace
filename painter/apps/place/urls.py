@@ -16,7 +16,7 @@ place_router = Blueprint('place', 'place',
 def place():
     if not current_user:
         return render_template('place.html')
-    return render_template('place.html', paint=json.loads(current_user.paint_attrs))
+    return render_template('place.html', paint=json.loads(current_user.settings))
 
 
 @place_router.route('/', methods=('GET',))
@@ -31,7 +31,7 @@ def home() -> Response:
 @place_router.route('/profile', methods=('GET',))
 @login_required
 def profile():
-#    form = SettingForm()
+    form = SettingForm()
     settings = json.loads(current_user.settings)
     return render_template('accounts/profile.html', settings=settings)
 
@@ -39,23 +39,8 @@ def profile():
 @place_router.route('/settings-submit', methods=("POST",))
 def profile_ajax():
     form = SettingForm()
+    print(form.__doc__)
     if form.validate_on_submit():
-        current_user.paint_attrs = json.dumps({
-            'x_start':  form.x_start.data,
-            'y_start':  form.y_start.data,
-            'scale':    form.scale.data,
-            'color':    form.color.data,
-            'url':      form.url.data
-        })
-        return 200
-    else:
-        settings = json.loads(current_user.paint_attrs)
-        errors = dict(form.errors)
-        return jsonify(
-            errors=list(errors.items()),
-            values=[
-                (field.id, settings[field.id] if settings[field.id] else '')
-                for field in form.__iter__() if
-                field.id != 'csrf_token' and field.id not in errors
-            ]
-        )
+        # first search
+        field = filter(lambda field:field.data is not None, form.__iter__())
+    # else

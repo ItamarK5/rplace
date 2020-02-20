@@ -11,8 +11,18 @@
 {% macro button_model(span, modal, fa, title='none', placement="top", classes=None) %}
 {# http://jsfiddle.net/sso79Ldj/1/ #}
 <span data-toggle="modal" data-target="#{{modal}}" id={{span}}>
-    <button type="button" class="btn classes|class_ftr" data-placement="{{placement}}" title="{{title}}" data-toggle="tooltip" value="">
+    <button type="button" class="btn classes|class_ftr" data-placement="{{placement}}" title="{{title}}" data-toggle="tooltip">
         <i class="fas fa-{{fa}}"></i>
     </button>
 </span>
+{% endmacro %}
+{% macro settingField(key, settings) %}
+<div class="row mb-2 justify-content-center" id="row-{{key}}">
+    <div class="col-3 justify-content-center"><h5 class="center-text text-warning">{{ key|title }}:</h5></div>
+    <div class="col-4 justify-content-center setting-val"><h5 class="center-text text-warning">{{settings[key]}}</h5></div>
+    <div class="col-3 justify-content-center">
+        <button id="{{key}}-active" role="btn" class="h-100 center-text btn-warning" data-toggle="modal" data-target="#modal-change">
+            <i class="fas fa-edit"></i>
+    </button></div>
+</div>
 {% endmacro %}

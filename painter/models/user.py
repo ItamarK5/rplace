@@ -84,7 +84,6 @@ def load_user(user_token: str) -> Optional[User]:
     pswd, user_id = identity_keys
     # get the user
     user = User.query.get(int(user_id))
-    print(user)
     if (not user) or user.password != pswd:
         return None
     return user

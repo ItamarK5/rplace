@@ -1052,12 +1052,6 @@ $(document).ready(function () {
         $(this).attr('picked', '1');
     });
     // set color button
-    let color_button = $('.colorButton').filter((idx, ele) => ele.getAttribute('state')=='1').first();
-    if(color_button[0]){
-        color_button = $($('.colorButton')[1]);     // black button
-    }
-    console.log(color_button)
-    color_button.click();
     $(window).resize((e) => {
         board.setCanvasZoom();
     });
@@ -1076,3 +1070,10 @@ $(document).ready(function () {
         couponWindow.resizing = false;
       });*/
 });
+$(window).on('load', function() {
+    let color_button = $('.colorButton').filter((idx, ele) => ele.getAttribute('state')=='1').first();
+    if(!color_button[0]){
+        color_button = $($('.colorButton')[1]);     // black button
+    }
+    color_button.click()
+})

@@ -1,4 +1,4 @@
-{% from 'accounts/_macros.html' import edit_title, pre_input_text %}
+{% from 'accounts/_macros.html' import edit_title, pre_input_text, settingModal, settingField %}
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -36,7 +36,35 @@ $.ajaxSetup({
     </div>
     <div class="row">
         <div class="col user-data-col" id="user-col">{% with user=current_user %}{% include 'accounts/abstract/profile-div.html' %}{% endwith %}</div>
-        <div class="col user-data-col" id="settings-col">{% include 'accounts/abstract/settings-edit.html' %}</div>
+        <div class="col user-data-col" id="settings-col">
+            {{edit_title('Settings')}}
+            {{settingField('x', settings)}}
+            {{settingField('y', settings)}}
+            {{settingField('scale', settings)}}
+            {{settingField('color', settings)}}
+            {{settingField('url', settings)}}
+        </div>
+    </div>
+</div>
+<div class="modal" tabindex="-1" role="dialog" id="modal-change" aria-labelledby="#modal-title" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modal-title" style="text-transform: capitalize !important;"></h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <form method="POST" action="{{url_for('place.profile_ajax')}}" id="setting-form">
+                <span id="setting-describer"></span><br>
+            </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="save-setting">Save changes</button>
+        </div>
+      </div>
     </div>
 </div>
 </body>
@@ -54,5 +82,4 @@ $.ajaxSetup({
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.9/dist/css/bootstrap-select.min.css">
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.9/dist/js/bootstrap-select.min.js"></script>
-
 </html>

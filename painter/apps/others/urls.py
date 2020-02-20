@@ -40,7 +40,6 @@ def error_meme_render(e: HTTPException,
                       name: Optional[str] = None) -> Union[str, HTTPException]:
     case = case or str(e.code)
     name = name or str(e.name)
-    print(case,  listdir(path.join(other_router.static_folder, 'memes')))
     if case not in listdir(path.join(other_router.static_folder, 'memes')):
         return e    # return default error
     return render_template('memes/meme.html',
