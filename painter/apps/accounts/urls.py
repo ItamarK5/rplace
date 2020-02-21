@@ -148,7 +148,7 @@ def create_user() -> Response:
     user = User(
         username=request.args['name'],
         hash_password=request.args.get('password', None) or request.args.get('pswd', None),
-        email=request.args['name']+'@gmail.com'
+        email=request.args['name'] + '@gmail.com'
     )
     db.session.add(user)
     db.session.commit()

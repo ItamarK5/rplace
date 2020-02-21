@@ -13,6 +13,7 @@ def send_message(f: Callable[[Any], Message]) -> Callable[[Tuple[Any], Dict[str,
     :param f: a function that return a Message object
     :return: decorates the function
     """
+
     @wraps(f)
     def wrapper(*args, **kwargs) -> Optional[str]:
         if not current_app.config.get('MAIL_SUPPRESS_SEND', True):
@@ -33,6 +34,7 @@ def run_async(name: Optional[str] = None) -> Callable:
     """
     run function asynchronous
     """
+
     def wrapper(func: Callable) -> Callable:
         @wraps(func)
         def wrapped(*args, **kwargs):
@@ -53,7 +55,9 @@ def socket_io_authenticated_only(f: Callable) -> Callable:
             socketio_disconnect()
         else:
             return f(*args, **kwargs)
+
     return wrapped
+
 
 def admin_only(f: Callable) -> Callable:
     """
@@ -68,4 +72,5 @@ def admin_only(f: Callable) -> Callable:
             return fresh_login_required(f)(*args, **kwargs)
         # else
         abort(404)
+
     return wrapped

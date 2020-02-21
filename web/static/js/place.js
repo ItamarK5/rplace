@@ -47,12 +47,19 @@ const SIMPLE_UNZOOM_LEVEL = 4;
 //const getOffset = (x, y) => (y * CANVAS_SIZE) + x;
 const getFirstIfAny = (group) => _.isNull(group) ? null : group[0]
 const clamp = (v, max, min) => Math.max(min, Math.min(v, max));
-const is_valid_scale = (scale) => MIN_SCALE <= scale && scale <= MAX_SCALE;
-const is_valid_pos = (v) => 0 <= v && v < CANVAS_SIZE;
+const is_valid_scale = scale => MIN_SCALE <= scale && scale <= MAX_SCALE;
+const is_valid_pos = v => 0 <= v && v < CANVAS_SIZE;
+const randomImage = arr => arr[Math.floor(arr.length * Math.random())]
 const getUTCTimestamp = () => {
     let tm = new Date();
-    return Date.UTC(tm.getUTCFullYear(), tm.getUTCMonth(), tm.getUTCDate(), tm.getUTCHours(), tm.getUTCMinutes(), tm.getUTCSeconds(), tm
-    .getUTCMilliseconds())
+    return Date.UTC(
+        tm.getUTCFullYear(),
+        tm.getUTCMonth(),
+        tm.getUTCDate(),
+        tm.getUTCHours(),
+        tm.getUTCMinutes(),
+        tm.getUTCSeconds(),
+        tm.getUTCMilliseconds())
 }
 /**
  * 
@@ -63,24 +70,52 @@ const HashChangeFlag = {
     Disabled: 1,
     Enabled: 2
 }
-const NeededHashMask = flag => flag == HashChangeFlag.Disabled ? HashChangeFlag.Needed : flag
-//https://pietschsoft.com/post/2008/01/15/javascript-inttryparse-equivalent
-/*
-unused
-function TryParseInt(str, defaultValue) {
-    let retValue = defaultValue;
-    if(!_.isNull(str)) {
-        if(str.length > 0) {
-            if (!isNaN(str)) {
-                retValue = parseInt(str);
-            }
-        }
+const NeededHashMask = flag => flag == HashChangeFlag.Disabled ? HashChangeFlag
+    .Needed : flag
+/* View in fullscreen */
+//https://www.w3schools.com/howto/howto_js_fullscreen.asp
+function openFullscreen() {
+    let elem = document.documentElement;
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen();
     }
-    return retValue;
+    else if (elem.mozRequestFullScreen) {
+        /* Firefox */
+        elem.mozRequestFullScreen();
+    }
+    else if (elem.webkitRequestFullscreen) {
+        /* Chrome, Safari and Opera */
+        elem.webkitRequestFullscreen();
+    }
+    else if (elem.msRequestFullscreen) {
+        /* IE/Edge */
+        elem.msRequestFullscreen();
+    }
 }
-*/
-const throw_message = (msg, enter_sec = 1000, show_sec = 100, exit_sec = null, cls = null) => $("<div></div>").addClass(
-        `pop-up-message center nonselect${_.isString(cls) ? ' ' + cls : ''}`).text(msg).appendTo("body")
+/* Close fullscreen */
+//https://www.w3schools.com/howto/howto_js_fullscreen.asp
+function closeFullscreen() {
+    let elem = document.documentElement;
+    if (document.exitFullscreen) {
+        document.exitFullscreen();
+    }
+    else if (document.mozCancelFullScreen) {
+        /* Firefox */
+        document.mozCancelFullScreen();
+    }
+    else if (document.webkitExitFullscreen) {
+        /* Chrome, Safari and Opera */
+        document.webkitExitFullscreen();
+    }
+    else if (document.msExitFullscreen) {
+        /* IE/Edge */
+        document.msExitFullscreen();
+    }
+}
+const throw_message = (msg, enter_sec = 1000, show_sec = 100, exit_sec = null,
+        cls = null) => $("<div></div>").addClass(
+        `pop-up-message center nonselect${_.isString(cls) ? ' ' + cls : ''}`)
+    .text(msg).appendTo("body")
     // enter
     .animate({
         opacity: '70%'
@@ -88,7 +123,8 @@ const throw_message = (msg, enter_sec = 1000, show_sec = 100, exit_sec = null, c
         // keep the element amount of time
         let self = this;
         setTimeout(function() {
-            let exit_sec = _.isNull(exit_sec) ? enter_sec : exit_sec;
+            let exit_sec = _.isNull(exit_sec) ? enter_sec :
+                exit_sec;
             if (exit_sec > 0) {
                 $(self).animate({
                     opacity: '0'
@@ -118,6 +154,7 @@ class PalColor {
         return `rgba(${this.r}, ${this.g}, ${this.b}, ${alpha})`;
     }
 }
+
 class SimpleInterval {
     constructor(work, time) {
         this.work = work;
@@ -145,16 +182,18 @@ class SimpleInterval {
         this.stop();
         return true;
     }
-    get IsWorking() {
-        return _.isNull(this.work_handler);
+    get isWorking() {
+        return !_.isNull(this.work_handler);
     }
 }
+
 class CursorStyle {
     constructor(cursor, hide_pen) {
         this.cursor = cursor;
         this.hide_pen = hide_pen;
     }
 }
+
 const Colors = {
     white: new PalColor(0xFF, 0xFF, 0xFF, 'White'),
     black: new PalColor(0x00, 0x00, 0x00, 'Black'),
@@ -203,6 +242,7 @@ const Colors = {
         return this.colors[idx];
     }
 }
+
 const Cursors = {
     Pen: new CursorStyle('none', false),
     Wait: new CursorStyle('not-allowed', true),
@@ -212,6 +252,7 @@ const Cursors = {
         LinearDown: new CursorStyle('nw-resize', false),
         LinearUp: new CursorStyle('ne-resize', false)*/
 }
+
 const progress = {
     time: 0, // time when cooldown ends
     state: 0, // state of progress bar
@@ -231,7 +272,8 @@ const progress = {
         ].join(':'))
         // update progress fill
         // update area colored
-        $('#prog-fill').css('width', (100 - (seconds_left / DRAW_COOLDOWN) * 100) + "%");
+        $('#prog-fill').css('width', (100 - (seconds_left / DRAW_COOLDOWN) *
+            100) + "%");
         // 1 if time less then halve the number of seconds 
         this.state = Math.ceil(seconds_left * 2 / DRAW_COOLDOWN);
         $('#time-prog').attr('state', this.state);
@@ -251,15 +293,16 @@ const progress = {
         }
         else if (!this.work.isWorking) {
             this.current_min_time = 300;
-            let self = this;
-            self.work.start()
+            cursor.setPen();
+            this.work.start()
         }
     },
     updateTimer() {
         // Updates the prorgess bar and timer each interval
         // Math.max the time until cooldown ends in ms, compare if positive (the time has not passed),
         // ceil to round up, I want to prevent the progress showing time up to that
-        let seconds_left = Math.ceil(Math.max(this.time - getUTCTimestamp(), 0) / 1000);
+        let seconds_left = Math.ceil(Math.max(this.time - getUTCTimestamp(),
+            0) / 1000);
         // adjust progress
         if (this.current_min_time != seconds_left) {
             this.adjust_progress(seconds_left);
@@ -277,6 +320,7 @@ const progress = {
         cursor.setPen();
     }
 }
+
 const query = {
     cx: 500, // the x of the center pixel in the canvas on screen
     cy: 500, // the y of the center pixel in the canvas on screen
@@ -307,7 +351,8 @@ const query = {
             this.setHash()
         }
         // remove any fragments
-        history.replaceState(null, null, document.location.pathname + this.hash());
+        history.replaceState(null, null, document.location.pathname + this
+            .hash());
     },
     first_validation() {
         let is_any_frag_unvalid = false;
@@ -375,9 +420,13 @@ const query = {
     fragments() {
         return {
             // first checks the hash if there are null, check the location
-            x: parseInt(getFirstIfAny(window.location.hash.match(reHashX) || window.location.search.match(reArgX))),
-            y: parseInt(getFirstIfAny(window.location.hash.match(reHashY) || window.location.search.match(reArgY))),
-            scale: parseFloat(getFirstIfAny(window.location.hash.match(reHashScale) || window.location.search.match(reArgScale)))
+            x: parseInt(getFirstIfAny(window.location.hash.match(reHashX) ||
+                window.location.search.match(reArgX))),
+            y: parseInt(getFirstIfAny(window.location.hash.match(reHashY) ||
+                window.location.search.match(reArgY))),
+            scale: parseFloat(getFirstIfAny(window.location.hash.match(
+                reHashScale) || window.location.search.match(
+                reArgScale)))
         };
     },
     // set x and
@@ -423,7 +472,8 @@ const query = {
             this.setCenter(parseInt(frags.x), parseInt(frags.y), to_update);
         }
         /// update scale
-        if (isNaN(frags.scale) && this.is_valid_new_scale(parseFloat(frags.scale))) {
+        if (isNaN(frags.scale) && this.is_valid_new_scale(parseFloat(frags
+                .scale))) {
             this.scale = this.scale;
             if (to_update) {
                 board.updateZoom()
@@ -439,7 +489,8 @@ const query = {
         if (this.canSetHash() && location.hash != this.hash()) {
             // change hash without triggering events
             // https://stackoverflow.com/a/5414951
-            history.replaceState(null, null, document.location.pathname + this.hash());
+            history.replaceState(null, null, document.location.pathname +
+                this.hash());
             //window.location.hash = this.hash;  
         }
     }
@@ -551,7 +602,8 @@ const pen = {
                 y: Math.floor(board.y + mouse_offset[1] / query.scale)
             }
         }
-        if (_.isNull(pos) || (!is_valid_pos(pos.x)) || (!is_valid_pos(pos.y))) {
+        if (_.isNull(pos) || (!is_valid_pos(pos.x)) || (!is_valid_pos(pos
+                .y))) {
             this.clearPos(); // set values to -1
             // but if not, update if the values are different
         }
@@ -623,7 +675,8 @@ const pen = {
                 'x': pen.x,
                 'y': pen.y,
             }, callback = (next_time) => {
-                if (!(_.isUndefined(next_time) || next_time == 'undefined')) {
+                if (!(_.isUndefined(next_time) || next_time ==
+                        'undefined')) {
                     progress.setTime(next_time)
                 }
             });
@@ -648,7 +701,7 @@ const board = {
     move_vector: [0, 0],
     key_move_interval: null,
     ctx: null,
-    queue: null,
+    pixelQueue: null,
     buildBoard: null,
     init() {
         this.canvas = $('#board');
@@ -658,12 +711,12 @@ const board = {
         this.imgCanvas.width = CANVAS_SIZE;
         this.imgCanvas.height = CANVAS_SIZE;
         this.ctx_image = this.imgCanvas.getContext('2d');
-        this.queue = [];
+        this.pixelQueue = [];
         this.buildBoard = _.once(this.__buildBoard)
         this.updateZoom(); // also centers
     },
     get is_ready() {
-        return _.isNull(this.queue);
+        return _.isNull(this.pixelQueue);
     },
     // level 1
     // interaction of key press
@@ -671,7 +724,8 @@ const board = {
         board.moveBoard(this.move_vector[0], this.move_vector[1])
         if (_.isNull(this.key_move_interval)) {
             this.key_move_interval = setInterval(() => {
-                board.moveBoard(this.move_vector[0], this.move_vector[1]);
+                board.moveBoard(this.move_vector[0], this
+                    .move_vector[1]);
             }, 100)
         }
     },
@@ -703,7 +757,8 @@ const board = {
             //var bit = buffer[Math.floor(index/2)];
             //self.buffer[index] = reverseRGBA(COLORS[index % 2 == 0 ? bit % 16 : bit >> 4]);
             image_buffer[index * 2] = Colors.colors[val % 16].abgr;
-            image_buffer[index * 2 + 1] = Colors.colors[Math.floor(val / 16)].abgr;
+            image_buffer[index * 2 + 1] = Colors.colors[Math.floor(
+                val / 16)].abgr;
         });
         this.ctx_image.putImageData(image_data, 0, 0);
         this.beforeFirstDraw();
@@ -728,7 +783,7 @@ const board = {
             this.__setAt(x, y, color)
         }
         else {
-            this.queue.push({
+            this.pixelQueue.push({
                 x: x,
                 y: y,
                 color: color
@@ -737,11 +792,11 @@ const board = {
     },
     // empty the pixel queen
     beforeFirstDraw() {
-        while (this.queue.length != 0) {
-            let obj = this.queue.shift(); // remove
+        while (this.pixelQueue.length != 0) {
+            let obj = this.pixelQueue.shift(); // remove
             this.__setAt(obj.x, obj.y, obj.color);
         }
-        this.queue = null;
+        this.pixelQueue = null;
         this.drawBoard();
     },
     /*
@@ -770,8 +825,10 @@ const board = {
     // level 3
     centerPos() {
         // center axis - (window_axis_size / 2 / query.scale)
-        this.x = Math.floor(query.cx - board.canvas[0].width / 2 / query.scale) //( query.cx - innerWidth/2)/query.scale;
-        this.y = Math.floor(query.cy - board.canvas[0].height / 2 / query.scale) // (query.cy - innerHeight/2)/query.scale;
+        this.x = Math.floor(query.cx - board.canvas[0].width / 2 / query
+            .scale) //( query.cx - innerWidth/2)/query.scale;
+        this.y = Math.floor(query.cy - board.canvas[0].height / 2 / query
+            .scale) // (query.cy - innerHeight/2)/query.scale;
         pen.updateOffset()
         board.drawBoard();
     },
@@ -796,11 +853,13 @@ const board = {
     setZoomStyle() {
         let zoom_button = $('#zoom-button')
         if (query.scale >= 25) {
-            zoom_button.children('span').addClass('fa-search-minus').removeClass('fa-search-plus');
+            zoom_button.children('span').addClass('fa-search-minus')
+                .removeClass('fa-search-plus');
             zoom_button.css('cursor', 'zoom-out');
         }
         else {
-            zoom_button.children('span').addClass('fa-search-plus').removeClass('fa-search-minus');
+            zoom_button.children('span').addClass('fa-search-plus')
+                .removeClass('fa-search-minus');
             zoom_button.css('cursor', 'zoom-in');
         }
     },
@@ -814,7 +873,8 @@ const board = {
               let y = this.keep_inside_border(this.real_y, dir[DIR_INDEX_YNORMAL]*this.step*this.scale, rect.top, rect.bottom)/this.scale;
               console.log(x, y);
         */
-        query.setCenter(clamp(query.cx + dx * this.step, CANVAS_SIZE, 0), clamp(query.cy + dy * this.step, CANVAS_SIZE, 0));
+        query.setCenter(clamp(query.cx + dx * this.step, CANVAS_SIZE, 0),
+            clamp(query.cy + dy * this.step, CANVAS_SIZE, 0));
     },
     // level 1
     centerOn: function(x, y) {
@@ -831,7 +891,8 @@ const board = {
             $('#coordinateY').text('');
         }
         else if (!board.drag.active) {
-            $('#coordinate-slicer').text(pen.isAtBoard() ? ',' : 'None');
+            $('#coordinate-slicer').text(pen.isAtBoard() ? ',' :
+                'None');
             $('#coordinateX').text(pen.isAtBoard() ? pen.x : '');
             $('#coordinateY').text(pen.isAtBoard() ? pen.y : '');
         }
@@ -851,26 +912,28 @@ const board = {
             return;
         }
         this.needs_draw = true;
-        requestAnimationFrame(() => { // 1-5 millisecond call, for all animation
-            // it seems the average time of 5 operations is 0.23404487173814767 milliseconds
-            //t = performance.now();
-            this.needs_draw = false;
-            this.ctx.fillStyle = BACKGROUND_COLOR
-            this.ctx.fillRect(0, 0,
-                // for the scale == 0.5 scenerio
-                this.canvas[0].width, this.canvas[0].height);
-            this.ctx.save()
-            this.ctx.imageSmoothingEnabled = false;
-            this.ctx.scale(query.scale, query.scale)
-            this.ctx.translate(-this.x, -this.y);
-            this.ctx.drawImage(this.imgCanvas, 0, 0);
-            if (pen.canDrawPen()) {
-                this.ctx.fillStyle = Colors.colors[pen.color].css_format(0.6);
-                this.ctx.fillRect(pen.x, pen.y, 1, 1);
-            }
-            this.ctx.restore(); // return to default position
-            //performance_arr.push(performance.now()-t)
-        });
+        requestAnimationFrame(
+            () => { // 1-5 millisecond call, for all animation
+                // it seems the average time of 5 operations is 0.23404487173814767 milliseconds
+                //t = performance.now();
+                this.needs_draw = false;
+                this.ctx.fillStyle = BACKGROUND_COLOR
+                this.ctx.fillRect(0, 0,
+                    // for the scale == 0.5 scenerio
+                    this.canvas[0].width, this.canvas[0].height);
+                this.ctx.save()
+                this.ctx.imageSmoothingEnabled = false;
+                this.ctx.scale(query.scale, query.scale)
+                this.ctx.translate(-this.x, -this.y);
+                this.ctx.drawImage(this.imgCanvas, 0, 0);
+                if (pen.canDrawPen()) {
+                    this.ctx.fillStyle = Colors.colors[pen.color]
+                        .css_format(0.6);
+                    this.ctx.fillRect(pen.x, pen.y, 1, 1);
+                }
+                this.ctx.restore(); // return to default position
+                //performance_arr.push(performance.now()-t)
+            });
     }
 };
 //const performance_arr = []
@@ -887,7 +950,8 @@ $(document).ready(function() {
         progress.setTime(data.time)
         board.buildBoard(new Uint8Array(data.board));
     });
-    sock.on('set-board', (x, y, color_idx) => board.setAt(x, y, color_idx));
+    sock.on('set-board', (x, y, color_idx) => board.setAt(x, y,
+        color_idx));
     sock.on('update-timer', function(time) {
         progress.setTime(time);
     });
@@ -917,8 +981,11 @@ $(document).ready(function() {
         pen.setPenPos(event);
     }).mouseleave(() => pen.clearPos()).bind('mousewheel', (e) => {
         e.preventDefault();
-        query.setScale(clamp(query.scale + Math.sign(e.originalEvent.wheelDelta) * 1, MAX_SCALE, MIN_SCALE));
-    })[0].addEventListener('dblclick', (event) => { // for not breaking the 
+        query.setScale(clamp(query.scale + Math.sign(e
+                .originalEvent.wheelDelta) * 1,
+            MAX_SCALE, MIN_SCALE));
+    })[0].addEventListener('dblclick', (
+        event) => { // for not breaking the 
         // jquery dblclick dont work on some machines but addEventListner does 
         // source: https://github.com/Leaflet/Leaflet/issues/4127
         /*Get XY https://codepo8.github.io/canvas-images-and-pixels/#display-colour*/
@@ -941,8 +1008,12 @@ $(document).ready(function() {
         if (board.drag.active) {
             // center board
             cursor.grab();
-            board.centerOn(Math.floor(board.drag.startX + (board.drag.dragX - e.pageX) / query.scale), Math.floor(board.drag.startY + (board
-                .drag.dragY - e.pageY) / query.scale));
+            board.centerOn(Math.floor(board.drag.startX + (board
+                    .drag.dragX - e.pageX) / query
+                .scale), Math.floor(board.drag.startY +
+                (board
+                    .drag.dragY - e.pageY) / query.scale
+            ));
         }
     }).mouseup(() => {
         board.drag.active = false;
@@ -958,9 +1029,11 @@ $(document).ready(function() {
                 break;
             }
             case 'KeyC': {
-                let button = $(".colorButton[picked='1']").first();
+                let button = $(".colorButton[picked='1']")
+                    .first();
                 // if any of the is undefiend - reset
-                if (_.isUndefined(button[0]) || _.isUndefined(button.next()[0])) {
+                if (_.isUndefined(button[0]) || _.isUndefined(
+                        button.next()[0])) {
                     $(".colorButton[value='0']").click();
                 }
                 else {
@@ -970,7 +1043,8 @@ $(document).ready(function() {
             }
             case 'KeyZ': {
                 let button = $(".colorButton[picked='1']");
-                if (_.isUndefined(button) || _.isUndefined(button.prev()[0])) {
+                if (_.isUndefined(button) || _.isUndefined(
+                        button.prev()[0])) {
                     $(".colorButton[value='15']").click();
                 }
                 else {
@@ -992,11 +1066,14 @@ $(document).ready(function() {
             if (e.originalEvent.key == '+') // key for plus
             {
                 // option 0.5
-                query.setScale(query.scale >= 1 ? query.scale + 1 : 1);
+                query.setScale(query.scale >= 1 ? query.scale +
+                    1 : 1);
             }
-            else if (e.originalEvent.key == '_') { // key for minus
+            else if (e.originalEvent.key ==
+                '_') { // key for minus
                 // option 0.5
-                query.setScale(query.scale > 1 ? query.scale - 1 : MIN_SCALE);
+                query.setScale(query.scale > 1 ? query.scale -
+                    1 : MIN_SCALE);
             }
         }
     }).keydown((e) => {
@@ -1046,7 +1123,8 @@ $(document).ready(function() {
     // copy coords - https://stackoverflow.com/a/37449115
     let clipboard = new ClipboardJS('#coordinates', {
         text: function() {
-            return window.location.origin + window.location.pathname + query.arguments();
+            return window.location.origin + window.location
+                .pathname + query.arguments();
         }
     });
     clipboard.on('success', function() {
@@ -1057,7 +1135,9 @@ $(document).ready(function() {
     })
     // change zoom level
     $('#zoom-button').click(function() {
-        query.setScale($(this).children().hasClass('fa-search-minus') ? SIMPLE_UNZOOM_LEVEL : SIMPLE_ZOOM_LEVEL)
+        query.setScale($(this).children().hasClass(
+                'fa-search-minus') ? SIMPLE_UNZOOM_LEVEL :
+            SIMPLE_ZOOM_LEVEL)
     });
     //logout
     $('#logout-button').click((e) => {
@@ -1098,7 +1178,8 @@ $(document).ready(function() {
         });
     });
     $('.colorButton').each(function() {
-        $(this).css('background-color', Colors.colors[parseInt($(this).attr('value'))].css_format()); // set colors
+        $(this).css('background-color', Colors.colors[parseInt(
+            $(this).attr('value'))].css_format()); // set colors
     }).click(function(event) {
         event.preventDefault(); // prevent default clicking
         pen.color = parseInt($(this).attr('value'));
@@ -1108,7 +1189,19 @@ $(document).ready(function() {
     //https://stackoverflow.com/a/11384018
     $('#chat-button').click((function(e) {
         window.open(this.getAttribute('href'), '_black')
-    }))
+    }));
+    $('#screen-button').click(function() {
+        if (this.getAttribute('state') == '0') {
+            openFullscreen();
+        }
+        else {
+            closeFullscreen();
+        }
+    })
+    document.onfullscreenchange = function() {
+        $('#screen-button').attr('state', $('#screen-button').attr(
+            'state') == '1' ? '0' : '1');
+    }
     // set color button
     $(window).resize((e) => {
         board.setCanvasZoom();
@@ -1129,7 +1222,8 @@ $(document).ready(function() {
       });*/
 });
 $(window).on('load', function() {
-    let color_button = $('.colorButton').filter((idx, ele) => ele.getAttribute('state') == '1').first();
+    let color_button = $('.colorButton').filter((idx, ele) => ele
+        .getAttribute('state') == '1').first();
     if (!color_button[0]) {
         color_button = $($('.colorButton')[1]); // black button
     }

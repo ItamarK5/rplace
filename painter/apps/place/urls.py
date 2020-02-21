@@ -2,10 +2,10 @@ from os.path import join as path_join
 
 from flask import Blueprint, render_template, Response, jsonify
 from flask_login import login_required, current_user
-import json
+
 from painter.constants import WEB_FOLDER
-from .forms import SettingForm
 from painter.extensions import db
+from .forms import SettingForm
 
 place_router = Blueprint('place', 'place',
                          static_folder=path_join(WEB_FOLDER, 'static'),

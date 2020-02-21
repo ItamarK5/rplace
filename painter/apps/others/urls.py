@@ -1,6 +1,7 @@
 import random
 from os import path, listdir
-from typing import Tuple, Dict, Union, Optional
+from typing import Union, Optional
+
 from flask import (
     Blueprint, render_template, send_from_directory,
     request, abort, Response
@@ -41,7 +42,7 @@ def error_meme_render(e: HTTPException,
     case = case or str(e.code)
     name = name or str(e.name)
     if case not in listdir(path.join(other_router.static_folder, 'memes')):
-        return e    # return default error
+        return e  # return default error
     return render_template('memes/meme.html',
                            error=case, title=name,
                            description=e.description or name)

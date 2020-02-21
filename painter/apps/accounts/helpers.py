@@ -4,7 +4,7 @@ from flask import Flask
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from wtforms.validators import Email
 
-from painter.models.user import reNAME, rePSWD, reEMAIL
+from painter.models.user import reNAME, rePSWD
 
 
 class TokenSerializer:

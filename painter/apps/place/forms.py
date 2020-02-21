@@ -1,10 +1,12 @@
 from __future__ import annotations
+
+from typing import Tuple, Optional
+
 from flask_wtf import FlaskForm
 from wtforms import *
+from wtforms.compat import text_type as text_field_types
 from wtforms.fields.html5 import IntegerField
 from wtforms.widgets import HiddenInput
-from wtforms.compat import text_type as text_field_types
-from typing import Tuple, Optional, List
 
 
 class SettingForm(FlaskForm):
@@ -58,7 +60,7 @@ class SettingForm(FlaskForm):
             if isinstance(f, text_field_types):
                 f = getattr(self, f, None)
             print(f is None, isinstance(f.widget, HiddenInput),
-                    (not f.raw_data), f.id in self.errors, f.id)
+                  (not f.raw_data), f.id in self.errors, f.id)
             if f is None or isinstance(f.widget, HiddenInput) \
                     or (not f.raw_data) or f.id in self.errors:
                 continue

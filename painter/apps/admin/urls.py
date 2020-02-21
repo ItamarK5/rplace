@@ -1,8 +1,9 @@
 from flask import Blueprint, render_template, request, abort
+from flask.wrappers import Response
+
+from painter.filters import *  # also import User class
 from painter.functions import admin_only
 from painter.models.user import reNAME
-from painter.filters import *  # also import User class
-from flask.wrappers import Response
 
 admin_router = Blueprint(
     'admin',
