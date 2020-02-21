@@ -1051,6 +1051,10 @@ $(document).ready(function () {
         $('.colorButton[picked="1"]').attr('picked', '0');
         $(this).attr('picked', '1');
     });
+    //https://stackoverflow.com/a/11384018
+    $('#chat-button').click((function(e){
+        window.open(this.getAttribute('href'),'_black')
+    }))
     // set color button
     $(window).resize((e) => {
         board.setCanvasZoom();

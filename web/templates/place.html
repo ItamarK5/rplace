@@ -1,6 +1,6 @@
 ﻿{% macro render_link(id, icon, path=None) %}
-<div class="icon-button" id="{{id}}">
-    <span class="fas fa-{{icon}}"{% if path %}href={{path}}{% endif %}></span>
+<div class="icon-button" id="{{id}}"{% if path %} href={{path}}{% endif %}>
+    <span class="fas fa-{{icon}}"></span>
 </div>
 {% endmacro %}
 <!DOCTYPE html>
