@@ -31,12 +31,12 @@ function addForm(form, field, val){
                 class:'form-control-range',
                 min:0,
                 max:999,
-                val:parseInt(val),
+                value:parseInt(val),
                 type:'range',
             }).change(function(e){
                 $('#setting-describer').text(this.value);
             }).appendTo(form);
-            $('#setting-describer').text(val)
+            $('#setting-describer').text(val);            
             break;
         }
         case 'y':{
@@ -61,7 +61,7 @@ function addForm(form, field, val){
                 class:'form-control-range',
                 min:1,
                 max:50,
-                val:parseInt(val),
+                value:parseInt(val),
                 type:'range',
             }).change(function(e){
                 $('#setting-describer').text(this.value);
@@ -72,7 +72,7 @@ function addForm(form, field, val){
         case 'color': {
             let color_selector = $('<select>').attr({
                 id:FORM_INPUT.slice(1),
-                name:'scale',
+                name:'color',
                 class:'custom-select',
                 value:parseInt(val),
             }).change(function(e){
@@ -93,7 +93,7 @@ function addForm(form, field, val){
                 id:FORM_INPUT.slice(1),
                 name:'url',
                 class:'form-control-text',
-                val:val,
+                value:val,
                 type:'url',
             }).change(function(e){
                 $('#setting-describer').text(this.value ? this.value : '');
@@ -122,6 +122,7 @@ $(document).ready(() =>{
         addForm(
             $('#setting-form'), field,
             button.parent().siblings('.setting-val').children('h5').text())
+        $('#message-alert').hide()
         }
     );
     $('#save-setting').click(function(e) {
@@ -132,17 +133,14 @@ $(document).ready(() =>{
             type:form.attr('method'),
             data:form.serialize(),
             success: (data) => {
-                console.log(6);
+                console.log(data);
                 return;
             },
             error: (data) =>{
-                console.log(5);
+                console.log(data);
             }
         });
-    $('#color').once({
-        
-    })
-})
+    });
 });
 
  /*

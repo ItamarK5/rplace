@@ -19,9 +19,9 @@
 {% macro settingField(key, settings) %}
 <div class="row mb-2 justify-content-center" id="row-{{key}}">
     <div class="col-3 justify-content-center"><h5 class="center-text text-warning">{{ key|title }}:</h5></div>
-    <div class="col-4 justify-content-center setting-val"><h5 class="center-text text-warning">{{settings[key]}}</h5></div>
-    <div class="col-3 justify-content-center">
-        <button id="{{key}}-active" role="btn" class="h-100 center-text btn-warning" data-toggle="modal" data-target="#modal-change">
+    <div class="col-5 justify-content-center setting-val"><h5 class="text-break center-text text-warning">{{settings[key]}}</h5></div>
+    <div class="col-3 justify-content-center align-content-center">
+        <button id="{{key}}-active" role="btn" class="btn-square-default center-text btn-warning" data-toggle="modal" data-target="#modal-change">
             <i class="fas fa-edit"></i>
     </button></div>
 </div>

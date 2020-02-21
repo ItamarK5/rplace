@@ -20,7 +20,7 @@
 {% with current_page = 'profile' %}
 {% include 'menu/nav.html' %}
 {% endwith %}
-<script>
+{#<script>
 const csrf_token = "{{ csrf_token() }}";
 $.ajaxSetup({
     beforeSend: function(xhr, settings) {
@@ -29,7 +29,7 @@ $.ajaxSetup({
         }
     }
 });
-</script>
+</script>#}
 <div class="container">
     <div class="row justify-content-center center-text mb-3">
         <h3 class="text-warning display-3 font-weight-bold" id="user-title"><u>{{current_user.username}}</u></h3>
@@ -56,7 +56,9 @@ $.ajaxSetup({
           </button>
         </div>
         <div class="modal-body">
+            <div id="message-alert" hidden></div>
             <form method="POST" action="{{url_for('place.profile_ajax')}}" id="setting-form">
+                {{form.hidden_tag()}}
                 <span id="setting-describer"></span><br>
             </form>
         </div>
