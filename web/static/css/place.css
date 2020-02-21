@@ -112,7 +112,8 @@ body, html {
 #zoom-button:hover {color:#428bca; border-color:#428bca;}
 #logout-button:hover {color:red; border-color:red;cursor:pointer}
 #home-button:hover {color:greenyellow;border-color: greenyellow;cursor:pointer;}
-
+/*https://brandcolors.net/b/whatsapp*/
+#chat-button:hover {color:rgb(26, 223, 98); border-color:rgb(26, 223, 98);}
 /* https://stackoverflow.com/a/13836276*/
 .icon-button > span {
     display:table-cell;

@@ -45,27 +45,31 @@ def profile():
 def profile_ajax():
     form = SettingForm()
     if form.validate_on_submit():
-        # first search
-        # get form_fields
-        form_fields = dict([
-            (field.id, field.data) for field in form.__iter__()
-            if field.raw_data and field.id not in form.errors
-        ])
-        print(form_fields)
-        if 'x' in form_fields:
-            current_user.x = form_fields['x']
-        if 'y' in form_fields:
-            current_user.y = form_fields['y']
-        if 'scale' in form_fields:
-            current_user.scale = form_fields['scale']
-        if 'color' in form_fields:
-            current_user.color = form_fields['color']
-        if 'url' in form_fields:
-            current_user.url = form_fields['url'] if form_fields['url'] not in ('', 'None') else None
-        db.session.add(current_user)
-        db.session.commit()
-        # https://stackoverflow.com/a/26080784
-        return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
-    print(form.errors)
-    return json.dumps({'success': False, 'errors': form.errors}), 500, {'ContentType': 'application/json'}
+        key, val = form.safe_first_hidden_fields()
+        if key == 'url':
+            current_user.url = val if val != '' and val is not None else None
+        elif key == 'x':
+            current_user.x = val
+        elif key == 'y':
+            current_user.y = val
+        elif key == 'scale':
+            current_user.scale = val
+        elif key == 'color':
+            current_user.color = val
+        else:
+            key = None
+        if key is not None:
+            db.session.add(current_user)
+            db.session.commit()
+            # https://stackoverflow.com/a/26080784
+            return jsonify({'success': True, 'id': key, 'val': val})
+        else:
+            return jsonify({
+                'success': False,
+                'errors': ['Not valid parameter {}'.format(key)]
+            })
+    return jsonify({
+        'success': False,
+        'errors': next(iter(form.errors.values()))
+    })
     # else

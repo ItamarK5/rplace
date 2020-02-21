@@ -56,10 +56,11 @@ $.ajaxSetup({
           </button>
         </div>
         <div class="modal-body">
-            <div id="message-alert" hidden></div>
+            <div id="setting-alert"></div>
+            <div class="mt-1 mb-1"></div>   <!--space-->
             <form method="POST" action="{{url_for('place.profile_ajax')}}" id="setting-form">
                 {{form.hidden_tag()}}
-                <div class="center-text form-row" id="row-describer">
+                <div class="center-text justify-content-center form-row" id="row-describer">
                 <span id="setting-describer" class="font-weight-bold font-size-15 justify-content-center"></span><br>
                 </div>
             </form>

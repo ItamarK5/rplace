@@ -1,6 +1,6 @@
 const FORM_INPUT = '#setting-input'
 const GET_FIELD = /.+(?=-active)/i
-const ToTitleCaseRegex = /(<=\x20)[a-z]/g;
+const ToTitleCaseRegex = /(<=\x20|^)[a-z]/g;
 const COLORS = [
     'white', 'black', 'gray', 'silver',
     'red', 'pink', 'brown', 'orange',
@@ -19,16 +19,18 @@ String.prototype.toTitleCase = function(){
     return this.replace(ToTitleCaseRegex, (str) => str.toUpperCase())
 }
 
+const hideModalAlert = () => $('#setting-alert').hide();
+
 function AddUlrInput(form, val){
-    let group = $('<div></div>').addClass('input-group input-group-default').appendTo(form)
+    let group = $('<div></div>').addClass('input-group input-group-default').attr('id', FORM_INPUT.slice(1)+'-father').appendTo(form)
     $('<input>').attr({
         id:FORM_INPUT.slice(1),
         name:'url',
         class:'form-control',
         value:val == 'None' ? '' : val,
         type:'url',
-    }).change(function(e){ 
-        this.value ? this.value : 'None'
+    }).on('input', function(e){
+        hideModalAlert();
     }).appendTo(group);
     let append_group = $('<div></div>').addClass('input-group-append').appendTo(group);
     let btn = $('<button></button>').addClass('btn btn-outline-secondary').attr('type', 'button').appendTo(append_group);
@@ -60,6 +62,7 @@ function addForm(form, field, val){
                 type:'range',
             }).change(function(e){
                 SettingDescriber.text(this.value);
+                hideModalAlert();
             }).appendTo(form);
             SettingDescriber.text(val);            
             break;
@@ -75,6 +78,7 @@ function addForm(form, field, val){
                 type:'range',
             }).change(function(e){
                 SettingDescriber.text(this.value);
+                hideModalAlert();
             }).appendTo(form);
             SettingDescriber.text(val)
             break;
@@ -89,9 +93,10 @@ function addForm(form, field, val){
                 value:parseInt(val),
                 type:'range',
             }).change(function(e){
-                SettingDescriber.text(this.value.toString().toTitleCase());
+                SettingDescriber.text(this.value.toString());
+                hideModalAlert()
             }).appendTo(form);
-            SettingDescriber.text(val.toString().toTitleCase())
+            SettingDescriber.text(val.toString())
             break;
         }
         case 'color': {
@@ -123,6 +128,17 @@ function addForm(form, field, val){
     }
 }
 
+function filterResponse(field, val){
+    if(field == 'color'){
+        return COLORS[val];
+    } else if(field == 'url'){
+        return val == '' ? 'None' : val;
+    } else {
+        return val;
+    }
+
+}
+
 $(document).ready(() =>{
     //tooltips       
     $('[data-toggle="tooltip"]').tooltip();
@@ -134,19 +150,21 @@ $(document).ready(() =>{
         if(field == null){
             modal.hide();
         }
+        $(FORM_INPUT+'-father').remove()
         $(FORM_INPUT).remove()
         $('#modal-title').text(`Change ${field}`);
         addForm(
             $('#setting-form'), field,
             button.parent().siblings('.setting-val').children('h5').text())
-        $('#message-alert').hide()
+        $('#setting-alert').hide()
         }
     );
+    //submit form
     $('#save-setting').click(function(e) {
         $('#setting-form').submit();
     });
-    console.log($('#text-color'))
-    $('#text-color').text(COLORS[parseInt($('#text-color').text())])
+    //first name change
+    $('#text-color').text(COLORS[parseInt($('#text-color').text())].toTitleCase())
     $('#setting-form').submit(function(e){
         e.preventDefault();
         let form = $(this);
@@ -154,12 +172,22 @@ $(document).ready(() =>{
             url:form.attr('action'),
             type:form.attr('method'),
             data:form.serialize(),
-            success: (data) => {
-                $('alert')
+            success: (response) => {
+                $('#setting-alert')
+                    .show()
+                    .text('Changed Successfully')
+                    .addClass(response.success ? 'alert-success' : 'alert-danger')
+                    .removeClass(response.success ? 'alert-danger' : 'alert-success');
+                console.log(response)
+                if(response.success){
+                    $(`#text-${response.id}`).text(filterResponse(response.id, response.val));
+                } else {
+                    // error response
+                }
                 return;
             },
             error: (data) =>{
-                console.log(data);
+                console.log(data)
             }
         });
     })
