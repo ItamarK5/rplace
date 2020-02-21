@@ -10,7 +10,7 @@
         {{nav_item('fa-paint-brush', 'paint', 'place.place')}}
         {{nav_item('fa-home', 'home', 'place.home', 'home')}}
         {{nav_item('fa-cog', 'profile', 'place.profile', 'profile')}}{% if current_user|is_admin %}
-        <style>fa-tools.set, .fa-tools:hover {background-color:#a933ff !important;}</style>
+        <style>.fa-tools.set, .fa-tools:hover {background-color:#a933ff !important;}</style>
         {{nav_item('fa-tools', 'admin tools', 'admin.admin', 'admin')}}{% endif %}
         {{nav_item('fa-door-open', 'exit', 'auth.logout')}}
     </ul>
