@@ -90,7 +90,7 @@ body, html {
     left:5px;
 }
 #icon-container > * {
-    margin-left:9px;
+    margin-left:5px;
 }
 #icon-container:first-child {
     margin-left:0px;
@@ -109,11 +109,9 @@ body, html {
     display:table;
     transition:border-color 0.25s;
 }
-#zoom-button:hover {color:#428bca; border-color:#428bca;}
-#logout-button:hover {color:red; border-color:red;cursor:pointer}
-#home-button:hover {color:greenyellow;border-color: greenyellow;cursor:pointer;}
-/*https://brandcolors.net/b/whatsapp*/
-#chat-button:hover {color:rgb(26, 223, 98); border-color:rgb(26, 223, 98);}
+.icon-button {
+    cursor:pointer;
+}
 /* https://stackoverflow.com/a/13836276*/
 .icon-button > span {
     display:table-cell;
@@ -127,6 +125,19 @@ body, html {
 .icon-button:hover > span {
     font-size:35px   
 }
+
+#zoom-button:hover {color:#428bca; border-color:#428bca;}
+#logout-button:hover {color:red; border-color:red;}
+#home-button:hover {color:greenyellow;border-color: greenyellow;}
+/*https://brandcolors.net/b/whatsapp*/
+#screen-button:hover {color:#BE4BDB; border-color:#BE4BDB;}   /* grape */
+#chat-button:hover {color:rgb(26, 223, 98); border-color:rgb(26, 223, 98);}
+
+#screen-button[state="0"] > span {font-size:25px;}
+#screen-button[state="0"]:hover > span {font-size:35px;}
+#screen-button[state="1"] > span {font-size:35px;}
+#screen-button[state="1"]:hover > span {font-size:25px;}
+
 
 
 #toolbox {

@@ -31,18 +31,26 @@ $.ajaxSetup({
 });
 </script>#}
 <div class="container">
-    <div class="row justify-content-center center-text mb-3">
+    <div class="row justify-content-center text-center mb-3">
         <h3 class="text-warning display-3 font-weight-bold" id="user-title"><u>{{current_user.username}}</u></h3>
     </div>
     <div class="row">
         <div class="col user-data-col" id="user-col">{% with user=current_user %}{% include 'accounts/abstract/profile-div.html' %}{% endwith %}</div>
         <div class="col user-data-col" id="settings-col">
             {{edit_title('Settings')}}
-            {{settingField('x', xstart)}}
-            {{settingField('y', ystart)}}
-            {{settingField('scale', scalestart)}}
-            {{settingField('color', colorstart)}}
-            {{settingField('url', chaturl)}}
+            <table class="table table-striped table-dark table-bordered">
+            <thead>
+                <th class="text-center">Name:</th>
+                <th class="text-center">Value:</th>
+                <th class="text-center">Edit:</th>
+            </thead>
+            <tbody>
+                {{settingField('x', xstart)}}
+                {{settingField('y', ystart)}}
+                {{settingField('scale', scalestart)}}
+                {{settingField('color', colorstart)}}
+                {{settingField('url', chaturl)}}
+            </tbody>
         </div>
     </div>
 </div>
@@ -60,7 +68,7 @@ $.ajaxSetup({
             <div class="mt-1 mb-1"></div>   <!--space-->
             <form method="POST" action="{{url_for('place.profile_ajax')}}" id="setting-form">
                 {{form.hidden_tag()}}
-                <div class="center-text justify-content-center form-row" id="row-describer">
+                <div class="text-center justify-content-center form-row" id="row-describer">
                 <span id="setting-describer" class="font-weight-bold font-size-15 justify-content-center"></span><br>
                 </div>
             </form>

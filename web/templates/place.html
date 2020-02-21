@@ -1,5 +1,5 @@
-﻿{% macro render_link(id, icon, path=None) %}
-<div class="icon-button" id="{{id}}"{% if path %} href={{path}}{% endif %}>
+﻿{% macro render_link(id, icon) %}
+<div class="icon-button" id="{{id}}">
     <span class="fas fa-{{icon}}"></span>
 </div>
 {% endmacro %}
@@ -42,9 +42,16 @@
     </div>
     <div id="icon-container">
         {{render_link('zoom-button', 'search-plus')}}
+        <div class="icon-button" id="screen-button" state="0">
+            <span class="fas fa-expand"></span>
+        </div>
         {{render_link('home-button', 'home')}}
         {{render_link('logout-button', 'sign-out-alt')}}
-        {% if url %}{{render_link('chat-button', 'comment-dots', url)}}{% endif %}
+        {% if url %}
+        <div class="icon-button" id="chat-button" href={{url}}>
+            <span class="fas fa-comment-dots"></span>
+        </div>
+        {% endif %}
     </div>
     <div class="nonselect" id="time-prog" state="1">
         <div id="prog-fill"></div>

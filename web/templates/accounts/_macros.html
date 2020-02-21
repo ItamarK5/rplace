@@ -17,12 +17,13 @@
 </span>
 {% endmacro %}
 {% macro settingField(key, val) %}
-<div class="row mb-2 justify-content-center" id="row-{{key}}">
-    <div class="col-3 justify-content-center"><h5 class="center-text text-warning">{{ key|title }}:</h5></div>
-    <div class="col-5 justify-content-center setting-val"><h5 class="text-break center-text text-warning" id="text-{{key}}">{{val|string|title}}</h5></div>
-    <div class="col-3 justify-content-center align-content-center">
-        <button id="{{key}}-active" role="btn" class="btn-square-default center-text btn-warning" data-toggle="modal" data-target="#modal-change">
+<tr class="mb-2 justify-content-center" id="row-{{key}}">
+    <th scope="row"><h5 class="center-text text-warning">{{ key|title }}:</h5></div>
+    <td class="justify-content-center setting-val"><h5 class="text-break center-text text-warning" id="text-{{key}}">{{val|string|title}}</h5></div>
+    <td class="justify-content-center align-content-center center-text">
+        <div id="{{key}}-active" role="button" class="w-100 h-100 block text-center text-xl" data-toggle="modal" data-target="#modal-change">
             <i class="fas fa-edit"></i>
-    </button></div>
-</div>
+        </div>
+    </td>
+</tr>
 {% endmacro %}
