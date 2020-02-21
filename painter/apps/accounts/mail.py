@@ -30,3 +30,28 @@ def send_sign_up_mail(name: str, address: str, token: str) -> Message:
             headers=[('Content-ID', '<favicon>')]
         )
     return email
+
+
+@send_message
+def send_revoke_password(name: str, address: str, token: str) -> Message:
+    """
+    :param name: name of user
+    :param address: address to send the email
+    :param token: registration token
+    :return: the email message
+    by because decorator email_message returns if the email was sent successfully
+    """
+    email = Message(
+        subject='Welcome to Social Painter',
+        recipients=[address],
+        body=render_template('message/change-password.jinja', username=name, token=token),
+        html=render_template('message/change-password.html', username=name, token=token)
+    )
+    with current_app.open_resource(path.join('static', 'png', 'favicon.png'), 'rb') as fp:
+        email.attach(
+            content_type=MIME_TYPES['png'],
+            data=fp.read(),
+            disposition='inline',
+            headers=[('Content-ID', '<favicon>')]
+        )
+    return email

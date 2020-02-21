@@ -28,7 +28,7 @@ function AddUlrInput(form, val){
         name:'url',
         class:'form-control',
         value:val == 'None' ? '' : val,
-        type:'url',
+        type:'text',
     }).on('input', function(e){
         hideModalAlert();
     }).appendTo(group);
@@ -173,20 +173,18 @@ $(document).ready(() =>{
             type:form.attr('method'),
             data:form.serialize(),
             success: (response) => {
+                console.log(response)
                 $('#setting-alert')
                     .show()
-                    .text('Changed Successfully')
+                    .text(response.success ? 'Changed Successfully' : response.errors.join('\n'))
                     .addClass(response.success ? 'alert-success' : 'alert-danger')
                     .removeClass(response.success ? 'alert-danger' : 'alert-success');
-                console.log(response)
                 if(response.success){
                     $(`#text-${response.id}`).text(filterResponse(response.id, response.val));
-                } else {
-                    // error response
-                }
-                return;
+                } 
             },
             error: (data) =>{
+                // read later https://stackoverflow.com/a/3543713
                 console.log(data)
             }
         });

@@ -1,0 +1,10 @@
+{% extends "forms/forms.html" %}
+{% block fields %}
+{{super()}}
+{{ render_field(form.email)}}
+{{ render_errors(form.email.errors) }}
+{% endblock %}
+{% block links %}
+{{ render_link('signup-link', 'Are you new?', url_for('auth.signup')) }}
+{% endblock %}
+{% block submit %}Login{% endblock %}

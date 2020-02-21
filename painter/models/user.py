@@ -12,6 +12,17 @@ from .role import Role, SmallEnum
 from ..config import Config
 from ..extensions import db, login_manager
 
+
+def xor_strings(s, t) -> bytes:
+    """xor two strings together."""
+    if isinstance(s, str):
+        # Text strings contain single characters
+        return b"".join(chr(ord(a) ^ ord(b)) for a, b in zip(s, t))
+    else:
+        # Python 3 bytes objects contain integer values in the range 0-255
+        return bytes([a ^ b for a, b in zip(s, t)])
+
+
 reNAME = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
 rePSWD = re.compile(r'^[a-f0-9]{128}$')  # password hashed so get hash value
 reEMAIL = re.compile(
@@ -46,15 +57,15 @@ class User(db.Model, UserMixin):
 
     def __init__(self, password=None, hash_password=None, **kwargs) -> None:
         if hash_password is not None and password is None:
-            password = self.encrypt_password(hash_password)
+            password = self.encrypt_password(kwargs.get('username'), hash_password)
         super().__init__(password=password, **kwargs)
 
     @staticmethod
-    def encrypt_password(password: str) -> str:
+    def encrypt_password(password: str, username: str) -> str:
         return pbkdf2_hmac(
             'sha512',
             password.encode(),
-            Config.USER_PASSWORD_SALT,
+            username.encode(),
             Config.USER_PASSWORD_ROUNDS
         ).hex()
 

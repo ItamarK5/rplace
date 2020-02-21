@@ -9,9 +9,9 @@ from painter.constants import WEB_FOLDER
 from painter.extensions import db
 from painter.models.user import Role
 from painter.models.user import User
-from .forms import LoginForm, SignUpForm
+from .forms import LoginForm, SignUpForm, RevokeForm
 from .helpers import *
-from .mail import send_sign_up_mail
+from .mail import send_sign_up_mail, send_revoke_password
 
 # router blueprint -> routing all pages that relate to authorization
 accounts_router = Blueprint('auth',
@@ -34,14 +34,7 @@ def login() -> Response:
     entire_form_error = []
     extra_error = None
     if form.validate_on_submit():
-        name, pswd = form.username.data, User.encrypt_password(form.password.data)
-        user = User.query.filter_by(username=name, password=pswd).first()
-        if user is None:
-            pass
-        elif not login_user(user, remember=form.remember):
-            extra_error = 'You cant login with non active user'
-        else:
-            return redirect(url_for('place.home'))
+        return redirect(url_for('place.home'))
     # clear password
     form.password.data = ''
     return render_template('forms/index.html',
@@ -74,6 +67,28 @@ def signup() -> Response:
         else:
             return render_template('transport/complete-signup.html', username=name)
     return render_template('forms/signup.html', form=form)
+
+
+@accounts_router.route('/revoke', methods=['GET', 'POST'])
+def revoke() -> Response:
+    form = RevokeForm()
+    if form.validate_on_submit():
+        """
+        after user validation checks if the user exists
+        """
+        user = User.query.filter_by(email=form.email.data).first()
+        if user is not None:
+            # error handling
+            send_revoke_password(
+                user.username,
+                form.email.data,
+                TokenSerializer.revoke.dumps({
+                    'email': form.email.data,
+                    'password': user.password
+                }, salt=user.username)
+            )
+            # return template ok
+    return render_template('forms/revoke.html', form=form)
 
 
 @accounts_router.route('/logout', methods=('GET', 'POST'))

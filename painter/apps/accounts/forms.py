@@ -58,7 +58,7 @@ class LoginForm(FlaskForm):
             return False
         user = User.query.filter_by(
             username=self.username.data,
-            password=User.encrypt_password(self.password.data)
+            password=User.encrypt_password(self.username.data, self.password.data)
         ).first()
         if user is None:
             self.password.errors.append('username and password don\'t match')
@@ -69,6 +69,22 @@ class LoginForm(FlaskForm):
             self.non_field_errors.append('you are banned, so your cant enter')
             return False
         return True
+
+
+class RevokeForm(FlaskForm):
+    title = 'Revoke Your Password'
+    email = EmailField(
+        'Email',
+        validators=[
+            validators.data_required('You must enter a email'),
+            validators.Email('Email not valid'),
+
+        ], render_kw={
+            'data-toggle': 'tooltip',
+            'title': 'Your email address, so we can send it weekly adds',
+            'data-placement': 'right'
+        }
+    )
 
 
 class SignUpForm(FlaskForm):

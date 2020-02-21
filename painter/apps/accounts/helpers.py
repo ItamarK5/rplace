@@ -10,6 +10,7 @@ from painter.models.user import reNAME, rePSWD
 class TokenSerializer:
     # https://realpython.com/handling-email-confirmation-in-flask/
     signup: URLSafeTimedSerializer
+    revoke: URLSafeTimedSerializer
 
     @classmethod
     def init_serializer(cls, app: Flask) -> NoReturn:
@@ -21,6 +22,10 @@ class TokenSerializer:
         cls.signup = URLSafeTimedSerializer(
             secret_key=app.config['SECRET_KEY'],
             salt=app.config['TOKEN_SIGNUP_SALT']
+        )
+        cls.revoke = URLSafeTimedSerializer(
+            secret_key=app.config['SECRET_KEY'],
+            salt=app.config['TOKEN_REVOKE_SALT']
         )
 
 

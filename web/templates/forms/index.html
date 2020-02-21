@@ -25,5 +25,6 @@ $(document).ready(function(){
 {% endblock %}
 {% block links %}
 {{ render_link('signup-link', 'Are you new?', url_for('auth.signup')) }}
+{{ render_link('revoke-link', 'Forgot your password?', url_for('auth.revoke')) }}
 {% endblock %}
 {% block submit %}Login{% endblock %}
