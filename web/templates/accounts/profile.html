@@ -38,11 +38,11 @@ $.ajaxSetup({
         <div class="col user-data-col" id="user-col">{% with user=current_user %}{% include 'accounts/abstract/profile-div.html' %}{% endwith %}</div>
         <div class="col user-data-col" id="settings-col">
             {{edit_title('Settings')}}
-            {{settingField('x', settings)}}
-            {{settingField('y', settings)}}
-            {{settingField('scale', settings)}}
-            {{settingField('color', settings)}}
-            {{settingField('url', settings)}}
+            {{settingField('x', xstart)}}
+            {{settingField('y', ystart)}}
+            {{settingField('scale', scalestart)}}
+            {{settingField('color', colorstart)}}
+            {{settingField('url', chaturl)}}
         </div>
     </div>
 </div>
@@ -59,7 +59,9 @@ $.ajaxSetup({
             <div id="message-alert" hidden></div>
             <form method="POST" action="{{url_for('place.profile_ajax')}}" id="setting-form">
                 {{form.hidden_tag()}}
-                <span id="setting-describer"></span><br>
+                <div class="center-text form-row" id="row-describer">
+                <span id="setting-describer" class="font-weight-bold font-size-15 justify-content-center"></span><br>
+                </div>
             </form>
         </div>
         <div class="modal-footer">

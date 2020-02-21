@@ -5,7 +5,7 @@ from typing import Optional
 
 from flask_login import UserMixin
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.dialects.sqlite import DATETIME, JSON
+from sqlalchemy.dialects.sqlite import DATETIME, SMALLINT
 from sqlalchemy.orm import relationship
 
 from .role import Role, SmallEnum
@@ -37,11 +37,11 @@ class User(db.Model, UserMixin):
     next_time = Column(DATETIME(), default=datetime.utcnow, nullable=False)
     pixels = relationship('Pixel', backref='users', lazy=True)
     role = Column(SmallEnum(Role), default=Role.common, nullable=False)
-    settings = Column(
-        JSON(),
-        default='{"x": 500, "y": 500, "color": 1, "url": null, "scale": 4}',
-        nullable=False
-    )
+    x = Column(SMALLINT(), default=500, nullable=False)
+    y = Column(SMALLINT(), default=500, nullable=False)
+    scale = Column(SMALLINT(), default=4, nullable=False)
+    color = Column(SMALLINT(), default=4, nullable=False)
+    url = Column(String(), default=None, nullable=True)
     sqlite_autoincrement = True
 
     def __init__(self, password=None, hash_password=None, **kwargs) -> None:

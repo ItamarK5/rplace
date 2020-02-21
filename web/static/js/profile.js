@@ -1,5 +1,6 @@
 const FORM_INPUT = '#setting-input'
 const GET_FIELD = /.+(?=-active)/i
+const ToTitleCaseRegex = /(<=\x20)[a-z]/g;
 const COLORS = [
     'white', 'black', 'gray', 'silver',
     'red', 'pink', 'brown', 'orange',
@@ -7,12 +8,36 @@ const COLORS = [
     'blue', 'aqua', 'purple', 'magenta'
 ]
 
-
+const SettingDescriber = $('#setting-describer');
 function setColor(val){
     return {
         'background-color':val,
         color:val != 'black' ? 'black' : 'white'    
     }
+}
+String.prototype.toTitleCase = function(){
+    return this.replace(ToTitleCaseRegex, (str) => str.toUpperCase())
+}
+
+function AddUlrInput(form, val){
+    let group = $('<div></div>').addClass('input-group input-group-default').appendTo(form)
+    $('<input>').attr({
+        id:FORM_INPUT.slice(1),
+        name:'url',
+        class:'form-control',
+        value:val == 'None' ? '' : val,
+        type:'url',
+    }).change(function(e){ 
+        this.value ? this.value : 'None'
+    }).appendTo(group);
+    let append_group = $('<div></div>').addClass('input-group-append').appendTo(group);
+    let btn = $('<button></button>').addClass('btn btn-outline-secondary').attr('type', 'button').appendTo(append_group);
+    $('<span></span>').addClass('fas fa-trash-alt').appendTo(btn);
+    btn.click(function(e){
+        $(FORM_INPUT).val('');
+        e.preventDefault();
+    });
+    $('#row-describer').hide();
 }
 
 /**
@@ -34,9 +59,9 @@ function addForm(form, field, val){
                 value:parseInt(val),
                 type:'range',
             }).change(function(e){
-                $('#setting-describer').text(this.value);
+                SettingDescriber.text(this.value);
             }).appendTo(form);
-            $('#setting-describer').text(val);            
+            SettingDescriber.text(val);            
             break;
         }
         case 'y':{
@@ -49,9 +74,9 @@ function addForm(form, field, val){
                 val:parseInt(val),
                 type:'range',
             }).change(function(e){
-                $('#setting-describer').text(this.value);
+                SettingDescriber.text(this.value);
             }).appendTo(form);
-            $('#setting-describer').text(val)
+            SettingDescriber.text(val)
             break;
         }
         case 'scale': {
@@ -64,9 +89,9 @@ function addForm(form, field, val){
                 value:parseInt(val),
                 type:'range',
             }).change(function(e){
-                $('#setting-describer').text(this.value);
+                SettingDescriber.text(this.value.toString().toTitleCase());
             }).appendTo(form);
-            $('#setting-describer').text(val)
+            SettingDescriber.text(val.toString().toTitleCase())
             break;
         }
         case 'color': {
@@ -76,29 +101,20 @@ function addForm(form, field, val){
                 class:'custom-select',
                 value:parseInt(val),
             }).change(function(e){
-                $('#setting-describer').text(COLORS[this.value]);
+                SettingDescriber.text(COLORS[this.value.toString().toTitleCase()]);
             }).appendTo(form);
             COLORS.forEach(
-                (val,idx) => {
-                    let option = $('<option></option>').css(setColor(val)).attr('value',idx).text(val).appendTo(color_selector);
-                    if(idx == val){
+                (color_val,idx) => {
+                    let option = $('<option></option>').css(setColor(color_val)).attr('value',idx).text(color_val).appendTo(color_selector);
+                    if(val == color_val){
                         option.attr('selected', '');
                     }
             });
-            $('#setting-describer').text(COLORS[val]);
+            $('#row-describer').hide();
             break;
         }
         case 'url': {
-            $('<input>').attr({
-                id:FORM_INPUT.slice(1),
-                name:'url',
-                class:'form-control-text',
-                value:val,
-                type:'url',
-            }).change(function(e){
-                $('#setting-describer').text(this.value ? this.value : '');
-            }).appendTo(form);
-            $('#setting-describer').text(val)
+            AddUlrInput(form, val);
             break;
         }
         default:{
@@ -111,6 +127,7 @@ $(document).ready(() =>{
     //tooltips       
     $('[data-toggle="tooltip"]').tooltip();
     $('.modal').on('shown.bs.modal', function (event) {
+        $('#row-describer').show();
         let button = $(event.relatedTarget);
         let modal = $(this);
         let field = GET_FIELD.exec(button.attr('id'))[0];
@@ -126,21 +143,26 @@ $(document).ready(() =>{
         }
     );
     $('#save-setting').click(function(e) {
+        $('#setting-form').submit();
+    });
+    console.log($('#text-color'))
+    $('#text-color').text(COLORS[parseInt($('#text-color').text())])
+    $('#setting-form').submit(function(e){
         e.preventDefault();
-        let form = $('#setting-form');
+        let form = $(this);
         $.ajax({
             url:form.attr('action'),
             type:form.attr('method'),
             data:form.serialize(),
             success: (data) => {
-                console.log(data);
+                $('alert')
                 return;
             },
             error: (data) =>{
                 console.log(data);
             }
         });
-    });
+    })
 });
 
  /*
