@@ -4,12 +4,11 @@ from os import path
 from flask import Blueprint, url_for, render_template, redirect, current_app, request
 from flask_login import login_user, logout_user, current_user
 from werkzeug.wrappers import Response
-
 from painter.constants import WEB_FOLDER
 from painter.extensions import db
 from painter.models.user import Role
 from painter.models.user import User
-from .forms import LoginForm, SignUpForm, RevokeForm
+from .forms import LoginForm, SignUpForm, RevokeForm, ChangePasswordForm
 from .helpers import *
 from .mail import send_sign_up_mail, send_revoke_password
 
@@ -85,10 +84,21 @@ def revoke() -> Response:
                 TokenSerializer.revoke.dumps({
                     'email': form.email.data,
                     'password': user.password
-                }, salt=user.username)
+                })
             )
             # return template ok
     return render_template('forms/revoke.html', form=form)
+
+
+@accounts_router.route('/change-password/<string:token>', methods=['GET', 'POST'])
+def change_password(token: str) -> Response:
+    """
+    :param token: token url represent saving url
+    :return: Response
+    """
+    # first get
+    extracted = extract_signature(token, is_valid_change_password_token)
+    pass
 
 
 @accounts_router.route('/logout', methods=('GET', 'POST'))
@@ -100,7 +110,7 @@ def logout() -> Response:
 
 @accounts_router.route('/confirm/<string:token>', methods=('GET',))
 def confirm(token: str) -> Response:
-    extracted = extract_signup_signature(token)
+    extracted = extract_signature(token, is_valid_signup_token)
     if extracted is None:
         return render_template(
             'transport//base.html',

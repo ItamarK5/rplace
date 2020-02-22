@@ -293,8 +293,8 @@ const progress = {
         }
         else if (!this.work.isWorking) {
             this.current_min_time = 300;
-            cursor.setPen();
             this.work.start()
+            cursor.setPen();
         }
     },
     updateTimer() {
@@ -723,6 +723,7 @@ const board = {
     startKeyMoveLoop() {
         board.moveBoard(this.move_vector[0], this.move_vector[1])
         if (_.isNull(this.key_move_interval)) {
+            query.disableUpdateHash();
             this.key_move_interval = setInterval(() => {
                 board.moveBoard(this.move_vector[0], this
                     .move_vector[1]);
@@ -745,6 +746,7 @@ const board = {
         //cursor.setDirCursor(this.move_vector);
         if (this.move_vector[0] == 0 && this.move_vector[1] == 0) {
             clearInterval(this.key_move_interval)
+            query.enableUpdateHash();
             this.key_move_interval = null;
         }
     },

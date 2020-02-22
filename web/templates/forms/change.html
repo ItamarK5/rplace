@@ -1,11 +1,12 @@
 {% extends "forms/forms.html" %}
 {% block fields %}
 {{super()}}
-{{ render_field(form.email)}}
-{{ render_errors(form.email.errors) }}
+{{ render_field(form.password)}}
+{{ render_errors(form.password.errors) }}
+{{ render_field(form.repassword)}}
+{{ render_errors(form.repassword.errors) }}
 {% endblock %}
 {% block links %}
 {{ render_link('signup-link', 'Are you new?', url_for('auth.signup')) }}
-{{ render_link('login-link', 'Remember your password?', url_for('auth.login')) }}
 {% endblock %}
 {% block submit %}Login{% endblock %}

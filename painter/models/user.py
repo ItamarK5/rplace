@@ -13,16 +13,6 @@ from ..config import Config
 from ..extensions import db, login_manager
 
 
-def xor_strings(s, t) -> bytes:
-    """xor two strings together."""
-    if isinstance(s, str):
-        # Text strings contain single characters
-        return b"".join(chr(ord(a) ^ ord(b)) for a, b in zip(s, t))
-    else:
-        # Python 3 bytes objects contain integer values in the range 0-255
-        return bytes([a ^ b for a, b in zip(s, t)])
-
-
 reNAME = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
 rePSWD = re.compile(r'^[a-f0-9]{128}$')  # password hashed so get hash value
 reEMAIL = re.compile(
@@ -59,6 +49,9 @@ class User(db.Model, UserMixin):
         if hash_password is not None and password is None:
             password = self.encrypt_password(kwargs.get('username'), hash_password)
         super().__init__(password=password, **kwargs)
+
+    def set_password(self, password: str) -> None:
+        self.password = self.encrypt_password(password)
 
     @staticmethod
     def encrypt_password(password: str, username: str) -> str:
