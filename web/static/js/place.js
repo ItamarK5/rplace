@@ -44,6 +44,8 @@ const DIRECTION_MAP = [
 ];
 const SIMPLE_ZOOM_LEVEL = 40;
 const SIMPLE_UNZOOM_LEVEL = 4;
+const DEFAULT_START_AXIS = 500;
+const DEFAULT_SCALE_MULTIPLAYER = SIMPLE_ZOOM_LEVEL;
 //const getOffset = (x, y) => (y * CANVAS_SIZE) + x;
 const getFirstIfAny = (group) => _.isNull(group) ? null : group[0]
 const clamp = (v, max, min) => Math.max(min, Math.min(v, max));
@@ -322,10 +324,18 @@ const progress = {
 }
 
 const query = {
-    cx: 500, // the x of the center pixel in the canvas on screen
-    cy: 500, // the y of the center pixel in the canvas on screen
-    scale: 4,
+    cx: DEFAULT_START_AXIS, // the x of the center pixel in the canvas on screen
+    cy: DEFAULT_START_AXIS, // the y of the center pixel in the canvas on screen
+    scale: DEFAULT_SCALE_MULTIPLAYER,
     __can_set_hash: HashChangeFlag.Enabled,
+    // initialize the query object
+    init() {
+        // set window hash to be valid
+        fragments = this.determineFragments();
+        this.x = fragments.x;
+        this.y = fragments.y;
+        this.scale = fragments.scale;
+    },
     disableUpdateHash() {
         this.__can_set_hash = HashChangeFlag.Disabled;
     },
@@ -343,56 +353,6 @@ const query = {
     },
     canSetHash() {
         return this.__can_set_hash == HashChangeFlag.Enabled
-    },
-    // initialize the 
-    init() {
-        // set window hash to be valid
-        if (this.first_validation()) {
-            this.setHash()
-        }
-        // remove any fragments
-        history.replaceState(null, null, document.location.pathname + this
-            .hash());
-    },
-    first_validation() {
-        let is_any_frag_unvalid = false;
-        _.pairs(this.fragments()).forEach((frag, idx) => {
-            let key = frag[0];
-            let val = frag[1];
-            if (_.isNull(val)) {
-                return; /* return breaks loop operation */
-            }
-            switch (key) {
-                case ('x'): {
-                    if (this.is_valid_new_x(val)) {
-                        this.cx = Math.round(val);
-                    }
-                    else {
-                        is_any_frag_unvalid = true;
-                    }
-                    break;
-                }
-                case ('y'): {
-                    if (this.is_valid_new_y(val)) {
-                        this.cy = Math.round(val);
-                    }
-                    else {
-                        is_any_frag_unvalid = true;
-                    }
-                    break;
-                }
-                case ('scale'): {
-                    if (this.is_valid_new_scale(val)) {
-                        this.scale = val
-                    }
-                    else {
-                        is_any_frag_unvalid = true;
-                    }
-                    break;
-                }
-            }
-        })
-        return is_any_frag_unvalid;
     },
     // the hash of the window
     get __path() {
@@ -416,17 +376,72 @@ const query = {
     is_valid_new_scale(val) {
         return (!isNaN(val)) && is_valid_scale(val) && val != this.scale
     },
+    determineX(){
+        // first get from arguments
+        let x = window.location.search.match(reArgX);
+        x = parseInt(getFirstIfAny(x))
+        if((!isNaN(x)) && is_valid_pos(x)){
+            return x;
+        }
+        // second get from hash
+        x = window.location.hash.match(reHashX);
+        x = parseInt(getFirstIfAny(x))
+        if((!isNaN(x)) && is_valid_pos(x)){
+            return x;
+        }
+        // else search for value in body
+        x = parseInt($('body').attr('x'))
+        if((!isNaN(x)) && is_valid_pos(x)){
+            return x;
+        }
+        return DEFAULT_START_AXIS;
+    },
+    determineY(){
+        // first get from arguments
+        let y = window.location.search.match(reArgY);
+        y = parseInt(getFirstIfAny(y))
+        if((!isNaN(y)) && is_valid_pos(y)){
+            return y;
+        }
+        // second get from hash
+        y = window.location.hash.match(reHashY);
+        y = parseInt(getFirstIfAny(y))
+        if((!isNaN(y)) && is_valid_pos(y)){
+            return y;
+        }
+        // else search for value in body
+        y = parseInt($('body').attr('y'))
+        if((!isNaN(y)) && is_valid_pos(y)){
+            return y;
+        }
+        return DEFAULT_START_AXIS;
+    },
+    determineScale(){
+        // first get from arguments
+        let scale = window.location.search.match(reArgScale);
+        scale = parseFloat(getFirstIfAny(scale))
+        if((!isNaN(scale)) && is_valid_scale(scale)){
+            return y;
+        }
+        // second get from hash
+        scale = window.location.hash.match(reHashY);
+        scale = parseFloat(scale)
+        if((!isNaN(scale)) && is_valid_scale(scale)){
+            return scale;
+        }
+        // else search for value in body
+        scale = parseFloat($('body').attr('scale'))
+        if((!isNaN(scale)) && is_valid_scale(scale)){
+            return scale;
+        }
+        return DEFAULT_START_AXIS;
+    },
     // use regex to get fragments
-    fragments() {
+    determineFragments() {
         return {
-            // first checks the hash if there are null, check the location
-            x: parseInt(getFirstIfAny(window.location.hash.match(reHashX) ||
-                window.location.search.match(reArgX))),
-            y: parseInt(getFirstIfAny(window.location.hash.match(reHashY) ||
-                window.location.search.match(reArgY))),
-            scale: parseFloat(getFirstIfAny(window.location.hash.match(
-                reHashScale) || window.location.search.match(
-                reArgScale)))
+            x:this.determineX(),
+            y:this.determineY(),
+            scale:this.determineScale()
         };
     },
     // set x and
@@ -463,20 +478,16 @@ const query = {
         }
     },
     // level 1 interaction of query change
-    refresh_fragments(to_update) {
-        /*  refresh_fragments(bool) -> void
+    refreshFragments(to_update) {
+        /*  refreshFragments(bool) -> void
          *  refresh the query object by the current hash values if they are valid
          */
-        let frags = this.fragments();
-        if ((!isNaN(frags.x)) || (!isNaN(frags.y))) {
-            this.setCenter(parseInt(frags.x), parseInt(frags.y), to_update);
-        }
-        /// update scale
-        if (isNaN(frags.scale) && this.is_valid_new_scale(parseFloat(frags
-                .scale))) {
-            this.scale = this.scale;
-            if (to_update) {
-                board.updateZoom()
+        let frags = this.determineFragments();
+        this.setCenter(this.x, this.y, to_update);
+        if(this.is_valid_new_scale(frags.scale)){
+            this.scale = frags.scale;
+            if(to_update){
+                board.updateZoom();
             }
         }
         board.setHash()
@@ -951,6 +962,9 @@ $(document).ready(function() {
         // time - time
         progress.setTime(data.time)
         board.buildBoard(new Uint8Array(data.board));
+        // found to be a good solution
+        // updates the scale also
+        query.setScale(query.scale);
     });
     sock.on('set-board', (x, y, color_idx) => board.setAt(x, y,
         color_idx));
@@ -1119,7 +1133,7 @@ $(document).ready(function() {
     // hash change
     $(window).bind('hashchange', function(e) {
         if (window.location.hash != query.hash) {
-            query.refresh_fragments();
+            query.refreshFragments();
         }
     });
     // copy coords - https://stackoverflow.com/a/37449115
@@ -1224,8 +1238,8 @@ $(document).ready(function() {
       });*/
 });
 $(window).on('load', function() {
-    let color_button = $('.colorButton').filter((idx, ele) => ele
-        .getAttribute('state') == '1').first();
+    console.log( $('.colorButton[state="1"]'))
+    let color_button = $('.colorButton[picked="1"]').first()
     if (!color_button[0]) {
         color_button = $($('.colorButton')[1]); // black button
     }
