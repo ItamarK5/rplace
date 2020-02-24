@@ -64,7 +64,7 @@ class LoginForm(FlaskForm):
             self.password.errors.append('username and password don\'t match')
             self.username.errors.append('username and password don\'t match')
             return False
-        elif not login_user(user):
+        elif not login_user(user, remember=self.remember.data):
             # must be because user isnt active
             self.non_field_errors.append('you are banned, so your cant enter')
             return False

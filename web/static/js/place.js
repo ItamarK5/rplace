@@ -66,12 +66,11 @@ const getUTCTimestamp = () => {
  * @param {int} flag 
  */
 const HashChangeFlag = {
-    Needed: 0,
-    Disabled: 1,
-    Enabled: 2
+    Needed: 'Needed',
+    Disabled: 'Disabled',
+    Enabled: 'Enabled'
 }
-const NeededHashMask = flag => flag == HashChangeFlag.Disabled ? HashChangeFlag
-    .Needed : flag
+const MaskHashChangeFlag = (flag) => flag == HashChangeFlag.Disabled ? HashChangeFlag.Needed : flag
 /* View in fullscreen */
 //https://www.w3schools.com/howto/howto_js_fullscreen.asp
 function openFullscreen() {
@@ -112,9 +111,10 @@ function closeFullscreen() {
         document.msExitFullscreen();
     }
 }
-const throw_message = (msg, enter_sec = 1000, show_sec = 100, exit_sec = null,
-        cls = null) => $("<div></div>").addClass(
-        `pop-up-message center nonselect${_.isString(cls) ? ' ' + cls : ''}`)
+
+const throw_message = (msg, enter_sec = 1000, show_sec = 100, exit_sec = null, cls = null) => 
+    $("<div></div>").addClass(
+    `pop-up-message center nonselect${_.isString(cls) ? ' ' + cls : ''}`)
     .text(msg).appendTo("body")
     // enter
     .animate({
@@ -127,15 +127,19 @@ const throw_message = (msg, enter_sec = 1000, show_sec = 100, exit_sec = null,
             if (exit_sec > 0) {
                 $(self).animate({
                     opacity: '0'
-                }, exit_sec, function() {
+                }, 
+                exit_sec, function() {
                     $(this).parent().remove(self);
                 });
-            }
-            else {
+            } else {
                 $(self).parent().remove(self);
             }
-        }, show_sec);
+        },
+        show_sec
+        );
     });
+
+
 class PalColor {
     constructor(r, g, b, name) {
         this.r = r;
@@ -226,7 +230,7 @@ const Colors = {
     purple: new PalColor(0x80, 0x00, 0x80, 'Purple'),
     magenta: new PalColor(0xFF, 0x00, 0xFF, 'Magenta'),
     colors: [],
-    init() {
+    construct() {
         this.colors.push(this.white);
         this.colors.push(this.black);
         this.colors.push(this.gray);
@@ -273,7 +277,7 @@ const progress = {
     state: 0, // state of progress bar
     work: null, // handler of progress update interval
     current_min_time: null,
-    init() {
+    construct() {
         let self = this;
         this.work = new SimpleInterval(function() {
             self.updateTimer()
@@ -341,26 +345,25 @@ const query = {
     cy: DEFAULT_START_AXIS, // the y of the center pixel in the canvas on screen
     scale: DEFAULT_SCALE_MULTIPLAYER,
     __can_set_hash: HashChangeFlag.Enabled,
-    // initialize the query object
-    init() {
+    // constructialize the query object
+    construct() {
         // set window hash to be valid
         fragments = this.determineFragments();
-        this.x = fragments.x;
-        this.y = fragments.y;
+        this.cx = fragments.x;
+        this.cy = fragments.y;
         this.scale = fragments.scale;
     },
     disableUpdateHash() {
         this.__can_set_hash = HashChangeFlag.Disabled;
     },
     enableUpdateHash() {
-        if (this.__setHash != HashChangeFlag.Enabled) {
-            let temp = this.__can_set_hash;
-            this.__can_set_hash = HashChangeFlag.Enabled
-            let self = this;
-            if (temp == HashChangeFlag.Needed) {
-                setTimeout(function() {
-                    self.setHash()
-                }, 400);
+        if (this.__can_set_hash != HashChangeFlag.Enabled) {
+            console.log(this)
+            if (this.__can_set_hash == HashChangeFlag.Needed) {
+                this.__can_set_hash = HashChangeFlag.Enabled
+                this.setHash()
+            } else {
+                this.__can_set_hash = HashChangeFlag.Enabled;
             }
         }
     },
@@ -434,7 +437,7 @@ const query = {
         let scale = window.location.search.match(reArgScale);
         scale = parseFloat(getFirstIfAny(scale))
         if((!isNaN(scale)) && is_valid_scale(scale)){
-            return y;
+            return scale;
         }
         // second get from hash
         scale = window.location.hash.match(reHashY);
@@ -473,7 +476,7 @@ const query = {
         }
         if (to_update && flag) {
             board.centerPos();
-            this.setHash()
+            this.setHash();
         }
         return flag;
     },
@@ -502,14 +505,17 @@ const query = {
             if(to_update){
                 board.updateZoom();
             }
+        } else {
+            board.setHash();
         }
-        board.setHash()
     },
     // set the window.loaction.hash to the query hash value
     // level 3
     setHash() {
         //  update location
-        this.__can_set_hash = NeededHashMask(this.__can_set_hash)
+        // first tried to update event set
+        // now lets try using setTimeout
+        this.__can_set_hash = MaskHashChangeFlag(this.__can_set_hash)
         if (this.canSetHash() && location.hash != this.hash()) {
             // change hash without triggering events
             // https://stackoverflow.com/a/5414951
@@ -596,7 +602,7 @@ const pen = {
     force_center: true,
     __disable: false,
     cursor_style: 'default',
-    init() {
+    construct() {
         this.color = $('.colorButton').index('[picked="1"]');
     },
     disable() {
@@ -699,7 +705,7 @@ const pen = {
         if (progress.work.isWorking) {
             Swal.fire({
                 title: 'You have 2 wait',
-                imageUrl: 'https://aadityapurani.files.wordpress.com/2016/07/2.png',
+                imageUrl: MemeImporter.select(),
                 imageHeight: 300,
                 imageAlt: 'wow that was rude',
                 text: 'Wait for your cooldown to end'
@@ -746,7 +752,7 @@ const board = {
     ctx: null,
     pixelQueue: null,
     buildBoard: null,
-    init() {
+    construct() {
         this.canvas = $('#board');
         this.ctx = this.canvas[0].getContext('2d');
         this.canvas.attr('alpha', 0);
@@ -770,7 +776,7 @@ const board = {
             this.key_move_interval = setInterval(() => {
                 board.moveBoard(this.move_vector[0], this
                     .move_vector[1]);
-            }, 100)
+            }, 100);
         }
     },
     // level 1
@@ -918,17 +924,19 @@ const board = {
               let y = this.keep_inside_border(this.real_y, dir[DIR_INDEX_YNORMAL]*this.step*this.scale, rect.top, rect.bottom)/this.scale;
               console.log(x, y);
         */
-        query.setCenter(clamp(query.cx + dx * this.step, CANVAS_SIZE, 0),
-            clamp(query.cy + dy * this.step, CANVAS_SIZE, 0));
+        query.setCenter(
+            clamp(query.cx + dx * this.step, CANVAS_SIZE, 0),
+            clamp(query.cy + dy * this.step, CANVAS_SIZE, 0)
+        );
     },
     // level 1
-    centerOn: function(x, y) {
+    centerOn(x, y) {
         x = isNaN(x) ? query.cx : clamp(x, CANVAS_SIZE, 0);
         y = isNaN(y) ? query.cy : clamp(y, CANVAS_SIZE, 0);
         query.setCenter(x, y);
     },
     // level 3 in half
-    updateCoords: function() {
+    updateCoords() {
         // not (A or B) == (not A) and (not B)
         if ($('#coordinates').is(':hover')) {
             $('#coordinate-slicer').text('copy')
@@ -942,16 +950,6 @@ const board = {
             $('#coordinateY').text(pen.isAtBoard() ? pen.y : '');
         }
     },
-    /* not used
-    get windowrootratio(){
-        return Math.sqrt(innerHeight/innerWidth);
-    },
-    get scalex(){
-        return query.scale * this.windowrootratio;
-    },
-    get scaley(){
-        return query.scale / this.windowrootratio
-    },*/
     drawBoard() {
         if (board.needs_draw || !board.is_ready) {
             return;
@@ -984,11 +982,12 @@ const board = {
 //const performance_arr = []
 const sock = io();
 $(document).ready(function() {
-    Colors.init();
-    query.init();
-    progress.init();
-    board.init();
-    pen.init();
+    Colors.construct();
+    query.construct();
+    progress.construct();
+    board.construct();
+    pen.construct();
+    query.setHash();
     sock.on('place-start', function(data) {
         // buffer - board in bytes
         // time - time
@@ -996,7 +995,6 @@ $(document).ready(function() {
         board.buildBoard(new Uint8Array(data.board));
         // found to be a good solution
         // updates the scale also
-        query.setScale(query.scale);
     });
     sock.on('set-board', (x, y, color_idx) => board.setAt(x, y,
         color_idx));
@@ -1126,14 +1124,12 @@ $(document).ready(function() {
             if (e.originalEvent.key == '+') // key for plus
             {
                 // option 0.5
-                query.setScale(query.scale >= 1 ? query.scale +
-                    1 : 1);
+                console.log(query.scale >= 1, query.scale)
+                query.setScale(query.scale >= 1 ? query.scale +1 : 1);
             }
-            else if (e.originalEvent.key ==
-                '_') { // key for minus
+            else if (e.originalEvent.key =='_') { // key for minus
                 // option 0.5
-                query.setScale(query.scale > 1 ? query.scale -
-                    1 : MIN_SCALE);
+                query.setScale(query.scale > 1 ? query.scale - 1 : MIN_SCALE);
             }
         }
     }).keydown((e) => {
@@ -1284,10 +1280,13 @@ $(document).ready(function() {
       });*/
 });
 $(window).on('load', function() {
-    console.log( $('.colorButton[state="1"]'))
     let color_button = $('.colorButton[picked="1"]').first()
     if (!color_button[0]) {
         color_button = $($('.colorButton')[1]); // black button
     }
     color_button.click()
-})
+});
+/**
+ * list to do
+ * 1)work on update hash make it more consistent
+ */
