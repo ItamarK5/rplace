@@ -49,7 +49,7 @@ const getFirstIfAny = (group) => _.isNull(group) ? null : group[0]
 const clamp = (v, max, min) => Math.max(min, Math.min(v, max));
 const is_valid_scale = scale => MIN_SCALE <= scale && scale <= MAX_SCALE;
 const is_valid_pos = v => 0 <= v && v < CANVAS_SIZE;
-const randomImage = arr => arr[Math.floor(arr.length * Math.random())]
+const IsSwalClose = () => _.isUndefined($('.swal2-container')[0])
 const getUTCTimestamp = () => {
     let tm = new Date();
     return Date.UTC(
@@ -112,6 +112,25 @@ function closeFullscreen() {
     }
 }
 
+/**
+ * 
+ * @param {String} selector 
+ * @returns null
+ */
+function NonSweetClick(selector){
+    if(IsSwalClose()){
+        $(selector).click()
+    }
+}
+/**
+ * 
+ * @param {Optional[String]} msg 
+ * @param {int} enter_sec 
+ * @param {int} show_sec 
+ * @param {Optional[int]} exit_sec 
+ * @param {String} cls 
+ * @returns throws a message to the user that not blockes input
+ */
 const throw_message = (msg, enter_sec = 1000, show_sec = 100, exit_sec = null, cls = null) => 
     $("<div></div>").addClass(
     `pop-up-message center nonselect${_.isString(cls) ? ' ' + cls : ''}`)
@@ -705,7 +724,7 @@ const pen = {
         if (progress.work.isWorking) {
             Swal.fire({
                 title: 'You have 2 wait',
-                imageUrl: MemeImporter.select(),
+                imageUrl: 'https://aadityapurani.files.wordpress.com/2016/07/2.png',
                 imageHeight: 300,
                 imageAlt: 'wow that was rude',
                 text: 'Wait for your cooldown to end'
@@ -1098,24 +1117,18 @@ $(document).ready(function() {
             }
             case 'KeyP': {
                 // force keyboard if not in keyboard mode, else color a pixel
-                if (pen.force_center) {
+                if (pen.force_center && IsSwalClose()) {
                     pen.setPixel();
                 }
-                else {
+                else if(!pen.force_center) {
                     pen.setCenterPos()
                 }
                 break;
-            }
-            // home
-            case 'KeyH':{
-                $('#home-button').click();
-                break;
-            }
-            case 'KeyF': {
-                $('#screensize-button').click();
-                break;
             } case 'KeyG':{
                 cursor.lockCursor(Cursors.FindMouse)
+            } case 'KeyF': {
+                NonSweetClick('#screensize-button')
+                break;
             } default:{
                 break;
             }
@@ -1149,15 +1162,13 @@ $(document).ready(function() {
             board.subMovement(dir);
         }
         else if (key == 'Home') {
-            $('#home-button').click();
+            NonSweetClick('#home-button');
         } 
         else if(key == 'g'){
             cursor.releaseCursor(Cursors.FindMouse)
         } else if (key == 'Escape') {
             // prevent collison with swal ESCAPE
-            if(_.isUndefined($('.swal2-container')[0])){
-                $('#logout-button').click();
-            }
+            NonSweetClick('#logout-button');
         }
 
     });
