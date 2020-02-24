@@ -6,8 +6,6 @@
 */
 const BACKGROUND_COLOR = '#777777'
 const CANVAS_SIZE = 1000;
-const ESC_KEY_CODE = 27;
-const HOME_KEY_CODE = 36;
 const MIN_STEP_SIZE = 1;
 const MIN_SCALE = 0.5;
 const MAX_SCALE = 50;
@@ -22,22 +20,22 @@ const reArgScale = /(?<=(^\?|.+&)scale=)(\d{1,2}|0\.5)(?=&|$)/i;
 //const reHash = /(?<=(?:^#|.+&))([\w|\d]+)=([\w|\d]+)(?=&|$)/i
 const DIRECTION_MAP = [
     {
-        key: 37,
+        key: 'ArrowLeft',
         dir: [-1, 0],
         set: false
     }, // left
     {
-        key: 39,
+        key: 'ArrowRight',
         dir: [1, 0],
         set: false
     }, // right
     {
-        key: 38,
+        key: 'ArrowUp',
         dir: [0, -1],
         set: false
     }, // up
     {
-        key: 40,
+        key: 'ArrowDown',
         dir: [0, 1],
         set: false
     } // down
@@ -125,8 +123,7 @@ const throw_message = (msg, enter_sec = 1000, show_sec = 100, exit_sec = null,
         // keep the element amount of time
         let self = this;
         setTimeout(function() {
-            let exit_sec = _.isNull(exit_sec) ? enter_sec :
-                exit_sec;
+            exit_sec = isNaN(exit_sec) ? enter_sec : exit_sec;
             if (exit_sec > 0) {
                 $(self).animate({
                     opacity: '0'
@@ -189,10 +186,25 @@ class SimpleInterval {
     }
 }
 
-class CursorStyle {
+class CursorState {
     constructor(cursor, hide_pen) {
         this.cursor = cursor;
         this.hide_pen = hide_pen;
+    }
+    /**
+     * @name equals
+     * @param {CursorState} other_cursor 
+     * @returns Boolean -> if the 2 cursors states are the same
+     */
+    equals(other_cursor){
+        //https://stackoverflow.com/a/1249554
+        if(!(other_cursor instanceof CursorState)){
+            return false;
+        }
+        return (
+            this.cursor == other_cursor.cursor &&
+            this.hide_pen == other_cursor.hide_pen
+        )
     }
 }
 
@@ -246,13 +258,14 @@ const Colors = {
 }
 
 const Cursors = {
-    Pen: new CursorStyle('none', false),
-    Wait: new CursorStyle('not-allowed', true),
-    grabbing: new CursorStyle('grabbing', true),
-    /*    Vertical: new CursorStyle('ns-resize', false),
-        Horizontal: new CursorStyle('we-resize', false),
-        LinearDown: new CursorStyle('nw-resize', false),
-        LinearUp: new CursorStyle('ne-resize', false)*/
+    Pen: new CursorState('none', false),
+    Wait: new CursorState('not-allowed', false),
+    grabbing: new CursorState('grabbing', true),
+    FindMouse: new CursorState('wait', true)
+    /*    Vertical: new CursorState('ns-resize', false),
+        Horizontal: new CursorState('we-resize', false),
+        LinearDown: new CursorState('nw-resize', false),
+        LinearUp: new CursorState('ne-resize', false)*/
 }
 
 const progress = {
@@ -507,27 +520,47 @@ const query = {
     }
 }
 const cursor = {
-    current_cursor: 'default',
+    last_cursor_non_forced:null,
+    current_cursor: null,
+    force_cursor: null,
     /**
-     * @param {CursorStyle} cursor 
+     * @param {CursorState} other_cursor 
      */
-    setCursor(cursor) {
-        if (this.current_cursor != cursor.cursor) {
-            this.current_cursor = cursor.cursor;
-            board.canvas.css('cursor', cursor.cursor);
+    setCursor(other_cursor) {
+        // update last cursor
+        if(other_cursor instanceof CursorState){
+            this.last_cursor_non_forced = other_cursor;
+        }
+        let cursor = this.force_cursor || this.last_cursor_non_forced;
+        if (_.isNull(this.current_cursor) || !this.current_cursor.equals(cursor)) {
+            if((!this.current_cursor) || cursor.cursor != this.current_cursor.cursor){
+                board.canvas.css('cursor', cursor.cursor);
+            }
             if (cursor.hide_pen) {
                 pen.disable();
             }
             else {
                 pen.enable();
             }
+            this.current_cursor = cursor;
         }
+
     },
     setPen() {
         this.setCursor(progress.work.isWorking ? Cursors.Wait : Cursors.Pen)
     },
     grab() {
         this.setCursor(Cursors.grabbing);
+    },
+    lockCursor(cursor){
+        this.force_cursor = cursor;
+        this.setCursor();
+    },
+    releaseCursor(cursor_state){
+        if(cursor_state.equals(this.force_cursor)){
+            this.force_cursor = null;
+            this.setCursor()
+        }
     }
     /*
     __getDirCursor(dx, dy){
@@ -1023,12 +1056,10 @@ $(document).ready(function() {
         if (board.drag.active) {
             // center board
             cursor.grab();
-            board.centerOn(Math.floor(board.drag.startX + (board
-                    .drag.dragX - e.pageX) / query
-                .scale), Math.floor(board.drag.startY +
-                (board
-                    .drag.dragY - e.pageY) / query.scale
-            ));
+            board.centerOn(
+                Math.floor(board.drag.startX + (board.drag.dragX - e.pageX) / query.scale),
+                Math.floor(board.drag.startY + (board.drag.dragY - e.pageY) / query.scale)
+            );
         }
     }).mouseup(() => {
         board.drag.active = false;
@@ -1085,7 +1116,9 @@ $(document).ready(function() {
             case 'KeyF': {
                 $('#screensize-button').click();
                 break;
-            } default: {
+            } case 'KeyG':{
+                cursor.lockCursor(Cursors.FindMouse)
+            } default:{
                 break;
             }
         }
@@ -1104,28 +1137,34 @@ $(document).ready(function() {
             }
         }
     }).keydown((e) => {
-        keyCode = (e || window.event).keyCode;
+        key = (e || window.event).key;
         let dir = _.findWhere(DIRECTION_MAP, {
-            key: keyCode
+            key: key
         })
         if ((!_.isUndefined(dir)) && !dir.set) {
             board.addMovement(dir);
         }
     }).keyup((e) => {
-        keyCode = (e || window.event).keyCode;
+        let key = (e || window.event).key;
         let dir = _.findWhere(DIRECTION_MAP, {
-            key: keyCode
+            key: key
         })
         if ((!_.isUndefined(dir)) && dir.set) {
             board.subMovement(dir);
-        };
-        if (keyCode == ESC_KEY_CODE) {
-            $('#logout-button').click();
         }
-        else if (keyCode == HOME_KEY_CODE) {
+        else if (key == 'Home') {
             $('#home-button').click();
+        } 
+        else if(key == 'g'){
+            cursor.releaseCursor(Cursors.FindMouse)
+        } else if (key == 'Escape') {
+            // prevent collison with swal ESCAPE
+            if(_.isUndefined($('.swal2-container')[0])){
+                $('#logout-button').click();
+            }
         }
-    })
+
+    });
     // change toggle button
     $('#toggle-toolbox-button').click(function(e) {
         e.preventDefault();
@@ -1162,16 +1201,12 @@ $(document).ready(function() {
     })
     // change zoom level
     $('#zoom-button').click(function() {
-        query.setScale($(this).children().hasClass(
-                'fa-search-minus') ? SIMPLE_UNZOOM_LEVEL :
-            SIMPLE_ZOOM_LEVEL)
+        query.setScale($(this).children().hasClass('fa-search-minus') ? SIMPLE_UNZOOM_LEVEL : SIMPLE_ZOOM_LEVEL)
     });
     //logout
     $('#logout-button').click((e) => {
         // if there is any keypressed
-        if (e) {
-            e.preventDefault();
-        }
+        if (e) {e.preventDefault();}
         // swal leave event
         Swal.fire({
             title: 'Are you sure?',

@@ -209,11 +209,13 @@ body, html {
     width: 30px;
     height: 30px;
     transition: bottom 0.5s;
+    cursor:pointer;
 }
 
 .colorButton[picked="1"] {
     border: steelblue 3px solid;
 }
+
 
 #coordinates {
     top:10px;
@@ -227,6 +229,7 @@ body, html {
     transition:background-color linear 200ms;
     color:white;
     text-align:center;
+    cursor:copy;
 }
 
 
