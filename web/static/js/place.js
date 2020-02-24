@@ -598,8 +598,8 @@ const pen = {
         let pos = null;
         if (this.force_center) {
             pos = {
-                x: Math.floor(board.canvas[0].width / 2),
-                y: Math.floor(board.canvas[0].height / 2)
+                x: Math.floor(board.x + board.canvas[0].width  / 2 / query.scale),
+                y: Math.floor(board.y + board.canvas[0].height / 2 / query.scale)
             } // center
         }
         else {
@@ -613,8 +613,7 @@ const pen = {
                 y: Math.floor(board.y + mouse_offset[1] / query.scale)
             }
         }
-        if (_.isNull(pos) || (!is_valid_pos(pos.x)) || (!is_valid_pos(pos
-                .y))) {
+        if (_.isNull(pos) || (!is_valid_pos(pos.x)) || (!is_valid_pos(pos.y))) {
             this.clearPos(); // set values to -1
             // but if not, update if the values are different
         }
@@ -1076,6 +1075,18 @@ $(document).ready(function() {
                 else {
                     pen.setCenterPos()
                 }
+                break;
+            }
+            // home
+            case 'KeyH':{
+                $('#home-button').click();
+                break;
+            }
+            case 'KeyF': {
+                $('#screensize-button').click();
+                break;
+            } default: {
+                break;
             }
         }
         if (e.originalEvent.shiftKey) {
