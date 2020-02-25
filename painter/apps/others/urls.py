@@ -58,7 +58,7 @@ def error_meme_render(e: HTTPException,
 def handle_csrf_error(e: CSRFError) -> Response:
     """
     :param e: csrf error
-    :return: csrf error meme view
+    :return: csrf error meme html page
     """
     return error_meme_render(
         e,
@@ -107,6 +107,7 @@ def serve_static(key: str) -> Response:
 @other_router.route('/favicon.ico', methods=('GET',))
 def serve_icon() -> Response:
     return send_from_directory(
-        path.join(other_router.static_folder, 'static', 'ico'), 'favicon.ico',
+        path.join(other_router.static_folder, 'static', 'ico'),
+        'favicon.ico',
         mimetype=MIME_TYPES['ico']
     )

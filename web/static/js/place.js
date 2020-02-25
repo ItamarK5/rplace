@@ -275,10 +275,15 @@ const Colors = {
         }
         return -1;
     },
-    clr(idx) {
-        return this.colors[idx];
-    }
 }
+/*
+function arrayBufferToBase64(buffer) {
+    var binary = '';
+    var bytes = [].slice.call(new Uint8Array(buffer));
+    bytes.forEach((b) => binary += String.fromCharCode(b));
+    return window.btoa(binary);
+};
+*/
 
 const Cursors = {
     Pen: new CursorState('none', false),
@@ -290,6 +295,57 @@ const Cursors = {
         LinearDown: new CursorState('nw-resize', false),
         LinearUp: new CursorState('ne-resize', false)*/
 }
+
+//https://stackoverflow.com/a/50248437
+/*
+const ImageImporter = {
+    __urls:[
+        'https://i.imgflip.com/10eahj.jpg',
+        'https://aadityapurani.files.wordpress.com/2016/07/2.png'
+    ],
+    __images: [
+    ],
+    __getImageMime(url){
+        if(url.endsWith('.jpg')){
+            return 0;
+        } else if((url.endsWith('.png'))){
+            return 0;
+        }
+        return null;
+    },
+    __fetchImage(url){
+        mime_type = this.__getImageMime(url);
+        if(_.isNull(mime_type)){
+            throw new Error('Mime image unvalid');
+        }
+        // else fetch
+        //https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+        fetch(
+            url,
+            {
+                method: 'GET',
+                headers:{
+                    'Content-Type': mime_type
+                },
+                referrerPolicy: 'no-referrer',
+                cache: 'force-c
+                ',
+            })
+            .then(response => response.blob())
+            .then(images => {
+                outside = URL.createObjectURL(images);
+                console.log(images);
+                this.__images.push(outside)
+            })
+         
+    },
+    construct(){
+        this.__urls.forEach((url) => {
+            this.__fetchImage(url);
+        })
+    }  
+}
+*/
 
 const progress = {
     time: 0, // time when cooldown ends
@@ -1106,8 +1162,7 @@ $(document).ready(function() {
             }
             case 'KeyZ': {
                 let button = $(".colorButton[picked='1']");
-                if (_.isUndefined(button) || _.isUndefined(
-                        button.prev()[0])) {
+                if (_.isUndefined(button) || _.isUndefined(button.prev()[0])) {
                     $(".colorButton[value='15']").click();
                 }
                 else {
@@ -1125,7 +1180,8 @@ $(document).ready(function() {
                 }
                 break;
             } case 'KeyG':{
-                cursor.lockCursor(Cursors.FindMouse)
+                cursor.lockCursor(Cursors.FindMouse);
+                break;
             } case 'KeyF': {
                 NonSweetClick('#screensize-button')
                 break;
@@ -1291,6 +1347,7 @@ $(document).ready(function() {
       });*/
 });
 $(window).on('load', function() {
+    // didnt work on load maybe because the image didnt worked at the time
     let color_button = $('.colorButton[picked="1"]').first()
     if (!color_button[0]) {
         color_button = $($('.colorButton')[1]); // black button
@@ -1299,5 +1356,7 @@ $(window).on('load', function() {
 });
 /**
  * list to do
- * 1)work on update hash make it more consistent
+ * --add center mouse button move.
+ * potentional:
+ * --work on mouse moving bug with sweet-alert (save position of mouse event when stops hover)
  */
