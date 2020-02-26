@@ -6,7 +6,7 @@ from flask_login import login_user
 from flask_wtf import FlaskForm
 from wtforms import *
 from wtforms.fields.html5 import EmailField
-
+from abc import ABC
 from painter.models.user import User
 
 
@@ -14,7 +14,7 @@ class LoginForm(FlaskForm):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.non_field_errors = []
-
+    name = 'login'
     title = 'Welcome Back to Social Painter'
     username = StringField(
         'username',
@@ -72,6 +72,7 @@ class LoginForm(FlaskForm):
 
 
 class RevokeForm(FlaskForm):
+    name = 'revoke'
     title = 'Chnage Your Password'
     email = EmailField(
         'Email',
@@ -89,7 +90,6 @@ class RevokeForm(FlaskForm):
 
 class ChangePasswordForm(FlaskForm):
     title = 'Set new Password'
-
     password = PasswordField(
         'password',
         validators=[
@@ -114,6 +114,7 @@ class ChangePasswordForm(FlaskForm):
 
 
 class SignUpForm(FlaskForm):
+    name = 'sign-up'
     title = 'Welcome to Social Painter'
 
     username = StringField(

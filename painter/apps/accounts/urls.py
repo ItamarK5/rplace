@@ -1,7 +1,7 @@
 import time
 from os import path
 
-from flask import Blueprint, url_for, render_template, redirect, current_app, request
+from flask import Blueprint, url_for, render_template, redirect, current_app, request, session
 from flask_login import login_user, logout_user, current_user
 from werkzeug.wrappers import Response
 from painter.constants import WEB_FOLDER
@@ -29,6 +29,10 @@ def login() -> Response:
     added in version 1.0.0
     :return: login page response
     """
+    print(request.json)
+    print(*request.cookies, sep='\n')
+    print('-------------')
+    print(*session.values(), sep='\n')
     form = LoginForm()
     entire_form_error = []
     extra_error = None
