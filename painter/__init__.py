@@ -15,8 +15,9 @@ app = Flask(
 from flask_wtf.csrf import CSRFProtect
 from .apps import other_router, place_router, accounts_router, admin_router
 from .config import Config  # config
-from .extensions import db, mailbox, engine, login_manager
+from .extensions import db, mailbox, engine, login_manager, cache, firebase
 from .skio import board, sio
+
 
 app.config.from_object(Config)
 
@@ -25,7 +26,9 @@ mailbox.init_app(app)
 sio.init_app(app)
 login_manager.init_app(app)
 board.init_app(app)
+cache.init_app(app)
 CSRFProtect(app)
+firebase.init_app(app)
 # insert other staff
 app.register_blueprint(other_router)
 app.register_blueprint(place_router)

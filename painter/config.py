@@ -1,5 +1,6 @@
 class Config:
-    ENV = 'development'
+    # ENV = 'development'
+    DEBUG = False
     SEND_FILE_MAX_AGE_DEFAULT = 1
     SQLALCHEMY_DATABASE_URI = 'sqlite:///C:\\Cyber\\2020\\rplace\\database.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = True
@@ -22,3 +23,5 @@ class Config:
     WERKZEUG_RUN_MAIN = True
     REMEMBER_COOKIE_NAME = 'PlessRememberMeForTheLoveOfGod'
     REMEMBER_COOKIE_HTTPONLY = True
+    FIRBASE_CERTIFICATE_PATH = 'C:\Cyber\2020\rplace\certificate.json'
+    CACHE_TYPE = 'simple'
