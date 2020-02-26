@@ -1,1 +1,1 @@
-from .firebase import FlaskFirebase
+from .firebase import Firebase

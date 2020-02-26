@@ -3,13 +3,13 @@ from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from flask_caching import Cache
-from .firebase import FlaskFirebase
+from .firebase import Firebase
 from .config import Config
 mailbox = Mail()
 db = SQLAlchemy()
 cache = Cache()
 engine = create_engine(Config.SQLALCHEMY_DATABASE_URI)
-firebase = FlaskFirebase()
+firebase = Firebase()
 # crsf protection
 
 # only after creating the UserModel
