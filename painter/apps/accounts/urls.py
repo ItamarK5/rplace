@@ -1,14 +1,15 @@
 import time
 from os import path
 
-from flask import Blueprint, url_for, render_template, redirect, current_app, request, session
-from flask_login import login_user, logout_user, current_user
+from flask import Blueprint, url_for, render_template, redirect, current_app, request
+from flask_login import logout_user, current_user
 from werkzeug.wrappers import Response
+
 from painter.constants import WEB_FOLDER
 from painter.extensions import db
 from painter.models.user import Role
 from painter.models.user import User
-from .forms import LoginForm, SignUpForm, RevokeForm, ChangePasswordForm
+from .forms import LoginForm, SignUpForm, RevokeForm
 from .helpers import *
 from .mail import send_sign_up_mail, send_revoke_password
 
@@ -29,13 +30,28 @@ def login() -> Response:
     added in version 1.0.0
     :return: login page response
     """
-    print(request.json)
-    print(*request.cookies, sep='\n')
-    print('-------------')
-    print(*session.values(), sep='\n')
+    print(*request.data, sep='\n')
+
     form = LoginForm()
     entire_form_error = []
     extra_error = None
+    """
+    if request.method.lower() == 'post':
+        x = time.time()
+        try:
+            # Verify the ID token while checking if the token is revoked by
+            # passing check_revoked=True.
+            decoded_token = auth.verify_id_token(request.form['token'], check_revoked=True)
+            # Token is valid and not revoked.
+            uid = decoded_token['uid']
+        except auth.RevokedIdTokenError:
+            # Token revoked, inform the user to reauthenticate or signOut().
+            pass
+        except auth.InvalidIdTokenError:
+            # Token is invalid
+            pass
+        print(time.time()-x)
+    """
     if form.validate_on_submit():
         return redirect(url_for('place.home'))
     # clear password

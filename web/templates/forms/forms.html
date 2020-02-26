@@ -49,7 +49,7 @@
 </div>
 {% endblock %}
 <script src="{{url_for('other.serve_static', key='auth.js')}}"></script>
-<!-- The core Firebase JS SDK is always required and must be listed first -->
+{#<!-- The core Firebase JS SDK is always required and must be listed first -->
 <script src="https://www.gstatic.com/firebasejs/7.9.1/firebase-app.js"></script>
 <!-- TODO: Add SDKs for Firebase products that you want to use
      https://firebase.google.com/docs/web/setup#available-libraries -->
@@ -71,7 +71,7 @@
   firebase.analytics();
 </script>
 <script src="https://www.gstatic.com/firebasejs/7.9.1/firebase-auth.js"></script>
-<script src="{{url_for('other.serve_static', key=form.name+'.js')}}"></script>
+<script src="{{url_for('other.serve_static', key=form.name+'.js')}}"></script>#}
 <!-- popper.js - needed for bootstarp -->
 <script crossorigin="anonymous"
     integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"

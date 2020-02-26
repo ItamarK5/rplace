@@ -9,7 +9,7 @@ mailbox = Mail()
 db = SQLAlchemy()
 cache = Cache()
 engine = create_engine(Config.SQLALCHEMY_DATABASE_URI)
-firebase = Firebase()
+# firebase = Firebase()
 # crsf protection
 
 # only after creating the UserModel

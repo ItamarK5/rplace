@@ -28,7 +28,7 @@ login_manager.init_app(app)
 board.init_app(app)
 cache.init_app(app)
 CSRFProtect(app)
-firebase.init_app(app)
+# firebase.init_app(app)
 # insert other staff
 app.register_blueprint(other_router)
 app.register_blueprint(place_router)
