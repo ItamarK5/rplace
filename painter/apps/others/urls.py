@@ -6,12 +6,11 @@ from flask import (
     Blueprint, render_template, send_from_directory,
     request, abort, Response
 )
-from flask_wtf.csrf import CSRFError    # ignore all
+from flask_wtf.csrf import CSRFError  # ignore all
 from werkzeug.exceptions import HTTPException, NotFound
 
 from painter.constants import MIME_TYPES, WEB_FOLDER
 from .helpers import get_file_type
-
 
 other_router = Blueprint(
     'other',

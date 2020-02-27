@@ -1,10 +1,11 @@
+from flask_caching import Cache
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
-from flask_caching import Cache
-from .firebase import Firebase
+
 from .config import Config
+
 mailbox = Mail()
 db = SQLAlchemy()
 cache = Cache()

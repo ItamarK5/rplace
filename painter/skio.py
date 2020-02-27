@@ -55,7 +55,6 @@ class Board:
 
     def init_app(self, app: Flask) -> NoReturn:
         app.before_first_request(self.save_board)
-
     #        app.before_first_request(self.process_board)
 
     def set_at(self, x, y, color) -> NoReturn:

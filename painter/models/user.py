@@ -12,7 +12,6 @@ from .role import Role, SmallEnum
 from ..config import Config
 from ..extensions import db, login_manager
 
-
 reNAME = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
 rePSWD = re.compile(r'^[a-f0-9]{128}$')  # password hashed so get hash value
 reEMAIL = re.compile(

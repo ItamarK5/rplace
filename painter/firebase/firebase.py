@@ -1,8 +1,11 @@
 from __future__ import annotations
+
 import warnings
 from typing import Optional, Any, Dict
-from flask import Flask
+
 from firebase_admin import initialize_app, credentials, db, auth
+from flask import Flask
+
 
 class Firebase:
     ext = None    # the building object

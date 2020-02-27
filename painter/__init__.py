@@ -4,6 +4,8 @@ from flask import Flask
 
 from .constants import WEB_FOLDER
 
+from flask_redis import FlaskRedis
+
 app = Flask(
     __name__,
     static_folder='',
@@ -15,9 +17,8 @@ app = Flask(
 from flask_wtf.csrf import CSRFProtect
 from .apps import other_router, place_router, accounts_router, admin_router
 from .config import Config  # config
-from .extensions import db, mailbox, engine, login_manager, cache, firebase
+from .extensions import db, mailbox, engine, login_manager, cache  # ,firebase
 from .skio import board, sio
-
 
 app.config.from_object(Config)
 
