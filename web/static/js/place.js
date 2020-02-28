@@ -1,9 +1,4 @@
-/*
-    level of functions
-    1) the interaction
-    2) setting the query
-    3) a function that affect the board as result of change in query
-*/
+/* level of functions 1) the interaction 2) setting the query 3) a function that affect the board as result of change in query*/
 const BACKGROUND_COLOR = '#777777'
 const CANVAS_SIZE = 1000;
 const MIN_STEP_SIZE = 1;
@@ -525,7 +520,7 @@ const query = {
         if((!isNaN(scale)) && is_valid_scale(scale)){
             return scale;
         }
-        return DEFAULT_START_AXIS;
+        return SIMPLE_UNZOOM_LEVEL;
     },
     // use regex to get fragments
     determineFragments() {

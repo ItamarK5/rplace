@@ -6,7 +6,6 @@ from flask_login import login_user
 from flask_wtf import FlaskForm
 from wtforms import *
 from wtforms.fields.html5 import EmailField
-
 from painter.models.user import User
 
 

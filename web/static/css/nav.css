@@ -1,4 +1,4 @@
-.nav > * {margin-right:5px;}
+.nav > * {margin-right:.1em;}
 .nav:last-child {margin-right:0px;}
 .nav-link {color:#212529 !important;  }
 .navbar {background-color:#444444 !important}

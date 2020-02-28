@@ -1,5 +1,6 @@
 const FORM_INPUT = '#setting-input'
 const GET_FIELD = /.+(?=-active)/i
+// minimal title regex to find all non-upper characters after space or nothing
 const ToTitleCaseRegex = /(<=\x20|^)[a-z]/g;
 const COLORS = [
     'white', 'black', 'gray', 'silver',
@@ -9,18 +10,28 @@ const COLORS = [
 ]
 
 const SettingDescriber = $('#setting-describer');
-function setColor(val){
+/**
+ * 
+ * @param {String} clr 
+ * @returns {object} object
+ */
+function setColor(clr){
     return {
-        'background-color':val,
+        'background-color':clr,
         color:val != 'black' ? 'black' : 'white'    
     }
 }
+
 String.prototype.toTitleCase = function(){
     return this.replace(ToTitleCaseRegex, (str) => str.toUpperCase())
 }
 
 const hideModalAlert = () => $('#setting-alert').hide();
-
+/**
+ * 
+ * @param {HTMLFormElement} form 
+ * @param {String} val 
+ */
 function AddUlrInput(form, val){
     let group = $('<div></div>').addClass('input-group input-group-default').attr('id', FORM_INPUT.slice(1)+'-father').appendTo(form)
     $('<input>').attr({
@@ -74,9 +85,9 @@ function addForm(form, field, val){
                 class:'form-control-range',
                 min:0,
                 max:999,
-                val:parseInt(val),
+                value:parseInt(val),
                 type:'range',
-            }).change(function(e){
+            }).change(function(){
                 SettingDescriber.text(this.value);
                 hideModalAlert();
             }).appendTo(form);
@@ -92,7 +103,7 @@ function addForm(form, field, val){
                 max:50,
                 value:parseInt(val),
                 type:'range',
-            }).change(function(e){
+            }).change(function(){
                 SettingDescriber.text(this.value.toString());
                 hideModalAlert()
             }).appendTo(form);

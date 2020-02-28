@@ -1,5 +1,5 @@
 {% macro render_field(field) %}
-<div class="form-row mb-1">
+<div class="form-group form-row mb-1">
     <div class="input-group">
         {% if field.errors %}
         {% set extra_class = "danger" %}
@@ -8,7 +8,7 @@
         {% endif %}
         <div class="input-group-prepend">
             <span class='text-{{extra_class}} is-invalid input-group-text field-input non-select border-{{extra_class}}'
-                  for={{field.id}}
+                  for='{{field.id}}'
                   id='{{field.label.id}}'>{{field.label.text}}</span>
         </div>
         {{field(class_ = 'form-control align-self-center border-'+ extra_class)}}

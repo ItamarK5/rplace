@@ -4,7 +4,6 @@ from datetime import datetime
 from os import path
 from threading import Lock, Timer
 from typing import Any, Dict, Optional, NoReturn
-
 import numpy as np
 from flask import Flask
 from flask_login import current_user
@@ -16,7 +15,6 @@ from .models.pixel import Pixel
 
 BOARD_PATH = path.join(WEB_FOLDER, 'resources', 'board.npy')
 COPY_BOARD_PATH = path.join(WEB_FOLDER, 'resources', 'board2.npy')
-
 sio = SocketIO()
 
 
