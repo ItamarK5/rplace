@@ -1,3 +1,4 @@
+
 /* level of functions 1) the interaction 2) setting the query 3) a function that affect the board as result of change in query*/
 const BACKGROUND_COLOR = '#777777'
 const CANVAS_SIZE = 1000;

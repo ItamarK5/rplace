@@ -3,13 +3,14 @@ from __future__ import annotations
 import re
 
 from flask_login import login_user
-from flask_wtf import FlaskForm
 from wtforms import *
 from wtforms.fields.html5 import EmailField
+
+from painter.encryption.form import EncryptedForm
 from painter.models.user import User
 
 
-class LoginForm(FlaskForm):
+class LoginForm(EncryptedForm):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.non_field_errors = []
@@ -70,7 +71,7 @@ class LoginForm(FlaskForm):
         return True
 
 
-class RevokeForm(FlaskForm):
+class RevokeForm(EncryptedForm):
     name = 'revoke'
     title = 'Chnage Your Password'
     email = EmailField(
@@ -87,7 +88,7 @@ class RevokeForm(FlaskForm):
     )
 
 
-class ChangePasswordForm(FlaskForm):
+class ChangePasswordForm(EncryptedForm):
     title = 'Set new Password'
     password = PasswordField(
         'password',
@@ -112,7 +113,7 @@ class ChangePasswordForm(FlaskForm):
         })
 
 
-class SignUpForm(FlaskForm):
+class SignUpForm(EncryptedForm):
     name = 'sign-up'
     title = 'Welcome to Social Painter'
 

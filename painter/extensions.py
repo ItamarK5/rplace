@@ -5,11 +5,13 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 
 from .config import Config
+from .encryption.flask_encrypt import FlaskEncrypt
 
 mailbox = Mail()
 db = SQLAlchemy()
 cache = Cache()
 engine = create_engine(Config.SQLALCHEMY_DATABASE_URI)
+encrypt = FlaskEncrypt()
 # firebase = Firebase()
 # crsf protection
 
