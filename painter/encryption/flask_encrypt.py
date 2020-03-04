@@ -11,8 +11,17 @@ from cryptography.hazmat.primitives import serialization
 __all__ = ['FlaskEncrypt']
 
 
-                     'mXy7w3FPtQ6SfKzdbQGwm69mZuC6oXcrvIuk3NHYw6k42SaW0hN3HiMCAwEAAQ==\n'\
-                     '-----END RSA PUBLIC KEY-----'
+def load_rsa_key(rsa_key: Union[str, bytes]) -> str:
+    if isinstance(rsa_key, str):
+        if os.path.exists(rsa_key):
+            if os.path.isfile(rsa_key):
+                with open(rsa_key, 'rt') as rfile:
+                    return rfile.read()
+            else:
+                raise OSError("Enter a file, not a folder")
+        else:
+            return rsa_key
+    # else
     elif isinstance(rsa_key, bytes):
         return rsa_key.decode()
 
@@ -74,13 +83,15 @@ class FlaskEncrypt:
 
     @property
     def public_key(self):
-        return self.__public_key\
-            .save_pkcs1()
+        return self.__public_key.public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo,
+        ).decode()
 
     """
     pem = private_key.private_bytes(
-...    encoding=serialization.Encoding.PEM,
-...    format=serialization.PrivateFormat.TraditionalOpenSSL,
-...    encryption_algorithm=serialization.NoEncryption()
-... )
+    encoding=serialization.Encoding.PEM,
+    format=serialization.PrivateFormat.TraditionalOpenSSL,
+    encryption_algorithm=serialization.NoEncryption()
+ )
     """
