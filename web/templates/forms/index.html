@@ -13,6 +13,7 @@
     </div>
 </div>
 <script>
+const PRIVATE_KEY = `{{form.meta.get_encryption_key()|safe}}`;
 $(document).ready(function(){
     if(!navigator.cookieEnabled){
         $('#remember-me-row')[0].addAttribute('disabled');
@@ -28,3 +29,6 @@ $(document).ready(function(){
 {{ render_link('revoke-link', 'Forgot your password?', url_for('auth.revoke')) }}
 {% endblock %}
 {% block submit %}Login{% endblock %}
+{% block imports %}
+<script type="text/javascript" src="{{url_for('other.serve_static', key='login.js')}}"></script>
+{% endblock %}

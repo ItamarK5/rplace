@@ -1,5 +1,4 @@
 from __future__ import annotations
-import eventlet
 from datetime import datetime
 from os import path
 from threading import Lock, Timer
@@ -109,7 +108,7 @@ def set_board(params: Dict[str, Any]) -> str:
             return 'undefined'
         if 'color' not in params or (not isinstance(params['color'], int)) or not (0 <= params['color'] < 16):
             return 'undefined'
-        next_time = current_time + MINUTES_COOLDOWN
+        next_time = current_time #+ MINUTES_COOLDOWN
         current_user.next_time = next_time
         x, y, clr = int(params['x']), int(params['y']), int(params['color'])
         db.session.add(Pixel(x=x, y=y, color=clr, drawer=current_user.id, drawn=current_time.timestamp()))

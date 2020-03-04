@@ -20,8 +20,7 @@ sio.init_app(
 )
 board.init_app(app)
 from eventlet import monkey_patch
-
-monkey_patch()
+monkey_patch(socket=False)
 
 from flask_wtf.csrf import CSRFProtect
 from .apps import other_router, place_router, accounts_router, admin_router

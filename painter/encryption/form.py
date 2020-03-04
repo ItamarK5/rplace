@@ -1,6 +1,5 @@
 import warnings
-from typing import Any, Union
-from typing import Optional
+from typing import Any, Union, Optional, Dict
 
 from flask_wtf.form import FlaskForm
 from werkzeug.datastructures import ImmutableMultiDict, CombinedMultiDict
@@ -8,29 +7,38 @@ from werkzeug.datastructures import ImmutableMultiDict, CombinedMultiDict
 from .flask_encrypt import FlaskEncrypt
 
 
-def decrypt_form(pair):
-    return pair[0], FlaskEncrypt.get_ext().decrypt_text(pair[1])
+_SKIP = object()
+
+
+def decrypt_val(encrypted_val:str) -> Union[str, type(_SKIP)]:
+    val = FlaskEncrypt.get_ext().safe_decrypt(encrypted_val)
+    return val if val is not None and val[0] else _SKIP
+
+
+def decrypt_dictionary(dictionary: Dict[str, str]) -> Dict[str, str]:
+    ret = {}
+    for (key, val) in dictionary.items():
+        dval = decrypt_val(val)
+        if dval is not _SKIP:
+            ret[key] = dval
+    return ret
 
 
 class EncryptedForm(FlaskForm):
     class Meta(FlaskForm.Meta):
+        @staticmethod
+        def get_encryption_key():
+            return FlaskEncrypt.get_ext().public_key
+
         def wrap_formdata(self, form: Any, formdata: Any) -> Optional[Union[CombinedMultiDict, ImmutableMultiDict]]:
             data = super().wrap_formdata(form, formdata)
+            # prevent errors
             if data is None:
                 return None
             if isinstance(data, CombinedMultiDict):
-                return CombinedMultiDict(
-                    map(
-                        lambda dictionary: dict(map(
-                            decrypt_form,
-                            dictionary.items()
-                        )),
-                        data.dicts
-                    ))
+                return CombinedMultiDict(map(decrypt_dictionary, data.dicts))
             elif isinstance(data, ImmutableMultiDict):
-                data = ImmutableMultiDict(dict(map(
-                  decrypt_form, data.items()
-                )))
+                data = ImmutableMultiDict(decrypt_dictionary(data))
                 return data
             # else
             warnings.warn(f'Type {type(data)} not supported')
