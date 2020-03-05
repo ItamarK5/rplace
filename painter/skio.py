@@ -11,7 +11,11 @@ sio = SocketIO()
 
 
 class PaintNamespace(Namespace):
-    def on_connect(self):
+    def on_connect(self) -> None:
+        """
+        :return: nothing
+        when connects to PaintNamespace
+        """
         if not current_user.is_authenticated:
             disconnect()
         # else
@@ -20,11 +24,20 @@ class PaintNamespace(Namespace):
             'time': str(current_user.next_time)
         })
 
-    def set_at(self, x, y, color):
-        board.acquire_board_lock()
-        board.set_at(x, y, color)
-        sio.emit('set-board', (x, y, color))
-        board.release_board_lock()
+    def set_at(self, x: int, y: int, color: int) -> None:
+        """
+        :param x: valid x coordinate
+        :param y: valid y coordinate
+        :param color: color of the pixel
+        :return: nothing
+        sets a pixel on the screen
+        -- check if nothing else sets a pixel
+        -- sets the pixel in the redis server
+        -- brodcast to all watchers that the pixel has changed
+        """
+        with board.board_lock:
+            board.set_at(x, y, color)
+            self.emit('set-board', (x, y, color))
 
     def on_set_board(self, params: Dict[str, Any]) -> str:
         """
@@ -55,7 +68,7 @@ class PaintNamespace(Namespace):
                     drawn=current_time.timestamp()
                 )
             )
-            sio.start_background_task(board.set_at, x=x, y=y, color=clr)
+            sio.start_background_task(self.set_at, x=x, y=y, color=clr)
             db.session.commit()
             # setting the board
             """

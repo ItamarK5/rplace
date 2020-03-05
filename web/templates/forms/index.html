@@ -31,7 +31,12 @@ $(document).ready(function(){
 {% block submit %}Login{% endblock %}
 {% block imports %}
 {{super()}}
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+<!-- Shopping Cart Cookies -->
+<script type="text/plain" cookie-consent="strictly-necessary" src="/js/shopping-cart-sessions.js"></script>
+
+<!-- Google Tracking Code -->
+<script type="text/javascript" src="//www.termsfeed.com/public/cookie-consent/3.0.0/cookie-consent.js"></script>
+<<script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js" integrity="sha256-G7A4JrJjJlFqP0yamznwPjAApIKPkadeHfyIwiaa9e0=" crossorigin="anonymous"></script>
 <script type="text/javascript" src="{{url_for('other.serve_static', key='login.js')}}"></script>
 {% endblock %}

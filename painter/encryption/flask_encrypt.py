@@ -1,7 +1,7 @@
 from __future__ import annotations
 import os
 import warnings
-from typing import Optional, Tuple, Union
+from typing import Optional, Union
 from flask import Flask
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.backends import default_backend

@@ -2,15 +2,20 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a715d08e-a6c8-4e6b-bf6e-77648af165a7" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/painter/backends/board.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/painter/backends/redis_backend.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/USER.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/USER.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/database.db" beforeDir="false" afterPath="$PROJECT_DIR$/database.db" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/painter/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/painter/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/painter/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/painter/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/painter/extensions.py" beforeDir="false" afterPath="$PROJECT_DIR$/painter/extensions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/painter/apps/accounts/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/painter/apps/accounts/forms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/painter/backends/board.py" beforeDir="false" afterPath="$PROJECT_DIR$/painter/backends/board.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/painter/encryption/flask_encrypt.py" beforeDir="false" afterPath="$PROJECT_DIR$/painter/encryption/flask_encrypt.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/painter/models/user.py" beforeDir="false" afterPath="$PROJECT_DIR$/painter/models/user.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/painter/skio.py" beforeDir="false" afterPath="$PROJECT_DIR$/painter/skio.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/static/js/place.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/static/js/place.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/painter/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/painter/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/static/js/login.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/static/js/login.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/templates/forms/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/templates/forms/index.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -83,22 +88,22 @@
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state x="137" y="20" width="1092" height="706" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1366.728@0.0.1366.728" timestamp="1583412152314" />
-    <state width="1345" height="254" key="GridCell.Tab.0.bottom" timestamp="1583420259181">
+    <state width="1345" height="254" key="GridCell.Tab.0.bottom" timestamp="1583431749679">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1345" height="254" key="GridCell.Tab.0.bottom/0.0.1366.728@0.0.1366.728" timestamp="1583420259181" />
-    <state width="1345" height="254" key="GridCell.Tab.0.center" timestamp="1583420259179">
+    <state width="1345" height="254" key="GridCell.Tab.0.bottom/0.0.1366.728@0.0.1366.728" timestamp="1583431749679" />
+    <state width="1345" height="254" key="GridCell.Tab.0.center" timestamp="1583431749679">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1345" height="254" key="GridCell.Tab.0.center/0.0.1366.728@0.0.1366.728" timestamp="1583420259179" />
-    <state width="1345" height="254" key="GridCell.Tab.0.left" timestamp="1583420259179">
+    <state width="1345" height="254" key="GridCell.Tab.0.center/0.0.1366.728@0.0.1366.728" timestamp="1583431749679" />
+    <state width="1345" height="254" key="GridCell.Tab.0.left" timestamp="1583431749679">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1345" height="254" key="GridCell.Tab.0.left/0.0.1366.728@0.0.1366.728" timestamp="1583420259179" />
-    <state width="1345" height="254" key="GridCell.Tab.0.right" timestamp="1583420259180">
+    <state width="1345" height="254" key="GridCell.Tab.0.left/0.0.1366.728@0.0.1366.728" timestamp="1583431749679" />
+    <state width="1345" height="254" key="GridCell.Tab.0.right" timestamp="1583431749679">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1345" height="254" key="GridCell.Tab.0.right/0.0.1366.728@0.0.1366.728" timestamp="1583420259180" />
+    <state width="1345" height="254" key="GridCell.Tab.0.right/0.0.1366.728@0.0.1366.728" timestamp="1583431749679" />
     <state x="184" y="7" key="SettingsEditor" timestamp="1583412155319">
       <screen x="0" y="0" width="1366" height="728" />
     </state>

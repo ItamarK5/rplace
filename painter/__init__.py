@@ -10,6 +10,7 @@ app = Flask(
     root_path=WEB_FOLDER
 )
 
+
 from eventlet import monkey_patch
 from .skio import board, sio
 from .backends import redis_backend, board
@@ -20,12 +21,15 @@ from .extensions import db, mailbox, engine, login_manager, encrypt  # ,firebase
 
 sio.init_app(
     app,
-    message_queue='redis://192.168.0.219:6379/0'
+    # message_queue='redis://192.168.0.219:6379/0'
 )
-board.init_app(app)
-redis_backend.rds_backend.init_app(app)
+
 app.config.from_object(Config)
 
+"""
+    redis_backend.rds_backend.init_app(app)
+    board.init_app(app)
+"""
 db.init_app(app)
 mailbox.init_app(app)
 login_manager.init_app(app)

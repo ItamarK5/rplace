@@ -3,7 +3,11 @@ from threading import Lock
 from flask import Flask
 from .redis_backend import rds_backend
 
-_set_lock = Lock()
+"""
+A backend to work with the board on redis
+"""
+
+board_lock = Lock()
 
 
 def make_board() -> NoReturn:
@@ -26,32 +30,18 @@ def init_app(app: Flask) -> NoReturn:
     app.before_first_request(make_board)
 
 
-def acquire_board_lock() -> NoReturn:
-    """
-    :return: nothing
-    captures the set_lock of the board
-    """
-    _set_lock.acquire()
-
-
-def release_board_lock():
-    """
-    :return: nothing
-    releases the captures lock, works only if captured it before
-    """
-    _set_lock.release()
-
-
 def set_at(x: int, y: int, color: int) -> NoReturn:
     """
-    :param x:
-    :param y:
-    :param color:
+    :param x: x of the colored pixel
+    :param y: y of the colored pixel
+    :param color: the color the user setted the pixel
     :return: nothing
     set a pixel on the board copy in the redis server
     """
     bitfield = rds_backend.bitfield('board')
-    bitfield.set('u4', (y * 1000 + x) * 4, color)
+    # need to count for little endian
+    x_endian = x + (-1)**(x % 2)
+    bitfield.set('u4', (y * 1000 + x_endian) * 4, color)
     bitfield.execute()
 
 
@@ -75,8 +65,7 @@ __all__ = [
     'make_board',
     'set_at',
     'init_app',
-    'acquire_board_lock',
-    'release_board_lock',
+    'board_lock',
     'get_board',
     'debug_board'
 ]

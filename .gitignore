@@ -1,3 +1,4 @@
+*.pyc
 .vscode/
 painter/rsa/script.py
 painter/rsa/rsa2.py
@@ -9,5 +10,4 @@ web/node_modules/*
 web/package-lock.json
 web/package.json
 certificate.json
-/venv/
-*.pyc
+venv/

@@ -12,6 +12,7 @@ from .role import Role, SmallEnum
 from ..config import Config
 from ..extensions import db, login_manager
 
+
 reNAME = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
 rePSWD = re.compile(r'^[a-f0-9]{128}$')  # password hashed so get hash value
 reEMAIL = re.compile(
@@ -79,6 +80,8 @@ def load_user(user_token: str) -> Optional[User]:
     """
     :param user_token: the string value saved in a cookie/session of the user.
     :return: the matched user for the token
+    id&password
+    flask encrypts it so I dont worry
     """
     # first get the id
     identity_keys = user_token.split('&')  # password hash, email, user_id

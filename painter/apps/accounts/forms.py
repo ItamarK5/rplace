@@ -60,6 +60,7 @@ class LoginForm(EncryptedForm):
             username=self.username.data,
             password=User.encrypt_password(self.username.data, self.password.data)
         ).first()
+        print(user)
         if user is None:
             self.password.errors.append('username and password don\'t match')
             self.username.errors.append('username and password don\'t match')
@@ -168,7 +169,7 @@ class SignUpForm(EncryptedForm):
         if not super().validate():
             return False
         is_dup_name = User.query.filter_by(username=self.username.data).first() is not None
-        is_dup_email = User.query.filter_by(email=self.email.data) is not None
+        is_dup_email = User.query.filter_by(email=self.email.data).first() is not None
         if is_dup_name or is_dup_name:
             if is_dup_name:
                 self.username.errors.append('name already exists')

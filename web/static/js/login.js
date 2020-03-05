@@ -1,3 +1,4 @@
+
 $(document).ready(function(){
   const encrypt = new JSEncrypt();
   encrypt.setPublicKey(PRIVATE_KEY);
@@ -47,6 +48,10 @@ $(document).ready(function(){
             icon:'error',
             title:'Cookies required',
             html:'You need to enable cookies in your browser before allowing.\nTo learn how to enable them <a href="https://www.whatismybrowser.com/guides/how-to-enable-cookies/auto">Click Here</a>'
+          }).then(() => {
+            if(!navigator.cookieEnabled){
+              this.checked = false;
+            }
           })
         }
       }
