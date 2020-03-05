@@ -10,6 +10,7 @@ class Config:
     MAIL_PASSWORD = ',[+=dDAbg9a'
     MAIL_USE_SSL = False
     MAIL_USE_TLS = True
+    REDIS_URL = 'redis://192.168.0.219:6379/0'
     MAIL_DEBUG = True
     MAIL_PORT = 587
     MAIL_DEFAULT_SENDER = 'Social Painter Dash'

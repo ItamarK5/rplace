@@ -1,7 +1,5 @@
 from os import path
-
 from flask import Flask
-
 from .constants import WEB_FOLDER
 
 app = Flask(
@@ -12,21 +10,20 @@ app = Flask(
     root_path=WEB_FOLDER
 )
 
-from .skio import board, sio
-
-sio.init_app(
-    app,
-    # message_queue='redis://192.168.56.1:6379/0'
-)
-board.init_app(app)
 from eventlet import monkey_patch
-monkey_patch(socket=False)
-
+from .skio import board, sio
+from .backends import redis_backend, board
 from flask_wtf.csrf import CSRFProtect
 from .apps import other_router, place_router, accounts_router, admin_router
 from .config import Config  # config
 from .extensions import db, mailbox, engine, login_manager, encrypt  # ,firebase
 
+sio.init_app(
+    app,
+    message_queue='redis://192.168.0.219:6379/0'
+)
+board.init_app(app)
+redis_backend.rds_backend.init_app(app)
 app.config.from_object(Config)
 
 db.init_app(app)
@@ -42,3 +39,4 @@ app.register_blueprint(accounts_router)
 app.register_blueprint(admin_router)
 
 db.create_all(app=app)
+monkey_patch()

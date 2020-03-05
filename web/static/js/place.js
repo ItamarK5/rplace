@@ -576,7 +576,7 @@ const query = {
                 board.updateZoom();
             }
         } else {
-            board.setHash();
+            this.setHash();
         }
     },
     // set the window.loaction.hash to the query hash value
@@ -877,9 +877,8 @@ const board = {
             // first version of putting data, looping over the image buffer array and not of buffer of message
             //var bit = buffer[Math.floor(index/2)];
             //self.buffer[index] = reverseRGBA(COLORS[index % 2 == 0 ? bit % 16 : bit >> 4]);
-            image_buffer[index * 2] = Colors.colors[val % 16].abgr;
-            image_buffer[index * 2 + 1] = Colors.colors[Math.floor(
-                val / 16)].abgr;
+            image_buffer[index * 2] = Colors.colors[val % 16].abgr;  // small int
+            image_buffer[index * 2 + 1] = Colors.colors[Math.floor(val / 16)].abgr;    // big int
         });
         this.ctx_image.putImageData(image_data, 0, 0);
         this.beforeFirstDraw();
@@ -1050,8 +1049,9 @@ const board = {
     }
 };
 //const performance_arr = []
-// need to handle entering different rooms
-const sock = io();
+// maybe need handle entering different rooms
+// very important check coords again and look at how it sets bit
+const sock = io('/paint');
 $(document).ready(function() {
     Colors.construct();
     query.construct();
