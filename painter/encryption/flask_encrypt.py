@@ -7,7 +7,6 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 
-
 __all__ = ['FlaskEncrypt']
 
 
@@ -68,12 +67,13 @@ class FlaskEncrypt:
         app.extensions['FLASK_ENCRYPT'] = self
 
     def encyrpt_text(self, text: str) -> str:
-        return self.__public_key.encrypt(text)
+        return self.__public_key.encrypt(text, 0)
 
-    def decrypt_text(self, text:str) -> str:
-        return self.__private_key.encrypt(text)
+    def decrypt_text(self, text: str) -> str:
+        print(text)
+        return self.__private_key.decrypt(text, 0)
 
-    def safe_decrypt(self, text:str) -> str:
+    def safe_decrypt(self, text: str) -> str:
         return self.decrypt_text(text)
 
     @property
@@ -87,11 +87,3 @@ class FlaskEncrypt:
             encoding=serialization.Encoding.PEM,
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
         ).decode()
-
-    """
-    pem = private_key.private_bytes(
-    encoding=serialization.Encoding.PEM,
-    format=serialization.PrivateFormat.TraditionalOpenSSL,
-    encryption_algorithm=serialization.NoEncryption()
- )
-    """

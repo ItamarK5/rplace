@@ -26,7 +26,7 @@
     <div class="container">
     <section class="row justify-content-center align-items-center">
     {% block form %}
-    <form class="w-75 x-auto y-auto" method="POST" url="{{ request.url }}">
+    <form id="submit-form" class="w-75 x-auto y-auto" method="POST" url="{{ request.url }}">
         {{ form.hidden_tag() }}{% block before_title %}{% endblock %}
         <div class="form-row mb-1s display-2 text-center">
             <!-- warning was used as nice title -->
@@ -49,9 +49,17 @@
     {% endblock %}
 </section>
 </div>
-{% endblock %}\
+{% endblock %}
+{% block imports %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/2.3.1/jsencrypt.js" integrity="sha256-EC4uJBUVJajz55e16crIlugfOU9dQLHFVqVjw9E0wpI=" crossorigin="anonymous"></script>
-{% block imports %}{% endblock %}
+<script crossorigin="anonymous"
+    integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+    src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+<!-- bootstarp -->
+<script crossorigin="anonymous"
+    integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+    src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+{% endblock %}
 {#<script src="https://www.gstatic.com/firebasejs/7.9.1/firebase-app.js"></script>
 <!-- TODO: Add SDKs for Firebase products that you want to use
      https://firebase.google.com/docs/web/setup#available-libraries -->
@@ -74,12 +82,6 @@
 </script>
 <script src="https://www.gstatic.com/firebasejs/7.9.1/firebase-auth.js"></script>#}
 <!-- popper.js - needed for bootstarp -->
-<script crossorigin="anonymous"
-    integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-    src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
-<!-- bootstarp -->
-<script crossorigin="anonymous"
-    integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
-    src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
 </body>
 </html>

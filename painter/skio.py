@@ -6,11 +6,12 @@ from typing import Any, Dict, Optional, NoReturn
 import numpy as np
 from flask import Flask
 from flask_login import current_user
-from flask_socketio import SocketIO, emit, disconnect
+from flask_socketio import SocketIO, emit, disconnect, join_room, leave_room
 
 from painter.constants import WEB_FOLDER, MINUTES_COOLDOWN
 from painter.extensions import db
 from .models.pixel import Pixel
+from eventlet import monkey_patch
 
 BOARD_PATH = path.join(WEB_FOLDER, 'resources', 'board.npy')
 COPY_BOARD_PATH = path.join(WEB_FOLDER, 'resources', 'board2.npy')
@@ -88,6 +89,10 @@ def connect_handler() -> None:
     sio.emit('place-start', {
         'board': board.get_bytes(), 'time': str(current_user.next_time)
     })
+
+KNOWN_GROUPS = {
+    'painter'
+}
 
 
 @sio.on('set-board')

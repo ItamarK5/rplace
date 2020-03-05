@@ -429,7 +429,6 @@ const query = {
     },
     enableUpdateHash() {
         if (this.__can_set_hash != HashChangeFlag.Enabled) {
-            console.log(this)
             if (this.__can_set_hash == HashChangeFlag.Needed) {
                 this.__can_set_hash = HashChangeFlag.Enabled
                 this.setHash()
@@ -1051,6 +1050,7 @@ const board = {
     }
 };
 //const performance_arr = []
+// need to handle entering different rooms
 const sock = io();
 $(document).ready(function() {
     Colors.construct();

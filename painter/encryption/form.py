@@ -33,12 +33,16 @@ class EncryptedForm(FlaskForm):
         def wrap_formdata(self, form: Any, formdata: Any) -> Optional[Union[CombinedMultiDict, ImmutableMultiDict]]:
             data = super().wrap_formdata(form, formdata)
             # prevent errors
-            if data is None:
-                return None
-            if isinstance(data, CombinedMultiDict):
-                return CombinedMultiDict(map(decrypt_dictionary, data.dicts))
-            elif isinstance(data, ImmutableMultiDict):
-                data = ImmutableMultiDict(decrypt_dictionary(data))
-                return data
-            # else
-            warnings.warn(f'Type {type(data)} not supported')
+            return data
+            """
+                if data is None:
+                    return None
+                if isinstance(data, CombinedMultiDict):
+                    return CombinedMultiDict(map(decrypt_dictionary, data.dicts))
+                elif isinstance(data, ImmutableMultiDict):
+                    data = ImmutableMultiDict(decrypt_dictionary(data))
+                    return data
+                # else
+                warnings.warn(f'Type {type(data)} not supported')
+            """
+
