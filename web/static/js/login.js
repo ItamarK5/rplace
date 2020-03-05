@@ -46,7 +46,7 @@ $(document).ready(function(){
           Swal.fire({
             icon:'error',
             title:'Cookies required',
-            text:'You need to enable cookies in your browser before allowing'
+            html:'You need to enable cookies in your browser before allowing.\nTo learn how to enable them <a href="https://www.whatismybrowser.com/guides/how-to-enable-cookies/auto">Click Here</a>'
           })
         }
       }

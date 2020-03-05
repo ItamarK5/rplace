@@ -11,7 +11,7 @@ from flask_socketio import SocketIO, emit, disconnect, join_room, leave_room
 from painter.constants import WEB_FOLDER, MINUTES_COOLDOWN
 from painter.extensions import db
 from .models.pixel import Pixel
-from eventlet import monkey_patch
+
 
 BOARD_PATH = path.join(WEB_FOLDER, 'resources', 'board.npy')
 COPY_BOARD_PATH = path.join(WEB_FOLDER, 'resources', 'board2.npy')
@@ -87,12 +87,9 @@ def connect_handler() -> None:
         return
     # else
     sio.emit('place-start', {
-        'board': board.get_bytes(), 'time': str(current_user.next_time)
+        'board': board.get_bytes(),
+        'time': str(current_user.next_time)
     })
-
-KNOWN_GROUPS = {
-    'painter'
-}
 
 
 @sio.on('set-board')
@@ -116,7 +113,15 @@ def set_board(params: Dict[str, Any]) -> str:
         next_time = current_time #+ MINUTES_COOLDOWN
         current_user.next_time = next_time
         x, y, clr = int(params['x']), int(params['y']), int(params['color'])
-        db.session.add(Pixel(x=x, y=y, color=clr, drawer=current_user.id, drawn=current_time.timestamp()))
+        db.session.add(
+            Pixel(
+                x=x,
+                y=y,
+                color=clr,
+                drawer=current_user.id,
+                drawn=current_time.timestamp()
+            )
+        )
         # board.set_at(x, y, clr)
         db.session.commit()
         emit('set-board', (x, y, clr), brodcast=True)
