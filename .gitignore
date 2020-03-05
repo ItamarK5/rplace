@@ -10,3 +10,4 @@ web/package-lock.json
 web/package.json
 certificate.json
 /venv/
+*.pyc
