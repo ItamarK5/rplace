@@ -28,18 +28,6 @@ def send_message(f: Callable[[Any], Message]) -> Callable[[Tuple[Any], Dict[str,
     return wrapper
 
 
-def run_async(name: Optional[str] = None) -> Callable:
-def socket_io_authenticated_only(f: Callable) -> Callable:
-    @wraps(f)
-    def wrapped(*args, **kwargs) -> Any:
-        if not current_user.is_authenticated:
-            socketio_disconnect()
-        else:
-            return f(*args, **kwargs)
-
-    return wrapped
-
-
 def admin_only(f: Callable) -> Callable:
     """
     :param f: decorator, which decorates a view, make it admin only used

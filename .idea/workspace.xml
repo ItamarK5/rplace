@@ -2,20 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a715d08e-a6c8-4e6b-bf6e-77648af165a7" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/USER.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/USER.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/rplace.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database.db" beforeDir="false" afterPath="$PROJECT_DIR$/database.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/painter/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/painter/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/painter/apps/accounts/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/painter/apps/accounts/forms.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/painter/backends/board.py" beforeDir="false" afterPath="$PROJECT_DIR$/painter/backends/board.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/painter/encryption/flask_encrypt.py" beforeDir="false" afterPath="$PROJECT_DIR$/painter/encryption/flask_encrypt.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/painter/models/user.py" beforeDir="false" afterPath="$PROJECT_DIR$/painter/models/user.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/painter/skio.py" beforeDir="false" afterPath="$PROJECT_DIR$/painter/skio.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/painter/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/painter/utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/static/js/login.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/static/js/login.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/templates/forms/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/templates/forms/index.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,11 +30,12 @@
   </component>
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RunManager">
     <configuration name="app" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="project5" />
+      <module name="rplace" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -56,7 +47,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/app.py" />
-      <option name="PARAMETERS" value="" />
+      <option name="PARAMETERS" value="8080" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -84,10 +75,14 @@
     <servers />
   </component>
   <component name="WindowStateProjectService">
-    <state x="137" y="20" width="1092" height="706" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1583412152314">
+    <state x="402" y="0" key="#app" timestamp="1583497004129">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state x="137" y="20" width="1092" height="706" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1366.728@0.0.1366.728" timestamp="1583412152314" />
+    <state x="402" y="0" key="#app/0.0.1366.728@0.0.1366.728" timestamp="1583497004129" />
+    <state x="137" y="20" width="1092" height="706" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1583496979800">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state x="137" y="20" width="1092" height="706" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1366.728@0.0.1366.728" timestamp="1583496979800" />
     <state width="1345" height="254" key="GridCell.Tab.0.bottom" timestamp="1583431749679">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
@@ -104,10 +99,10 @@
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state width="1345" height="254" key="GridCell.Tab.0.right/0.0.1366.728@0.0.1366.728" timestamp="1583431749679" />
-    <state x="184" y="7" key="SettingsEditor" timestamp="1583412155319">
+    <state x="184" y="7" key="SettingsEditor" timestamp="1583496989498">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state x="184" y="7" key="SettingsEditor/0.0.1366.728@0.0.1366.728" timestamp="1583412155319" />
+    <state x="184" y="7" key="SettingsEditor/0.0.1366.728@0.0.1366.728" timestamp="1583496989498" />
     <state x="346" y="49" width="672" height="678" key="search.everywhere.popup" timestamp="1583419616854">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
