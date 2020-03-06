@@ -12,8 +12,7 @@ app = Flask(
 
 
 from eventlet import monkey_patch
-from .skio import board, sio
-from .backends import redis_backend, board
+from .skio import sio
 from flask_wtf.csrf import CSRFProtect
 from .apps import other_router, place_router, accounts_router, admin_router
 from .config import Config  # config
@@ -26,10 +25,7 @@ sio.init_app(
 
 app.config.from_object(Config)
 
-"""
-    redis_backend.rds_backend.init_app(app)
-    board.init_app(app)
-"""
+
 db.init_app(app)
 mailbox.init_app(app)
 login_manager.init_app(app)
@@ -44,3 +40,8 @@ app.register_blueprint(admin_router)
 
 db.create_all(app=app)
 monkey_patch()
+
+# not backends
+# from .backends import redis_backend, board, paint_lock
+#redis_backend.rds_backend.init_app(app)
+# board.init_app(app)

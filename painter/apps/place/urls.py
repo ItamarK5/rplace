@@ -2,7 +2,6 @@ from os.path import join as path_join
 
 from flask import Blueprint, render_template, Response, jsonify
 from flask_login import login_required, current_user
-
 from painter.constants import WEB_FOLDER
 from painter.extensions import db
 from .forms import SettingForm
@@ -42,6 +41,7 @@ def profile():
 
 
 @place_router.route('/settings-submit', methods=("POST",))
+@login_required
 def profile_ajax():
     form = SettingForm()
     if form.validate_on_submit():

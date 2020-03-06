@@ -1,8 +1,8 @@
 body, html { background-color:#222222 !important; }
 #title {color:rgb(56, 221, 56);}
 /* button colors */
-#server-button[state="1"]{background-color:greenyellow;color:green;}
-#server-button[state="2"]{background-color:rgb(170, 36, 36);color:red;}
+#place-button[state="1"]{background-color:greenyellow;color:green;}
+#place-button[state="0"]{background-color:rgb(170, 36, 36);color:red;}
 /* thread colors - col headers */
 th {color:whitesmoke !important;}
 .user-row > * {background-color:#3270b3 !important;}

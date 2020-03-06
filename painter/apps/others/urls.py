@@ -4,13 +4,12 @@ from typing import Union, Optional
 
 from flask import (
     Blueprint, render_template, send_from_directory,
-    request, abort, Response
+    abort, Response, request
 )
 from flask_wtf.csrf import CSRFError  # ignore all
-from werkzeug.exceptions import HTTPException, NotFound
-
+from werkzeug.exceptions import HTTPException
 from painter.constants import MIME_TYPES, WEB_FOLDER
-from .helpers import get_file_type
+from .utils import get_file_type, is_valid_meme_request, has_meme_images
 
 other_router = Blueprint(
     'other',
@@ -57,26 +56,21 @@ def error_meme_render(e: HTTPException,
 def handle_csrf_error(e: CSRFError) -> Response:
     """
     :param e: csrf error
-    :return: csrf error meme html page
+    :return: csrf error meme html page if valid meme request
     """
-    return error_meme_render(
-        e,
-        'csrf',
-        'unvalid csrf token',
-        'Cross-Site-Forgery-Key Error'
-    )
-
-
-@other_router.app_errorhandler(404)
-def error_handler(e: HTTPException) -> Union[str, NotFound]:
-    if 'text/html' in request.accept_mimetypes:
-        return error_meme_render(e)
+    if is_valid_meme_request(request):
+        return error_meme_render(
+            e,
+            'csrf',
+            'unvalid csrf token',
+            'Cross-Site-Forgery-Key Error'
+        )
     return e
 
 
-@other_router.app_errorhandler(400)
-def error_handler(e: HTTPException) -> Union[str, NotFound]:
-    if 'text/html' in request.accept_mimetypes:
+@other_router.app_errorhandler(HTTPException)
+def error_handler(e: HTTPException) -> Union[str, HTTPException]:
+    if has_meme_images(e) and is_valid_meme_request(request):
         return error_meme_render(e)
     return e
 

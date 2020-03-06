@@ -2,15 +2,14 @@ import time
 from os import path
 
 from flask import Blueprint, url_for, render_template, redirect, current_app, request
-from flask_login import logout_user, current_user
+from flask_login import logout_user, current_user, login_user
 from werkzeug.wrappers import Response
-
 from painter.constants import WEB_FOLDER
 from painter.extensions import db
 from painter.models.user import Role
 from painter.models.user import User
 from .forms import LoginForm, SignUpForm, RevokeForm
-from .helpers import *
+from .utils import *
 from .mail import send_sign_up_mail, send_revoke_password
 
 # router blueprint -> routing all pages that relate to authorization
@@ -35,6 +34,24 @@ def login() -> Response:
     form = LoginForm()
     entire_form_error = []
     extra_error = None
+    if form.validate_on_submit():
+        user = User.query.filter_by(
+            username=form.username.data,
+            password=User.encrypt_password(form.username.data, form.password.data)
+        ).first()
+        if user is None:
+            form.password.errors.append('username and password don\'t match')
+            form.username.errors.append('username and password don\'t match')
+        elif not login_user(user, remember=form.remember.data):
+            # must be because user isnt active
+            form.non_field_errors.append('you are banned, so your cant enter')
+        # then generate unique id
+        # https://stackoverflow.com/a/26032898
+        # https://stackoverflow.com/a/43370799
+        else:
+            user.generate_session_key()
+            return redirect(url_for('place.home'))
+
     """
     if request.method.lower() == 'post':
         x = time.time()
@@ -52,8 +69,6 @@ def login() -> Response:
             pass
         print(time.time()-x)
     """
-    if form.validate_on_submit():
-        return redirect(url_for('place.home'))
     # clear password
     form.password.data = ''
     return render_template('forms/index.html',
@@ -168,7 +183,11 @@ def confirm(token: str) -> Response:
                     "maybe someone catch it before you completed, in this situation It should be recommended"
         )
     # else
-    user = User(username=name, password=pswd, email=email)
+    user = User(
+        username=name,
+        password=pswd,
+        email=email
+    )
     db.session.add(user)
     db.session.commit()
     return render_template(

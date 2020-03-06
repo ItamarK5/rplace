@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import Any, Dict
 from flask_login import current_user
-from flask import abort
 from flask_socketio import SocketIO, Namespace, ConnectionRefusedError
 from .backends import board
 from painter.constants import MINUTES_COOLDOWN
@@ -94,17 +93,6 @@ class PaintNamespace(Namespace):
             return 'undefined'
 
 
-class AdminNamespace(Namespace):
-    def on_connect(self):
-        pass
-    def on_disconnect(self):
-        pass
-    def on_message(self, message):
-        print(message)
-
-
 PAINT_NAMESPACE = PaintNamespace('/paint')
-ADMIN_NAMESPACE = AdminNamespace('/ad')
 
 sio.on_namespace(PAINT_NAMESPACE)
-sio.on_namespace(ADMIN_NAMESPACE)

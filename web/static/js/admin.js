@@ -6,4 +6,10 @@ $(document).ready(() => {
             window.location.href = `/edit/${$(this).children('.name-col').text()}`
         };
     });
+    $('#place-button').click(function(){
+        $.get(
+            '/admin-power-button',
+            $(this).attr('state')
+        )
+    })
 });

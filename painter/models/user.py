@@ -3,7 +3,7 @@ import re
 from datetime import datetime
 from hashlib import pbkdf2_hmac
 from typing import Optional
-
+from uuid import uuid4
 from flask_login import UserMixin
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.dialects.sqlite import DATETIME, SMALLINT
@@ -44,6 +44,7 @@ class User(db.Model, UserMixin):
     scale = Column(SMALLINT(), default=4, nullable=False)
     color = Column(SMALLINT(), default=4, nullable=False)
     url = Column(String(), default=None, nullable=True)
+    session_token = Column(String(8), default=None, nullable=True)
     sqlite_autoincrement = True
 
     def __init__(self, password=None, hash_password=None, **kwargs) -> None:
@@ -66,20 +67,23 @@ class User(db.Model, UserMixin):
     def __repr__(self) -> str:
         return f"<User(name={self.username}>"
 
-    def has_required_status(self, role:Role) -> bool:
+    def has_required_status(self, role: Role) -> bool:
         return self.role >= role
 
-    def is_superier_to(self, other:User):
+    def is_superior_to(self, other: User) -> bool:
         return self.role > other.role
 
     def get_id(self) -> str:
         """
         :return: the "id" of the user, the key to be used to identified it
+        first 8 characters are
         """
-        return '&'.join([
-            self.password,
-            super().get_id()
-        ])
+        return str(super().get_id()) + self.session_token + self.password
+
+    def generate_session_key(self):
+        self.session_token = uuid4().hex[:8]
+        db.session.add(self.session_token)
+        db.commit()
 
 
 @login_manager.user_loader
