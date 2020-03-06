@@ -830,12 +830,21 @@ const board = {
         this.imgCanvas.width = CANVAS_SIZE;
         this.imgCanvas.height = CANVAS_SIZE;
         this.ctx_image = this.imgCanvas.getContext('2d');
-        this.pixelQueue = [];
-        this.buildBoard = _.once(this.__buildBoard)
+        this.reset_board_build()
         this.updateZoom(); // also centers
     },
     get is_ready() {
+        /**
+         * checked if the board is ready
+         */
         return _.isNull(this.pixelQueue);
+    },
+    reset_board_build(){
+        /**
+         * reset values for board build
+         */
+        this.buildBoard = _.once(this.__buildBoard);
+        this.pixelQueue = [];
     },
     // level 1
     // interaction of key press
@@ -1055,6 +1064,7 @@ const sock = io('/paint', {
 
 $(document).ready(function() {
     sock.on('connect', function(){
+        console.log('connect')
         sock.emit('get_data', (data) => {
             progress.setTime(data.time)
             board.buildBoard(new Uint8Array(data.board));
@@ -1067,10 +1077,10 @@ $(document).ready(function() {
     board.construct();
     pen.construct();
     query.setHash();
-    sock.on('set_board', (x, y, color_idx) => board.setAt(x, y,
-        color_idx));
+    sock.on('set_board', (x, y, color_idx) => board.setAt(x, y, color_idx));
     // Lost connection
     sock.on('disconnect', () => {
+        this.reset_board_build();
         Swal.fire({
             icon: 'error',
             title: 'Lost connection with the server',

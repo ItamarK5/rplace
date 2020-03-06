@@ -16,6 +16,7 @@
           integrity="sha256-UZFVAO0Fn854ajzdWnJ2Oze6k1X4LNqE2RJPW3MBfq8=" rel="stylesheet"/>
     <link href="{{url_for('other.serve_static', key='admin.css')}}" rel="stylesheet">
     <link href="{{url_for('other.serve_static', key='nav.css')}}" rel="stylesheet">
+    <!--io-->
     <title>Admin Privilage</title>
 </head>
 <body>
@@ -71,6 +72,7 @@
             <a {% if pagination.has_next%}href='{{url_for("admin.admin", page=pagination.next_num)}}'{% endif %} class='list-group-item list-group-item-action{% if not pagination.has_next %} disabled{% endif %}'>Next</a>
         </div>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js" integrity="sha256-bQmrZe4yPnQrLTY+1gYylfNMBuGfnT/HKsCGX+9Xuqo=" crossorigin="anonymous"></script>
     <!-- Document said to put it here so it be faster -->
     <!-- popper.js - needed for bootstarp -->
     <script crossorigin="anonymous"

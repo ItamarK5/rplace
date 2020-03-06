@@ -20,6 +20,12 @@ class PaintNamespace(Namespace):
         if not current_user.is_authenticated:
             raise ConnectionRefusedError()
 
+    def on_disconnect(self) -> None:
+        """
+        required for disconnect message
+        """
+        pass
+
     def on_get_data(self):
         return {
             'board': board.get_board(),
@@ -88,4 +94,17 @@ class PaintNamespace(Namespace):
             return 'undefined'
 
 
-sio.on_namespace(PaintNamespace('/paint'))
+class AdminNamespace(Namespace):
+    def on_connect(self):
+        pass
+    def on_disconnect(self):
+        pass
+    def on_message(self, message):
+        print(message)
+
+
+PAINT_NAMESPACE = PaintNamespace('/paint')
+ADMIN_NAMESPACE = AdminNamespace('/ad')
+
+sio.on_namespace(PAINT_NAMESPACE)
+sio.on_namespace(ADMIN_NAMESPACE)

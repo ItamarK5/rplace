@@ -1,3 +1,4 @@
+from __future__ import annotations
 import re
 from datetime import datetime
 from hashlib import pbkdf2_hmac
@@ -64,6 +65,12 @@ class User(db.Model, UserMixin):
 
     def __repr__(self) -> str:
         return f"<User(name={self.username}>"
+
+    def has_required_status(self, role:Role) -> bool:
+        return self.role >= role
+
+    def is_superier_to(self, other:User):
+        return self.role > other.role
 
     def get_id(self) -> str:
         """

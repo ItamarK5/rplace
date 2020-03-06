@@ -3,6 +3,7 @@ from typing import Optional, Any, Callable, Tuple, Dict
 from flask import current_app, abort
 from flask_login import current_user, fresh_login_required
 from flask_mail import BadHeaderError, Message
+from .models.role import Role
 
 
 def send_message(f: Callable[[Any], Message]) -> Callable[[Tuple[Any], Dict[str, Any]], Optional[str]]:
@@ -35,7 +36,7 @@ def admin_only(f: Callable) -> Callable:
 
     @wraps(f)
     def wrapped(*args, **kwargs):
-        if current_user.is_authenticated and current_user.role >= current_user.role.admin:
+        if current_user.is_authenticated and current_user.has_required_status(Role.admin):
             # decorated by flesh_login_required, so that it user isnt refreshed and prevent seeing the site
             return fresh_login_required(f)(*args, **kwargs)
         # else
