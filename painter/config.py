@@ -10,6 +10,7 @@ class Config:
     MAIL_PASSWORD = ',[+=dDAbg9a'
     MAIL_USE_SSL = False
     MAIL_USE_TLS = True
+    SESSION_PROTECTION = 'strong'
     REDIS_URL = 'redis://192.168.0.219:6379/0'
     MAIL_DEBUG = True
     MAIL_PORT = 587
@@ -22,7 +23,7 @@ class Config:
     MAIL_MAX_EMAILS = 10
     # https://stackoverflow.com/a/54802481
     WERKZEUG_RUN_MAIN = True
-    REMEMBER_COOKIE_NAME = 'PlessRememberMeForTheLoveOfGod'
+    REMEMBER_COOKIE_NAME = 'SocialPainterDashCookie'
     REMEMBER_COOKIE_HTTPONLY = True
     FIRBASE_CERTIFICATE_PATH = 'C:\Cyber\2020\rplace\certificate.json'
     CACHE_TYPE = 'simple'

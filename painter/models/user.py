@@ -7,7 +7,6 @@ from flask_login import UserMixin
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.dialects.sqlite import DATETIME, SMALLINT
 from sqlalchemy.orm import relationship
-
 from .role import Role, SmallEnum
 from ..config import Config
 from ..extensions import db, login_manager
@@ -43,7 +42,6 @@ class User(db.Model, UserMixin):
     scale = Column(SMALLINT(), default=4, nullable=False)
     color = Column(SMALLINT(), default=4, nullable=False)
     url = Column(String(), default=None, nullable=True)
-    session_token = Column(String(8), default=None, nullable=True)
     sqlite_autoincrement = True
 
     def __init__(self, password=None, hash_password=None, **kwargs) -> None:
@@ -77,7 +75,7 @@ class User(db.Model, UserMixin):
         :return: the "id" of the user, the key to be used to identified it
         first 8 characters are
         """
-        return super().get_id() + '&' + self.session_token + '&' + self.password
+        return super().get_id() + '&' + self.password
 
 
 
@@ -92,11 +90,11 @@ def load_user(user_token: str) -> Optional[User]:
     # first get the id
     identity_keys = user_token.split('&')  # password hash, email, user_id
     # validate for user
-    if len(identity_keys) != 3 or not identity_keys[0].isdigit():
+    if len(identity_keys) != 2 or not identity_keys[0].isdigit():
         return None
-    # get user
-    user_id, token, password = identity_keys
+    # get user, determine if
+    user_id, password = identity_keys
     user = User.query.get(int(user_id))
-    if (not user) or user.session_token != token or user.password != password:
+    if (not user) or user.password != password:
         return None
     return user

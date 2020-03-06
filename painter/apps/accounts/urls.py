@@ -11,7 +11,6 @@ from painter.models.user import User
 from .forms import LoginForm, SignUpForm, RevokeForm
 from .utils import *
 from .mail import send_sign_up_mail, send_revoke_password
-from uuid import uuid4
 
 # router blueprint -> routing all pages that relate to authorization
 accounts_router = Blueprint('auth',
@@ -42,24 +41,11 @@ def login() -> Response:
             form.password.errors.append('username and password don\'t match')
             form.username.errors.append('username and password don\'t match')
         # the only other reason it can be is that if the user is banned
+        elif not login_user(user, remember=form.remember.data):
+            # must be because user isnt active
+            form.non_field_errors.append('you are banned, so your cant enter')
         else:
-            # refresh query string
-            """
-                https://stackoverflow.com/a/43370799
-                https://stackoverflow.com/a/26032898
-            """
-            user.session_token = uuid4().hex[:8]
-            db.session.add(user)
-            db.session.commit()
-            # then match against
-            # only other option is that the user is inactive -> banned
-            if not login_user(user, remember=form.remember.data):
-                # must be because user isnt active
-                form.non_field_errors.append('you are banned, so your cant enter')
-            # then generate unique id
-            else:
-                return redirect(url_for('place.home'))
-
+            return redirect(url_for('place.home'))
     """
     if request.method.lower() == 'post':
         x = time.time()
@@ -148,7 +134,7 @@ def change_password(token: str) -> Response:
 def logout() -> Response:
     if not current_user.is_anonymous:
         logout_user()
-    return redirect(url_for('.login'))
+    return redirect(url_for('auth.login'))
 
 
 @accounts_router.route('/confirm/<string:token>', methods=('GET',))
