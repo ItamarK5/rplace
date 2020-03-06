@@ -3,7 +3,6 @@ from typing import Optional, Any, Callable, Tuple, Dict
 from flask import current_app, abort
 from flask_login import current_user, fresh_login_required
 from flask_mail import BadHeaderError, Message
-from flask_socketio import disconnect as socketio_disconnect
 
 
 def send_message(f: Callable[[Any], Message]) -> Callable[[Tuple[Any], Dict[str, Any]], Optional[str]]:

@@ -789,7 +789,7 @@ const pen = {
             });
         }
         else {
-            sock.emit('set-board', {
+            sock.emit('set_board', {
                 'color': pen.color,
                 'x': pen.x,
                 'y': pen.y,
@@ -1049,36 +1049,33 @@ const board = {
     }
 };
 //const performance_arr = []
-// maybe need handle entering different rooms
-// very important check coords again and look at how it sets bit
-const sock = io('/paint');
+const sock = io('/paint', {
+    autoConnect:false
+});
+
 $(document).ready(function() {
+    sock.on('connect', function(){
+        sock.emit('get_data', (data) => {
+            progress.setTime(data.time)
+            board.buildBoard(new Uint8Array(data.board));
+        });
+    })
+    sock.connect()
     Colors.construct();
     query.construct();
     progress.construct();
     board.construct();
     pen.construct();
     query.setHash();
-    sock.on('place-start', function(data) {
-        // buffer - board in bytes
-        // time - time
-        progress.setTime(data.time)
-        board.buildBoard(new Uint8Array(data.board));
-        // found to be a good solution
-        // updates the scale also
-    });
-    sock.on('set-board', (x, y, color_idx) => board.setAt(x, y,
+    sock.on('set_board', (x, y, color_idx) => board.setAt(x, y,
         color_idx));
-    sock.on('update-timer', function(time) {
-        progress.setTime(time);
-    });
     // Lost connection
     sock.on('disconnect', () => {
         Swal.fire({
             icon: 'error',
             title: 'Lost connection with the server',
             text: 'Server Lost Connection',
-        })
+        });
     });
     // Connection on
     sock.on('reconnect', () => {

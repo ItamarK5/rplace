@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import Any, Dict
 from flask_login import current_user
-from flask_socketio import SocketIO, disconnect, Namespace
+from flask import abort
+from flask_socketio import SocketIO, Namespace, ConnectionRefusedError
 from .backends import board
 from painter.constants import MINUTES_COOLDOWN
 from painter.extensions import db
@@ -14,15 +15,16 @@ class PaintNamespace(Namespace):
     def on_connect(self) -> None:
         """
         :return: nothing
-        when connects to PaintNamespace
+        when connects to PaintNamespace, prevent anonymous users from using SocketIO
         """
         if not current_user.is_authenticated:
-            disconnect()
-        # else
-        sio.emit('place-start', {
+            raise ConnectionRefusedError()
+
+    def on_get_data(self):
+        return {
             'board': board.get_board(),
             'time': str(current_user.next_time)
-        })
+        }
 
     def set_at(self, x: int, y: int, color: int) -> None:
         """
