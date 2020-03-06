@@ -3,7 +3,6 @@ import re
 from datetime import datetime
 from hashlib import pbkdf2_hmac
 from typing import Optional
-from uuid import uuid4
 from flask_login import UserMixin
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.dialects.sqlite import DATETIME, SMALLINT
@@ -78,12 +77,8 @@ class User(db.Model, UserMixin):
         :return: the "id" of the user, the key to be used to identified it
         first 8 characters are
         """
-        return str(super().get_id()) + self.session_token + self.password
+        return super().get_id() + '&' + self.session_token + '&' + self.password
 
-    def generate_session_key(self):
-        self.session_token = uuid4().hex[:8]
-        db.session.add(self.session_token)
-        db.commit()
 
 
 @login_manager.user_loader
@@ -96,11 +91,12 @@ def load_user(user_token: str) -> Optional[User]:
     """
     # first get the id
     identity_keys = user_token.split('&')  # password hash, email, user_id
-    if len(identity_keys) != 2 or not identity_keys[1].isdigit():
+    # validate for user
+    if len(identity_keys) != 3 or not identity_keys[0].isdigit():
         return None
-    pswd, user_id = identity_keys
-    # get the user
+    # get user
+    user_id, token, password = identity_keys
     user = User.query.get(int(user_id))
-    if (not user) or user.password != pswd:
+    if (not user) or user.session_token != token or user.password != password:
         return None
     return user

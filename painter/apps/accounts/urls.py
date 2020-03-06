@@ -11,6 +11,7 @@ from painter.models.user import User
 from .forms import LoginForm, SignUpForm, RevokeForm
 from .utils import *
 from .mail import send_sign_up_mail, send_revoke_password
+from uuid import uuid4
 
 # router blueprint -> routing all pages that relate to authorization
 accounts_router = Blueprint('auth',
@@ -35,22 +36,29 @@ def login() -> Response:
     entire_form_error = []
     extra_error = None
     if form.validate_on_submit():
-        user = User.query.filter_by(
-            username=form.username.data,
-            password=User.encrypt_password(form.username.data, form.password.data)
-        ).first()
-        if user is None:
+        print(form.username.data)
+        user = User.query.filter_by(username=form.username.data).first()    # usernames are unique
+        if user is None and User.encrypt_password(form.username.data, form.password.data):
             form.password.errors.append('username and password don\'t match')
             form.username.errors.append('username and password don\'t match')
-        elif not login_user(user, remember=form.remember.data):
-            # must be because user isnt active
-            form.non_field_errors.append('you are banned, so your cant enter')
-        # then generate unique id
-        # https://stackoverflow.com/a/26032898
-        # https://stackoverflow.com/a/43370799
+        # the only other reason it can be is that if the user is banned
         else:
-            user.generate_session_key()
-            return redirect(url_for('place.home'))
+            # refresh query string
+            """
+                https://stackoverflow.com/a/43370799
+                https://stackoverflow.com/a/26032898
+            """
+            user.session_token = uuid4().hex[:8]
+            db.session.add(user)
+            db.session.commit()
+            # then match against
+            # only other option is that the user is inactive -> banned
+            if not login_user(user, remember=form.remember.data):
+                # must be because user isnt active
+                form.non_field_errors.append('you are banned, so your cant enter')
+            # then generate unique id
+            else:
+                return redirect(url_for('place.home'))
 
     """
     if request.method.lower() == 'post':
