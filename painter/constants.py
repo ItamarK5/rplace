@@ -23,3 +23,9 @@ WEB_FOLDER = path.join(
 )
 # time
 MINUTES_COOLDOWN = timedelta(minutes=1)
+COLORS = (
+    "white", "red", "olive", "blue",
+    "black", "pink", "yellow", "aqua",
+    "gray", "brown", "green", "purple",
+    "silver", "orange", "lime", "magenta",
+)

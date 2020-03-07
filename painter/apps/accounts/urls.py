@@ -29,8 +29,8 @@ def login() -> Response:
     added in version 1.0.0
     :return: login page response
     """
-    print(*request.data, sep='\n')
-
+    if current_user.is_authenticated:
+        redirect('place.home')
     form = LoginForm()
     entire_form_error = []
     extra_error = None

@@ -3,6 +3,7 @@ from typing import Optional, Union, List
 from painter.constants import MINUTES_COOLDOWN
 from painter.models.user import User, Role
 from . import app
+from .constants import COLORS
 
 
 @app.template_filter('draw_time')
@@ -31,3 +32,7 @@ def class_ftr(classes: Optional[Union[str, List]], comma: Optional[str] = None) 
     if comma:
         return f'class={comma}{classes}{comma}'
     return f" {classes}"
+
+@app.template_filter('color')
+def color(color_idx: int) -> str:
+    return COLORS[color_idx]

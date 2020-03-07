@@ -16,16 +16,3 @@
     </button>
 </span>
 {% endmacro %}
-{% macro settingField(key, val) %}
-<tr class="mb-2 justify-content-center" id="row-{{key}}">
-    <td scope="row"><h5 class="center-text text-warning">{{ key|title }}{% if key|length > 2 %}:{% endif %}</h5></div>
-    <td class="justify-content-center setting-val">
-        <h5 class="text-break center-text text-warning" id="text-{{key}}">{{val|string|title}}</h5>
-    </td>
-    <td class="justify-content-center align-content-center center-text">
-        <div id="{{key}}-active" role="button" class="w-100 h-100 block text-center text-xl" data-toggle="modal" data-target="#modal-change">
-            <i class="fas fa-edit"></i>
-        </div>
-    </td>
-</tr>
-{% endmacro %}

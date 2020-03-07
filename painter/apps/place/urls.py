@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, Response, jsonify
 from flask_login import login_required, current_user
 from painter.constants import WEB_FOLDER
 from painter.extensions import db
-from .forms import SettingForm
+from ..profile_form import SettingForm
 
 place_router = Blueprint('place', 'place',
                          static_folder=path_join(WEB_FOLDER, 'static'),
@@ -40,7 +40,7 @@ def profile():
     )
 
 
-@place_router.route('/settings-submit', methods=("POST",))
+@place_router.route('/preferences-submit', methods=("POST",))
 @login_required
 def profile_ajax():
     form = SettingForm()

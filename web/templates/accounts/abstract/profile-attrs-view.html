@@ -1,0 +1,15 @@
+{% macro row_view(key, val) %}
+<div class="mb-3 row align-content-center">
+    <div class="col-3 mr-3"><h5 class="profile-text">{{key|title}}:</h5></div>
+    <div class="col-4"><h5 class="profile-text">{{val}}</h5></div>
+</div>
+{% endmacro %}
+{{edit_title('Preferences')}}
+{{row_view('name', user.username)}}
+{{row_view('mail', user.email)}}
+{{row_view('last draw', user|draw_time)}}
+<div class="mb-3 row align-content-center">
+    <div class="col-3 mr-1"><h5 class="profile-text">Status:</h5></div>
+    <div class="col-1"><h5 class="profile-text"><i class="fa {{user.role.icon}}"></i></h5></div>
+    <div class="col-3"><h5 class="profile-text">{{user.role.title}}</h5></div>
+</div>

@@ -7,7 +7,7 @@ from wtforms import *
 from wtforms.compat import text_type as text_field_types
 from wtforms.fields.html5 import IntegerField
 from wtforms.widgets import HiddenInput
-
+from ..constants import COLORS
 
 class SettingForm(FlaskForm):
     x = IntegerField(
@@ -34,7 +34,10 @@ class SettingForm(FlaskForm):
             validators.NumberRange(min=1, max=50, message='axis out of range')
         ],
     )
-    color = IntegerField(
+    color = SelectField(
+        choices=tuple(
+            [(i, COLORS[i]) for i in range(len(COLORS))]
+        ),
         default=None,
         validators=[
             validators.Optional(),

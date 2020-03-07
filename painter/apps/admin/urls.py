@@ -5,6 +5,7 @@ from painter.filters import *  # also import User class
 from painter.models.user import reNAME
 from painter.utils import admin_only
 from painter.backends import lock
+from ..profile_form import SettingForm
 
 admin_router = Blueprint(
     'admin',
@@ -39,10 +40,8 @@ def admin() -> str:
         abort(400, 'Given page isn\'t a number', description='Are you mocking this program? you'
                                                              ' an admin tries to edit the url')
     page = int(page)
-    if not 1 <= page:
-        abort(404, 'Page index too small')
-    elif page > pagination.pages:
-        abort(404, 'Page Number Not Found')
+    if not (1 <= page <= pagination.pages):
+        abort(404, 'Page index Not Found')
     return render_template('accounts/admin.html', pagination=pagination)
 
 
@@ -57,7 +56,6 @@ def edit_user(name: str) -> str:
         abort(400, 'Name isn\'t good')
     user = User.query.filter_by(username=name).first_or_404()
     if user == current_user:
-        abort(403)
         return redirect(url_for('place.profile'))
     if not current_user.is_superior_to(user):
         # forbidden error
@@ -79,3 +77,37 @@ def set_admin_button():
     else:
         lock.disable()
 
+
+@admin_router.route('/user-preferences-submit', methods=("POST",))
+@admin_only
+def profile_ajax():
+    form = SettingForm()
+    if form.validate_on_submit():
+        key, val = form.safe_first_hidden_fields()
+        if key == 'url':
+            current_user.url = val if val != '' and val is not None else None
+        elif key == 'x':
+            current_user.x = val
+        elif key == 'y':
+            current_user.y = val
+        elif key == 'scale':
+            current_user.scale = val
+        elif key == 'color':
+            current_user.color = val
+        else:
+            key = None
+        if key is not None:
+            db.session.add(current_user)
+            db.session.commit()
+            # https://stackoverflow.com/a/26080784
+            return jsonify({'success': True, 'id': key, 'val': val})
+        else:
+            return jsonify({
+                'success': False,
+                'errors': ['Not valid parameter {}'.format(key)]
+            })
+    return jsonify({
+        'success': False,
+        'errors': next(iter(form.errors.values()))
+    })
+    # else

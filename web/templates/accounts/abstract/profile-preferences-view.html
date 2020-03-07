@@ -1,0 +1,14 @@
+{% macro row_view(key, val) %}
+<div class="mb-3 row align-content-center">
+    <div class="col-3 mr-3"><h5 class="profile-text">{{key|title}}:</h5></div>
+    <div class="col-4"><h5 class="profile-text">{{val}}</h5></div>
+</div>
+{% endmacro %}
+{{edit_title('Preferences')}}
+<div class="mb-3 row align-content-center">
+    {{row_view('x', user.x)}}
+    {{row_view('y', user.y)}}
+    {{row_view('scale', user.scale)}}
+    {{row_view('color', user.scale)}}
+    {{row_view('chat', user.scale)}}
+</div>

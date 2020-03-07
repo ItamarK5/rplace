@@ -18,7 +18,7 @@ const SettingDescriber = $('#setting-describer');
 function setColor(clr){
     return {
         'background-color':clr,
-        color:val != 'black' ? 'black' : 'white'    
+        color:clr != 'black' ? 'black' : 'white'    
     }
 }
 
@@ -63,6 +63,8 @@ function AddUlrInput(form, val){
 function addForm(form, field, val){
     switch(field){
         case 'x': {
+            SettingDescriber.show()
+            SettingDescriber.text(val);
             $('<input>').attr({
                 id:FORM_INPUT.slice(1),
                 name:'x',
@@ -79,6 +81,8 @@ function addForm(form, field, val){
             break;
         }
         case 'y':{
+            SettingDescriber.show();
+            SettingDescriber.val(val)
             $('<input>').attr({
                 id:FORM_INPUT.slice(1),
                 name:'y',
@@ -95,6 +99,8 @@ function addForm(form, field, val){
             break;
         }
         case 'scale': {
+            SettingDescriber.show()
+            SettingDescriber.text(val);
             $('<input>').attr({
                 id:FORM_INPUT.slice(1),
                 name:'scale',
@@ -111,11 +117,13 @@ function addForm(form, field, val){
             break;
         }
         case 'color': {
+            SettingDescriber.show()
+            SettingDescriber.text(val);
             let color_selector = $('<select>').attr({
                 id:FORM_INPUT.slice(1),
                 name:'color',
                 class:'custom-select',
-                value:parseInt(val),
+                value:val,
             }).change(function(e){
                 SettingDescriber.text(COLORS[this.value.toString().toTitleCase()]);
             }).appendTo(form);
@@ -125,11 +133,13 @@ function addForm(form, field, val){
                     if(val == color_val){
                         option.attr('selected', '');
                     }
+                    
             });
             $('#row-describer').hide();
             break;
         }
         case 'url': {
+            SettingDescriber.hide()
             AddUlrInput(form, val);
             break;
         }
@@ -175,7 +185,6 @@ $(document).ready(() =>{
         $('#setting-form').submit();
     });
     //first name change
-    $('#text-color').text(COLORS[parseInt($('#text-color').text())].toTitleCase())
     $('#setting-form').submit(function(e){
         e.preventDefault();
         let form = $(this);
@@ -184,7 +193,6 @@ $(document).ready(() =>{
             type:form.attr('method'),
             data:form.serialize(),
             success: (response) => {
-                console.log(response)
                 $('#setting-alert')
                     .show()
                     .text(response.success ? 'Changed Successfully' : response.errors.join('\n'))

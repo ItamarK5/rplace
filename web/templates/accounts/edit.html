@@ -1,7 +1,7 @@
 {% from 'accounts/_macros.html' import edit_title, button_model %}
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>User:{{user.username}}</title>
     <link href="{{url_for('other.serve_static', key='nav.css')}}" rel="stylesheet">
     <link href="{{url_for('other.serve_static', key='profile.css')}}" rel="stylesheet">
@@ -28,10 +28,14 @@
     </div>
     <div class="row">
         <div class="col user-data-col">
-            {% include 'accounts/abstract/profile-div.html' %}
+            {% include 'accounts/abstract/profile-attrs-view.html' %}
         </div>
         <div class="col user-data-col">
-            {# future use #}
+            {% if current_user.has_required_status(current_user.role.superuser) %}
+            {% include 'accounts/abstract/profile-preferences-edit.html' %}
+            {% else %}
+            {% include 'accounts/abstract/profile-preferences-view.html' %}
+            {% endif %}
         </div>
     </div>
     <div class="row justify-content-center">
@@ -42,7 +46,9 @@
           </div>
     </div>
 </div>
+{% with action=url_for('admin.profile_ajax') %}
 {% include 'accounts/abstract/banModal.html' %}
+{% endwith %}
 <!-- Document said to put it here so it be faster -->
 <!-- popper.js - needed for bootstarp -->
 <script crossorigin="anonymous"
@@ -54,6 +60,7 @@
         src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>{# datetime input #}
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/js/tempusdominus-bootstrap-4.min.js"></script>{# datetime picker #}
+<script type="text/javascript" src="{{url_for('other.serve_static', key='profile.js')}}"></script>
 <script type="text/javascript">
 const BANNED_TIME_OPTION = 1;
 const csrf_token = "{{ csrf_token() }}";

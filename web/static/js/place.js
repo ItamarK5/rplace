@@ -282,7 +282,7 @@ function arrayBufferToBase64(buffer) {
 */
 
 const Cursors = {
-    Pen: new CursorState('none', false),
+    Pen: new CursorState('crosshair', false),
     Wait: new CursorState('not-allowed', false),
     grabbing: new CursorState('grabbing', true),
     FindMouse: new CursorState('wait', true)
@@ -772,6 +772,13 @@ const pen = {
         return (!this.__disable) && this.hasColor && this.isAtBoard()
     },
     setPixel() {
+        if(!board.is_ready){
+            Swal.fire({
+                title: 'Wait for the board',
+                imageHeight: 300,
+                text: 'Wait for the board to load before doing something'
+            });
+        }
         if (progress.work.isWorking) {
             Swal.fire({
                 title: 'You have 2 wait',
@@ -839,7 +846,7 @@ const board = {
          */
         return _.isNull(this.pixelQueue);
     },
-    reset_board_build(){
+    reset_board_build() {
         /**
          * reset values for board build
          */
@@ -1080,7 +1087,7 @@ $(document).ready(function() {
     sock.on('set_board', (x, y, color_idx) => board.setAt(x, y, color_idx));
     // Lost connection
     sock.on('disconnect', () => {
-        this.reset_board_build();
+        board.reset_board_build();
         Swal.fire({
             icon: 'error',
             title: 'Lost connection with the server',

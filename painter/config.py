@@ -28,3 +28,4 @@ class Config:
     FIRBASE_CERTIFICATE_PATH = 'C:\Cyber\2020\rplace\certificate.json'
     CACHE_TYPE = 'simple'
     FIREBASE_DATABASE_URL = 'https://Users.firebaseio.com'
+    # SESSION_PROTECTION = 'basic' to prevent users moving ip addr 
