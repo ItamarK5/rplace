@@ -13,6 +13,7 @@ from ..config import Config
 from ..extensions import datastore, login_manager
 from .ban_status import BanRecord
 from datetime import datetime
+
 reNAME = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
 rePSWD = re.compile(r'^[a-f0-9]{128}$')  # password hashed so get hash value
 reEMAIL = re.compile(
@@ -72,13 +73,24 @@ class User(datastore.Model, UserMixin):
         """
         return super().get_id() + '&' + self.password
 
-    def is_active(self):
-        record = BanRecord.query.filter_by(user=self.id).order_by('-id').first()
+    def get_last_record(self) -> Optional[BanRecord]:
+        return BanRecord.query\
+            .filter_by(user=self.id)\
+            .order_by(BanRecord.id.desc())\
+            .first()
+
+    def is_active(self) -> bool:
+        record = self.get_last_record()
         if record is None:
             return True
         if record.expired < datetime.now():
-            
-        return record is not None and record.result == True
+            datastore.session.add(BanRecord(user=self,
+                                            result=not record.active,
+                                            declared=datetime.now()
+                                            ))
+        # else
+        return record.active
+
 
 @login_manager.user_loader
 def load_user(user_token: str) -> Optional[User]:

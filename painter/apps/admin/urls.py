@@ -7,6 +7,7 @@ from painter.backends import lock
 from ..profile_form import PreferencesForm
 from painter.extensions import datastore
 from painter.filters import *
+from .forms import BanForm
 
 admin_router = Blueprint(
     'admin',
@@ -26,6 +27,7 @@ def add_header(response: Response) -> Response:
     response.headers["Expires"] = "0"
     response.headers['Cache-Control'] = 'public, max-age=0'
     return response
+
 
 
 @admin_router.route('/admin', methods=('GET',))
@@ -62,7 +64,8 @@ def edit_user(name: str) -> str:
         # forbidden error
         abort(403, f"You are not allowed to edit the user {user.username}")
     preference_form = PreferencesForm()
-    return render_template('accounts/edit.html', user=user, form=preference_form)
+    ban_form = BanForm()
+    return render_template('accounts/edit.html', user=user, form=preference_form, ban_form=ban_form)
 
 
 @admin_router.route('/admin-power-button', methods=('GET',))

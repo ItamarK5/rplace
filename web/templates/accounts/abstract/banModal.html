@@ -15,18 +15,24 @@
         </div>
         <div class="modal-body">
             <form id="ban-form" method="POST">
+              <div class="form-row">
+                Currently:<b>{% if user.is_active() %}Active{% else %}Banned{% endif %}</b>
+              </div>
                   <div class="form-row mb-1">
-                      {{checkban('0', 'ban-never', 'Free User')}}
-                      {{checkban('1', 'ban-time','Timed Ban')}}
-                      {{checkban('2', 'ban-forever', 'Full Ban')}}
+                    <div class="form-check form-check-inline"> {# no ban - default #}
+                      {{ban_form.set_active(class="form-check-input form-inline")}}
+                      <label class="form-check-label" for="{{ban_form.set_active.id}}">To Change Status</label>
+                    </div>
                   </div>
                   <div class="form-row mb-1 mt-1" id="calender-input">
-                        <div class="input-group date" id="ban-finish" data-target-input="nearest">
-                            <div class="input-group-prepend" data-target="#ban-date" data-toggle="datetimepicker">
+                    <div class="form-group">
+                        <div class="input-group date" data-target-input="nearest" id="date-time-picker">
+                            <div class="input-group-prepend" data-target="#data-time-picker" data-toggle="datetimepicker">
                                 <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                             </div>
-                            <input type="text" class="form-control datetimepicker-input" data-target="#ban-date"/>
+                            {{ban_form.expired(type='text', class='form-control datetimepicker-input')}}
                         </div>
+                      </div>
                   </div>
                   <div class="form-row mt-1 mb-1">
                     <div class="input-group">

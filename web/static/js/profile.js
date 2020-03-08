@@ -171,7 +171,8 @@ function onShowingEditPreferencesModal(button, modal){
 
 $(document).ready(() =>{
     //tooltips       
-    $('.modal').on('shown.bs.modal', function (event) {
+    $('#modal-change-preference').on('shown.bs.modal', function (event) {
+        console.log(event);
         $('#row-describer').show();
         let button = $(event.relatedTarget ? event.relatedTarget : $('button:hover')[0]);
         console.log(button)
