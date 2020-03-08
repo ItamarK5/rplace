@@ -4,14 +4,15 @@ from datetime import datetime
 from hashlib import pbkdf2_hmac
 from typing import Optional
 from flask_login import UserMixin
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.dialects.sqlite import DATETIME, SMALLINT
 from sqlalchemy.orm import relationship
-from .role import Role, SmallEnum
+from .role import Role
+from .enumint import SmallEnum
 from ..config import Config
-from ..extensions import db, login_manager
-
-
+from ..extensions import datastore, login_manager
+from .ban_status import BanRecord
+from datetime import datetime
 reNAME = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
 rePSWD = re.compile(r'^[a-f0-9]{128}$')  # password hashed so get hash value
 reEMAIL = re.compile(
@@ -20,14 +21,7 @@ reEMAIL = re.compile(
     re.IGNORECASE)
 
 
-class BanTable(db.Model):
-    __tablename__ = 'banned'
-    banned_id = Column(Integer, primary_key=True)
-    banned_time = Column(DATETIME(), nullable=True)
-    description = Column(String(256), nullable=True)
-
-
-class User(db.Model, UserMixin):
+class User(datastore.Model, UserMixin):
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
     username = Column(String(15), unique=True, nullable=False)
@@ -64,7 +58,8 @@ class User(db.Model, UserMixin):
     def __repr__(self) -> str:
         return f"<User(name={self.username}>"
 
-    def has_required_status(self, role: Role) -> bool:
+    def has_required_status(self,
+                            role: Role) -> bool:
         return self.role >= role
 
     def is_superior_to(self, other: User) -> bool:
@@ -77,7 +72,13 @@ class User(db.Model, UserMixin):
         """
         return super().get_id() + '&' + self.password
 
-
+    def is_active(self):
+        record = BanRecord.query.filter_by(user=self.id).order_by('-id').first()
+        if record is None:
+            return True
+        if record.expired < datetime.now():
+            
+        return record is not None and record.result == True
 
 @login_manager.user_loader
 def load_user(user_token: str) -> Optional[User]:

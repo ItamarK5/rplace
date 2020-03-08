@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import Tuple, Optional, Any
-
 from flask_wtf import FlaskForm
 from wtforms import *
 from wtforms.compat import text_type as text_field_types
@@ -9,7 +8,7 @@ from wtforms.fields.html5 import IntegerField
 from wtforms.widgets import HiddenInput
 from ..constants import COLORS
 
-class SettingForm(FlaskForm):
+class PreferencesForm(FlaskForm):
     x = IntegerField(
         'X start',
         validators=[
@@ -20,7 +19,6 @@ class SettingForm(FlaskForm):
 
     y = IntegerField(
         'Y start',
-        default=None,
         validators=[
             validators.Optional(),
             validators.NumberRange(min=0, max=999, message='coord out of range')
@@ -38,16 +36,13 @@ class SettingForm(FlaskForm):
         choices=tuple(
             [(i, COLORS[i]) for i in range(len(COLORS))]
         ),
-        default=None,
         validators=[
             validators.Optional(),
-            validators.NumberRange(min=0, max=15, message='Unknown color')
         ]
     )
 
     url = StringField(
         'Chat URL',
-        default=None,
         validators=[
             validators.Optional(),
             validators.URL(message="Not valid URL")

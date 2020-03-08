@@ -1,11 +1,12 @@
-from flask import Blueprint, render_template, abort, request, url_for, redirect
+from flask import Blueprint, render_template, abort, request, url_for, redirect, jsonify
 from flask.wrappers import Response
 from flask_login import current_user
-from painter.filters import *  # also import User class
 from painter.models.user import reNAME
 from painter.utils import admin_only
 from painter.backends import lock
-from ..profile_form import SettingForm
+from ..profile_form import PreferencesForm
+from painter.extensions import datastore
+from painter.filters import *
 
 admin_router = Blueprint(
     'admin',
@@ -21,7 +22,7 @@ def add_header(response: Response) -> Response:
     and also to cache the rendered page for 10 minutes.
     """
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-    response.headers["Pragma"] = "no-cache"
+    response.headers["Pragma"] = "no-store"
     response.headers["Expires"] = "0"
     response.headers['Cache-Control'] = 'public, max-age=0'
     return response
@@ -60,7 +61,8 @@ def edit_user(name: str) -> str:
     if not current_user.is_superior_to(user):
         # forbidden error
         abort(403, f"You are not allowed to edit the user {user.username}")
-    return render_template('accounts/edit.html', user=user)
+    preference_form = PreferencesForm()
+    return render_template('accounts/edit.html', user=user, form=preference_form)
 
 
 @admin_router.route('/admin-power-button', methods=('GET',))
@@ -81,7 +83,7 @@ def set_admin_button():
 @admin_router.route('/user-preferences-submit', methods=("POST",))
 @admin_only
 def profile_ajax():
-    form = SettingForm()
+    form = PreferencesForm()
     if form.validate_on_submit():
         key, val = form.safe_first_hidden_fields()
         if key == 'url':
@@ -97,8 +99,8 @@ def profile_ajax():
         else:
             key = None
         if key is not None:
-            db.session.add(current_user)
-            db.session.commit()
+            datastore.session.add(current_user)
+            datastore.session.commit()
             # https://stackoverflow.com/a/26080784
             return jsonify({'success': True, 'id': key, 'val': val})
         else:

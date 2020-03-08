@@ -6,3 +6,7 @@ body, html { background-color:#222222 !important; }
 input-group > * {background-color:transparent !important;}
 #user-data > * {color:limegreen !important; }
 .setting-row {border-color:rgb(243, 208, 12) !important;}
+#big-user-icon > .fa-user-shield {color:rgb(236, 236, 12)  !important;}
+#big-user-icon > .fa-user {color:rgb(37, 214, 37) !important;}
+#big-user-icon > .fa-ban {color:rgb(255, 58, 58) !important;}
+#big-user-icon > .fa-user-secret {color:rgb(137, 44, 209) !important;}

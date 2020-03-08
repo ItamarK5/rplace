@@ -28,7 +28,7 @@
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@9/dist/sweetalert2.min.js"></script>
     <script src="{{url_for('other.serve_static', key='place.js')}}"></script>
 </head>
-<body x={{x}} y={{y}} scale={{scale}}>
+<body x={{current_user.x}} y={{current_user.y}} scale={{current_user.scale}}>
 <canvas class='pixelate' height='1000' id="board" width='1000'>Wait, Loading...</canvas>
 <div class="select-none" hide='0' id="toolbox">
     <div class='center-x' id='toggle-toolbox-button' state='1'></div>
@@ -36,10 +36,11 @@
     <div id="color-table-box">
         <div class='center' id=colorTable>
             {% for i in range(16) %}
-            <div class='colorButton' value='{{i}}' picked="{{(color==i)|int}}"></div>
+            <div class='colorButton' value='{{i}}' picked="{{(i==current_user.color)|int}}"></div>
             {% endfor %}
         </div>
     </div>
+    {{color}}
     <div id="icon-container">
         {{render_link('zoom-button', 'search-plus')}}
         <div class="icon-button" id="screen-button" state="0">

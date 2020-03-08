@@ -117,15 +117,11 @@ function addForm(form, field, val){
             break;
         }
         case 'color': {
-            SettingDescriber.show()
-            SettingDescriber.text(val);
+            SettingDescriber.hide()
             let color_selector = $('<select>').attr({
                 id:FORM_INPUT.slice(1),
                 name:'color',
                 class:'custom-select',
-                value:val,
-            }).change(function(e){
-                SettingDescriber.text(COLORS[this.value.toString().toTitleCase()]);
             }).appendTo(form);
             COLORS.forEach(
                 (color_val,idx) => {
@@ -144,6 +140,7 @@ function addForm(form, field, val){
             break;
         }
         default:{
+            
             break;
         }
     }
@@ -160,26 +157,27 @@ function filterResponse(field, val){
 
 }
 
+function onShowingEditPreferencesModal(button, modal){
+    let field = GET_FIELD.exec(button.attr('id'))[0];
+    if(field == null){
+        modal.hide();
+    }
+    $(FORM_INPUT+'-father').remove()
+    $(FORM_INPUT).remove()
+    $('#modal-title').text(`Change ${field}`);
+    addForm($('#setting-form'), field, button.parent().siblings('.setting-val').children('h5').text())
+    $('#setting-alert').hide()
+}
+
 $(document).ready(() =>{
     //tooltips       
-    $('[data-toggle="tooltip"]').tooltip();
     $('.modal').on('shown.bs.modal', function (event) {
         $('#row-describer').show();
-        let button = $(event.relatedTarget);
+        let button = $(event.relatedTarget ? event.relatedTarget : $('button:hover')[0]);
+        console.log(button)
         let modal = $(this);
-        let field = GET_FIELD.exec(button.attr('id'))[0];
-        if(field == null){
-            modal.hide();
-        }
-        $(FORM_INPUT+'-father').remove()
-        $(FORM_INPUT).remove()
-        $('#modal-title').text(`Change ${field}`);
-        addForm(
-            $('#setting-form'), field,
-            button.parent().siblings('.setting-val').children('h5').text())
-        $('#setting-alert').hide()
-        }
-    );
+        onShowingEditPreferencesModal(button, modal);
+    })
     //submit form
     $('#save-setting').click(function(e) {
         $('#setting-form').submit();

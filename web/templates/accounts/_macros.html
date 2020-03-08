@@ -11,7 +11,7 @@
 {% macro button_model(span, modal, fa, title='none', placement="top", classes=None) %}
 {# http://jsfiddle.net/sso79Ldj/1/ #}
 <span data-toggle="modal" data-target="#{{modal}}" id={{span}}>
-    <button type="button" class="btn classes|class_ftr" data-placement="{{placement}}" title="{{title}}" data-toggle="tooltip">
+    <button type="button" class="btn {{classes|class_ftr}}" data-placement="{{placement}}" title="{{title}}" data-toggle="tooltip">
         <i class="fas fa-{{fa}}"></i>
     </button>
 </span>

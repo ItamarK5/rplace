@@ -11,6 +11,7 @@ from werkzeug.exceptions import HTTPException
 from painter.constants import MIME_TYPES, WEB_FOLDER
 from .utils import get_file_type, is_valid_meme_request, has_meme_images
 
+
 other_router = Blueprint(
     'other',
     'other',

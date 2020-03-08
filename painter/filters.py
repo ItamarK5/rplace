@@ -33,6 +33,7 @@ def class_ftr(classes: Optional[Union[str, List]], comma: Optional[str] = None) 
         return f'class={comma}{classes}{comma}'
     return f" {classes}"
 
+
 @app.template_filter('color')
 def color(color_idx: int) -> str:
     return COLORS[color_idx]

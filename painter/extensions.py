@@ -9,7 +9,7 @@ from .config import Config
 from .encryption.flask_encrypt import FlaskEncrypt
 
 mailbox = Mail()
-db = SQLAlchemy()
+datastore = SQLAlchemy()
 cache = Cache()
 engine = create_engine(Config.SQLALCHEMY_DATABASE_URI)
 encrypt = FlaskEncrypt()

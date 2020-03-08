@@ -16,7 +16,7 @@ from .skio import sio
 from flask_wtf.csrf import CSRFProtect
 from .apps import other_router, place_router, accounts_router, admin_router
 from .config import Config  # config
-from .extensions import db, mailbox, engine, login_manager, encrypt  # ,firebase
+from .extensions import datastore, mailbox, engine, login_manager, encrypt  # ,firebase
 
 sio.init_app(
     app,
@@ -26,7 +26,7 @@ sio.init_app(
 app.config.from_object(Config)
 
 
-db.init_app(app)
+datastore.init_app(app)
 mailbox.init_app(app)
 login_manager.init_app(app)
 encrypt.init_app(app)
@@ -38,7 +38,7 @@ app.register_blueprint(place_router)
 app.register_blueprint(accounts_router)
 app.register_blueprint(admin_router)
 
-db.create_all(app=app)
+datastore.create_all(app=app)
 monkey_patch()
 
 # not backends

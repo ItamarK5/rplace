@@ -5,7 +5,7 @@ from flask import Blueprint, url_for, render_template, redirect, current_app, re
 from flask_login import logout_user, current_user, login_user
 from werkzeug.wrappers import Response
 from painter.constants import WEB_FOLDER
-from painter.extensions import db
+from painter.extensions import datastore
 from painter.models.user import Role
 from painter.models.user import User
 from .forms import LoginForm, SignUpForm, RevokeForm
@@ -155,7 +155,7 @@ def confirm(token: str) -> Response:
     name, pswd, email = token.pop('username'), token.pop('password'), token.pop('email')
     # check if user exists
     # https://stackoverflow.com/a/57925308
-    user = db.session.query(User).filter(
+    user = datastore.session.query(User).filter(
         User.username == name, User.password == pswd
     ).first()
     # time.timezone is the different betwenn local time to gmtime d=(gm-local) => d+local = gm
@@ -182,8 +182,8 @@ def confirm(token: str) -> Response:
         password=pswd,
         email=email
     )
-    db.session.add(user)
-    db.session.commit()
+    datastore.session.add(user)
+    datastore.session.commit()
     return render_template(
         'transport//base.html',
         title='Congrats',
@@ -208,8 +208,8 @@ def create_user() -> Response:
         hash_password=request.args.get('password', None) or request.args.get('pswd', None),
         email=request.args['name'] + '@gmail.com'
     )
-    db.session.add(user)
-    db.session.commit()
+    datastore.session.add(user)
+    datastore.session.commit()
     return redirect(url_for('.login'))
 
 
@@ -228,6 +228,6 @@ def create_admin() -> Response:
         email='socialpainterdash@gmail.com',
         role=Role.superuser
     )
-    db.session.add(user)
-    db.session.commit()
+    datastore.session.add(user)
+    datastore.session.commit()
     return redirect(url_for('.login'))

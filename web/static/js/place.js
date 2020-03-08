@@ -1071,7 +1071,6 @@ const sock = io('/paint', {
 
 $(document).ready(function() {
     sock.on('connect', function(){
-        console.log('connect')
         sock.emit('get_data', (data) => {
             progress.setTime(data.time)
             board.buildBoard(new Uint8Array(data.board));

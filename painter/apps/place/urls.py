@@ -3,8 +3,8 @@ from os.path import join as path_join
 from flask import Blueprint, render_template, Response, jsonify
 from flask_login import login_required, current_user
 from painter.constants import WEB_FOLDER
-from painter.extensions import db
-from ..profile_form import SettingForm
+from painter.extensions import datastore
+from ..profile_form import PreferencesForm
 
 place_router = Blueprint('place', 'place',
                          static_folder=path_join(WEB_FOLDER, 'static'),
@@ -32,7 +32,7 @@ def home() -> Response:
 @place_router.route('/profile', methods=('GET',))
 @login_required
 def profile():
-    form = SettingForm()
+    form = PreferencesForm()
     return render_template(
         'accounts/profile.html', xstart=current_user.x, ystart=current_user.y,
         scalestart=current_user.scale, colorstart=current_user.color, form=form,
@@ -43,8 +43,9 @@ def profile():
 @place_router.route('/preferences-submit', methods=("POST",))
 @login_required
 def profile_ajax():
-    form = SettingForm()
+    form = PreferencesForm()
     if form.validate_on_submit():
+        # you can only set 1 preference at a time
         key, val = form.safe_first_hidden_fields()
         if key == 'url':
             current_user.url = val if val != '' and val is not None else None
@@ -59,8 +60,8 @@ def profile_ajax():
         else:
             key = None
         if key is not None:
-            db.session.add(current_user)
-            db.session.commit()
+            datastore.session.add(current_user)
+            datastore.session.commit()
             # https://stackoverflow.com/a/26080784
             return jsonify({'success': True, 'id': key, 'val': val})
         else:

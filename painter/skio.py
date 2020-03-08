@@ -4,14 +4,15 @@ from flask_login import current_user
 from flask_socketio import SocketIO, Namespace, ConnectionRefusedError
 from .backends import board
 from painter.constants import MINUTES_COOLDOWN
-from painter.extensions import db
+from painter.extensions import datastore
 from .models.pixel import Pixel
 
 sio = SocketIO()
 
 
 class PaintNamespace(Namespace):
-    def on_connect(self) -> None:
+    @staticmethod
+    def on_connect() -> None:
         """
         :return: nothing
         when connects to PaintNamespace, prevent anonymous users from using SocketIO
@@ -25,7 +26,8 @@ class PaintNamespace(Namespace):
         """
         pass
 
-    def on_get_data(self):
+    @staticmethod
+    def on_get_data():
         return {
             'board': board.get_board(),
             'time': str(current_user.next_time)
@@ -52,6 +54,7 @@ class PaintNamespace(Namespace):
         :return: string represent the next time the user can update the canvas,
                  or undefined if couldn't update the screen
         """
+        # somehow logged out between requests
         try:
             current_time = datetime.utcnow()
             if current_user.next_time > current_time:
@@ -66,7 +69,7 @@ class PaintNamespace(Namespace):
             next_time = current_time  # + MINUTES_COOLDOWN
             current_user.next_time = next_time
             x, y, clr = int(params['x']), int(params['y']), int(params['color'])
-            db.session.add(
+            datastore.session.add(
                 Pixel(
                     x=x,
                     y=y,
@@ -76,7 +79,7 @@ class PaintNamespace(Namespace):
                 )
             )
             sio.start_background_task(self.set_at, x=x, y=y, color=clr)
-            db.session.commit()
+            datastore.session.commit()
             # setting the board
             """
             if x % 2 == 0:

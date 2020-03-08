@@ -1,9 +1,9 @@
 from sqlalchemy import Integer, ForeignKey, SmallInteger, Column
 
-from ..extensions import db
+from ..extensions import datastore
 
 
-class Pixel(db.Model):
+class Pixel(datastore.Model):
     __tablename__ = 'pixels'
 
     id = Column(Integer().with_variant(Integer, "sqlite"), primary_key=True)
@@ -11,4 +11,4 @@ class Pixel(db.Model):
     color = Column(SmallInteger())
     x = Column(SmallInteger())
     y = Column(SmallInteger())
-    drawn = Column(db.Float, nullable=False)
+    drawn = Column(datastore.Float, nullable=False)

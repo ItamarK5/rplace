@@ -35,7 +35,7 @@ def disable():
     if _enable_edit_board:
         _enable_edit_board = False
         rds_backend.set(_DISABLE)
-    #rds_backend.set(1)
+    # rds_backend.set(1)
 
 
-__all__ = ['init_app', 'enable', 'disable', 'is_enabled',]
+__all__ = ['init_app', 'enable', 'disable', 'is_enabled']
