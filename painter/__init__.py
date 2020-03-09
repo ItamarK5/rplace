@@ -16,7 +16,8 @@ from .skio import sio
 from flask_wtf.csrf import CSRFProtect
 from .apps import other_router, place_router, accounts_router, admin_router
 from .config import Config  # config
-from .extensions import datastore, mailbox, engine, login_manager, encrypt  # ,firebase
+from .extensions import datastore, mailbox, engine, login_manager, encrypt, cache  # ,firebase
+
 
 sio.init_app(
     app,
@@ -30,6 +31,7 @@ datastore.init_app(app)
 mailbox.init_app(app)
 login_manager.init_app(app)
 encrypt.init_app(app)
+cache.init_app(app)
 CSRFProtect(app)
 # firebase.init_app(app)
 # insert other staff
@@ -38,9 +40,12 @@ app.register_blueprint(place_router)
 app.register_blueprint(accounts_router)
 app.register_blueprint(admin_router)
 
-datastore.create_all(app=app)
 monkey_patch()
+datastore.create_all(app=app)
 
+
+# include other staff
+from . import filters
 # not backends
 # from .backends import redis_backend, board, paint_lock
 #redis_backend.rds_backend.init_app(app)

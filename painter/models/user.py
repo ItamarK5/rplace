@@ -1,17 +1,16 @@
 from __future__ import annotations
 import re
-from datetime import datetime
 from hashlib import pbkdf2_hmac
 from typing import Optional
 from flask_login import UserMixin
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.dialects.sqlite import DATETIME, SMALLINT
 from sqlalchemy.orm import relationship
 from .role import Role
 from .enumint import SmallEnum
 from ..config import Config
-from ..extensions import datastore, login_manager
-from .ban_status import BanRecord
+from ..extensions import datastore, login_manager, cache
+from .notes import Record
 from datetime import datetime
 
 reNAME = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
@@ -73,23 +72,33 @@ class User(datastore.Model, UserMixin):
         """
         return super().get_id() + '&' + self.password
 
-    def get_last_record(self) -> Optional[BanRecord]:
-        return BanRecord.query\
+    def get_last_record(self) -> Optional[Record]:
+        return Record.query\
             .filter_by(user=self.id)\
-            .order_by(BanRecord.id.desc())\
+            .order_by(Record.id.desc())\
             .first()
 
+    @cache.memoize()
     def is_active(self) -> bool:
+        """
+        :return: user if the user active -> can login
+        """
         record = self.get_last_record()
         if record is None:
             return True
-        if record.expired < datetime.now():
-            datastore.session.add(BanRecord(user=self,
-                                            result=not record.active,
-                                            declared=datetime.now()
-                                            ))
+        if record.expire is None:
+            return record.active
+        if record.expire < datetime.now():
+            datastore.session.add(Record(user=self,
+                                         result=not record.active,
+                                         declared=datetime.now(),
+                                         reason='Timed passed',
+                                         description=f"Timed passed since the banned recordad at {record.declared}"
+                                                     f"and the user has log in"
+                                         ))
+            return record.active       # replace the active
         # else
-        return record.active
+        return not record.active       # isnt expired, so must has the other status
 
 
 @login_manager.user_loader

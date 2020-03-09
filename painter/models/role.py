@@ -3,7 +3,6 @@ from enum import IntEnum, auto
 
 class Role(IntEnum):
     # https://docs.python.org/3/library/enum.html
-    banned = auto()
     common = auto()
     admin = auto()
     superuser = auto()
@@ -20,7 +19,6 @@ class Role(IntEnum):
 ROLE_ICON = {
     Role.admin: 'fa-user-shield',
     Role.common: 'fa-user',
-    Role.banned: 'fa-ban',
     Role.superuser: 'fa-user-secret'
 }
 
@@ -28,5 +26,4 @@ ROLE_TITLE = {
     Role.superuser: 'Superuser',
     Role.admin: 'Admin',
     Role.common: 'User',
-    Role.banned: 'Banned'
 }

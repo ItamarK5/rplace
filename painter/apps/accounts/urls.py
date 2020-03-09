@@ -20,6 +20,9 @@ accounts_router = Blueprint('auth',
 
 @accounts_router.before_app_first_request
 def init_tokens() -> None:
+    """
+    :return: init the token generator
+    """
     TokenSerializer.init_serializer(current_app)
 
 
@@ -43,7 +46,7 @@ def login() -> Response:
         # the only other reason it can be is that if the user is banned
         elif not login_user(user, remember=form.remember.data):
             # must be because user isnt active
-            form.non_field_errors.append('you are banned, so your cant enter')
+            form.non_field_errors.append(user.get_last_record().messsage(user.username))
         else:
             return redirect(url_for('place.home'))
     """
@@ -74,7 +77,7 @@ def login() -> Response:
 @accounts_router.route('/signup', methods=('GET', 'POST'))
 def signup() -> Response:
     """
-    :return: sign-up response
+    :return: sign-up user response
     """
     form = SignUpForm()
     if form.validate_on_submit():
@@ -99,6 +102,9 @@ def signup() -> Response:
 
 @accounts_router.route('/revoke', methods=['GET', 'POST'])
 def revoke() -> Response:
+    """
+    :return: revoke password response
+    """
     form = RevokeForm()
     if form.validate_on_submit():
         """
@@ -109,6 +115,7 @@ def revoke() -> Response:
             # error handling
             send_revoke_password(
                 user.username,
+
                 form.email.data,
                 TokenSerializer.revoke.dumps({
                     'email': form.email.data,

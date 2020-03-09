@@ -2,6 +2,7 @@ from enum import IntEnum
 from typing import Type, Any
 from sqlalchemy import SmallInteger, TypeDecorator
 
+
 class SmallEnum(TypeDecorator):
     """
     Enables passing in a Python enum and storing the enum's *value* in the db.

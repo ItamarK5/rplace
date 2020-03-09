@@ -73,7 +73,9 @@ function addForm(form, field, val){
                 max:999,
                 value:parseInt(val),
                 type:'range',
-            }).change(function(e){
+            })
+            .addClass('form-control-range')
+            .change(function(e){
                 SettingDescriber.text(this.value);
                 hideModalAlert();
             }).appendTo(form);
@@ -86,12 +88,13 @@ function addForm(form, field, val){
             $('<input>').attr({
                 id:FORM_INPUT.slice(1),
                 name:'y',
-                class:'form-control-range',
                 min:0,
                 max:999,
                 value:parseInt(val),
                 type:'range',
-            }).change(function(){
+            })
+            .addClass('form-control-range')
+            .change(function(){
                 SettingDescriber.text(this.value);
                 hideModalAlert();
             }).appendTo(form);
@@ -104,12 +107,11 @@ function addForm(form, field, val){
             $('<input>').attr({
                 id:FORM_INPUT.slice(1),
                 name:'scale',
-                class:'form-control-range',
                 min:1,
                 max:50,
                 value:parseInt(val),
                 type:'range',
-            }).change(function(){
+            }).addClass('form-control-range').change(function(){
                 SettingDescriber.text(this.value.toString());
                 hideModalAlert()
             }).appendTo(form);
@@ -121,8 +123,7 @@ function addForm(form, field, val){
             let color_selector = $('<select>').attr({
                 id:FORM_INPUT.slice(1),
                 name:'color',
-                class:'custom-select',
-            }).appendTo(form);
+            }).addClass('custom-select').appendTo(form);
             COLORS.forEach(
                 (color_val,idx) => {
                     let option = $('<option></option>').css(setColor(color_val)).attr('value',idx).text(color_val).appendTo(color_selector);

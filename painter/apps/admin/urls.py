@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, abort, request, url_for, redirect, jsonify
+from flask import Blueprint, render_template, abort, request, url_for, redirect, jsonify, Markup
 from flask.wrappers import Response
 from flask_login import current_user
 from painter.models.user import reNAME
@@ -6,9 +6,11 @@ from painter.utils import admin_only
 from painter.backends import lock
 from ..profile_form import PreferencesForm
 from painter.extensions import datastore
-from painter.filters import *
-from .forms import BanForm
+from .forms import RecordForm
+from painter.models.user import User
+from painter.models.notes import Record
 from datetime import datetime
+from painter.extensions import cache
 
 admin_router = Blueprint(
     'admin',
@@ -28,7 +30,6 @@ def add_header(response: Response) -> Response:
     response.headers["Expires"] = "0"
     response.headers['Cache-Control'] = 'public, max-age=0'
     return response
-
 
 
 @admin_router.route('/admin', methods=('GET',))
@@ -65,7 +66,8 @@ def edit_user(name: str) -> str:
         # forbidden error
         abort(403, f"You are not allowed to edit the user {user.username}")
     preference_form = PreferencesForm()
-    ban_form = BanForm()
+    ban_form = RecordForm()
+    ban_form.set_banned.data = not user.is_active()
     return render_template('accounts/edit.html', user=user, form=preference_form, ban_form=ban_form)
 
 
@@ -122,22 +124,39 @@ def profile_ajax():
 @admin_router.route('/ban-user/<string:name>', methods=('POST',))
 @admin_only
 def change_ban_status(name: str) -> Response:
+    """
+    :param name: name of the user adding the record
+    :return: nothing
+    adds a ban record for the user
+    """
     if reNAME.match(name) is None:
         abort(400, 'Name isn\'t good')
     user = User.query.filter_by(username=name).first_or_404()
     # user must be a user
     if not current_user.is_superior_to(user):
         abort(403, 'User is superier from you')
-    form = BanForm()
+    form = RecordForm()
     # check a moment for time
     if form.validate_on_submit():
-        # validate date isnt after
-        pass
-    # else
-    print(form.errors, form.expires.data, form.expires.raw_data)
-    return jsonify({
-        'status': 'error',
-        'errors': dict(
-            [(field.name, field.errors) for field in form]
+        cache.delete_memoized(User.is_active, user)
+        datastore.session.add(
+            Record(
+                user=user.id,
+                active=not form.set_banned.data,
+                declared=datetime.utcnow(),
+                expire=form.expires.data,
+                reason=Markup.escape(form.reason.data),
+                description=Markup.escape(form.note.data)
+            )
         )
-    })
+        datastore.session.commit()
+        return jsonify({'valid': True})
+    # else
+    else:
+        print(form.errors)
+        return jsonify({
+            'valid': False,
+            'errors': dict(
+                [(field.name, field.errors) for field in form if field.id != 'csrf_token']
+            )
+        })

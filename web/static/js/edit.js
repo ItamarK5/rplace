@@ -1,6 +1,6 @@
 $(window).on('load', function() {
     $('#expires').datetimepicker({
-        format: 'DD/MM/YYYY H:mm', 
+        format: 'DD/MM/YYYY HH:mm', 
         showTodayButton: true, 
         showClear: true,
         showClose: true,
@@ -14,17 +14,65 @@ $(window).on('load', function() {
             today: 'fas fa-calendar-check-o',
             clear: 'fas fa-trash',
             close: 'fas fa-times'
-        }
+        },
+        timeZone: 'utc-0'
     })
     $('#ban-form').submit(function(e) {
+        let success_message = $('#success-message')[0];
+        if(!success_message.hasAttribute('hidden')){
+            success_message.toggleAttribute('hidden');
+        }
+        $('.error-list').children().remove();
         e.preventDefault();
-        $.post({
+        $.ajax({
+            method:"POST",
             url:this.getAttribute('action'),
-            data:$(this).serialize()
+            data:$(this).serialize(),
+            success:(data) => {
+                if(data.valid){
+                    $('#success-message')[0].removeAttribute('hidden')
+                } else {
+                    let errors = data.errors;
+                    if(errors.expires){
+                        errors.expires.forEach((val) => {
+                            $('<ul></ul>')
+                            .addClass("center-text list-group-item list-group-item-danger")
+                            .text(val)
+                            .appendTo($('.error-list[error-for="expires"]').first())
+                        })
+                    }
+                    if(errors.reason){
+                        errors.reason.forEach((val) => {
+                            $('<ul></ul>')
+                            .addClass("center-text list-group-item list-group-item-danger")
+                            .text(val)
+                            .appendTo($('.error-list[error-for="reason"]').first())
+                        })
+                    }
+                    if(errors.note){
+                        errors.note.forEach((val) => {
+                            $('<ul></ul>')
+                            .addClass("center-text list-group-item list-group-item-danger")
+                            .text(val)
+                            .appendTo($('.error-list[error-for="note"]').first())
+                        })
+                    }
+                }
+            },
+            error:() => alert('An error occurred')
         })
-        .fail(() => alert('error'))
     });
     $('#submit-ban-form').click(() => {
-        $('#ban-from').submit();
+        $('#ban-form').submit();
     })
+    $('#set-expire').click(function() {
+        let field = $('#expires')[0];
+        console.log(this, this.checked)
+        if(this.checked){
+            field.removeAttribute('disabled');
+        } else {
+            field.setAttribute('disabled', 'disabled')
+        }
+    })
+    $('#expires').attr('disabled', 'disabled')
 })
