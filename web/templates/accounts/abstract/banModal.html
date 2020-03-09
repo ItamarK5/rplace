@@ -4,17 +4,18 @@
     <label class="form-check-label" for="{{id}}">{{text}}</label>
 </div>
 {% endmacro %}
-<section class="modal fade" id="banModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+<section class="modal fade" id="banModal" tabindex="-2" role="dialog" aria-labelledby="#ban-title" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="BanTitle">Ban Options</h5>
+          <h5 class="modal-title" id="ban-title">Ban Options</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
         <div class="modal-body">
-            <form id="ban-form" method="POST">
+            <form id="ban-form" method="POST" action="{{url_for('admin.change_ban_status', name=user.username)}}">
+              {{ban_form.csrf_token}}
               <div class="form-row">
                 Currently:<b>{% if user.is_active() %}Active{% else %}Banned{% endif %}</b>
               </div>
@@ -24,29 +25,33 @@
                       <label class="form-check-label" for="{{ban_form.set_active.id}}">To Change Status</label>
                     </div>
                   </div>
-                  <div class="form-row mb-1 mt-1" id="calender-input">
-                    <div class="form-group">
-                        <div class="input-group date" data-target-input="nearest" id="date-time-picker">
-                            <div class="input-group-prepend" data-target="#data-time-picker" data-toggle="datetimepicker">
-                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
-                            </div>
-                            {{ban_form.expired(type='text', class='form-control datetimepicker-input')}}
-                        </div>
+                  <div class="form-row mb-1 mt-1">
+                    <div class="input-group">
+                      <div class="input-group-prepend h-100">
+                          <div class="input-group-text">
+                            <i class="fas fa-calendar"></i>
+                          </div>
+                      </div>
+                      {{ban_form.expires(
+                          type='text',
+                          class='form-control datetimepicker-input mw-100 mh-100',
+                          rows=100
+                      )}}
                       </div>
                   </div>
                   <div class="form-row mt-1 mb-1">
                     <div class="input-group">
                       <div class="input-group-prepend">
-                          <span class="input-group-text fa fa-quote-left" id="ban-description-label"></span>
+                          <span class="input-group-text far fa-clipboard" for="{{ban_form.id}}"></span>
                       </div>
-                      <input type="text" class="form-control" id="ban-description" name="ban-description"/>
+                      {{ban_form.reason(class="form-control")}}
                     </div>
                   </div>
             </form>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary">Save changes</button>
+          <button type="button" class="btn btn-primary" id="submit-ban-form">Save changes</button>
         </div>
       </div>
     </div>

@@ -127,7 +127,14 @@ def change_password(token: str) -> Response:
     """
     # first get
     extracted = extract_signature(token, is_valid_change_password_token)
-    pass
+    """
+    timeout message
+    find user
+    -- then create the change password form
+    -- validate it
+    -- then submit
+    """
+    return None
 
 
 @accounts_router.route('/logout', methods=('GET', 'POST'))
@@ -140,7 +147,8 @@ def logout() -> Response:
 @accounts_router.route('/confirm/<string:token>', methods=('GET',))
 def confirm(token: str) -> Response:
     extracted = extract_signature(token, is_valid_signup_token)
-    if extracted is None:
+    if extracted is\
+            None:
         return render_template(
             'transport//base.html',
             view_name='Sign Up',

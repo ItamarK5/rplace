@@ -8,6 +8,7 @@ from ..profile_form import PreferencesForm
 from painter.extensions import datastore
 from painter.filters import *
 from .forms import BanForm
+from datetime import datetime
 
 admin_router = Blueprint(
     'admin',
@@ -116,3 +117,27 @@ def profile_ajax():
         'errors': next(iter(form.errors.values()))
     })
     # else
+
+
+@admin_router.route('/ban-user/<string:name>', methods=('POST',))
+@admin_only
+def change_ban_status(name: str) -> Response:
+    if reNAME.match(name) is None:
+        abort(400, 'Name isn\'t good')
+    user = User.query.filter_by(username=name).first_or_404()
+    # user must be a user
+    if not current_user.is_superior_to(user):
+        abort(403, 'User is superier from you')
+    form = BanForm()
+    # check a moment for time
+    if form.validate_on_submit():
+        # validate date isnt after
+        pass
+    # else
+    print(form.errors, form.expires.data, form.expires.raw_data)
+    return jsonify({
+        'status': 'error',
+        'errors': dict(
+            [(field.name, field.errors) for field in form]
+        )
+    })

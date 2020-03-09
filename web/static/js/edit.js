@@ -1,11 +1,11 @@
-$(document).ready(function() {
-    $('#date-time-picker').datetimepicker({
+$(window).on('load', function() {
+    $('#expires').datetimepicker({
         format: 'DD/MM/YYYY H:mm', 
         showTodayButton: true, 
         showClear: true,
         showClose: true,
         icons: {
-            time: 'fas fa-clock',
+            time: 'far fa-clock',
             date: 'fas fa-calendar',
             up: 'fas fa-arrow-up',
             down: 'fas fa-arrow-down',
@@ -15,5 +15,16 @@ $(document).ready(function() {
             clear: 'fas fa-trash',
             close: 'fas fa-times'
         }
+    })
+    $('#ban-form').submit(function(e) {
+        e.preventDefault();
+        $.post({
+            url:this.getAttribute('action'),
+            data:$(this).serialize()
+        })
+        .fail(() => alert('error'))
+    });
+    $('#submit-ban-form').click(() => {
+        $('#ban-from').submit();
     })
 })

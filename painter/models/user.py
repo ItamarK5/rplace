@@ -64,7 +64,7 @@ class User(datastore.Model, UserMixin):
         return self.role >= role
 
     def is_superior_to(self, other: User) -> bool:
-        return self.role > other.role
+        return self.role > other.role or self.role == Role.superuser
 
     def get_id(self) -> str:
         """
