@@ -1,13 +1,25 @@
 from datetime import datetime
 from typing import Any, Dict
 from flask_login import current_user
-from flask_socketio import SocketIO, Namespace, ConnectionRefusedError
+from flask_socketio import SocketIO, Namespace, ConnectionRefusedError, disconnect
 from .backends import board
 from painter.constants import MINUTES_COOLDOWN
 from painter.extensions import datastore
 from .models.pixel import Pixel
+from functools import wraps
 
 sio = SocketIO()
+
+
+def socket_io_authenticated_only(f):
+    @wraps(f)
+    def wrapped(*args, **kwargs):
+        if current_user.is_authenticated:
+            disconnect()
+        else:
+            f(*args, **kwargs)
+    return wrapped
+
 
 
 class PaintNamespace(Namespace):
@@ -20,13 +32,8 @@ class PaintNamespace(Namespace):
         if not current_user.is_authenticated:
             raise ConnectionRefusedError()
 
-    def on_disconnect(self) -> None:
-        """
-        required for disconnect message
-        """
-        pass
-
     @staticmethod
+    @socket_io_authenticated_only
     def on_get_data():
         return {
             'board': board.get_board(),
@@ -48,6 +55,7 @@ class PaintNamespace(Namespace):
             board.set_at(x, y, color)
             self.emit('set-board', (x, y, color))
 
+    @socket_io_authenticated_only
     def on_set_board(self, params: Dict[str, Any]) -> str:
         """
         :param params: params given to the Dictionary

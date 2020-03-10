@@ -138,7 +138,7 @@ def change_ban_status(name: str) -> Response:
     form = RecordForm()
     # check a moment for time
     if form.validate_on_submit():
-        cache.delete_memoized(User.is_active, user)
+        cache.delete_memoized(User.get_last_record, user)
         datastore.session.add(
             Record(
                 user=user.id,

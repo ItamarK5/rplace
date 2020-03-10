@@ -72,13 +72,13 @@ class User(datastore.Model, UserMixin):
         """
         return super().get_id() + '&' + self.password
 
+    @cache.memoize()
     def get_last_record(self) -> Optional[Record]:
         return Record.query\
             .filter_by(user=self.id)\
             .order_by(Record.id.desc())\
             .first()
 
-    @cache.memoize()
     def is_active(self) -> bool:
         """
         :return: user if the user active -> can login
@@ -93,8 +93,8 @@ class User(datastore.Model, UserMixin):
                                          result=not record.active,
                                          declared=datetime.now(),
                                          reason='Timed passed',
-                                         description=f"Timed passed since the banned recordad at {record.declared}"
-                                                     f"and the user has log in"
+                                         description=f"The record was set to expire at {record.expire}"
+                                                     f"and the user tried to log in"
                                          ))
             return record.active       # replace the active
         # else
@@ -117,6 +117,8 @@ def load_user(user_token: str) -> Optional[User]:
     # get user, determine if
     user_id, password = identity_keys
     user = User.query.get(int(user_id))
-    if (not user) or user.password != password:
+    # check for the validation of the identifier and keys
+    # also prevent user if he isnt active -> banned
+    if (not user) or user.password != password or not user.is_active:
         return None
     return user
