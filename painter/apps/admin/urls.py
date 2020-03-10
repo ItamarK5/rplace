@@ -10,7 +10,7 @@ from .forms import RecordForm
 from painter.models.user import User
 from painter.models.notes import Record
 from datetime import datetime
-from painter.extensions import cache
+from .utils import only_if_superior
 
 admin_router = Blueprint(
     'admin',
@@ -52,10 +52,10 @@ def admin() -> str:
 
 @admin_router.route('/edit/<string:name>', methods=('GET',))
 @admin_only
-def edit_user(name: str) -> str:
+def edit_user(name: str) -> Response:
     """
     :param: name of user
-    :returns: the web-page of the user
+    :returns: the web-page to edit the matched user (to the name) data
     """
     if reNAME.match(name) is None:
         abort(400, 'Name isn\'t good')
@@ -66,8 +66,7 @@ def edit_user(name: str) -> str:
         # forbidden error
         abort(403, f"You are not allowed to edit the user {user.username}")
     preference_form = PreferencesForm()
-    ban_form = RecordForm()
-    ban_form.set_banned.data = not user.is_active()
+    ban_form = RecordForm(set_banned=user.is_active())
     return render_template('accounts/edit.html', user=user, form=preference_form, ban_form=ban_form)
 
 
@@ -86,10 +85,11 @@ def set_admin_button():
         lock.disable()
 
 
-@admin_router.route('/user-preferences-submit', methods=("POST",))
-@admin_only
+@admin_router.route('/edit-preferences-submit/<string:name>', methods=("POST",))
+@only_if_superior
 def profile_ajax():
     form = PreferencesForm()
+    # detecting for user
     if form.validate_on_submit():
         key, val = form.safe_first_hidden_fields()
         if key == 'url':
@@ -122,23 +122,22 @@ def profile_ajax():
 
 
 @admin_router.route('/ban-user/<string:name>', methods=('POST',))
-@admin_only
-def change_ban_status(name: str) -> Response:
+@only_if_superior
+def change_ban_status(user: User) -> Response:
     """
-    :param name: name of the user adding the record
+    :param user: the user that I add the record
     :return: nothing
     adds a ban record for the user
     """
-    if reNAME.match(name) is None:
+    if reNAME.match(user) is None:
         abort(400, 'Name isn\'t good')
-    user = User.query.filter_by(username=name).first_or_404()
+    user = User.query.filter_by(username=user).first_or_404()
     # user must be a user
     if not current_user.is_superior_to(user):
         abort(403, 'User is superier from you')
     form = RecordForm()
     # check a moment for time
     if form.validate_on_submit():
-        cache.delete_memoized(User.get_last_record, user)
         datastore.session.add(
             Record(
                 user=user.id,
@@ -146,10 +145,12 @@ def change_ban_status(name: str) -> Response:
                 declared=datetime.utcnow(),
                 expire=form.expires.data,
                 reason=Markup.escape(form.reason.data),
-                description=Markup.escape(form.note.data)
+                description=Markup.escape(form.note.data),
+                writer=current_user.id
             )
         )
         datastore.session.commit()
+        user.forget_is_active()
         return jsonify({'valid': True})
     # else
     else:

@@ -1,7 +1,7 @@
 {% from 'accounts/_macros.html' import button_model %}
 {% extends 'accounts/profile.html' %}
 {%- set current_page = 'admin' %}
-{%- set action_url = url_for('admin.profile_ajax') %}
+{%- set action = url_for('admin.profile_ajax', name=user.username) %}
 {% block css %}
 {{super()}}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/css/tempusdominus-bootstrap-4.min.css" />

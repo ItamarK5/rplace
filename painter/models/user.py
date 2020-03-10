@@ -84,9 +84,9 @@ class User(datastore.Model, UserMixin):
         :return: user if the user active -> can login
         """
         record = self.get_last_record()
-        if record is None:
+        if record is None:      # user has not record
             return True
-        if record.expire is None:
+        if record.expire is None:   # record has no expire date
             return record.active
         if record.expire < datetime.now():
             datastore.session.add(Record(user=self,
@@ -96,10 +96,13 @@ class User(datastore.Model, UserMixin):
                                          description=f"The record was set to expire at {record.expire}"
                                                      f"and the user tried to log in"
                                          ))
-            return record.active       # replace the active
+            self.forget_is_active()
+            return not record.active       # replace the active
         # else
-        return not record.active       # isnt expired, so must has the other status
+        return record.active       # isnt expired, so must has the other status
 
+    def forget_is_active(self):
+        cache.delete_memoized(self.get_last_record, self)
 
 @login_manager.user_loader
 def load_user(user_token: str) -> Optional[User]:

@@ -6,9 +6,12 @@ from painter.constants import WEB_FOLDER
 from painter.extensions import datastore
 from ..profile_form import PreferencesForm
 
-place_router = Blueprint('place', 'place',
-                         static_folder=path_join(WEB_FOLDER, 'static'),
-                         template_folder=path_join(WEB_FOLDER, 'templates'))
+place_router = Blueprint(
+    'place',
+    'place',
+    static_folder=path_join(WEB_FOLDER, 'static'),
+    template_folder=path_join(WEB_FOLDER, 'templates')
+)
 
 
 @place_router.route('/place', methods=('GET',))
@@ -16,8 +19,7 @@ place_router = Blueprint('place', 'place',
 def place():
     if not current_user:
         return render_template('place.html')
-    return render_template('place.html', x=current_user.x, y=current_user.y, scale=current_user.scale,
-                           color=current_user.color, url=current_user.url)
+    return render_template('place.html')
 
 
 @place_router.route('/', methods=('GET',))
