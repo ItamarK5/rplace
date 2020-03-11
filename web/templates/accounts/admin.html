@@ -4,7 +4,6 @@
     <link href="{{url_for('other.serve_icon')}}" rel="shortcut icon">
     <!-- Jquery.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" type="text/javascript"></script>
-    <script src="{{url_for('other.serve_static', key='admin.js')}}" type="text/javascript"></script>
     <!-- Boostrap Style -->
     <link crossorigin="anonymous" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
           integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" rel="stylesheet">
@@ -16,6 +15,7 @@
           integrity="sha256-UZFVAO0Fn854ajzdWnJ2Oze6k1X4LNqE2RJPW3MBfq8=" rel="stylesheet"/>
     <link href="{{url_for('other.serve_static', key='admin.css')}}" rel="stylesheet">
     <link href="{{url_for('other.serve_static', key='nav.css')}}" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js" integrity="sha256-bQmrZe4yPnQrLTY+1gYylfNMBuGfnT/HKsCGX+9Xuqo=" crossorigin="anonymous"></script>
     <!--io-->
     <title>Admin Privilage</title>
 </head>
@@ -24,8 +24,9 @@
 {% include "menu/nav.html" %}
 {% endwith %}
 <div class="container">
-    <div class="row justify-content-center center-text"><h2 class="display-4 no-select" id="title"><u>Admin Privilage<i
-            class="fas fa-shield-alt"></i></u></h2></div>
+    <div class="row justify-content-center center-text">
+        <h2 class="display-4 no-select" id="title"><u>Admin Privilage<i class="fas fa-shield-alt"></i></u></h2>
+    </div>
     <div class="row justify-content-center">
         <button class="btn round-rect" id='place-button' state="1">
             <h6>Turn Off Painter</h6>
@@ -72,7 +73,7 @@
             <a {% if pagination.has_next%}href='{{url_for("admin.admin", page=pagination.next_num)}}'{% endif %} class='list-group-item list-group-item-action{% if not pagination.has_next %} disabled{% endif %}'>Next</a>
         </div>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js" integrity="sha256-bQmrZe4yPnQrLTY+1gYylfNMBuGfnT/HKsCGX+9Xuqo=" crossorigin="anonymous"></script>
+    <script src="{{url_for('other.serve_static', key='admin.js')}}" type="text/javascript"></script>
     <!-- Document said to put it here so it be faster -->
     <!-- popper.js - needed for bootstarp -->
     <script crossorigin="anonymous"

@@ -48,5 +48,5 @@ datastore.create_all(app=app)
 from . import filters
 # not backends
 # from .backends import redis_backend, board, paint_lock
-#redis_backend.rds_backend.init_app(app)
+# redis_backend.rds_backend.init_app(app)
 # board.init_app(app)

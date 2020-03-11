@@ -6,5 +6,5 @@ if __name__ == '__main__':
         app,
         debug=True,
         host='0.0.0.0',
-        port=argv[1]
+        port=argv[1],
     )

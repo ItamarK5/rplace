@@ -790,7 +790,7 @@ const pen = {
                 text: 'Wait for the board to load before doing something'
             });
         }
-        if (progress.work.isWorking) {
+        else if (progress.work.isWorking) {
             Swal.fire({
                 title: 'You have 2 wait',
                 imageUrl: 'https://aadityapurani.files.wordpress.com/2016/07/2.png',
@@ -1321,6 +1321,7 @@ $(document).ready(function() {
         $(this).css('background-color',Colors.colors[parseInt($(this).attr('value'))].css_format()); // set colors
     }).click(function(event) {
         event.preventDefault(); // prevent default clicking
+        pen.setColorButton($(this))
     });
     //https://stackoverflow.com/a/11384018
     $('#chat-button').click((function(e) {
@@ -1341,9 +1342,8 @@ $(document).ready(function() {
     // set color button
     $(window).resize((e) => {
         board.setCanvasZoom();
-s
+    })
 });
-
 /**
  * list to do
  * --add center mouse button move.

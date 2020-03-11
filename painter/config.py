@@ -22,7 +22,7 @@ class Config:
     MAX_AGE_USER_SIGN_UP_TOKEN = 3600  # 3600 seconds = 1 hour
     MAIL_MAX_EMAILS = 10
     # https://stackoverflow.com/a/54802481
-    WERKZEUG_RUN_MAIN = True
+    WERKZEUG_RUN_MAIN = False
     REMEMBER_COOKIE_NAME = 'SocialPainterDashCookie'
     REMEMBER_COOKIE_HTTPONLY = True
     FIRBASE_CERTIFICATE_PATH = 'C:\Cyber\2020\rplace\certificate.json'
