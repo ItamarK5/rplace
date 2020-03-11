@@ -1,4 +1,4 @@
-from .redis_backend import rds_backend
+from .extensions import rds_backend
 from flask import Flask
 """
     represnting an ability of the admin to prevent users from setting pixels

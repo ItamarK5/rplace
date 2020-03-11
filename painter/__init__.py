@@ -50,3 +50,7 @@ from . import filters
 # from .backends import redis_backend, board, paint_lock
 #redis_backend.rds_backend.init_app(app)
 # board.init_app(app)
+@app.before_first_request
+def a():
+    from .backends.accounts_cache import cache_user
+    cache_user()

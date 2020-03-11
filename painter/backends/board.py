@@ -1,7 +1,7 @@
 from typing import NoReturn
 from threading import Lock
 from flask import Flask
-from .redis_backend import rds_backend
+from .extensions import rds_backend
 
 """
 A backend to work with the board on redis

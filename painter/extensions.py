@@ -4,7 +4,6 @@ from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from flask_caching import Cache
-
 from .config import Config
 from .encryption.flask_encrypt import FlaskEncrypt
 
@@ -13,9 +12,6 @@ datastore = SQLAlchemy()
 engine = create_engine(Config.SQLALCHEMY_DATABASE_URI)
 encrypt = FlaskEncrypt()
 cache = Cache(config={'CACHE_TYPE': 'simple'})
-# firebase = Firebase()
-# crsf protection
-
 # only after creating the UserModel
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
