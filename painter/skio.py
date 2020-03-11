@@ -1,25 +1,45 @@
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any, Dict, Callable
 from flask_login import current_user
 from flask_socketio import SocketIO, Namespace, ConnectionRefusedError, disconnect
-from .backends import board
+from .backends import board, lock
 from painter.constants import MINUTES_COOLDOWN
 from painter.extensions import datastore
 from .models.pixel import Pixel
 from functools import wraps
+from painter.models.role import Role
 
+
+TypeCall = Callable[[Any], Any]
 sio = SocketIO()
 
 
-def socket_io_authenticated_only(f):
+def socket_io_authenticated_only(f:TypeCall) -> TypeCall:
     @wraps(f)
-    def wrapped(*args, **kwargs):
-        if current_user.is_authenticated:
+    def wrapped(*args, **kwargs) -> Any:
+        if current_user.is_anonymous or not current_user.is_active:
             disconnect()
         else:
             f(*args, **kwargs)
     return wrapped
 
+
+def socket_io_role_required(role:Role) -> TypeCall:
+    """
+    :param f: socket.io view fucntion
+    :param role: the required role to pass
+    :return: the socket.io view, but now only allows if the user is authenticated
+    """
+
+    def wrapped(f:TypeCall) -> TypeCall:
+        @wraps(f)
+        def wrapped2(*args, **kwargs) -> Any:
+            if current_user.has_required_status(role):
+                disconnect()
+            else:
+                f(*args, **kwargs)
+        return socket_io_authenticated_only(wrapped2)
+    return wrapped
 
 
 class PaintNamespace(Namespace):
@@ -63,6 +83,7 @@ class PaintNamespace(Namespace):
                  or undefined if couldn't update the screen
         """
         # somehow logged out between requests
+        print(3)
         try:
             current_time = datetime.utcnow()
             if current_user.next_time > current_time:
@@ -102,6 +123,31 @@ class PaintNamespace(Namespace):
         except Exception as e:
             print(e, e.args)
             return 'undefined'
+
+
+class PowerNamespace(Namespace):
+    def on_connect(self):
+        if current_user.is_anonymous or (not current_user.is_active):
+            raise ConnectionRefusedError("Connection Refused")
+        # else do nothing
+
+    def on_disconnect(self):
+        pass    # required for disconnect
+
+    @socket_io_role_required(Role.superuser)
+    def on_set_power_button(self, to_enable_board: bool):
+        if to_enable_board:
+            if not lock.enable():
+                return 'error: paint has already been disabled'
+        else:
+            success = lock.disable()
+            if not lock.disable():
+                return 'error: paint has already been disabled'
+        # otherwise
+        self.emit('enable-board', to_enable_board)
+
+
+
 
 
 PAINT_NAMESPACE = PaintNamespace('/paint')

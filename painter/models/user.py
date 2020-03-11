@@ -87,6 +87,7 @@ class User(datastore.Model, UserMixin):
         if record is None:      # user has not record
             return True
         if record.expire is None:   # record has no expire date
+            print(record.active)
             return record.active
         if record.expire < datetime.now():
             datastore.session.add(Record(user=self,

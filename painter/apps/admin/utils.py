@@ -7,6 +7,7 @@ from flask_login import fresh_login_required
 from werkzeug import Response
 
 from painter.models.user import User, reNAME
+from painter.models.role import Role
 
 
 def admin_only(f: Callable) -> Callable:

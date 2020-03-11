@@ -22,20 +22,22 @@ def is_enabled():
     return _enable_edit_board   # but in reallity bool(rds_backend.get(_ENABLE_EDIT_BOARD_KEY)
 
 
-def enable():
+def enable() -> int:
     global _enable_edit_board
     if _enable_edit_board:
         _enable_edit_board = False
-        rds_backend.set(_ENABLE)
+        return rds_backend.set(_ENABLE)
     # rds_backend.set(0)
+    return 1
 
 
-def disable():
+def disable() -> int:
     global _enable_edit_board
     if _enable_edit_board:
         _enable_edit_board = False
-        rds_backend.set(_DISABLE)
+        return rds_backend.set(_DISABLE)
     # rds_backend.set(1)
+    return 0
 
 
 __all__ = ['init_app', 'enable', 'disable', 'is_enabled']

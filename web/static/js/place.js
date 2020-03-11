@@ -118,6 +118,8 @@ function NonSweetClick(selector){
         $(selector).click()
     }
 }
+
+
 /**
  * 
  * @param {Optional[String]} msg 
@@ -666,14 +668,17 @@ const cursor = {
 const pen = {
     x: null,
     y: null,
-    color: null,
+    __color: null,
     last_mouse_pos: null,
     // in keyboard state, the pen should point at the center of the screen
     force_center: true,
     __disable: false,
     cursor_style: 'default',
     construct() {
-        this.color = $('.colorButton').index('[picked="1"]');
+        if (!color_button[0]) {
+            color_button = $('.colorButton').first(); // black button
+        }
+        this.setColorButton(color_button)
     },
     disable() {
         if (!this.__disable) {
@@ -749,19 +754,24 @@ const pen = {
         this.force_center = true;
         this.updateOffset();
     },
+    setColorButton(button){
+        this.color = parseInt(button.attr('value'));
+        $('.colorButton[picked="1"]').attr('picked', '0');
+        button.attr('picked', '1');
+    },
     get hasColor() {
-        return this.__color != -1;
+        return (!isNaN(this.__color)) && this.__color > 0 && this.__color < 16 ;
     },
     // color getter ans setter
     get color() {
         return this.__color;
     },
     /**
-     * @param {number} color
+     * @param {number} value
      */
-    set color(color) {
-        if (this.__color != color) {
-            this.__color = color;
+    set color(value) {
+        if (value > 0 && value < 16 && this.__color != value) {
+            this.__color = value;
             board.drawBoard()
         }
     },
@@ -788,7 +798,7 @@ const pen = {
                 text: 'Wait for your cooldown to end'
             });
         }
-        else if (!pen.hasColor) {
+        else if (!this.hasColor) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Select Color',
@@ -797,9 +807,9 @@ const pen = {
         }
         else {
             sock.emit('set_board', {
-                'color': pen.color,
-                'x': pen.x,
-                'y': pen.y,
+                'color': this.__color,
+                'x': this.x,
+                'y': this.y,
             }, callback = (next_time) => {
                 if (!(_.isUndefined(next_time) || next_time ==
                         'undefined')) {
@@ -1066,7 +1076,8 @@ const board = {
 };
 //const performance_arr = []
 const sock = io('/paint', {
-    autoConnect:false
+    autoConnect:false,
+    transports: [ 'websocket' ] // or [ 'websocket', 'polling' ], which is the same thing
 });
 
 $(document).ready(function() {
@@ -1157,26 +1168,20 @@ $(document).ready(function() {
                 break;
             }
             case 'KeyC': {
-                let button = $(".colorButton[picked='1']")
-                    .first();
+                let button = $(".colorButton[picked='1']").first();
                 // if any of the is undefiend - reset
-                if (_.isUndefined(button[0]) || _.isUndefined(
-                        button.next()[0])) {
-                    $(".colorButton[value='0']").click();
+                if (_.isUndefined(button[0]) || _.isUndefined(button.next()[0])) {
+                    let button = $(".colorButton").first()
                 }
-                else {
-                    $(button).next().click()
-                }
+                pen.setColorButton(button.next())
                 break;
             }
             case 'KeyZ': {
                 let button = $(".colorButton[picked='1']");
                 if (_.isUndefined(button) || _.isUndefined(button.prev()[0])) {
-                    $(".colorButton[value='15']").click();
+                    button = $('.colorButton').last()
                 }
-                else {
-                    $(button).prev().click()
-                }
+                pen.setColorButton(button.prev())
                 break;
             }
             case 'KeyP': {
@@ -1192,7 +1197,7 @@ $(document).ready(function() {
                 cursor.lockCursor(Cursors.FindMouse);
                 break;
             } case 'KeyF': {
-                NonSweetClick('#screensize-button')
+                NonSweetClick('#screen-button')
                 break;
             } default:{
                 break;
@@ -1312,13 +1317,9 @@ $(document).ready(function() {
         });
     });
     $('.colorButton').each(function() {
-        $(this).css('background-color', Colors.colors[parseInt(
-            $(this).attr('value'))].css_format()); // set colors
+        $(this).css('background-color',Colors.colors[parseInt($(this).attr('value'))].css_format()); // set colors
     }).click(function(event) {
         event.preventDefault(); // prevent default clicking
-        pen.color = parseInt($(this).attr('value'));
-        $('.colorButton[picked="1"]').attr('picked', '0');
-        $(this).attr('picked', '1');
     });
     //https://stackoverflow.com/a/11384018
     $('#chat-button').click((function(e) {
@@ -1333,8 +1334,8 @@ $(document).ready(function() {
         }
     })
     document.onfullscreenchange = function() {
-        $('#screen-button').attr('state', $('#screen-button').attr(
-            'state') == '1' ? '0' : '1');
+        let not_state = $('#screen-button').attr('state') == '1' ? '0' : '1'
+        $('#screen-button').attr('state', not_state);
     }
     // set color button
     $(window).resize((e) => {
@@ -1355,14 +1356,7 @@ $(document).ready(function() {
         couponWindow.resizing = false;
       });*/
 });
-$(window).on('load', function() {
-    // didnt work on load maybe because the image didnt worked at the time
-    let color_button = $('.colorButton[picked="1"]').first()
-    if (!color_button[0]) {
-        color_button = $($('.colorButton')[1]); // black button
-    }
-    color_button.click()
-});
+
 /**
  * list to do
  * --add center mouse button move.
