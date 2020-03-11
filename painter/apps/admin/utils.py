@@ -2,11 +2,28 @@ from functools import wraps
 from typing import Callable
 
 from flask import abort
+from flask_login import current_user
+from flask_login import fresh_login_required
 from werkzeug import Response
 
 from painter.models.user import User, reNAME
-from painter.utils import admin_only
-from flask_login import current_user
+
+
+def admin_only(f: Callable) -> Callable:
+    """
+    :param f: decorator, which decorates a view, make it admin only used
+    :return: a route that aborts 404 non-admin users that enter, all actions of admin must be with refreshed login
+    """
+
+    @wraps(f)
+    def wrapped(*args, **kwargs):
+        if current_user.is_authenticated and current_user.has_required_status(Role.admin):
+            # decorated by flesh_login_required, so that it user isnt refreshed and prevent seeing the site
+            return fresh_login_required(f)(*args, **kwargs)
+        # else
+        abort(404)
+
+    return wrapped
 
 
 def only_if_superior(f: Callable[[User], Response]) -> Callable[[str], Response]:
@@ -16,6 +33,7 @@ def only_if_superior(f: Callable[[User], Response]) -> Callable[[str], Response]
                 also passes the user with the name to the function
     check if the user is superier to the user with the name, also passes the user to the function
     """
+
     @wraps(f)
     def wrapped(name: str, *args, **kwargs) -> Response:
         # check user name

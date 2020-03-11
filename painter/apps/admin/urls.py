@@ -1,16 +1,18 @@
+from datetime import datetime
+
 from flask import Blueprint, render_template, abort, request, url_for, redirect, jsonify, Markup
 from flask.wrappers import Response
 from flask_login import current_user
-from painter.models.user import reNAME
-from painter.utils import admin_only
+from werkzeug.exceptions import BadRequest
+
 from painter.backends import lock
-from ..profile_form import PreferencesForm
 from painter.extensions import datastore
-from .forms import RecordForm
-from painter.models.user import User
 from painter.models.notes import Record
-from datetime import datetime
-from .utils import only_if_superior
+from painter.models.user import User
+from painter.models.user import reNAME
+from .forms import RecordForm
+from .utils import only_if_superior, admin_only
+from ..profile_form import PreferencesForm
 
 admin_router = Blueprint(
     'admin',
@@ -81,8 +83,10 @@ def set_admin_button():
     """
     if request.query_string == b'1':
         lock.enable()
-    else:
+    elif request.query_string == b'0':
         lock.disable()
+    # else
+    abort(BadRequest)
 
 
 @admin_router.route('/edit-preferences-submit/<string:name>', methods=("POST",))
@@ -129,12 +133,6 @@ def change_ban_status(user: User) -> Response:
     :return: nothing
     adds a ban record for the user
     """
-    if reNAME.match(user) is None:
-        abort(400, 'Name isn\'t good')
-    user = User.query.filter_by(username=user).first_or_404()
-    # user must be a user
-    if not current_user.is_superior_to(user):
-        abort(403, 'User is superier from you')
     form = RecordForm()
     # check a moment for time
     if form.validate_on_submit():
