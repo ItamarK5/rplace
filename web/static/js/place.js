@@ -675,6 +675,7 @@ const pen = {
     __disable: false,
     cursor_style: 'default',
     construct() {
+        let color_button = $('.colorButton[picked="1"]').first()
         if (!color_button[0]) {
             color_button = $('.colorButton').first(); // black button
         }
@@ -1340,21 +1341,7 @@ $(document).ready(function() {
     // set color button
     $(window).resize((e) => {
         board.setCanvasZoom();
-    });
-    //prevent resize
-    /*var couponWindow = {
-        width: $(window).width(),
-        height: $(window).height(),
-        resizing: false
-      };
-      var $w=$(window);
-      $w.resize(function() {
-        if ($w.width() != couponWindow.width && !couponWindow.resizing) {
-          couponWindow.resizing = true;
-          window.resizeTo(couponWindow.width, $w.height());
-        }
-        couponWindow.resizing = false;
-      });*/
+s
 });
 
 /**
