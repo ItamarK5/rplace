@@ -20,7 +20,7 @@ def socket_io_authenticated_only(f: TypeCall) -> TypeCall:
         if current_user.is_anonymous or not current_user.is_active:
             disconnect()
         else:
-            f(*args, **kwargs)
+            return f(*args, **kwargs)
     return wrapped
 
 
@@ -35,7 +35,7 @@ def socket_io_role_required(role: Role) -> TypeCall:
             if current_user.has_required_status(role):
                 disconnect()
             else:
-                f(*args, **kwargs)
+                return f(*args, **kwargs)
         return socket_io_authenticated_only(wrapped2)
     return wrapped
 
@@ -69,9 +69,9 @@ class PaintNamespace(Namespace):
         -- sets the pixel in the redis server
         -- brodcast to all watchers that the pixel has changed
         """
-        with board.board_lock:
-            board.set_at(x, y, color)
-            self.emit('set-board', (x, y, color))
+        #with board.board_lock:
+        board.set_at(x, y, color)
+        self.emit('set_board', (x, y, color))
 
     @socket_io_authenticated_only
     def on_set_board(self, params: Dict[str, Any]) -> str:
@@ -82,9 +82,11 @@ class PaintNamespace(Namespace):
         """
         # somehow logged out between requests
         try:
+            print(2)
             current_time = datetime.utcnow()
             if current_user.next_time > current_time:
                 return str(current_user.next_time)
+            print(3)
             # validating parameter
             if 'x' not in params or (not isinstance(params['x'], int)) or not (0 <= params['x'] < 1000):
                 return 'undefined'
@@ -95,6 +97,7 @@ class PaintNamespace(Namespace):
             next_time = current_time  # + MINUTES_COOLDOWN
             current_user.next_time = next_time
             x, y, clr = int(params['x']), int(params['y']), int(params['color'])
+            print(4)
             datastore.session.add(
                 Pixel(
                     x=x,
@@ -104,7 +107,9 @@ class PaintNamespace(Namespace):
                     drawn=current_time.timestamp()
                 )
             )
+            print(5)
             sio.start_background_task(self.set_at, x=x, y=y, color=clr)
+            print(1)
             datastore.session.commit()
             # setting the board
             """

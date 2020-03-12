@@ -1,4 +1,3 @@
-from typing import NoReturn
 from threading import Lock
 from flask import Flask
 from .extensions import rds_backend
@@ -10,7 +9,7 @@ A backend to work with the board on redis
 board_lock = Lock()
 
 
-def make_board() -> NoReturn:
+def make_board() -> None:
     """
     :return: nothing
     check if there is a board object in redis
@@ -20,7 +19,7 @@ def make_board() -> NoReturn:
         rds_backend.set('board', '\00' * 1000 * 500)
 
 
-def init_app(app: Flask) -> NoReturn:
+def init_app(app: Flask) -> None:
     """
     :param app: a flask appilcation
     :return: nothing
@@ -30,7 +29,7 @@ def init_app(app: Flask) -> NoReturn:
     app.before_first_request(make_board)
 
 
-def set_at(x: int, y: int, color: int) -> NoReturn:
+def set_at(x: int, y: int, color: int) -> None:
     """
     :param x: x of the colored pixel
     :param y: y of the colored pixel
@@ -52,7 +51,7 @@ def get_board() -> bytes:
     return rds_backend.get('board')
 
 
-def debug_board() -> NoReturn:
+def debug_board() -> None:
     """
     :return: prints the board, for debug purpose
     """

@@ -1,16 +1,16 @@
 from datetime import datetime
 
-from flask import Blueprint, render_template, abort, request, url_for, redirect, jsonify, Markup
+from flask import Blueprint, render_template, abort, request, url_for, redirect, jsonify, escape
 from flask.wrappers import Response
 from flask_login import current_user
 from werkzeug.exceptions import BadRequest
 
 from painter.backends import lock
 from painter.extensions import datastore
-from painter.models.notes import Record
+from painter.models.notes import Record, Note
 from painter.models.user import User
 from painter.models.user import reNAME
-from .forms import RecordForm
+from .forms import RecordForm, NoteForm
 from .utils import only_if_superior, admin_only
 from ..profile_form import PreferencesForm
 
@@ -69,7 +69,14 @@ def edit_user(name: str) -> Response:
         abort(403, f"You are not allowed to edit the user {user.username}")
     preference_form = PreferencesForm()
     ban_form = RecordForm(set_banned=user.is_active())
-    return render_template('accounts/edit.html', user=user, form=preference_form, ban_form=ban_form)
+    note_form = NoteForm()
+    return render_template(
+        'accounts/edit.html',
+        user=user,
+        form=preference_form,
+        ban_form=ban_form,
+        note_form=note_form
+    )
 
 
 @admin_router.route('/admin-power-button', methods=('GET',))
@@ -136,17 +143,55 @@ def change_ban_status(user: User) -> Response:
     form = RecordForm()
     # check a moment for time
     if form.validate_on_submit():
-        datastore.session.add(
-            Record(
-                user=user.id,
+        record = Record(
                 active=not form.set_banned.data,
-                declared=datetime.utcnow(),
                 expire=form.expires.data,
-                reason=Markup.escape(form.reason.data),
-                description=Markup.escape(form.note.data),
-                writer=current_user.id
+                reason=escape(form.reason.data),
             )
+        datastore.session.add(record)
+        datastore.session.commit()
+        datastore.session.add(Note(
+            user=user.id,
+            description=escape(form.note.data),
+            declared=datetime.now(),
+            writer=current_user.id,
+            ban_record=record.id
+        ))
+        datastore.session.commit()
+        user.forget_is_active()
+        return jsonify({'valid': True})
+    # else
+    else:
+        print(form.errors)
+        return jsonify({
+            'valid': False,
+            'errors': dict(
+                [(field.name, field.errors) for field in form if field.id != 'csrf_token']
+            )
+        })
+
+
+@admin_router.route('/add-note/<string:name>', methods=('POST',))
+@only_if_superior
+def add_note(user: User) -> Response:
+    """
+    :param user: the user that I add the record
+    :return: nothing
+    adds a ban record for the user
+    """
+    form = NoteForm()
+    # check a moment for time
+    if form.validate_on_submit():
+        note = Note(
+
         )
+        datastore.session.add(Note(
+            user=user.d,
+            writer=current_user.id,
+            declared=datetime.now(),
+            description=escape(form.description),
+            ban_Record=None
+        ))
         datastore.session.commit()
         user.forget_is_active()
         return jsonify({'valid': True})

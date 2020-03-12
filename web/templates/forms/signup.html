@@ -15,3 +15,7 @@
 {{ render_link('login-link', 'Already have an account?', url_for('auth.login')) }}
 {{ render_link('revoke-link', 'Forgot your password?', url_for('auth.revoke')) }}
 {% endblock %}
+{% block imports %}
+{{super()}}
+<script type="text/javascript" src="{{url_for('other.serve_static', key='auth.js')}}"></script>
+{% endblock %}

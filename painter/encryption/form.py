@@ -10,7 +10,7 @@ from .flask_encrypt import FlaskEncrypt
 _SKIP = object()
 
 
-def decrypt_val(encrypted_val:str) -> Union[str, type(_SKIP)]:
+def decrypt_val(encrypted_val: str) -> Union[str, type(_SKIP)]:
     val = FlaskEncrypt.get_ext().safe_decrypt(encrypted_val)
     return val if val is not None and val[0] else _SKIP
 

@@ -1,4 +1,4 @@
-from typing import Any, Optional, Tuple, Dict, NoReturn, Callable
+from typing import Any, Optional, Tuple, Dict, Callable
 
 from flask import Flask
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
@@ -13,7 +13,7 @@ class TokenSerializer:
     revoke: URLSafeTimedSerializer
 
     @classmethod
-    def init_serializer(cls, app: Flask) -> NoReturn:
+    def init_serializer(cls, app: Flask) -> None:
         """
         :param app: the Application object
         :return: None

@@ -1,11 +1,10 @@
 from functools import wraps
 from os import path
 from typing import Optional, Any, Callable, Tuple, Dict
-
+import time
 from flask import current_app
 from flask import render_template
 from flask_mail import BadHeaderError, Message
-
 from painter.constants import MIME_TYPES
 
 
@@ -14,12 +13,12 @@ def send_message(f: Callable[[Any], Message]) -> Callable[[Tuple[Any], Dict[str,
     :param f: a function that return a Message object
     :return: decorates the function
     """
-
     @wraps(f)
     def wrapper(*args, **kwargs) -> Optional[str]:
         if not current_app.config.get('MAIL_SUPPRESS_SEND', True):
             return None
         message = f(*args, **kwargs)
+        t = time.time()
         try:
             current_app.extensions['mail'].send(message)
         except BadHeaderError:
@@ -27,7 +26,6 @@ def send_message(f: Callable[[Any], Message]) -> Callable[[Tuple[Any], Dict[str,
         except Exception as e:
             print('Mail:', e)
             return None
-
     return wrapper
 
 

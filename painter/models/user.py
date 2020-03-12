@@ -1,16 +1,15 @@
-from __future__ import annotations
 import re
 from hashlib import pbkdf2_hmac
 from typing import Optional
 from flask_login import UserMixin
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, and_
 from sqlalchemy.dialects.sqlite import DATETIME, SMALLINT
 from sqlalchemy.orm import relationship
 from .role import Role
 from .enumint import SmallEnum
 from ..config import Config
 from ..extensions import datastore, login_manager, cache
-from .notes import Record
+from .notes import Record, Note
 from datetime import datetime
 
 reNAME = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
@@ -62,7 +61,7 @@ class User(datastore.Model, UserMixin):
                             role: Role) -> bool:
         return self.role >= role
 
-    def is_superior_to(self, other: User) -> bool:
+    def is_superior_to(self, other) -> bool:
         return self.role > other.role or self.role == Role.superuser
 
     def get_id(self) -> str:
@@ -74,10 +73,16 @@ class User(datastore.Model, UserMixin):
 
     @cache.memoize()
     def get_last_record(self) -> Optional[Record]:
-        return Record.query\
-            .filter_by(user=self.id)\
-            .order_by(Record.id.desc())\
-            .first()
+        note = Note.query.filter(
+            and_(
+                Note.id == self.id,
+                Note.ban_record is not None,
+            )
+        ).order_by(Note.declared.asc()).first()
+        if note is None:
+            return None
+        # else
+        return Record.query.get(note.ban_record)
 
     def is_active(self) -> bool:
         """
@@ -104,6 +109,7 @@ class User(datastore.Model, UserMixin):
 
     def forget_is_active(self):
         cache.delete_memoized(self.get_last_record, self)
+
 
 @login_manager.user_loader
 def load_user(user_token: str) -> Optional[User]:

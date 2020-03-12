@@ -19,7 +19,8 @@
 <div class="row justify-content-center">
     <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
         <div class="btn-group mr-2" role="group">
-            {{button_model('ban', 'banModal', 'ban', 'Ban', classes="btn-secondary")}}
+            {{button_model('ban', 'banModal', 'fas fa-ban', 'Ban', classes="btn-secondary")}}
+            {{button_model('add note', 'noteModal', 'far fa-sticky-note', 'Note', classes="btn-secondary")}}
         </div>
       </div>
 </div>
@@ -27,6 +28,7 @@
 {% block modals %}
 {{super()}}
 {% include 'accounts/abstract/banModal.html' %}
+{% include 'accounts/abstract/noteModal.html' %}
 {% endblock %}
 {% block javascript %}
 {{super()}}

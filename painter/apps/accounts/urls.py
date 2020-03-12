@@ -90,7 +90,7 @@ def signup() -> Response:
                 'email': email,
                 'username': name,
                 # to hex to prevent any chance of decode the key and then changing it to SQL function
-                'password': User.encrypt_password(pswd)
+                'password': User.encrypt_password(pswd, name)
             }
         ))
         if login_error is not None:

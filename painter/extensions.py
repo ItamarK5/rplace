@@ -3,14 +3,13 @@ from flask_login import LoginManager
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
-from flask_caching import Cache
 from .config import Config
-from .encryption.flask_encrypt import FlaskEncrypt
+# from .encryption.flask_encrypt import FlaskEncrypt
 
 mailbox = Mail()
 datastore = SQLAlchemy()
 engine = create_engine(Config.SQLALCHEMY_DATABASE_URI)
-encrypt = FlaskEncrypt()
+# encrypt = FlaskEncrypt()
 cache = Cache(config={'CACHE_TYPE': 'simple'})
 # only after creating the UserModel
 login_manager = LoginManager()

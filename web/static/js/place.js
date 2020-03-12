@@ -807,6 +807,7 @@ const pen = {
             });
         }
         else {
+            console.log(4)
             sock.emit('set_board', {
                 'color': this.__color,
                 'x': this.x,

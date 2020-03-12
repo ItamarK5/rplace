@@ -39,3 +39,13 @@ class RecordForm(FlaskForm):
             print(now, field.data)
             if now > field.data + timedelta(minutes=1):
                 raise ValidationError("You must select a day in the future, now now")
+
+
+class NoteForm(FlaskForm):
+    description = TextAreaField(
+        'description',
+        [
+            validators.required(),
+            validators.length(-1, 256, message="a description must be less then 256 characters"),
+        ],
+    )

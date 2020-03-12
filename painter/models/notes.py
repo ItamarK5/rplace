@@ -12,15 +12,21 @@ from datetime import datetime
 """
 
 
-class Record(datastore.Model):
+class Note(datastore.Model):
     id = Column(Integer(), primary_key=True, unique=True, autoincrement=True)
     user = Column(Integer(), ForeignKey('user.id'), nullable=False)
     description = Column(String(), nullable=False)
-    active = Column(BOOLEAN(), nullable=False)
     declared = Column(DATETIME(), nullable=False)
-    expire = Column(DATETIME, nullable=True, default=None)
-    reason = Column(String(), nullable=False)
     writer = Column(Integer(), ForeignKey('user.id'), nullable=False)
+    ban_record = Column(Integer(), ForeignKey('record.id'), nullable=True)
+    sqlite_autoincrement = True
+
+
+class Record(datastore.Model):
+    id = Column(Integer(), primary_key=True, unique=True, autoincrement=True)
+    active = Column(BOOLEAN(), nullable=False)
+    expire = Column(DATETIME(), nullable=True, default=None)
+    reason = Column(String(), nullable=False)
     sqlite_autoincrement = True
 
     def message(self, name: str) -> str:
