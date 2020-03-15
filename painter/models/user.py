@@ -8,7 +8,8 @@ from sqlalchemy.orm import relationship
 from .role import Role
 from .enumint import SmallEnum
 from ..config import Config
-from ..extensions import datastore, login_manager, cache
+from ..extensions import datastore, cache
+from painter.extensions import login_manager
 from .notes import Record, Note
 from datetime import datetime
 

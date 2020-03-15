@@ -193,6 +193,7 @@ $(document).ready(() =>{
             type:form.attr('method'),
             data:form.serialize(),
             success: (response) => {
+                console.log(response)
                 $('#setting-alert')
                     .show()
                     .text(response.success ? 'Changed Successfully' : response.errors.join('\n'))
@@ -200,7 +201,7 @@ $(document).ready(() =>{
                     .removeClass(response.success ? 'alert-danger' : 'alert-success');
                 if(response.success){
                     $(`#text-${response.id}`).text(filterResponse(response.id, response.val));
-                } 
+                }
             },
             error: (data) =>{
                 // read later https://stackoverflow.com/a/3543713

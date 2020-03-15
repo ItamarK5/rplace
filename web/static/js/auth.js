@@ -1,5 +1,4 @@
 $(document).ready(function(){
-
   $('[data-toggle="tooltip"]').tooltip();
   $('#submit-button').click(function(e) {
       this.innerHTML='<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Loading...';

@@ -3,7 +3,7 @@ from typing import Callable
 
 from flask import abort
 from flask_login import current_user
-from flask_login import fresh_login_required
+from flask_login import fresh_login_required, login_required
 from werkzeug import Response
 
 from painter.models.user import User, reNAME
@@ -22,8 +22,8 @@ def admin_only(f: Callable) -> Callable:
             # decorated by flesh_login_required, so that it user isnt refreshed and prevent seeing the site
             return fresh_login_required(f)(*args, **kwargs)
         # else
-        abort(404)
-
+        else:
+            abort(404)
     return wrapped
 
 

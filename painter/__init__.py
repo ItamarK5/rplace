@@ -22,7 +22,6 @@ from .skio import sio
 from flask_wtf.csrf import CSRFProtect
 from .apps import other_router, place_router, accounts_router, admin_router
 from .extensions import datastore, mailbox, engine, login_manager, cache
-from flask import Flask
 
 
 sio.init_app(

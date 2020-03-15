@@ -3,8 +3,7 @@ from datetime import datetime
 from flask import Blueprint, render_template, abort, request, url_for, redirect, jsonify, escape
 from flask.wrappers import Response
 from flask_login import current_user
-from werkzeug.exceptions import BadRequest
-
+from painter.models.role import Role
 from painter.extensions import datastore
 from painter.models.notes import Record, Note
 from painter.models.user import User
@@ -74,27 +73,28 @@ def edit_user(name: str) -> Response:
         user=user,
         form=preference_form,
         ban_form=ban_form,
-        note_form=note_form
+        note_form=note_form,
+        Role=Role
     )
 
 
 @admin_router.route('/edit-preferences-submit/<string:name>', methods=("POST",))
 @only_if_superior
-def profile_ajax():
+def profile_ajax(user: User) -> Response:
     form = PreferencesForm()
     # detecting for user
     if form.validate_on_submit():
         key, val = form.safe_first_hidden_fields()
         if key == 'url':
-            current_user.url = val if val != '' and val is not None else None
+            user.url = val if val != '' and val is not None else None
         elif key == 'x':
-            current_user.x = val
+            user.x = val
         elif key == 'y':
-            current_user.y = val
+            user.y = val
         elif key == 'scale':
-            current_user.scale = val
+            user.scale = val
         elif key == 'color':
-            current_user.color = val
+            user.color = val
         else:
             key = None
         if key is not None:
@@ -164,11 +164,8 @@ def add_note(user: User) -> Response:
     form = NoteForm()
     # check a moment for time
     if form.validate_on_submit():
-        note = Note(
-
-        )
         datastore.session.add(Note(
-            user=user.d,
+            user=user.id,
             writer=current_user.id,
             declared=datetime.now(),
             description=escape(form.description),
@@ -186,3 +183,25 @@ def add_note(user: User) -> Response:
                 [(field.name, field.errors) for field in form if field.id != 'csrf_token']
             )
         })
+
+
+@admin_router.route('/set-user-role/<string:name>', methods=('GET',))
+@only_if_superior
+def set_role(user: User) -> Response:
+    if not current_user.has_required_status(Role.superuser):
+       abort(403)   # forbidden
+    # get value
+    print(request.query_string, 5)
+    if request.query_string == b'Admin':
+        new_role = Role.admin
+    elif request.query_string == b'Common':
+        new_role = Role.common
+    else:
+        return jsonify({'status': 'error', 'text': 'unknown input'})
+    if new_role == user.role:
+        return jsonify({'status': 'error', 'text': 'you must pick different role'})
+    # else
+    user.role = new_role
+    datastore.session.add(user)
+    datastore.session.commit()
+    return jsonify({'status': 'success', 'text': 'pless refresh the page to see the changes'})

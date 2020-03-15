@@ -27,8 +27,6 @@ class Config:
     # https://stackoverflow.com/a/54802481
     WERKZEUG_RUN_MAIN = False
     REMEMBER_COOKIE_NAME = 'SocialPainterDashCookie'
-    REMEMBER_COOKIE_HTTPONLY = True
-    FIRBASE_CERTIFICATE_PATH = 'C:\Cyber\2020\rplace\certificate.json'
+    REMEMBER_COOKIE_HTTPONLY = False
     CACHE_TYPE = 'simple'
-    FIREBASE_DATABASE_URL = 'https://Users.firebaseio.com'
-    # SESSION_PROTECTION = 'basic' to prevent users moving ip addr 
+    # SESSION_PROTECTION = 'basic' to prevent users moving ip addr

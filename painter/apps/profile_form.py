@@ -32,6 +32,7 @@ class PreferencesForm(FlaskForm):
         ],
     )
     color = SelectField(
+        coerce=int,
         choices=tuple(
             [(i, COLORS[i]) for i in range(len(COLORS))]
         ),

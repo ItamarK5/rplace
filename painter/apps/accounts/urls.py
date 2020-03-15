@@ -49,23 +49,6 @@ def login() -> Response:
             form.non_field_errors.append(user.get_last_record().messsage(user.username))
         else:
             return redirect(url_for('place.home'))
-    """
-    if request.method.lower() == 'post':
-        x = time.time()
-        try:
-            # Verify the ID token while checking if the token is revoked by
-            # passing check_revoked=True.
-            decoded_token = auth.verify_id_token(request.form['token'], check_revoked=True)
-            # Token is valid and not revoked.
-            uid = decoded_token['uid']
-        except auth.RevokedIdTokenError:
-            # Token revoked, inform the user to reauthenticate or signOut().
-            pass
-        except auth.InvalidIdTokenError:
-            # Token is invalid
-            pass
-        print(time.time()-x)
-    """
     # clear password
     form.password.data = ''
     return render_template('forms/index.html',
@@ -117,12 +100,43 @@ def revoke() -> Response:
                 user.username,
                 form.email.data,
                 TokenSerializer.revoke.dumps({
-                    'email': form.email.data,
+                    'name': user.username,
                     'password': user.password
                 })
             )
             # return template ok
     return render_template('forms/revoke.html', form=form)
+
+
+@accounts_router.route('/refresh', methods=['GET', 'POST'])
+def refresh() -> Response:
+    """
+        added in version 1.0.0
+        :return: login page response
+        """
+    if current_user.is_authenticated:
+        redirect('place.home')
+    form = LoginForm()
+    entire_form_error = []
+    extra_error = None
+    if form.validate_on_submit():
+        print(form.username.data)
+        user = User.query.filter_by(username=form.username.data).first()  # usernames are unique
+        if user is None and User.encrypt_password(form.username.data, form.password.data):
+            form.password.errors.append('username and password don\'t match')
+            form.username.errors.append('username and password don\'t match')
+        # the only other reason it can be is that if the user is banned
+        elif not login_user(user, remember=form.remember.data):
+            # must be because user isnt active
+            form.non_field_errors.append(user.get_last_record().messsage(user.username))
+        else:
+            return redirect(url_for('place.home'))
+    # clear password
+    form.password.data = ''
+    return render_template('forms/refresh.html',
+                           form=form,
+                           entire_form_errors=entire_form_error,
+                           extra_error=extra_error)
 
 
 @accounts_router.route('/change-password/<string:token>', methods=['GET', 'POST'])
@@ -140,7 +154,30 @@ def change_password(token: str) -> Response:
     -- validate it
     -- then submit
     """
-    return None
+    # check for data
+    if extracted is None:
+        return render_template(
+            'transport//base.html',
+            view_name='Revoke Password',
+            view_ref='auth.login',
+            title='You Made a Mess',
+            page_title='non valid Token',
+            message='The token you entered is not valid, did you messed with him?'
+                    ' if you can\'t access the original mail pless sign-up again'
+        )
+    token, timestamp = extracted
+    name, password = token.pop('name'), token.pop('password')
+    user = User.query.filter_by(username=name).first()
+    if user.password != password:
+        return render_template(
+            'transport//base.html',
+            view_name='Revoke Password',
+            view_ref='auth.login',
+            title='You Made a Mess',
+            page_title='non valid Token',
+            message='The token you entered is not valid, did you messed with him?'
+                    ' if you can\'t access the original mail pless sign-up again'
+        )
 
 
 @accounts_router.route('/logout', methods=('GET', 'POST'))
@@ -153,8 +190,7 @@ def logout() -> Response:
 @accounts_router.route('/confirm/<string:token>', methods=('GET',))
 def confirm(token: str) -> Response:
     extracted = extract_signature(token, is_valid_signup_token)
-    if extracted is\
-            None:
+    if extracted is None:
         return render_template(
             'transport//base.html',
             view_name='Sign Up',
