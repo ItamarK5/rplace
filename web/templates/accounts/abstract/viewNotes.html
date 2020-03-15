@@ -1,0 +1,54 @@
+<section class="modal fade" id="noteModal" tabindex="-3" role="dialog" aria-labelledby="#note-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="note-title">Note Options</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            {% macro render_pagination(pagination, endpoint) %}
+                <div class=pagination>
+                {%- for page in pagination.iter_pages() %}
+                    {% if page %}
+                    {% if page != pagination.page %}
+                        <a href="{{ url_for(endpoint, page=page) }}">{{ page }}</a>
+                    {% else %}
+                        <strong>{{ page }}</strong>
+                    {% endif %}
+                    {% else %}
+                    <span class=ellipsis>…</span>
+                    {% endif %}
+                {%- endfor %}
+                </div>
+                {% endmacro %}
+            <form id="note-form" method="POST" action="{{url_for('admin.add_note', name=user.username)}}">
+              {{note_form.csrf_token}}
+              <div class="form-row">
+                <div class="alert alert-success" id="success-message-note" hidden>
+                  You Added a Note about the user
+                </div>
+              </div>
+              <div class="form-row mb-1 mt-1">
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text">
+                      <i class='fas fa-sticky-note mr-1'></i>{{note_form.description.label.text|title}}
+                    </span>
+                   </div>
+                   {{note_form.description(type="text", class="form-control mw-100 mh-100")}}
+                </div>
+              </div>
+              <div class="form-row">
+                <li class="error-list list-group" error-for="{{note_form.description.id}}"></li>
+              </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="submit-note-form">Save changes</button>
+        </div>
+    </div> {# https://getbootstrap.com/docs/4.0/components/modal/ #}
+  </div>
+</section>

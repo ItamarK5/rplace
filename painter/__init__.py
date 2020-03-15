@@ -1,6 +1,9 @@
 from os import path
 from flask import Flask
 from .constants import WEB_FOLDER
+from .config import Config  # config
+from celery import Celery
+
 
 app = Flask(
     __name__,
@@ -10,13 +13,17 @@ app = Flask(
     root_path=WEB_FOLDER
 )
 
+app.config.from_object(Config)
+celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
+celery.conf.update(app.config)
 
 
 from .skio import sio
 from flask_wtf.csrf import CSRFProtect
 from .apps import other_router, place_router, accounts_router, admin_router
-from .config import Config  # config
 from .extensions import datastore, mailbox, engine, login_manager, cache
+from flask import Flask
+
 
 sio.init_app(
     app,
@@ -24,7 +31,6 @@ sio.init_app(
 )
 
 
-app.config.from_object(Config)
 datastore.init_app(app)
 mailbox.init_app(app)
 login_manager.init_app(app)

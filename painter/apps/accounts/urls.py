@@ -115,7 +115,6 @@ def revoke() -> Response:
             # error handling
             send_revoke_password(
                 user.username,
-
                 form.email.data,
                 TokenSerializer.revoke.dumps({
                     'email': form.email.data,
