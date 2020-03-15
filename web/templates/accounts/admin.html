@@ -73,7 +73,6 @@
             <a {% if pagination.has_next%}href='{{url_for("admin.admin", page=pagination.next_num)}}'{% endif %} class='list-group-item list-group-item-action{% if not pagination.has_next %} disabled{% endif %}'>Next</a>
         </div>
     </div>
-    <script src="{{url_for('other.serve_static', key='admin.js')}}" type="text/javascript"></script>
     <!-- Document said to put it here so it be faster -->
     <!-- popper.js - needed for bootstarp -->
     <script crossorigin="anonymous"
@@ -83,5 +82,17 @@
     <script crossorigin="anonymous"
             integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
             src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(() => {
+            $('[data-toggle="tooltip"]').tooltip();
+            $('tr').click(function() {
+                let name = $(this).children('.name-col').text();
+                if(name){
+                    window.location.href = `/edit/${$(this).children('.name-col').text()}`
+                };
+            });
+            
+        });
+    </script>                
 </body>
 </html>
