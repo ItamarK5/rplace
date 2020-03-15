@@ -5,7 +5,6 @@ from flask.wrappers import Response
 from flask_login import current_user
 from werkzeug.exceptions import BadRequest
 
-from painter.backends import lock
 from painter.extensions import datastore
 from painter.models.notes import Record, Note
 from painter.models.user import User
@@ -77,23 +76,6 @@ def edit_user(name: str) -> Response:
         ban_form=ban_form,
         note_form=note_form
     )
-
-
-@admin_router.route('/admin-power-button', methods=('GET',))
-@admin_only
-def set_admin_button():
-    """
-        view for the admin power button request (by ajax)
-        to turn off == 1
-        to turn on == 0
-        query_string is in binary for some reason
-    """
-    if request.query_string == b'1':
-        lock.enable()
-    elif request.query_string == b'0':
-        lock.disable()
-    # else
-    abort(BadRequest)
 
 
 @admin_router.route('/edit-preferences-submit/<string:name>', methods=("POST",))
