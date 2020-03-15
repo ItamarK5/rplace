@@ -74,5 +74,42 @@ $(window).on('load', function() {
             field.setAttribute('disabled', 'disabled')
         }
     })
-    $('#expires').attr('disabled', 'disabled')
+    $('#expires').attr('disabled', 'disabled');
+    $('#rank-button').click(function() {
+        let name = this.getAttribute('enum-name');
+        console.log(name, 5)
+        Swal.fire({
+            title: 'Are you sure?',
+            text: `You want to set this user's rank to ${name}`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes Set Rank!'
+          }).then((result) => {
+            if (result.value) {
+                console.log(name)
+              $.ajax({
+                  url:`/set-user-role/${window.location.pathname.split('/')[2]}`,
+                  method:'GET',
+                  data: name,
+                  success:function(data){
+                    Swal.fire({
+                        title: data.status,
+                        icon:  data.status == 'success' ? 'success' : 'error',
+                        text: data.text
+                    });
+                  },
+                  error: function(err) {
+                      Swal.fire({
+                        title: 'Error',
+                        icon:  'error',
+                        html: err.responseText
+                      })
+                      console.log(err)
+                  }
+              })
+            }
+          })
+    });
 })

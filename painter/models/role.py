@@ -15,6 +15,8 @@ class Role(IntEnum):
     def title(self):
         return ROLE_TITLE[self]
 
+    def members(self):
+        return tuple(self._member_map_.values())
 
 ROLE_ICON = {
     Role.admin: 'fa-user-shield',
