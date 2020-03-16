@@ -91,7 +91,8 @@ $(window).on('load', function() {
                 console.log(name)
               $.ajax({
                   url:`/set-user-role/${window.location.pathname.split('/')[2]}`,
-                  method:'GET',
+                  method:'POST',
+                  contentType: 'application/json;charset=UTF-8',
                   data: name,
                   success:function(data){
                     Swal.fire({
@@ -106,7 +107,6 @@ $(window).on('load', function() {
                         icon:  'error',
                         html: err.responseText
                       })
-                      console.log(err)
                   }
               })
             }

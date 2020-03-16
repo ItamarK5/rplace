@@ -185,16 +185,15 @@ def add_note(user: User) -> Response:
         })
 
 
-@admin_router.route('/set-user-role/<string:name>', methods=('GET',))
+@admin_router.route('/set-user-role/<string:name>', methods=('POST',))
 @only_if_superior
 def set_role(user: User) -> Response:
     if not current_user.has_required_status(Role.superuser):
         abort(403)   # forbidden
     # get value
-    print(request.query_string, 5)
-    if request.query_string == b'Admin':
+    if request.data == b'Admin':
         new_role = Role.admin
-    elif request.query_string == b'Common':
+    elif request.data == b'Common':
         new_role = Role.common
     else:
         return jsonify({'status': 'error', 'text': 'unknown input'})
