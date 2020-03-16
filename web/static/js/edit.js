@@ -94,16 +94,18 @@ $(window).on('load', function() {
                   method:'POST',
                   contentType: 'application/json;charset=UTF-8',
                   data: name,
+                // success message
                   success:function(data){
                     Swal.fire({
-                        title: data.status,
-                        icon:  data.status == 'success' ? 'success' : 'error',
+                        title: data.success ? 'Role Changed' : 'Error!',
+                        icon:  data.success ? 'success' : 'error',
                         text: data.text
                     });
                   },
+                // error message
                   error: function(err) {
                       Swal.fire({
-                        title: 'Error',
+                        title: 'Error!',
                         icon:  'error',
                         html: err.responseText
                       })

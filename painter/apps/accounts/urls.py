@@ -11,6 +11,8 @@ from painter.models.user import User
 from .forms import LoginForm, SignUpForm, RevokeForm
 from .utils import *
 from .mail import send_sign_up_mail, send_revoke_password
+from painter.skio import PAINT_NAMESPACE
+
 
 # router blueprint -> routing all pages that relate to authorization
 accounts_router = Blueprint('auth',

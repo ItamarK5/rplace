@@ -9,8 +9,10 @@ from painter.models.notes import Record, Note
 from painter.models.user import User
 from painter.models.user import reNAME
 from .forms import RecordForm, NoteForm
-from .utils import only_if_superior, admin_only
+from .utils import only_if_superior, admin_only, superuser_only, json_response
 from ..profile_form import PreferencesForm
+from painter.skio import PAINT_NAMESPACE, lock
+
 
 admin_router = Blueprint(
     'admin',
@@ -144,7 +146,6 @@ def change_ban_status(user: User) -> Response:
         return jsonify({'valid': True})
     # else
     else:
-        print(form.errors)
         return jsonify({
             'valid': False,
             'errors': dict(
@@ -185,22 +186,42 @@ def add_note(user: User) -> Response:
         })
 
 
+@admin_router.route('/set-power-button', methods=('POST',))
+@superuser_only
+def set_admin_button():
+    print(3)
+    if not current_user.has_required_status(Role.superuser):
+        abort(403)  # forbidden
+    # else
+    if request.data != b'1' and request.data != b'0':
+        return json_response(False, 'Unknown data')
+    # else
+    to_pause_place = request.data == b'1'
+    if to_pause_place:
+        lock.enable()
+        PAINT_NAMESPACE.pause_place()
+    else:
+        lock.disable()
+        PAINT_NAMESPACE.play_place()
+    return json_response(True, '0' if to_pause_place else '1')
+
+
 @admin_router.route('/set-user-role/<string:name>', methods=('POST',))
 @only_if_superior
 def set_role(user: User) -> Response:
     if not current_user.has_required_status(Role.superuser):
-        abort(403)   # forbidden
+        abort(404)   # forbidden
     # get value
     if request.data == b'Admin':
         new_role = Role.admin
     elif request.data == b'Common':
         new_role = Role.common
     else:
-        return jsonify({'status': 'error', 'text': 'unknown input'})
+        return json_response(False, 'Unknown value')
     if new_role == user.role:
-        return jsonify({'status': 'error', 'text': 'you must pick different role'})
+        return json_response(False, 'Refresh the page to pick different role')
     # else
     user.role = new_role
     datastore.session.add(user)
     datastore.session.commit()
-    return jsonify({'status': 'success', 'text': 'pless refresh the page to see the changes'})
+    return json_response(True, 'Pless refresh the page to see changes')

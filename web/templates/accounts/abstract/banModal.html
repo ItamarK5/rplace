@@ -24,7 +24,6 @@
         </div>
         <div class="modal-body">
             <form id="ban-form" method="POST" action="{{url_for('admin.change_ban_status', name=user.username)}}">
-              {{ban_form.csrf_token}}
               <div class="form-row">
               <div class="alert alert-success" id="success-message" hidden>
                 You Added a record to the user

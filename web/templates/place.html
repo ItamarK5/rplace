@@ -35,9 +35,11 @@
             {% for i in range(16) %}
             <div class='colorButton' value='{{i}}' picked="{{(i==current_user.color)|int}}"></div>
             {% endfor %}
+            <div id="lock-colors" lock="0">
+                <i class="fa fa-lock"></i>
+            </div>
         </div>
     </div>
-    {{color}}
     <div id="icon-container">
         {{render_link('zoom-button', 'search-plus')}}
         <div class="icon-button" id="screen-button" state="0">

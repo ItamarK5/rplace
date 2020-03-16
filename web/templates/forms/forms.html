@@ -32,6 +32,15 @@
             <!-- warning was used as nice title -->
             <h2 class="mx-auto text-warning non-select"><u>{{form.title}}</u></h2>
         </div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul class="flashes list-group">
+            {% for category, message in messages %}
+            <li class="list-group-item list-group-item-warning">{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+        {% endwith %}
         {% block before_image %}{% endblock %}
         <img class="rounded mx-auto d-block mb-2"
              height="250" src="{{url_for('other.serve_static', key='favicon.gif')}}"

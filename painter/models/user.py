@@ -131,6 +131,7 @@ def load_user(user_token: str) -> Optional[User]:
     id&password
     flask encrypts it so I dont worry
     """
+    print(user_token)
     # first get the id
     identity_keys = user_token.split('&')  # password hash, email, user_id
     # validate for user
@@ -141,6 +142,6 @@ def load_user(user_token: str) -> Optional[User]:
     user = User.query.get(int(user_id))
     # check for the validation of the identifier and keys
     # also prevent user if he isnt active -> banned
-    if (not user) or user.password != password or not user.is_active:
+    if (not user) or user.password != password:
         return None
     return user

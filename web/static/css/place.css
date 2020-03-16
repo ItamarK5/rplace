@@ -231,7 +231,26 @@ body, html {
     text-align:center;
     cursor:copy;
 }
-
+#lock-colors {
+    position: absolute;
+    top:0;
+    bottom:0;
+    width: 100%;
+    height:100%;
+    text-align:center;
+    font-size: 150%;
+    vertical-align: middle;
+    background-color:#44444480;
+    color:#444444;
+    display: inline-block;
+}
+#lock-colors > i {
+    margin-top:auto;
+    margin-bottom:auto;
+}
+#lock-colors {
+    display:none;
+}
 
 #coordinates:hover {
     background-color:rgba(0, 0, 0, .7);

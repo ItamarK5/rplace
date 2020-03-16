@@ -1114,6 +1114,14 @@ $(document).ready(function() {
             text: 'Server Connection returned',
         })
     });
+    sock.on('pause-board', (data) => {
+        // if data is true
+        if(data){
+            // unpause code
+        } else {
+            // pause c
+        }
+    })
     $('#coordinates').hover(function() {
         board.updateCoords();
     }, function() {

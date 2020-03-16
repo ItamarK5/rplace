@@ -9,7 +9,6 @@
         </div>
         <div class="modal-body">
             <form id="note-form" method="POST" action="{{url_for('admin.add_note', name=user.username)}}">
-              {{note_form.csrf_token}}
               <div class="form-row">
                 <div class="alert alert-success" id="success-message-note" hidden>
                   You Added a Note about the user

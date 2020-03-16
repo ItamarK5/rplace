@@ -7,6 +7,7 @@ A backend to work with the board on redis
 """
 
 board_lock = Lock()
+_BOADR_REDIS_KEY = 'board'
 
 
 def make_board() -> None:
@@ -16,7 +17,7 @@ def make_board() -> None:
     if not creates new one
     """
     if not rds_backend.exists('board'):
-        rds_backend.set('board', '\00' * 1000 * 500)
+        rds_backend.set(_BOADR_REDIS_KEY, '\00' * 1000 * 500)
 
 
 def init_app(app: Flask) -> None:
@@ -37,7 +38,7 @@ def set_at(x: int, y: int, color: int) -> None:
     :return: nothing
     set a pixel on the board copy in the redis server
     """
-    bitfield = rds_backend.bitfield('board')
+    bitfield = rds_backend.bitfield(_BOADR_REDIS_KEY)
     # need to count for little endian
     x_endian = x + (-1)**(x % 2)
     bitfield.set('u4', (y * 1000 + x_endian) * 4, color)
@@ -48,7 +49,7 @@ def get_board() -> bytes:
     """
     :return: returns a copy of the board in bytes format
     """
-    return rds_backend.get('board')
+    return rds_backend.get(_BOADR_REDIS_KEY)
 
 
 def debug_board() -> None:

@@ -69,9 +69,15 @@ class PaintNamespace(Namespace):
         -- sets the pixel in the redis server
         -- brodcast to all watchers that the pixel has changed
         """
-        #with board.board_lock:
-        board.set_at(x, y, color)
-        self.emit('set_board', (x, y, color))
+        if lock.is_enabled():
+            board.set_at(x, y, color)
+            self.emit('set_board', (x, y, color))
+
+    def pause_place(self) -> None:
+        self.emit('pause-board', 0)
+
+    def play_place(self):
+        self.emit('pause-board', 1)
 
     @socket_io_authenticated_only
     def on_set_board(self, params: Dict[str, Any]) -> str:
@@ -82,11 +88,9 @@ class PaintNamespace(Namespace):
         """
         # somehow logged out between requests
         try:
-            print(2)
             current_time = datetime.utcnow()
             if current_user.next_time > current_time:
                 return str(current_user.next_time)
-            print(3)
             # validating parameter
             if 'x' not in params or (not isinstance(params['x'], int)) or not (0 <= params['x'] < 1000):
                 return 'undefined'
@@ -97,7 +101,6 @@ class PaintNamespace(Namespace):
             next_time = current_time  # + MINUTES_COOLDOWN
             current_user.next_time = next_time
             x, y, clr = int(params['x']), int(params['y']), int(params['color'])
-            print(4)
             datastore.session.add(
                 Pixel(
                     x=x,

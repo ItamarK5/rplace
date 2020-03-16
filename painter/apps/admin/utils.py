@@ -1,9 +1,9 @@
 from functools import wraps
 from typing import Callable
 
-from flask import abort
+from flask import abort, jsonify
 from flask_login import current_user
-from flask_login import fresh_login_required, login_required
+from flask_login import fresh_login_required
 from werkzeug import Response
 
 from painter.models.user import User, reNAME
@@ -27,6 +27,17 @@ def admin_only(f: Callable) -> Callable:
     return wrapped
 
 
+def superuser_only(f: Callable) -> Callable:
+    def wrapped(*args, **kwargs):
+        if current_user.is_authenticated and current_user.has_required_status(Role.superuser):
+            # decorated by flesh_login_required, so that it user isnt refreshed and prevent seeing the site
+            return fresh_login_required(f)(*args, **kwargs)
+        # else
+        else:
+            abort(404)
+    return admin_only(wrapped)
+
+
 def only_if_superior(f: Callable[[User], Response]) -> Callable[[str], Response]:
     """
     :param f: a view which the url get a name parameter represent the name of a user and need to pass a User object
@@ -47,3 +58,10 @@ def only_if_superior(f: Callable[[User], Response]) -> Callable[[str], Response]
             abort(403, 'Cannot access user')  # Forbidden
         return f(user=user, *args, **kwargs)
     return admin_only(wrapped)      # uses admin_only to check if the user is authenticated and at least admin
+
+
+def json_response(success: bool, text:str) -> Response:
+    return jsonify({
+        'success': int(success),
+        'text': text
+    })
