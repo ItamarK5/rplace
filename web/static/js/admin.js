@@ -29,10 +29,11 @@ $(document).ready(() => {
                     let text = data.text;
                     if(data.success){
                         text = `The place is ${data.text == '0' ? 'paused' : 'unpause'}`;
-                        $(button).attr('state', data.text)
+                        $(button).attr('state', data.text);
+                        $(button).children('h6').text(data.text == '0' ? 'Turn Place On' : 'Turn Place Off')
                     }
                     Swal.fire({
-                        title: data.success ? `App is ${date.text == '0' ? 'paused' : 'unpause'}` : 'Error!',
+                        title: data.success ? `App is ${data.text == '0' ? 'paused' : 'unpause'}` : 'Error!',
                         icon:  data.success ? 'success' : 'error',
                         text: text
                     });

@@ -8,7 +8,7 @@ from painter.extensions import datastore
 from .models.pixel import Pixel
 from functools import wraps
 from painter.models.role import Role
-
+import json
 
 TypeCall = Callable[[Any], Any]
 sio = SocketIO(logger=True)
@@ -90,7 +90,9 @@ class PaintNamespace(Namespace):
         try:
             current_time = datetime.utcnow()
             if current_user.next_time > current_time:
-                return str(current_user.next_time)
+                return json.dump({'code': 'time', 'status': str(current_user.next_time)})
+            if lock.is_enabled():
+                return json.dump({'code': 'lock', 'status': 'true'})
             # validating parameter
             if 'x' not in params or (not isinstance(params['x'], int)) or not (0 <= params['x'] < 1000):
                 return 'undefined'
@@ -110,10 +112,8 @@ class PaintNamespace(Namespace):
                     drawn=current_time.timestamp()
                 )
             )
-            print(5)
-            sio.start_background_task(self.set_at, x=x, y=y, color=clr)
-            print(1)
             datastore.session.commit()
+            sio.start_background_task(self.set_at, x=x, y=y, color=clr)
             # setting the board
             """
             if x % 2 == 0:
@@ -124,7 +124,7 @@ class PaintNamespace(Namespace):
                 board[y, x // 2] |= clr << 4
             """
             #        board.set_at(x, y, color)
-            return str(next_time)
+            return json.dump({'code': 'time', 'value': str(next_time)})
         except Exception as e:
             print(e, e.args)
             return 'undefined'

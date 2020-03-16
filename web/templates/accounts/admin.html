@@ -28,8 +28,8 @@
         <h2 class="display-4 no-select" id="title"><u>Admin Privilage<i class="fas fa-shield-alt"></i></u></h2>
     </div>
     <div class="row justify-content-center">
-        <button class="btn round-rect" id='place-button' state="1">
-            <h6>Turn Off Painter</h6>
+        <button class="btn round-rect" id='place-button' state="{{lock|int}}">
+            <h6>{% if lock %}Turn Place Off{% else %}Turn Paint On{% endif %}</h6>
         </button>
     </div>
     <div class="row justify-context-center mt-3">

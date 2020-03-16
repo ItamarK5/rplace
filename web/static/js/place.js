@@ -807,15 +807,20 @@ const pen = {
             });
         }
         else {
-            console.log(4)
             sock.emit('set_board', {
                 'color': this.__color,
                 'x': this.x,
                 'y': this.y,
-            }, callback = (next_time) => {
-                if (!(_.isUndefined(next_time) || next_time ==
-                        'undefined')) {
-                    progress.setTime(next_time)
+            }, callback = (value) => {
+                if(_.isUndefiend(value) || value == 'undefiend'){
+                    return;
+                }
+                // else it must be json
+                data = JSON.loads(value)
+                if(data.code == 'lock'){
+                    return;
+                } else if(data.code == 'set-time') {
+                    progress.setTime(data.value)
                 }
             });
         }

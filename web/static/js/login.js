@@ -20,8 +20,6 @@ function rememberMeMessage(button) {
 } 
 
 $(document).ready(function(){
-  const encrypt = new JSEncrypt();
-  encrypt.setPublicKey(PRIVATE_KEY);
     $('[data-toggle="tooltip"]').tooltip();
     $('#submit-button').click(function(e) {
         this.innerHTML='<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Loading...';
@@ -61,28 +59,4 @@ $(document).ready(function(){
           remember_message(this);
         }
     });
-    /*$('form').first().submit(function(e){
-      // prevent default
-      e.preventDefault()
-      // now form control should 
-      let encrypt_form = $('<form>').attr({
-        id:'encrypt_form'
-        url:this.getAttribute('url'),
-        method:this.getAttribute('method')
-      });
-      //https://stackoverflow.com/a/4291032
-      $(`form#${this.getAttribute('id')} :input`).each(
-        (idx, ele) => {
-          $(ele).clone().appendTo(encrypt_form[0])
-        }
-      )
-      $(`form#${encrypt_form.attr('id')} :input`).each(
-        (idx, ele) => {
-        if($(ele).val() instanceof String){
-          $(ele).val(btoa(encrypt.encrypt($(ele).val())))
-        }
-      })
-      console.log($(encrypt_form));
-      setTimeout(() =>$(encrypt_form).submit(), 2000)
-    })*/
   });

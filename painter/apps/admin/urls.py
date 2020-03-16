@@ -40,16 +40,18 @@ def admin() -> str:
     """
     :return: return's admin template
     """
-    pagination = User.query.paginate(per_page=1, max_per_page=20)
+    pagination = User.query.paginate(per_page=10, max_per_page=20)
     # try get page
     page = request.args.get('page', '1')
     if not page.isdigit():
         abort(400, 'Given page isn\'t a number', description='Are you mocking this program? you'
                                                              ' an admin tries to edit the url')
     page = int(page)
+    print(pagination.pages)
     if not (1 <= page <= pagination.pages):
-        abort(404, 'Page index Not Found')
-    return render_template('accounts/admin.html', pagination=pagination)
+        print(1)
+        return redirect(url_for('/admin', args={'page': '1'}))
+    return render_template('accounts/admin.html', pagination=pagination, lock=lock.is_enabled())
 
 
 @admin_router.route('/edit/<string:name>', methods=('GET',))
@@ -177,7 +179,6 @@ def add_note(user: User) -> Response:
         return jsonify({'valid': True})
     # else
     else:
-        print(form.errors)
         return jsonify({
             'valid': False,
             'errors': dict(
@@ -189,7 +190,6 @@ def add_note(user: User) -> Response:
 @admin_router.route('/set-power-button', methods=('POST',))
 @superuser_only
 def set_admin_button():
-    print(3)
     if not current_user.has_required_status(Role.superuser):
         abort(403)  # forbidden
     # else
