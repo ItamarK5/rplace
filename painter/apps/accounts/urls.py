@@ -38,7 +38,6 @@ def login() -> Response:
     entire_form_error = []
     extra_error = None
     if form.validate_on_submit():
-        print(form.username.data)
         user = User.query.filter_by(username=form.username.data).first()    # usernames are unique
         if user is None and User.encrypt_password(form.username.data, form.password.data):
             form.password.errors.append('username and password don\'t match')
@@ -46,7 +45,7 @@ def login() -> Response:
         # the only other reason it can be is that if the user is banned
         elif not login_user(user, remember=form.remember.data):
             # must be because user isnt active
-            form.non_field_errors.append(user.get_last_record().messsage(user.username))
+            form.non_field_errors.append(user.record_message())
         else:
             return redirect(url_for('place.home'))
     # clear password
@@ -76,8 +75,8 @@ def signup() -> Response:
                 'password': User.encrypt_password(pswd, name)
             }
         ))
-        if login_error is not None:
-            form.email.errors.append(login_error)
+        if not login_error:
+            form.email.errors.append('Bad Header')
         else:
             return render_template('transport/complete-signup.html', username=name)
     return render_template('forms/signup.html', form=form)

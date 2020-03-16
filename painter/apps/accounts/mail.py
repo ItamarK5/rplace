@@ -37,7 +37,10 @@ def send_sign_up_mail(name: str, address: str, token: str) -> bool:
     if message.has_bad_headers():
         return False
     # else
-    send_message.apply_async(args=[message])
+    #send_message.apply_async(args=[message])
+    import time
+    print(time.time())
+    current_app.extensions['mail'].send(message)
     return True
 
 

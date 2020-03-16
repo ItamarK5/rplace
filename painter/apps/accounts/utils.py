@@ -1,11 +1,16 @@
+import re
 from typing import Any, Optional, Tuple, Dict, Callable
 
 from flask import Flask
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
-from wtforms.validators import Email
-
+from wtforms.validators import HostnameValidation
 from painter.models.user import reNAME, rePSWD
 
+
+user_regex = re.compile(
+        r"(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*\Z"  # dot-atom
+        r'|^"([\001-\010\013\014\016-\037!#-\[\]-\177]|\\[\001-\011\013\014\016-\177])*"\Z)',  # quoted-string
+        re.IGNORECASE)
 
 class TokenSerializer:
     # https://realpython.com/handling-email-confirmation-in-flask/
@@ -43,6 +48,17 @@ def extract_signature(token: str, valid_predicate: Callable[[Any], bool]) -> Opt
     return token, timestamp.timestamp()
 
 
+def try_message(address: str) -> bool:
+    if '@' not in address:
+        return False
+    user_part, domain_part = address.rsplit('@', 1)
+    if not user_regex.match(user_part):
+        return False
+    if not HostnameValidation(require_tld=False)(domain_part):
+        return False
+    return True
+
+
 def is_valid_signup_token(token: Any) -> bool:
     """
     :param token: token passed
@@ -62,7 +78,7 @@ def is_valid_signup_token(token: Any) -> bool:
         return False
     # name
     mail_address = token.get('email', None)
-    if (not mail_address) or not Email()(mail_address):
+    if (not mail_address) or not try_message(mail_address):
         return False
     return True
 

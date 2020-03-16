@@ -66,7 +66,7 @@ def edit_user(name: str) -> Response:
         # forbidden error
         abort(403, f"You are not allowed to edit the user {user.username}")
     preference_form = PreferencesForm()
-    ban_form = RecordForm(set_banned=user.is_active())
+    ban_form = RecordForm(set_banned=user.is_active)
     note_form = NoteForm()
     return render_template(
         'accounts/edit.html',
@@ -189,7 +189,7 @@ def add_note(user: User) -> Response:
 @only_if_superior
 def set_role(user: User) -> Response:
     if not current_user.has_required_status(Role.superuser):
-       abort(403)   # forbidden
+        abort(403)   # forbidden
     # get value
     print(request.query_string, 5)
     if request.query_string == b'Admin':

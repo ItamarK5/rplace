@@ -28,9 +28,3 @@ class Record(datastore.Model):
     expire = Column(DATETIME(), nullable=True, default=None)
     reason = Column(String(), nullable=False)
     sqlite_autoincrement = True
-
-    def message(self, name: str) -> str:
-        start = f'user {name}, you are banned from Social Painter, '
-        if self.expire is not None:
-            start += f"until {self.expire.strftime('%m/%d/%Y, %H:%M')} "
-        return start + f', because you <b>{self.reason}</b>'

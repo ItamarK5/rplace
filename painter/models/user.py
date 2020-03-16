@@ -12,6 +12,7 @@ from ..extensions import datastore, cache
 from painter.extensions import login_manager
 from .notes import Record, Note
 from datetime import datetime
+from flask import Markup
 
 reNAME = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
 rePSWD = re.compile(r'^[a-f0-9]{128}$')  # password hashed so get hash value
@@ -73,25 +74,24 @@ class User(datastore.Model, UserMixin):
         return super().get_id() + '&' + self.password
 
     @cache.memoize()
-    def get_last_record(self) -> Optional[Record]:
+    def get_last_record(self) -> Optional[Note]:
         note = Note.query.filter(
             and_(
                 Note.id == self.id,
                 Note.ban_record is not None,
             )
         ).order_by(Note.declared.asc()).first()
-        if note is None:
-            return None
-        # else
-        return Record.query.get(note.ban_record)
+        return note
 
+    @property
     def is_active(self) -> bool:
         """
         :return: user if the user active -> can login
         """
-        record = self.get_last_record()
-        if record is None:      # user has not record
+        note = self.get_last_record()
+        if note is None:      # user has not record
             return True
+        record = Record.query.get(note.ban_record)
         if record.expire is None:   # record has no expire date
             print(record.active)
             return record.active
@@ -110,6 +110,17 @@ class User(datastore.Model, UserMixin):
 
     def forget_is_active(self):
         cache.delete_memoized(self.get_last_record, self)
+
+    def record_message(self) -> Optional[Markup]:
+        note = self.get_last_record()
+        if note is None:
+            return
+        # else
+        record = Record.query.get(note.ban_record)
+        text = f'user {self.username}, you are banned from Social Painter, '
+        if record.expire is not None:
+            text += f"until {record.expire.strftime('%m/%d/%Y, %H:%M')}, "
+        return Markup(text + f'because you <b>{record.reason}</b>')
 
 
 @login_manager.user_loader
