@@ -6,8 +6,9 @@ from flask import Flask
 _DISABLE = 0    # False
 _ENABLE = 1     # True
 _ENABLE_EDIT_BOARD_KEY = 'enable-edit-board'
-_enable_edit_board = False                      # determine if can shutdown the server
+_enable_edit_board = _ENABLE                      # determine if can shutdown the server
 _flag_lock = False
+
 
 def create_object():
     if not rds_backend.exists(_ENABLE_EDIT_BOARD_KEY):
@@ -19,23 +20,22 @@ def init_app(app: Flask) -> None:
 
 
 def is_enabled() -> bool:
-    return _enable_edit_board   # but in reallity bool(rds_backend.get(_ENABLE_EDIT_BOARD_KEY)
+    return _enable_edit_board == _ENABLE   # but in reallity bool(rds_backend.get(_ENABLE_EDIT_BOARD_KEY)
 
 
 def enable() -> int:
     global _enable_edit_board, _flag_lock
-    if _enable_edit_board:
-        _enable_edit_board = True
-        return rds_backend.set(_ENABLE)
-    # rds_backend.set(0)
+    if _enable_edit_board != _ENABLE:
+        _enable_edit_board = _ENABLE
+    # return rds_backend.set(_ENABLE_EDIT_BOARD, _ENABLE)
     return 1
 
 
 def disable() -> int:
     global _enable_edit_board
-    if _enable_edit_board:
-        _enable_edit_board = False
-        return rds_backend.set(_DISABLE)
+    if _enable_edit_board != _DISABLE:
+        _enable_edit_board = _DISABLE
+    # return rds_backend.set(_ENABLE_EDIT_BOARD, _DISALBE)
     # rds_backend.set(1)
     return 0
 

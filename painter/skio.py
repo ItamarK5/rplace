@@ -65,13 +65,12 @@ class PaintNamespace(Namespace):
         :param color: color of the pixel
         :return: nothing
         sets a pixel on the screen
-        -- check if nothing else sets a pixel
         -- sets the pixel in the redis server
         -- brodcast to all watchers that the pixel has changed
         """
-        if lock.is_enabled():
-            board.set_at(x, y, color)
-            self.emit('set_board', (x, y, color))
+        board.set_at(x, y, color)
+        self.emit('set_board', (x, y, color))
+        print(3)
 
     def pause_place(self) -> None:
         self.emit('pause-board', 0)
@@ -90,9 +89,9 @@ class PaintNamespace(Namespace):
         try:
             current_time = datetime.utcnow()
             if current_user.next_time > current_time:
-                return json.dump({'code': 'time', 'status': str(current_user.next_time)})
-            if lock.is_enabled():
-                return json.dump({'code': 'lock', 'status': 'true'})
+                return json.dumps({'code': 'time', 'status': str(current_user.next_time)})
+            if not lock.is_enabled():
+                return json.dumps({'code': 'lock', 'status': 'true'})
             # validating parameter
             if 'x' not in params or (not isinstance(params['x'], int)) or not (0 <= params['x'] < 1000):
                 return 'undefined'
@@ -124,7 +123,7 @@ class PaintNamespace(Namespace):
                 board[y, x // 2] |= clr << 4
             """
             #        board.set_at(x, y, color)
-            return json.dump({'code': 'time', 'value': str(next_time)})
+            return json.dumps({'code': 'time', 'value': str(next_time)})
         except Exception as e:
             print(e, e.args)
             return 'undefined'

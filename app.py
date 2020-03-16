@@ -8,3 +8,6 @@ if __name__ == '__main__':
         host='0.0.0.0',
         port=argv[1],
     )
+
+
+#  celery -A proj worker -P eventlet -c 1000

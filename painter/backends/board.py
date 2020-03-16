@@ -8,6 +8,7 @@ A backend to work with the board on redis
 
 board_lock = Lock()
 _BOADR_REDIS_KEY = 'board'
+BOARD_TEMP = b'\x00'*500*1000
 
 
 def make_board() -> None:
@@ -38,18 +39,22 @@ def set_at(x: int, y: int, color: int) -> None:
     :return: nothing
     set a pixel on the board copy in the redis server
     """
+    """
     bitfield = rds_backend.bitfield(_BOADR_REDIS_KEY)
     # need to count for little endian
     x_endian = x + (-1)**(x % 2)
     bitfield.set('u4', (y * 1000 + x_endian) * 4, color)
     bitfield.execute()
+    """
+    pass
 
 
 def get_board() -> bytes:
     """
     :return: returns a copy of the board in bytes format
     """
-    return rds_backend.get(_BOADR_REDIS_KEY)
+    #return rds_backend.get(_BOADR_REDIS_KEY)
+    return BOARD_TEMP
 
 
 def debug_board() -> None:

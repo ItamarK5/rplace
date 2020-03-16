@@ -196,14 +196,14 @@ def set_admin_button():
     if request.data != b'1' and request.data != b'0':
         return json_response(False, 'Unknown data')
     # else
-    to_pause_place = request.data == b'1'
-    if to_pause_place:
+    is_game_paused = request.data == b'0'
+    if is_game_paused:
         lock.enable()
-        PAINT_NAMESPACE.pause_place()
+        PAINT_NAMESPACE.play_place()
     else:
         lock.disable()
-        PAINT_NAMESPACE.play_place()
-    return json_response(True, '0' if to_pause_place else '1')
+        PAINT_NAMESPACE.pause_place()
+    return json_response(True, '1' if is_game_paused else '0')
 
 
 @admin_router.route('/set-user-role/<string:name>', methods=('POST',))

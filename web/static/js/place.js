@@ -812,11 +812,12 @@ const pen = {
                 'x': this.x,
                 'y': this.y,
             }, callback = (value) => {
-                if(_.isUndefiend(value) || value == 'undefiend'){
+                if(_.isUndefined(value) || value == 'undefiend'){
                     return;
                 }
                 // else it must be json
-                data = JSON.loads(value)
+                data = JSON.parse(value);
+                console.log(data)
                 if(data.code == 'lock'){
                     return;
                 } else if(data.code == 'set-time') {
