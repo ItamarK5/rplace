@@ -20,6 +20,11 @@ accounts_router = Blueprint('auth',
                             template_folder=path.join(WEB_FOLDER, 'templates'))
 
 
+@accounts_router.route('/a', methods=('GET',))
+def example():
+    return render_template('transport//signup-error-token.html')
+
+
 @accounts_router.before_app_first_request
 def init_tokens() -> None:
     """
@@ -127,7 +132,7 @@ def refresh() -> Response:
             form.password.errors.append('username and password don\'t match')
             form.username.errors.append('username and password don\'t match')
         # the only other reason it can be is that if the user is banned
-        elif not login_user(user, remember=form.remember.data):
+        elif not login_user(user, remember=True):
             # must be because user isnt active
             form.non_field_errors.append(user.get_last_record().messsage(user.username))
         else:
@@ -157,14 +162,11 @@ def change_password(token: str) -> Response:
     """
     # check for data
     if extracted is None:
-        return render_template(
-            'transport//base.html',
+        return render_template('transport//signup-error-token.html',
             view_name='Revoke Password',
             view_ref='auth.login',
             title='You Made a Mess',
             page_title='non valid Token',
-            message='The token you entered is not valid, did you messed with him?'
-                    ' if you can\'t access the original mail pless sign-up again'
         )
     token, timestamp = extracted
     name, password = token.pop('name'), token.pop('password')
@@ -207,10 +209,10 @@ def confirm(token: str) -> Response:
     # check if user exists
     # https://stackoverflow.com/a/57925308
     user = datastore.session.query(User).filter(
-        User.username == name, User.password == pswd
+        User.username == name, User.password == pswd,
     ).first()
-    # time.timezone is the different betwenn local time to gmtime d=(gm-local) => d+local = gm
-    if (time.time() + time.timezone) - timestamp >= current_app.config['MAX_AGE_USER_SIGN_UP_TOKEN']:
+    # time.timezone is the different between local time to gm-time d=(gm-local) => d+local = gm
+    if (time.time() + time.timezone) >= timestamp + current_app.config['MAX_AGE_USER_SIGN_UP_TOKEN']:
         return render_template(
             'transport//base.html',
             view_name='Signup',

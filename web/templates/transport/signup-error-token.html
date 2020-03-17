@@ -1,0 +1,11 @@
+{% extends 'transport/base.html' %}
+{% block prepare %}
+{% set title='You made a mess' %}
+{% set view_ref='auth.login' %}
+{% set view_name='Revoke Password' %}
+{% set page_title='non Valid Token' %}
+{% endblock %}
+{% block message %}
+'The token you entered is not valid, did you messed with him?'
+                    ' if you can\'t access the original mail pless sign-up again'
+{% endblock %}

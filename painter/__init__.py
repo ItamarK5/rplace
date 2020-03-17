@@ -49,8 +49,8 @@ eventlet.monkey_patch()
 from . import filters
 # backends
 
-from .backends import extensions, board
+from .backends import extensions, board, lock
 #extensions.rds_backend.init_app(app)
 #board.init_app(app)
-
+#lock.init_app(app)
 datastore.create_all(app=app)

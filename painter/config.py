@@ -11,12 +11,11 @@ class Config:
     MAIL_PASSWORD = ',[+=dDAbg9a'
     MAIL_USE_SSL = True
     MAIL_USE_TLS = False
-    SESSION_PROTECTION = 'strong'
+    SESSION_PROTECTION = 'basic'
     REDIS_URL = 'redis://192.168.0.219:6379/0'
     MAIL_DEBUG = False
     MAIL_PORT = 465
-    CELERY_BROKER_URL = 'redis://192.168.0.214:6379/0'
-    CELERY_RESULT_BACKEND = 'redis://192.168.0.214:6379/0'
+    CELERY_BROKER_URL = 'pyamqp//'  # 'redis://192.168.0.214:6379/0'
     MAIL_DEFAULT_SENDER = 'Social Painter Dash'
     USER_PASSWORD_SALT = b'\x20\xf8\x1a\x62\x34\x08\x48\x86\xbd\xa5\x56\x09\x34\x4a\xc5\x2c'
     USER_PASSWORD_ROUNDS = 4493  # some random 4-digit number no one would guess
@@ -25,8 +24,6 @@ class Config:
     MAX_AGE_USER_SIGN_UP_TOKEN = 3600  # 3600 seconds = 1 hour
     MAIL_MAX_EMAILS = 10
     # https://stackoverflow.com/a/54802481
-    WERKZEUG_RUN_MAIN = False
     REMEMBER_COOKIE_NAME = 'SocialPainterDashCookie'
     REMEMBER_COOKIE_HTTPONLY = False
     CACHE_TYPE = 'simple'
-    # SESSION_PROTECTION = 'basic' to prevent users moving ip addr

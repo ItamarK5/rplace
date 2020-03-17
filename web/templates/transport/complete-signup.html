@@ -1,7 +1,10 @@
 {% extends 'transport/base.html' %}
+{% block prepare %}
+{{super()}}
 {% set title = "Registretion Complete" %}
 {% set view_ref = "auth.login" %}
 {% set view_name = "Login" %}
+{% endblock %}
 {% block message %}
 Mr\s. {{username}}<br>
 You completed the first step of the registretion process, to finish enter the url that was sent to your mail
