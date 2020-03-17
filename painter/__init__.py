@@ -3,6 +3,8 @@ from os import path
 from flask import Flask
 from painter.others.constants import WEB_FOLDER
 from .config import Config  # config
+from .run_celery import make_celery
+
 
 import eventlet
 eventlet.monkey_patch()
@@ -21,15 +23,14 @@ app.config.from_object(Config)
 
 from painter.backends.skio import sio
 from flask_wtf.csrf import CSRFProtect
-from .apps import other_router, place_router, accounts_router, admin_router
 from .extensions import datastore, mailbox, engine, login_manager, cache
-from .celery import celery
+from .run_celery import make_celery
 
 sio.init_app(
     app,
     #message_queue='redis://192.168.0.214:6379/0',
 )
-
+celery = make_celery(app)
 datastore.init_app(app)
 mailbox.init_app(app)
 login_manager.init_app(app)
@@ -37,6 +38,8 @@ cache.init_app(app)
 CSRFProtect(app)
 # firebase.init_app(app)
 # insert other staff
+
+from .apps import other_router, place_router, accounts_router, admin_router
 app.register_blueprint(other_router)
 app.register_blueprint(place_router)
 app.register_blueprint(accounts_router)

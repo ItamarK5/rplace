@@ -3,7 +3,7 @@ from flask import current_app
 from flask import render_template
 from flask_mail import Message
 from painter.others.constants import MIME_TYPES
-from painter.celery import celery
+from painter import celery
 
 
 @celery.task
@@ -15,7 +15,6 @@ def send_sign_up_mail(name: str, address: str, token: str) -> bool:
     :return: the email message
     by because decorator email_message returns if the email was sent successfully
     """
-    print(3)
     with current_app.app_context():
         message = Message(
             subject='Welcome to Social Painter',
@@ -37,7 +36,7 @@ def send_sign_up_mail(name: str, address: str, token: str) -> bool:
         return True
 
 
-@celery.task
+@celery.task(name='send-revoke-message')
 def send_revoke_password(name: str, address: str, token: str) -> bool:
     """
     :param name: name of user
