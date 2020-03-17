@@ -4,25 +4,18 @@ from os import path
 from flask import Blueprint, url_for, render_template, redirect, current_app, request
 from flask_login import logout_user, current_user, login_user
 from werkzeug.wrappers import Response
-from painter.constants import WEB_FOLDER
+from painter.others.constants import WEB_FOLDER
 from painter.extensions import datastore
 from painter.models.user import Role
 from painter.models.user import User
-from .forms import LoginForm, SignUpForm, RevokeForm
+from .forms import LoginForm, SignUpForm, RevokeForm, ChangePasswordForm
 from .utils import *
 from .mail import send_sign_up_mail, send_revoke_password
-from painter.skio import PAINT_NAMESPACE
-
 
 # router blueprint -> routing all pages that relate to authorization
 accounts_router = Blueprint('auth',
                             'auth',
                             template_folder=path.join(WEB_FOLDER, 'templates'))
-
-
-@accounts_router.route('/a', methods=('GET',))
-def example():
-    return render_template('transport//signup-error-token.html')
 
 
 @accounts_router.before_app_first_request
@@ -85,14 +78,19 @@ def signup() -> Response:
         if not login_error:
             form.email.errors.append('Bad Header')
         else:
-            return render_template('transport/complete-signup.html', username=name)
+            return render_template(
+                'transport/complete-signup.html',
+                username=name,
+                view_ref='auth.login',
+                view_name='login'
+            )
     return render_template('forms/signup.html', form=form)
 
 
 @accounts_router.route('/revoke', methods=['GET', 'POST'])
 def revoke() -> Response:
     """
-    :return: revoke password response
+    :return: revoke password view
     """
     form = RevokeForm()
     if form.validate_on_submit():
@@ -100,17 +98,20 @@ def revoke() -> Response:
         after user validation checks if the user exists
         """
         user = User.query.filter_by(email=form.email.data).first()
+        print(3, user)
         if user is not None:
             # error handling
-            send_revoke_password(
+            send_revoke_password.apply_async(args=[
                 user.username,
                 form.email.data,
                 TokenSerializer.revoke.dumps({
-                    'name': user.username,
+                    'username': user.username,
                     'password': user.password
                 })
-            )
+            ])
             # return template ok
+        else:
+            """render_template('transport/revoke-unknown-user.html')"""
     return render_template('forms/revoke.html', form=form)
 
 
@@ -126,7 +127,6 @@ def refresh() -> Response:
     entire_form_error = []
     extra_error = None
     if form.validate_on_submit():
-        print(form.username.data)
         user = User.query.filter_by(username=form.username.data).first()  # usernames are unique
         if user is None and User.encrypt_password(form.username.data, form.password.data):
             form.password.errors.append('username and password don\'t match')
@@ -144,6 +144,10 @@ def refresh() -> Response:
                            entire_form_errors=entire_form_error,
                            extra_error=extra_error)
 
+@cache_signature_view
+def cache_signature_view(token: str) -> Tuple[Union[int, str], Optional[int]]:
+
+    return user.id
 
 @accounts_router.route('/change-password/<string:token>', methods=['GET', 'POST'])
 def change_password(token: str) -> Response:
@@ -151,36 +155,41 @@ def change_password(token: str) -> Response:
     :param token: token url represent saving url
     :return: Response
     """
-    # first get
-    extracted = extract_signature(token, is_valid_change_password_token)
-    """
-    timeout message
-    find user
-    -- then create the change password form
-    -- validate it
-    -- then submit
-    """
-    # check for data
+    extracted = extract_signature(token, is_valid_change_password_token, TokenSerializer.revoke)
+    # validated if any token
     if extracted is None:
-        return render_template('transport//signup-error-token.html',
+        return render_template(
+            'transport//revoke-error-token.html',
             view_name='Revoke Password',
             view_ref='auth.login',
-            title='You Made a Mess',
-            page_title='non valid Token',
         )
     token, timestamp = extracted
-    name, password = token.pop('name'), token.pop('password')
-    user = User.query.filter_by(username=name).first()
-    if user.password != password:
+    name, pswd = token.pop('username'), token.pop('password')
+    # check timestamp
+    if (time.time() + time.timezone) >= timestamp + current_app.config['MAX_AGE_USER_SIGN_UP_TOKEN']:
         return render_template(
             'transport//base.html',
-            view_name='Revoke Password',
-            view_ref='auth.login',
-            title='You Made a Mess',
-            page_title='non valid Token',
-            message='The token you entered is not valid, did you messed with him?'
-                    ' if you can\'t access the original mail pless sign-up again'
+            view_name='Signup',
+            page_title='Over Time',
+            title='Over Time',
+            view_ref='auth.signup',
+            message="you registered over time, you are late"
         )
+
+    user = User.query.filter_by(username=name, password=pswd).first()
+    if user is None:
+        return render_template(
+            'transport//revoke-error-token.html',
+            view_name='Revoke Password',
+            view_ref='auth.login'
+        )
+    form = ChangePasswordForm()
+    if not form.validate_on_submit():
+        return render_template('forms/revoke2.html', form=form)
+    else:
+        new_password = form.password.data
+        user.set_password(new_password)
+    return render_template('transport/complete-signup.html')
 
 
 @accounts_router.route('/logout', methods=('GET', 'POST'))
@@ -192,7 +201,7 @@ def logout() -> Response:
 
 @accounts_router.route('/confirm/<string:token>', methods=('GET',))
 def confirm(token: str) -> Response:
-    extracted = extract_signature(token, is_valid_signup_token)
+    extracted = extract_signature(token, is_valid_signup_token, TokenSerializer.signup)
     if extracted is None:
         return render_template(
             'transport//base.html',
@@ -205,12 +214,6 @@ def confirm(token: str) -> Response:
         )
     # else get values
     token, timestamp = extracted
-    name, pswd, email = token.pop('username'), token.pop('password'), token.pop('email')
-    # check if user exists
-    # https://stackoverflow.com/a/57925308
-    user = datastore.session.query(User).filter(
-        User.username == name, User.password == pswd,
-    ).first()
     # time.timezone is the different between local time to gm-time d=(gm-local) => d+local = gm
     if (time.time() + time.timezone) >= timestamp + current_app.config['MAX_AGE_USER_SIGN_UP_TOKEN']:
         return render_template(
@@ -220,6 +223,12 @@ def confirm(token: str) -> Response:
             view_ref='auth.signup',
             message="you registered over time, you are late"
         )
+    name, pswd, email = token.pop('username'), token.pop('password'), token.pop('email')
+    # check if user exists
+    # https://stackoverflow.com/a/57925308
+    user = datastore.session.query(User).filter(
+        User.username == name, User.password == pswd,
+    ).first()
     # check if user exists
     if user is not None:
         return render_template(

@@ -85,7 +85,7 @@ class ChangePasswordForm(FlaskForm):
     confirm_password = PasswordField(
         'password confirm',
         validators=[
-            validators.equal_to('password', 'your password must match the origianl')
+            validators.equal_to('password', 'Your password must match the origianl')
         ], render_kw={
             'data-toggle': 'tooltip',
             'title': 'You must re-enter your password, so we be really sure that know your password',

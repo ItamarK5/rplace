@@ -4,7 +4,7 @@ from wtforms import *
 from wtforms.compat import text_type as text_field_types
 from wtforms.fields.html5 import IntegerField
 from wtforms.widgets import HiddenInput
-from ..constants import COLORS
+from painter.others.constants import COLORS
 
 
 class PreferencesForm(FlaskForm):

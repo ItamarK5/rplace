@@ -1,4 +1,3 @@
-
 class Config:
     # ENV = 'development'
     DEBUG = True
@@ -15,7 +14,7 @@ class Config:
     REDIS_URL = 'redis://192.168.0.219:6379/0'
     MAIL_DEBUG = False
     MAIL_PORT = 465
-    CELERY_BROKER_URL = 'pyamqp//'  # 'redis://192.168.0.214:6379/0'
+    CELERY_BROKER_URL = 'pyamqp://guest@localhost//'  # 'redis://192.168.0.214:6379/0'
     MAIL_DEFAULT_SENDER = 'Social Painter Dash'
     USER_PASSWORD_SALT = b'\x20\xf8\x1a\x62\x34\x08\x48\x86\xbd\xa5\x56\x09\x34\x4a\xc5\x2c'
     USER_PASSWORD_ROUNDS = 4493  # some random 4-digit number no one would guess

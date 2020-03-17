@@ -2,10 +2,9 @@ from datetime import datetime
 from typing import Any, Dict, Callable
 from flask_login import current_user
 from flask_socketio import SocketIO, Namespace, ConnectionRefusedError, disconnect
-from .backends import board, lock
-from painter.constants import MINUTES_COOLDOWN
+from painter.backends import board, lock
 from painter.extensions import datastore
-from .models.pixel import Pixel
+from painter.models.pixel import Pixel
 from functools import wraps
 from painter.models.role import Role
 import json

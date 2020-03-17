@@ -8,7 +8,7 @@ from flask import (
 )
 from flask_wtf.csrf import CSRFError  # ignore all
 from werkzeug.exceptions import HTTPException
-from painter.constants import MIME_TYPES, WEB_FOLDER
+from painter.others.constants import MIME_TYPES, WEB_FOLDER
 from .utils import get_file_type, is_valid_meme_request, has_meme_images
 
 other_router = Blueprint(

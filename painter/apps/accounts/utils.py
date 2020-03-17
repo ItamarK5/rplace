@@ -1,11 +1,11 @@
 import re
-from typing import Any, Optional, Tuple, Dict, Callable
-
+from typing import Any, Optional, Tuple, Dict, Callable, Union
+from functools import wraps
 from flask import Flask
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from wtforms.validators import HostnameValidation
 from painter.models.user import reNAME, rePSWD
-
+from painter.extensions import cache
 
 user_regex = re.compile(
         r"(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*\Z"  # dot-atom
@@ -34,9 +34,11 @@ class TokenSerializer:
         )
 
 
-def extract_signature(token: str, valid_predicate: Callable[[Any], bool]) -> Optional[Tuple[Any, float]]:
+def extract_signature(token: str,
+                      valid_predicate: Callable[[Any], bool],
+                      serializer: URLSafeTimedSerializer) -> Optional[Tuple[Any, float]]:
     try:
-        token, timestamp = TokenSerializer.signup.loads(token, return_timestamp=True)
+        token, timestamp = serializer.loads(token, return_timestamp=True)
     except SignatureExpired:
         return None
     except BadSignature as e:  # error
@@ -48,7 +50,7 @@ def extract_signature(token: str, valid_predicate: Callable[[Any], bool]) -> Opt
     return token, timestamp.timestamp()
 
 
-def try_message(address: str) -> bool:
+def is_valid_address(address: str) -> bool:
     if '@' not in address:
         return False
     user_part, domain_part = address.rsplit('@', 1)
@@ -78,7 +80,7 @@ def is_valid_signup_token(token: Any) -> bool:
         return False
     # name
     mail_address = token.get('email', None)
-    if (not mail_address) or not try_message(mail_address):
+    if (not mail_address) or not is_valid_address(mail_address):
         return False
     return True
 
@@ -90,7 +92,8 @@ def is_valid_change_password_token(token: Any) -> bool:
     the token from the signup email is suppose to be a dict
     that contains 3 items ('username', 'password', 'email')
     """
-    if (not isinstance(token, Dict)) or len(token) != 3:
+    print(token)
+    if (not isinstance(token, Dict)) or len(token) != 2:
         return False
     # name
     name = token.get('username', None)
@@ -101,7 +104,23 @@ def is_valid_change_password_token(token: Any) -> bool:
     if (not pswd) or not rePSWD.match(pswd):
         return False
     # name
-    mail_address = token.get('email', None)
-    if (not mail_address) or not Email()(mail_address):
-        return False
     return True
+
+
+def cache_signature_view(max_timeout: int) -> Callable:
+    def decorator(f: Callable[[str], Tuple[Union[str, int], int]]) -> Callable[[str], Union[str, int]]:
+        """
+        :param f: function the gets a string (token) and returns a tuple containing user\response message
+         of the token analyzer function
+        :return: function that cached the return answer of the analyze, for speed
+        """
+        @wraps(f)
+        def wrapped(token: str) -> Union[str, int]:
+            key = str(f) + '&' + token
+            cached_value = cache.get(key)
+            if cached_value is None:
+                answer, timeout = f(key)
+                cache.set(key, answer, timeout=min(max_timeout, timeout) if timeout is not None else max_timeout)
+            return cached_value
+        return wrapped
+    return decorator

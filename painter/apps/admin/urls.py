@@ -11,7 +11,7 @@ from painter.models.user import reNAME
 from .forms import RecordForm, NoteForm
 from .utils import only_if_superior, admin_only, superuser_only, json_response
 from ..profile_form import PreferencesForm
-from painter.skio import PAINT_NAMESPACE, lock
+from painter.backends.skio import PAINT_NAMESPACE, lock
 
 
 admin_router = Blueprint(

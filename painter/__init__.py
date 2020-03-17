@@ -1,9 +1,10 @@
 from os import path
 from flask import Flask
-from .constants import WEB_FOLDER
+from painter.others.constants import WEB_FOLDER
 from .config import Config  # config
-from celery import Celery
 
+import eventlet
+eventlet.monkey_patch()
 
 app = Flask(
     __name__,
@@ -14,21 +15,18 @@ app = Flask(
 )
 
 app.config.from_object(Config)
-celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
-celery.conf.update(app.config)
 
 
-from .skio import sio
+from painter.backends.skio import sio
 from flask_wtf.csrf import CSRFProtect
 from .apps import other_router, place_router, accounts_router, admin_router
 from .extensions import datastore, mailbox, engine, login_manager, cache
-
+from .celery import celery
 
 sio.init_app(
     app,
     #message_queue='redis://192.168.0.214:6379/0',
 )
-
 
 datastore.init_app(app)
 mailbox.init_app(app)
@@ -42,15 +40,13 @@ app.register_blueprint(place_router)
 app.register_blueprint(accounts_router)
 app.register_blueprint(admin_router)
 
-import eventlet
-eventlet.monkey_patch()
 
 # include other staff
-from . import filters
+from .others import filters
 # backends
 
 from .backends import extensions, board, lock
-#extensions.rds_backend.init_app(app)
-#board.init_app(app)
-#lock.init_app(app)
+# extensions.rds_backend.init_app(app)
+# board.init_app(app)
+# lock.init_app(app)
 datastore.create_all(app=app)

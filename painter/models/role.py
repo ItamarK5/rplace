@@ -18,11 +18,13 @@ class Role(IntEnum):
     def members(self):
         return tuple(self._member_map_.values())
 
+
 ROLE_ICON = {
     Role.admin: 'fa-user-shield',
     Role.common: 'fa-user',
     Role.superuser: 'fa-user-secret'
 }
+
 
 ROLE_TITLE = {
     Role.superuser: 'Superuser',

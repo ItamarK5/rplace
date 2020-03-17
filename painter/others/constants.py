@@ -13,6 +13,8 @@ MIME_TYPES = {
     'jpeg': 'image/jpeg'
 }
 
+# find
+for i in range(+1)
 WEB_FOLDER = path.join(
     path.dirname(
         path.dirname(
@@ -21,6 +23,7 @@ WEB_FOLDER = path.join(
     ),
     'web'
 )
+print(__name__)
 # time
 MINUTES_COOLDOWN = timedelta(minutes=1)
 COLORS = (

@@ -29,6 +29,7 @@ class User(datastore.Model, UserMixin):
     password = Column(String(128), nullable=False)
     email = Column(String(254), unique=True, nullable=False)
     next_time = Column(DATETIME(), default=datetime.utcnow, nullable=False)
+    creation = Column(DATETIME(), default=datetime.utcnow, nullable=False)
     pixels = relationship('Pixel', backref='users', lazy=True)
     role = Column(SmallEnum(Role), default=Role.common, nullable=False)
     x = Column(SMALLINT(), default=500, nullable=False)
@@ -44,7 +45,7 @@ class User(datastore.Model, UserMixin):
         super().__init__(password=password, **kwargs)
 
     def set_password(self, password: str) -> None:
-        self.password = self.encrypt_password(password)
+        self.password = self.encrypt_password(password, self.username)
 
     @staticmethod
     def encrypt_password(password: str, username: str) -> str:
@@ -58,8 +59,7 @@ class User(datastore.Model, UserMixin):
     def __repr__(self) -> str:
         return f"<User(name={self.username}>"
 
-    def has_required_status(self,
-                            role: Role) -> bool:
+    def has_required_status(self, role: Role) -> bool:
         return self.role >= role
 
     def is_superior_to(self, other) -> bool:
