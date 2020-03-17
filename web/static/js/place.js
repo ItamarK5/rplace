@@ -625,7 +625,7 @@ const cursor = {
 
     },
     setPen() {
-        this.setCursor(progress.work.isWorking ? Cursors.Wait : Cursors.Pen)
+        this.setCursor(progress.work.isWorking || lock.locked ? Cursors.Wait : Cursors.Pen)
     },
     grab() {
         this.setCursor(Cursors.grabbing);
@@ -799,6 +799,16 @@ const pen = {
                 text: 'Wait for your cooldown to end'
             });
         }
+        else if(lock.locked){
+            Swal.fire({
+                title: 'Canvas is closed',
+                imageUrl: 'https://img.memecdn.com/door-lock_o_2688511.jpg',
+                imageHeight: 250,
+                imageAlt: 'SocialPainterDash canvas is currently closed',
+                text: 'Wait an admin will open it up',
+                confirmButtonText:'Waiting'
+            });
+        }
         else if (!this.hasColor) {
             Swal.fire({
                 icon: 'warning',
@@ -812,14 +822,13 @@ const pen = {
                 'x': this.x,
                 'y': this.y,
             }, callback = (value) => {
-                if(_.isUndefined(value) || value == 'undefiend'){
+                if(_.isUndefined(value) || value == 'undefined'){
                     return;
                 }
                 // else it must be json
                 data = JSON.parse(value);
-                console.log(data)
-                if(data.code == 'lock'){
-                    return;
+                if(data.code == 'lock' && data.value == 'true'){
+                    lock.lock()
                 } else if(data.code == 'set-time') {
                     progress.setTime(data.value)
                 }
@@ -827,6 +836,22 @@ const pen = {
         }
     }
 }
+
+const lock = {
+    __locked:false,
+    get locked() {
+        return this.__locked;
+    },
+    lock(){
+        this.__locked = true;
+        $('#lock-colors').attr('lock', 1);
+    },
+    unlock(){
+        this.__locked = false;
+        $('#lock-colors').attr('lock', 0);
+    }
+}
+
 const board = {
     imgCanvas: null,
     ctx_image: null,
@@ -1093,6 +1118,9 @@ $(document).ready(function() {
         sock.emit('get_data', (data) => {
             progress.setTime(data.time)
             board.buildBoard(new Uint8Array(data.board));
+            if(data.lock){
+                lock.lock()
+            }
         });
     })
     sock.connect()
@@ -1124,8 +1152,10 @@ $(document).ready(function() {
         // if data is true
         if(data){
             // unpause code
+            lock.unlock();
         } else {
-            // pause c
+            // pause code
+            lock.lock();
         }
     })
     $('#coordinates').hover(function() {

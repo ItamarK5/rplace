@@ -248,7 +248,7 @@ body, html {
     margin-top:auto;
     margin-bottom:auto;
 }
-#lock-colors {
+#lock-colors[lock="0"] {
     display:none;
 }
 

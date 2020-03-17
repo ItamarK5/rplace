@@ -5,7 +5,7 @@ from flask_login import login_required, current_user
 from painter.constants import WEB_FOLDER
 from painter.extensions import datastore
 from ..profile_form import PreferencesForm
-from painter.backends import lock
+
 
 place_router = Blueprint(
     'place',
@@ -39,7 +39,7 @@ def profile():
     return render_template(
         'accounts/profile.html', xstart=current_user.x, ystart=current_user.y,
         scalestart=current_user.scale, colorstart=current_user.color, form=form,
-        chaturl=current_user.url,
+        chaturl=current_user.url
     )
 
 

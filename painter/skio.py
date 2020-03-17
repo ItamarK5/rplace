@@ -55,7 +55,8 @@ class PaintNamespace(Namespace):
     def on_get_data():
         return {
             'board': board.get_board(),
-            'time': str(current_user.next_time)
+            'time': str(current_user.next_time),
+            'lock': not lock.is_enabled()
         }
 
     def set_at(self, x: int, y: int, color: int) -> None:
@@ -99,7 +100,7 @@ class PaintNamespace(Namespace):
                 return 'undefined'
             if 'color' not in params or (not isinstance(params['color'], int)) or not (0 <= params['color'] < 16):
                 return 'undefined'
-            next_time = current_time  # + MINUTES_COOLDOWN
+            next_time = current_time
             current_user.next_time = next_time
             x, y, clr = int(params['x']), int(params['y']), int(params['color'])
             datastore.session.add(
