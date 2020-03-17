@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from os import path
 from flask import Flask
 from painter.others.constants import WEB_FOLDER
@@ -6,6 +7,7 @@ from .config import Config  # config
 import eventlet
 eventlet.monkey_patch()
 
+print(path.exists(WEB_FOLDER), WEB_FOLDER)
 app = Flask(
     __name__,
     static_folder='',

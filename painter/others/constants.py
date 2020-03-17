@@ -14,16 +14,8 @@ MIME_TYPES = {
 }
 
 # find
-for i in range(+1)
-WEB_FOLDER = path.join(
-    path.dirname(
-        path.dirname(
-            path.abspath(__file__)
-        )
-    ),
-    'web'
-)
-print(__name__)
+
+WEB_FOLDER = path.join(path.dirname(path.dirname(path.abspath(__file__))), 'web')
 # time
 MINUTES_COOLDOWN = timedelta(minutes=1)
 COLORS = (
