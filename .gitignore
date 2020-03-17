@@ -5,10 +5,10 @@ painter/rsa/script.py
 painter/rsa/rsa2.py
 painter/rsa/__init__.p
 firebase/*
-web/keys/‏‏‫מסמך טקסט ‫חדש.txt
+painter/web/keys/‏‏‫מסמך טקסט ‫חדש.txt
 painter/config.py
-web/node_modules/*
-web/package-lock.json
-web/package.json
+painter/web/node_modules/*
+painter/web/package-lock.json
+painter/web/package.json
 certificate.json
 venv/
