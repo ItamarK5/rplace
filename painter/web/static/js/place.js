@@ -1,4 +1,3 @@
-
 /* level of functions 1) the interaction 2) setting the query 3) a function that affect the board as result of change in query*/
 const BACKGROUND_COLOR = '#777777'
 const CANVAS_SIZE = 1000;
@@ -107,19 +106,16 @@ function closeFullscreen() {
         document.msExitFullscreen();
     }
 }
-
 /**
  * 
  * @param {String} selector 
  * @returns null
  */
-function NonSweetClick(selector){
-    if(IsSwalClose()){
+function NonSweetClick(selector) {
+    if (IsSwalClose()) {
         $(selector).click()
     }
 }
-
-
 /**
  * 
  * @param {Optional[String]} msg 
@@ -129,9 +125,9 @@ function NonSweetClick(selector){
  * @param {String} cls 
  * @returns throws a message to the user that not blockes input
  */
-const throw_message = (msg, enter_sec = 1000, show_sec = 100, exit_sec = null, cls = null) => 
+const throw_message = (msg, enter_sec = 1000, show_sec = 100, exit_sec = null, cls = null) =>
     $("<div></div>").addClass(
-    `pop-up-message center nonselect${_.isString(cls) ? ' ' + cls : ''}`)
+        `pop-up-message center nonselect${_.isString(cls) ? ' ' + cls : ''}`)
     .text(msg).appendTo("body")
     // enter
     .animate({
@@ -140,23 +136,22 @@ const throw_message = (msg, enter_sec = 1000, show_sec = 100, exit_sec = null, c
         // keep the element amount of time
         let self = this;
         setTimeout(function() {
-            exit_sec = isNaN(exit_sec) ? enter_sec : exit_sec;
-            if (exit_sec > 0) {
-                $(self).animate({
-                    opacity: '0'
-                }, 
-                exit_sec, function() {
-                    $(this).parent().remove(self);
-                });
-            } else {
-                $(self).parent().remove(self);
-            }
-        },
-        show_sec
+                exit_sec = isNaN(exit_sec) ? enter_sec : exit_sec;
+                if (exit_sec > 0) {
+                    $(self).animate({
+                            opacity: '0'
+                        },
+                        exit_sec,
+                        function() {
+                            $(this).parent().remove(self);
+                        });
+                } else {
+                    $(self).parent().remove(self);
+                }
+            },
+            show_sec
         );
     });
-
-
 class PalColor {
     constructor(r, g, b, name) {
         this.r = r;
@@ -174,7 +169,6 @@ class PalColor {
         return `rgba(${this.r}, ${this.g}, ${this.b}, ${alpha})`;
     }
 }
-
 class SimpleInterval {
     constructor(work, time) {
         this.work = work;
@@ -206,7 +200,6 @@ class SimpleInterval {
         return !_.isNull(this.work_handler);
     }
 }
-
 class CursorState {
     constructor(cursor, hide_pen) {
         this.cursor = cursor;
@@ -217,9 +210,9 @@ class CursorState {
      * @param {CursorState} other_cursor 
      * @returns Boolean -> if the 2 cursors states are the same
      */
-    equals(other_cursor){
+    equals(other_cursor) {
         //https://stackoverflow.com/a/1249554
-        if(!(other_cursor instanceof CursorState)){
+        if (!(other_cursor instanceof CursorState)) {
             return false;
         }
         return (
@@ -228,7 +221,6 @@ class CursorState {
         )
     }
 }
-
 const Colors = {
     white: new PalColor(0xFF, 0xFF, 0xFF, 'White'),
     black: new PalColor(0x00, 0x00, 0x00, 'Black'),
@@ -282,7 +274,6 @@ function arrayBufferToBase64(buffer) {
     return window.btoa(binary);
 };
 */
-
 const Cursors = {
     Pen: new CursorState('crosshair', false),
     Wait: new CursorState('not-allowed', false),
@@ -293,7 +284,6 @@ const Cursors = {
         LinearDown: new CursorState('nw-resize', false),
         LinearUp: new CursorState('ne-resize', false)*/
 }
-
 //https://stackoverflow.com/a/50248437
 /*
 const ImageImporter = {
@@ -344,7 +334,6 @@ const ImageImporter = {
     }  
 }
 */
-
 const progress = {
     time: 0, // time when cooldown ends
     state: 0, // state of progress bar
@@ -412,7 +401,6 @@ const progress = {
         cursor.setPen();
     }
 }
-
 const query = {
     cx: DEFAULT_START_AXIS, // the x of the center pixel in the canvas on screen
     cy: DEFAULT_START_AXIS, // the y of the center pixel in the canvas on screen
@@ -464,62 +452,62 @@ const query = {
     is_valid_new_scale(val) {
         return (!isNaN(val)) && is_valid_scale(val) && val != this.scale
     },
-    determineX(){
+    determineX() {
         // first get from arguments
         let x = window.location.search.match(reArgX);
         x = parseInt(getFirstIfAny(x))
-        if((!isNaN(x)) && is_valid_pos(x)){
+        if ((!isNaN(x)) && is_valid_pos(x)) {
             return x;
         }
         // second get from hash
         x = window.location.hash.match(reHashX);
         x = parseInt(getFirstIfAny(x))
-        if((!isNaN(x)) && is_valid_pos(x)){
+        if ((!isNaN(x)) && is_valid_pos(x)) {
             return x;
         }
         // else search for value in body
         x = parseInt($('body').attr('x'))
-        if((!isNaN(x)) && is_valid_pos(x)){
+        if ((!isNaN(x)) && is_valid_pos(x)) {
             return x;
         }
         return DEFAULT_START_AXIS;
     },
-    determineY(){
+    determineY() {
         // first get from arguments
         let y = window.location.search.match(reArgY);
         y = parseInt(getFirstIfAny(y))
-        if((!isNaN(y)) && is_valid_pos(y)){
+        if ((!isNaN(y)) && is_valid_pos(y)) {
             return y;
         }
         // second get from hash
         y = window.location.hash.match(reHashY);
         y = parseInt(getFirstIfAny(y))
-        if((!isNaN(y)) && is_valid_pos(y)){
+        if ((!isNaN(y)) && is_valid_pos(y)) {
             return y;
         }
         // else search for value in body
         y = parseInt($('body').attr('y'))
-        if((!isNaN(y)) && is_valid_pos(y)){
+        if ((!isNaN(y)) && is_valid_pos(y)) {
             return y;
         }
         return DEFAULT_START_AXIS;
     },
-    determineScale(){
+    determineScale() {
         // first get from arguments
         let scale = window.location.search.match(reArgScale);
         scale = parseFloat(getFirstIfAny(scale))
-        if((!isNaN(scale)) && is_valid_scale(scale)){
+        if ((!isNaN(scale)) && is_valid_scale(scale)) {
             return scale;
         }
         // second get from hash
         scale = window.location.hash.match(reHashY);
         scale = parseFloat(scale)
-        if((!isNaN(scale)) && is_valid_scale(scale)){
+        if ((!isNaN(scale)) && is_valid_scale(scale)) {
             return scale;
         }
         // else search for value in body
         scale = parseFloat($('body').attr('scale'))
-        if((!isNaN(scale)) && is_valid_scale(scale)){
+        if ((!isNaN(scale)) && is_valid_scale(scale)) {
             return scale;
         }
         return SIMPLE_UNZOOM_LEVEL;
@@ -527,9 +515,9 @@ const query = {
     // use regex to get fragments
     determineFragments() {
         return {
-            x:this.determineX(),
-            y:this.determineY(),
-            scale:this.determineScale()
+            x: this.determineX(),
+            y: this.determineY(),
+            scale: this.determineScale()
         };
     },
     // set x and
@@ -572,9 +560,9 @@ const query = {
          */
         let frags = this.determineFragments();
         this.setCenter(this.x, this.y, to_update);
-        if(this.is_valid_new_scale(frags.scale)){
+        if (this.is_valid_new_scale(frags.scale)) {
             this.scale = frags.scale;
-            if(to_update){
+            if (to_update) {
                 board.updateZoom();
             }
         } else {
@@ -598,7 +586,7 @@ const query = {
     }
 }
 const cursor = {
-    last_cursor_non_forced:null,
+    last_cursor_non_forced: null,
     current_cursor: null,
     force_cursor: null,
     /**
@@ -606,12 +594,12 @@ const cursor = {
      */
     setCursor(other_cursor) {
         // update last cursor
-        if(other_cursor instanceof CursorState){
+        if (other_cursor instanceof CursorState) {
             this.last_cursor_non_forced = other_cursor;
         }
         let cursor = this.force_cursor || this.last_cursor_non_forced;
         if (_.isNull(this.current_cursor) || !this.current_cursor.equals(cursor)) {
-            if((!this.current_cursor) || cursor.cursor != this.current_cursor.cursor){
+            if ((!this.current_cursor) || cursor.cursor != this.current_cursor.cursor) {
                 board.canvas.css('cursor', cursor.cursor);
             }
             if (cursor.hide_pen) {
@@ -622,7 +610,6 @@ const cursor = {
             }
             this.current_cursor = cursor;
         }
-
     },
     setPen() {
         this.setCursor(progress.work.isWorking || lock.locked ? Cursors.Wait : Cursors.Pen)
@@ -630,12 +617,12 @@ const cursor = {
     grab() {
         this.setCursor(Cursors.grabbing);
     },
-    lockCursor(cursor){
+    lockCursor(cursor) {
         this.force_cursor = cursor;
         this.setCursor();
     },
-    releaseCursor(cursor_state){
-        if(cursor_state.equals(this.force_cursor)){
+    releaseCursor(cursor_state) {
+        if (cursor_state.equals(this.force_cursor)) {
             this.force_cursor = null;
             this.setCursor()
         }
@@ -713,7 +700,7 @@ const pen = {
         let pos = null;
         if (this.force_center) {
             pos = {
-                x: Math.floor(board.x + board.canvas[0].width  / 2 / query.scale),
+                x: Math.floor(board.x + board.canvas[0].width / 2 / query.scale),
                 y: Math.floor(board.y + board.canvas[0].height / 2 / query.scale)
             } // center
         }
@@ -755,13 +742,13 @@ const pen = {
         this.force_center = true;
         this.updateOffset();
     },
-    setColorButton(button){
+    setColorButton(button) {
         this.color = parseInt(button.attr('value'));
         $('.colorButton[picked="1"]').attr('picked', '0');
         button.attr('picked', '1');
     },
     get hasColor() {
-        return (!isNaN(this.__color)) && this.__color > 0 && this.__color < 16 ;
+        return (!isNaN(this.__color)) && this.__color > 0 && this.__color < 16;
     },
     // color getter ans setter
     get color() {
@@ -783,7 +770,7 @@ const pen = {
         return (!this.__disable) && this.hasColor && this.isAtBoard()
     },
     setPixel() {
-        if(!board.is_ready){
+        if (!board.is_ready) {
             Swal.fire({
                 title: 'Wait for the board',
                 imageHeight: 300,
@@ -799,14 +786,14 @@ const pen = {
                 text: 'Wait for your cooldown to end'
             });
         }
-        else if(lock.locked){
+        else if (lock.locked) {
             Swal.fire({
                 title: 'Canvas is closed',
                 imageUrl: 'https://img.memecdn.com/door-lock_o_2688511.jpg',
                 imageHeight: 250,
                 imageAlt: 'SocialPainterDash canvas is currently closed',
                 text: 'Wait an admin will open it up',
-                confirmButtonText:'Waiting'
+                confirmButtonText: 'Waiting'
             });
         }
         else if (!this.hasColor) {
@@ -822,36 +809,34 @@ const pen = {
                 'x': this.x,
                 'y': this.y,
             }, callback = (value) => {
-                if(_.isUndefined(value) || value == 'undefined'){
+                if (_.isUndefined(value) || value == 'undefined') {
                     return;
                 }
                 // else it must be json
                 data = JSON.parse(value);
-                if(data.code == 'lock' && data.value == 'true'){
+                if (data.code == 'lock' && data.value == 'true') {
                     lock.lock()
-                } else if(data.code == 'set-time') {
+                } else if (data.code == 'set-time') {
                     progress.setTime(data.value)
                 }
             });
         }
     }
 }
-
 const lock = {
-    __locked:false,
+    __locked: false,
     get locked() {
         return this.__locked;
     },
-    lock(){
+    lock() {
         this.__locked = true;
         $('#lock-colors').attr('lock', 1);
     },
-    unlock(){
+    unlock() {
         this.__locked = false;
         $('#lock-colors').attr('lock', 0);
     }
 }
-
 const board = {
     imgCanvas: null,
     ctx_image: null,
@@ -936,8 +921,8 @@ const board = {
             // first version of putting data, looping over the image buffer array and not of buffer of message
             //var bit = buffer[Math.floor(index/2)];
             //self.buffer[index] = reverseRGBA(COLORS[index % 2 == 0 ? bit % 16 : bit >> 4]);
-            image_buffer[index * 2] = Colors.colors[val % 16].abgr;  // small int
-            image_buffer[index * 2 + 1] = Colors.colors[Math.floor(val / 16)].abgr;    // big int
+            image_buffer[index * 2] = Colors.colors[val % 16].abgr; // small int
+            image_buffer[index * 2 + 1] = Colors.colors[Math.floor(val / 16)].abgr; // big int
         });
         this.ctx_image.putImageData(image_data, 0, 0);
         this.beforeFirstDraw();
@@ -1109,16 +1094,15 @@ const board = {
 };
 //const performance_arr = []
 const sock = io('/paint', {
-    autoConnect:false,
-    transports: [ 'websocket' ] // or [ 'websocket', 'polling' ], which is the same thing
+    autoConnect: false,
+    transports: ['websocket'] // or [ 'websocket', 'polling' ], which is the same thing
 });
-
 $(document).ready(function() {
-    sock.on('connect', function(){
+    sock.on('connect', function() {
         sock.emit('get_data', (data) => {
             progress.setTime(data.time)
             board.buildBoard(new Uint8Array(data.board));
-            if(data.lock){
+            if (data.lock) {
                 lock.lock()
             }
         });
@@ -1150,7 +1134,7 @@ $(document).ready(function() {
     });
     sock.on('pause-board', (data) => {
         // if data is true
-        if(data){
+        if (data) {
             // unpause code
             lock.unlock();
         } else {
@@ -1235,17 +1219,20 @@ $(document).ready(function() {
                 if (pen.force_center && IsSwalClose()) {
                     pen.setPixel();
                 }
-                else if(!pen.force_center) {
+                else if (!pen.force_center) {
                     pen.setCenterPos()
                 }
                 break;
-            } case 'KeyG':{
+            }
+            case 'KeyG': {
                 cursor.lockCursor(Cursors.FindMouse);
                 break;
-            } case 'KeyF': {
+            }
+            case 'KeyF': {
                 NonSweetClick('#screen-button')
                 break;
-            } default:{
+            }
+            default: {
                 break;
             }
         }
@@ -1254,9 +1241,9 @@ $(document).ready(function() {
             {
                 // option 0.5
                 console.log(query.scale >= 1, query.scale)
-                query.setScale(query.scale >= 1 ? query.scale +1 : 1);
+                query.setScale(query.scale >= 1 ? query.scale + 1 : 1);
             }
-            else if (e.originalEvent.key =='_') { // key for minus
+            else if (e.originalEvent.key == '_') { // key for minus
                 // option 0.5
                 query.setScale(query.scale > 1 ? query.scale - 1 : MIN_SCALE);
             }
@@ -1279,14 +1266,13 @@ $(document).ready(function() {
         }
         else if (key == 'Home') {
             NonSweetClick('#home-button');
-        } 
-        else if(key == 'g'){
+        }
+        else if (key == 'g') {
             cursor.releaseCursor(Cursors.FindMouse)
         } else if (key == 'Escape') {
             // prevent collison with swal ESCAPE
             NonSweetClick('#logout-button');
         }
-
     });
     // change toggle button
     $('#toggle-toolbox-button').click(function(e) {
@@ -1329,7 +1315,9 @@ $(document).ready(function() {
     //logout
     $('#logout-button').click((e) => {
         // if there is any keypressed
-        if (e) {e.preventDefault();}
+        if (e) {
+            e.preventDefault();
+        }
         // swal leave event
         Swal.fire({
             title: 'Are you sure?',
@@ -1363,7 +1351,7 @@ $(document).ready(function() {
         });
     });
     $('.colorButton').each(function() {
-        $(this).css('background-color',Colors.colors[parseInt($(this).attr('value'))].css_format()); // set colors
+        $(this).css('background-color', Colors.colors[parseInt($(this).attr('value'))].css_format()); // set colors
     }).click(function(event) {
         event.preventDefault(); // prevent default clicking
         pen.setColorButton($(this))
