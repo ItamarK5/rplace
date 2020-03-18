@@ -72,14 +72,14 @@ class User(datastore.Model, UserMixin):
         """
         return super().get_id() + '&' + self.password
 
-    @cache.memoize(timeout=300)
+    @cache.memoize(timeout=1)
     def __get_last_record_identifier(self) -> Union[str, int]:
         """
         :return:
         """
         record = Record.query.filter_by(
             user=self.id,
-        ).order_by(Note.declared.asc()).first()
+        ).order_by(Note.declared.desc()).first()
         if record is None:
             return 'none'
         return record.id

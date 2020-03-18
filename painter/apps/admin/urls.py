@@ -9,10 +9,10 @@ from painter.models.notes import Record, Note
 from painter.models.user import User
 from painter.models.user import reNAME
 from .forms import RecordForm, NoteForm
-from .utils import only_if_superior, admin_only, superuser_only, json_response
+from .utils import only_if_superior, admin_only, superuser_only, json_response, validate_get_notes_param
 from ..profile_form import PreferencesForm
 from painter.backends.skio import PAINT_NAMESPACE, lock
-
+from sqlalchemy.orm import polymorphic_union
 
 admin_router = Blueprint(
     'admin',
@@ -168,7 +168,6 @@ def add_note(user: User) -> Response:
             writer=current_user.id,
             declared=datetime.now(),
             description=escape(form.description),
-            ban_Record=None
         ))
         datastore.session.commit()
         user.forget_is_active()
@@ -221,3 +220,11 @@ def set_role(user: User) -> Response:
     datastore.session.add(user)
     datastore.session.commit()
     return json_response(True, 'Pless refresh the page to see changes')
+
+
+@admin_router.route('/get-user-notes/<string:name>', methods=('GET',))
+@only_if_superior
+def get_user_notes(user: User):
+    max_per_page = validate_get_notes_param('max-per-page')
+    page = validate_get_notes_param('per-page')
+    # get note number x

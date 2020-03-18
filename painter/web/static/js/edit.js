@@ -1,3 +1,10 @@
+ajax_error_alert = function(err) {
+    Swal.fire({
+      title: 'Error!',
+      icon:  'error',
+      html: err.responseText
+    })
+}
 $(window).on('load', function() {
     $('#expires').datetimepicker({
         format: 'DD/MM/YYYY HH:mm', 
@@ -59,7 +66,55 @@ $(window).on('load', function() {
                     }
                 }
             },
-            error:() => alert('An error occurred')
+            error:(error) => Swal.fire({
+                title:error.title,
+                console.log()
+            })
+        })
+    });
+    $('#ban-form').submit(function(e) {
+        let success_message = $('#success-message')[0];
+        if(!success_message.hasAttribute('hidden')){
+            success_message.toggleAttribute('hidden');
+        }
+        $('.error-list').children().remove();
+        e.preventDefault();
+        $.ajax({
+            method:"POST",
+            url:this.getAttribute('action'),
+            data:$(this).serialize(),
+            success:(data) => {
+                if(data.valid){
+                    $('#success-message')[0].removeAttribute('hidden')
+                } else {
+                    let errors = data.errors;
+                    if(errors.expires){
+                        errors.expires.forEach((val) => {
+                            $('<ul></ul>')
+                            .addClass("center-text list-group-item list-group-item-danger")
+                            .text(val)
+                            .appendTo($('.error-list[error-for="expires"]').first())
+                        })
+                    }
+                    if(errors.reason){
+                        errors.reason.forEach((val) => {
+                            $('<ul></ul>')
+                            .addClass("center-text list-group-item list-group-item-danger")
+                            .text(val)
+                            .appendTo($('.error-list[error-for="reason"]').first())
+                        })
+                    }
+                    if(errors.note){
+                        errors.note.forEach((val) => {
+                            $('<ul></ul>')
+                            .addClass("center-text list-group-item list-group-item-danger")
+                            .text(val)
+                            .appendTo($('.error-list[error-for="note"]').first())
+                        })
+                    }
+                }
+            },
+            error:ajax_error_alert
         })
     });
     $('#submit-ban-form').click(() => {
@@ -103,13 +158,7 @@ $(window).on('load', function() {
                     });
                   },
                 // error message
-                  error: function(err) {
-                      Swal.fire({
-                        title: 'Error!',
-                        icon:  'error',
-                        html: err.responseText
-                      })
-                  }
+                  error:ajax_error_alert 
               })
             }
           })

@@ -27,6 +27,7 @@ class Note(datastore.Model):
         )
     }
 
+
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('is_record', False)
         super().__init__(*args, **kwargs)

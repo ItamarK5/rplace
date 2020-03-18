@@ -1,7 +1,7 @@
 from functools import wraps
-from typing import Callable
+from typing import Callable, Optional
 
-from flask import abort, jsonify
+from flask import abort, jsonify, request
 from flask_login import current_user
 from flask_login import fresh_login_required
 from werkzeug import Response
@@ -65,3 +65,12 @@ def json_response(success: bool, text:str) -> Response:
         'success': int(success),
         'text': text
     })
+
+
+def validate_get_notes_param(arg_name: str) -> Optional[int]:
+    arg = request.args.get(arg_name, 'None')
+    if arg.isdigit():   # all digits => int
+        return int(arg)
+    else:   # else abort Bad Request
+        abort(400, 'Unvalid value')
+    return arg
