@@ -130,19 +130,15 @@ def change_ban_status(user: User) -> Response:
     # check a moment for time
     if form.validate_on_submit():
         record = Record(
-                active=not form.set_banned.data,
-                expire=form.expires.data,
-                reason=escape(form.reason.data),
-            )
-        datastore.session.add(record)
-        datastore.session.commit()
-        datastore.session.add(Note(
             user=user.id,
             description=escape(form.note.data),
             declared=datetime.now(),
             writer=current_user.id,
-            ban_record=record.id
-        ))
+            active=not form.set_banned.data,
+            expire=form.expires.data,
+            reason=escape(form.reason.data)
+        )
+        datastore.session.add(record)
         datastore.session.commit()
         user.forget_is_active()
         return jsonify({'valid': True})

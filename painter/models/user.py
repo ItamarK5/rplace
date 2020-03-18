@@ -1,8 +1,8 @@
 import re
 from hashlib import pbkdf2_hmac
-from typing import Optional
+from typing import Optional, Union
 from flask_login import UserMixin
-from sqlalchemy import Column, Integer, String, and_
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.dialects.sqlite import DATETIME, SMALLINT
 from sqlalchemy.orm import relationship
 from .role import Role
@@ -72,50 +72,55 @@ class User(datastore.Model, UserMixin):
         """
         return super().get_id() + '&' + self.password
 
-    @cache.memoize()
-    def get_last_record(self) -> Optional[Note]:
-        note = Note.query.filter(
-            and_(
-                Note.id == self.id,
-                Note.ban_record is not None,
-            )
+    @cache.memoize(timeout=300)
+    def __get_last_record_identifier(self) -> Union[str, int]:
+        """
+        :return:
+        """
+        record = Record.query.filter_by(
+            user=self.id,
         ).order_by(Note.declared.asc()).first()
-        return note
+        if record is None:
+            return 'none'
+        return record.id
+
+    def get_last_record(self) -> Optional[Record]:
+        identifier = self.__get_last_record_identifier()
+        if identifier == 'none':
+            return None
+        return Record.query.get(identifier)
 
     @property
     def is_active(self) -> bool:
         """
         :return: user if the user active -> can login
         """
-        note = self.get_last_record()
-        if note is None:      # user has not record
+        last_record = self.get_last_record()
+        if last_record is None:      # user has not record
             return True
-        record = Record.query.get(note.ban_record)
-        if record.expire is None:   # record has no expire date
-            print(record.active)
-            return record.active
-        if record.expire < datetime.now():
+        if last_record.expire is None:   # record has no expire date
+            return last_record.active
+        if last_record.expire < datetime.now():
             datastore.session.add(Record(user=self,
-                                         result=not record.active,
+                                         result=not last_record.active,
                                          declared=datetime.now(),
                                          reason='Timed passed',
-                                         description=f"The record was set to expire at {record.expire}"
+                                         description=f"The record was set to expire at {last_record.expire}"
                                                      f"and the user tried to log in"
                                          ))
             self.forget_is_active()
-            return not record.active       # replace the active
+            return not last_record.active       # replace the active
         # else
-        return record.active       # isnt expired, so must has the other status
+        return last_record.active       # isnt expired, so must has the other status
 
     def forget_is_active(self):
-        cache.delete_memoized(self.get_last_record, self)
+        cache.delete_memoized(self.__get_last_record_identifier, self)
 
     def record_message(self) -> Optional[Markup]:
-        note = self.get_last_record()
-        if note is None:
-            return
+        record = self.get_last_record()
+        if record is None:
+            return None
         # else
-        record = Record.query.get(note.ban_record)
         text = f'user {self.username}, you are banned from Social Painter, '
         if record.expire is not None:
             text += f"until {record.expire.strftime('%m/%d/%Y, %H:%M')}, "
