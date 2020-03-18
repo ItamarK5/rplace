@@ -34,7 +34,8 @@ class User(datastore.Model, UserMixin):
     x = Column(SMALLINT(), default=500, nullable=False)
     y = Column(SMALLINT(), default=500, nullable=False)
     scale = Column(SMALLINT(), default=4, nullable=False)
-    color = Column(SMALLINT(), default=4, nullable=False)
+    # default color black
+    color = Column(SMALLINT(), default=1, nullable=False)
     url = Column(String(), default=None, nullable=True)
     sqlite_autoincrement = True
 

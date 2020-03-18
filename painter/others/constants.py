@@ -18,8 +18,8 @@ WEB_FOLDER = path.join(path.dirname(path.dirname(path.abspath(__file__))), 'web'
 # time
 MINUTES_COOLDOWN = timedelta(minutes=1)
 COLORS = (
-    "white", "red", "olive", "blue",
-    "black", "pink", "yellow", "aqua",
-    "gray", "brown", "green", "purple",
-    "silver", "orange", "lime", "magenta",
+    "white", "black", "gray", "silver",
+    "red", "pink", "brown", "orange",
+    "olive, yellow", "green", "lime",
+    "blue", "aqua", "purple", "magenta"
 )
