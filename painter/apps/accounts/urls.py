@@ -10,7 +10,7 @@ from painter.models.user import Role
 from painter.models.user import User
 from .forms import LoginForm, SignUpForm, RevokeForm, ChangePasswordForm
 from .utils import *
-from .mail import send_sign_up_mail, send_revoke_password
+from .mail import send_signing_up_message, send_revoke_password_message
 
 # router blueprint -> routing all pages that relate to authorization
 accounts_router = Blueprint('auth',
@@ -67,7 +67,7 @@ def signup() -> Response:
                             form.password.data, \
                             form.email.data
         # sending the mail
-        login_error = send_sign_up_mail(name, email, TokenSerializer.signup.dumps(
+        login_error = send_signing_up_message(name, email, TokenSerializer.signup.dumps(
             {
                 'email': email,
                 'username': name,
@@ -101,7 +101,7 @@ def revoke() -> Response:
         print(3, user)
         if user is not None:
             # error handling
-            send_revoke_password(
+            send_revoke_password_message(
                 user.username,
                 form.email.data,
                 TokenSerializer.revoke.dumps({

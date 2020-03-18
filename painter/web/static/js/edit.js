@@ -1,14 +1,14 @@
 ajax_error_alert = function(err) {
     Swal.fire({
-      title: 'Error!',
-      icon:  'error',
-      html: err.responseText
+        title: 'Error!',
+        icon: 'error',
+        html: err.responseText
     })
 }
 $(window).on('load', function() {
     $('#expires').datetimepicker({
-        format: 'DD/MM/YYYY HH:mm', 
-        showTodayButton: true, 
+        format: 'DD/MM/YYYY HH:mm',
+        showTodayButton: true,
         showClear: true,
         showClose: true,
         icons: {
@@ -26,95 +26,95 @@ $(window).on('load', function() {
     })
     $('#ban-form').submit(function(e) {
         let success_message = $('#success-message')[0];
-        if(!success_message.hasAttribute('hidden')){
+        if (!success_message.hasAttribute('hidden')) {
             success_message.toggleAttribute('hidden');
         }
         $('.error-list').children().remove();
         e.preventDefault();
         $.ajax({
-            method:"POST",
-            url:this.getAttribute('action'),
-            data:$(this).serialize(),
-            success:(data) => {
-                if(data.valid){
+            method: "POST",
+            url: this.getAttribute('action'),
+            data: $(this).serialize(),
+            success: (data) => {
+                if (data.valid) {
                     $('#success-message')[0].removeAttribute('hidden')
                 } else {
                     let errors = data.errors;
-                    if(errors.expires){
+                    if (errors.expires) {
                         errors.expires.forEach((val) => {
                             $('<ul></ul>')
-                            .addClass("center-text list-group-item list-group-item-danger")
-                            .text(val)
-                            .appendTo($('.error-list[error-for="expires"]').first())
+                                .addClass("center-text list-group-item list-group-item-danger")
+                                .text(val)
+                                .appendTo($('.error-list[error-for="expires"]').first())
                         })
                     }
-                    if(errors.reason){
+                    if (errors.reason) {
                         errors.reason.forEach((val) => {
                             $('<ul></ul>')
-                            .addClass("center-text list-group-item list-group-item-danger")
-                            .text(val)
-                            .appendTo($('.error-list[error-for="reason"]').first())
+                                .addClass("center-text list-group-item list-group-item-danger")
+                                .text(val)
+                                .appendTo($('.error-list[error-for="reason"]').first())
                         })
                     }
-                    if(errors.note){
+                    if (errors.note) {
                         errors.note.forEach((val) => {
                             $('<ul></ul>')
-                            .addClass("center-text list-group-item list-group-item-danger")
-                            .text(val)
-                            .appendTo($('.error-list[error-for="note"]').first())
+                                .addClass("center-text list-group-item list-group-item-danger")
+                                .text(val)
+                                .appendTo($('.error-list[error-for="note"]').first())
                         })
                     }
                 }
             },
-            error:(error) => Swal.fire({
-                title:error.title,
+            error: (error) => Swal.fire({
+                title: error.title,
                 console.log()
             })
         })
     });
     $('#ban-form').submit(function(e) {
         let success_message = $('#success-message')[0];
-        if(!success_message.hasAttribute('hidden')){
+        if (!success_message.hasAttribute('hidden')) {
             success_message.toggleAttribute('hidden');
         }
         $('.error-list').children().remove();
         e.preventDefault();
         $.ajax({
-            method:"POST",
-            url:this.getAttribute('action'),
-            data:$(this).serialize(),
-            success:(data) => {
-                if(data.valid){
+            method: "POST",
+            url: this.getAttribute('action'),
+            data: $(this).serialize(),
+            success: (data) => {
+                if (data.valid) {
                     $('#success-message')[0].removeAttribute('hidden')
                 } else {
                     let errors = data.errors;
-                    if(errors.expires){
+                    if (errors.expires) {
                         errors.expires.forEach((val) => {
                             $('<ul></ul>')
-                            .addClass("center-text list-group-item list-group-item-danger")
-                            .text(val)
-                            .appendTo($('.error-list[error-for="expires"]').first())
+                                .addClass("center-text list-group-item list-group-item-danger")
+                                .text(val)
+                                .appendTo($('.error-list[error-for="expires"]').first())
                         })
                     }
-                    if(errors.reason){
+                    if (errors.reason) {
                         errors.reason.forEach((val) => {
                             $('<ul></ul>')
-                            .addClass("center-text list-group-item list-group-item-danger")
-                            .text(val)
-                            .appendTo($('.error-list[error-for="reason"]').first())
+                                .addClass("center-text list-group-item list-group-item-danger")
+                                .text(val)
+                                .appendTo($('.error-list[error-for="reason"]').first())
                         })
                     }
-                    if(errors.note){
+                    if (errors.note) {
                         errors.note.forEach((val) => {
                             $('<ul></ul>')
-                            .addClass("center-text list-group-item list-group-item-danger")
-                            .text(val)
-                            .appendTo($('.error-list[error-for="note"]').first())
+                                .addClass("center-text list-group-item list-group-item-danger")
+                                .text(val)
+                                .appendTo($('.error-list[error-for="note"]').first())
                         })
                     }
                 }
             },
-            error:ajax_error_alert
+            error: ajax_error_alert
         })
     });
     $('#submit-ban-form').click(() => {
@@ -123,7 +123,7 @@ $(window).on('load', function() {
     $('#set-expire').click(function() {
         let field = $('#expires')[0];
         console.log(this, this.checked)
-        if(this.checked){
+        if (this.checked) {
             field.removeAttribute('disabled');
         } else {
             field.setAttribute('disabled', 'disabled')
@@ -141,26 +141,26 @@ $(window).on('load', function() {
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
             confirmButtonText: 'Yes Set Rank!'
-          }).then((result) => {
+        }).then((result) => {
             if (result.value) {
                 console.log(name)
-              $.ajax({
-                  url:`/set-user-role/${window.location.pathname.split('/')[2]}`,
-                  method:'POST',
-                  contentType: 'application/json;charset=UTF-8',
-                  data: name,
-                // success message
-                  success:function(data){
-                    Swal.fire({
-                        title: data.success ? 'Role Changed' : 'Error!',
-                        icon:  data.success ? 'success' : 'error',
-                        text: data.text
-                    });
-                  },
-                // error message
-                  error:ajax_error_alert 
-              })
+                $.ajax({
+                    url: `/set-user-role/${window.location.pathname.split('/')[2]}`,
+                    method: 'POST',
+                    contentType: 'application/json;charset=UTF-8',
+                    data: name,
+                    // success message
+                    success: function(data) {
+                        Swal.fire({
+                            title: data.success ? 'Role Changed' : 'Error!',
+                            icon: data.success ? 'success' : 'error',
+                            text: data.text
+                        });
+                    },
+                    // error message
+                    error: ajax_error_alert
+                })
             }
-          })
+        })
     });
 })

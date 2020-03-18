@@ -4,7 +4,6 @@ from flask_login import current_user
 from flask_socketio import SocketIO, Namespace, ConnectionRefusedError, disconnect
 from painter.backends import board, lock
 from painter.extensions import datastore
-from painter.models.pixel import Pixel
 from functools import wraps
 from painter.models.role import Role
 import json
@@ -102,16 +101,6 @@ class PaintNamespace(Namespace):
             next_time = current_time
             current_user.next_time = next_time
             x, y, clr = int(params['x']), int(params['y']), int(params['color'])
-            datastore.session.add(
-                Pixel(
-                    x=x,
-                    y=y,
-                    color=clr,
-                    drawer=current_user.id,
-                    drawn=current_time.timestamp()
-                )
-            )
-            datastore.session.commit()
             sio.start_background_task(self.set_at, x=x, y=y, color=clr)
             # setting the board
             """

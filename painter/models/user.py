@@ -30,7 +30,6 @@ class User(datastore.Model, UserMixin):
     email = Column(String(254), unique=True, nullable=False)
     next_time = Column(DATETIME(), default=datetime.utcnow, nullable=False)
     creation = Column(DATETIME(), default=datetime.utcnow, nullable=False)
-    pixels = relationship('Pixel', backref='users', lazy=True)
     role = Column(SmallEnum(Role), default=Role.common, nullable=False)
     x = Column(SMALLINT(), default=500, nullable=False)
     y = Column(SMALLINT(), default=500, nullable=False)
