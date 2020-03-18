@@ -3,13 +3,11 @@ from os import path
 from flask import Flask
 from painter.others.constants import WEB_FOLDER
 from .config import Config  # config
-from .run_celery import make_celery
 
 
 import eventlet
 eventlet.monkey_patch()
 
-print(path.exists(WEB_FOLDER), WEB_FOLDER)
 app = Flask(
     __name__,
     static_folder='',
@@ -24,13 +22,14 @@ app.config.from_object(Config)
 from painter.backends.skio import sio
 from flask_wtf.csrf import CSRFProtect
 from .extensions import datastore, mailbox, engine, login_manager, cache
-from .run_celery import make_celery
+# a must import
+
 
 sio.init_app(
     app,
-    #message_queue='redis://192.168.0.214:6379/0',
+    # message_queue='redis://192.168.0.214:6379/0',
 )
-celery = make_celery(app)
+
 datastore.init_app(app)
 mailbox.init_app(app)
 login_manager.init_app(app)

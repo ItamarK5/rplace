@@ -101,14 +101,14 @@ def revoke() -> Response:
         print(3, user)
         if user is not None:
             # error handling
-            send_revoke_password.apply_async(args=[
+            send_revoke_password(
                 user.username,
                 form.email.data,
                 TokenSerializer.revoke.dumps({
                     'username': user.username,
                     'password': user.password
                 })
-            ])
+            )
             # return template ok
         else:
             """render_template('transport/revoke-unknown-user.html')"""
@@ -144,10 +144,6 @@ def refresh() -> Response:
                            entire_form_errors=entire_form_error,
                            extra_error=extra_error)
 
-@cache_signature_view
-def cache_signature_view(token: str) -> Tuple[Union[int, str], Optional[int]]:
-
-    return user.id
 
 @accounts_router.route('/change-password/<string:token>', methods=['GET', 'POST'])
 def change_password(token: str) -> Response:
@@ -175,7 +171,6 @@ def change_password(token: str) -> Response:
             view_ref='auth.signup',
             message="you registered over time, you are late"
         )
-
     user = User.query.filter_by(username=name, password=pswd).first()
     if user is None:
         return render_template(

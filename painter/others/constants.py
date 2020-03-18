@@ -13,7 +13,6 @@ MIME_TYPES = {
     'jpeg': 'image/jpeg'
 }
 
-# find
 
 WEB_FOLDER = path.join(path.dirname(path.dirname(path.abspath(__file__))), 'web')
 # time
