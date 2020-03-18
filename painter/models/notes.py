@@ -22,11 +22,11 @@ class Note(datastore.Model):
     __mapper_args__ = {
         'polymorphic_identity': 'note',
         'polymorphic_on': case(
-            [(is_record == True, 'record'),],
+            # sorry for pep 8, this is how it was in the example
+            [(is_record == True, 'record'), ],
             else_='note'
         )
     }
-
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('is_record', False)

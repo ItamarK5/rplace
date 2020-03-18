@@ -1,31 +1,16 @@
-ajax_error_alert = function(err) {
+const formRows = (selector) => $(selector).children('.form-row');
+
+function ajax_error_alert(err) {
     Swal.fire({
         title: 'Error!',
         icon: 'error',
         html: err.responseText
     })
 }
-$(window).on('load', function() {
-    $('#expires').datetimepicker({
-        format: 'DD/MM/YYYY HH:mm',
-        showTodayButton: true,
-        showClear: true,
-        showClose: true,
-        icons: {
-            time: 'far fa-clock',
-            date: 'fas fa-calendar',
-            up: 'fas fa-arrow-up',
-            down: 'fas fa-arrow-down',
-            previous: 'fas fa-chevron-left',
-            next: 'fas fa-chevron-right',
-            today: 'fas fa-calendar-check-o',
-            clear: 'fas fa-trash',
-            close: 'fas fa-times'
-        },
-        timeZone: 'utc-0'
-    })
+$(document).ready(() => {
     $('#ban-form').submit(function(e) {
-        let success_message = $('#success-message')[0];
+        let success_message = $('#ban-form > .success-message')[0];
+        let rows = formRows(this);
         if (!success_message.hasAttribute('hidden')) {
             success_message.toggleAttribute('hidden');
         }
@@ -37,7 +22,7 @@ $(window).on('load', function() {
             data: $(this).serialize(),
             success: (data) => {
                 if (data.valid) {
-                    $('#success-message')[0].removeAttribute('hidden')
+                    success_message.removeAttribute('hidden')
                 } else {
                     let errors = data.errors;
                     if (errors.expires) {
@@ -45,7 +30,7 @@ $(window).on('load', function() {
                             $('<ul></ul>')
                                 .addClass("center-text list-group-item list-group-item-danger")
                                 .text(val)
-                                .appendTo($('.error-list[error-for="expires"]').first())
+                                .appendTo(rows.children('.error-list[error-for="expires"]').first())
                         })
                     }
                     if (errors.reason) {
@@ -53,7 +38,7 @@ $(window).on('load', function() {
                             $('<ul></ul>')
                                 .addClass("center-text list-group-item list-group-item-danger")
                                 .text(val)
-                                .appendTo($('.error-list[error-for="reason"]').first())
+                                .appendTo(rows.children('.error-list[error-for="reason"]').first())
                         })
                     }
                     if (errors.note) {
@@ -61,23 +46,21 @@ $(window).on('load', function() {
                             $('<ul></ul>')
                                 .addClass("center-text list-group-item list-group-item-danger")
                                 .text(val)
-                                .appendTo($('.error-list[error-for="note"]').first())
+                                .appendTo(rows.children('.error-list[error-for="note"]').first())
                         })
                     }
                 }
             },
-            error: (error) => Swal.fire({
-                title: error.title,
-                console.log()
-            })
+            error: ajax_error_alert
         })
     });
-    $('#ban-form').submit(function(e) {
-        let success_message = $('#success-message')[0];
+    $('#note-form').submit(function(e) {
+        let success_message = formRows('#note-form').children('.success-message')[0];
         if (!success_message.hasAttribute('hidden')) {
             success_message.toggleAttribute('hidden');
         }
-        $('.error-list').children().remove();
+        let rows = formRows(this);
+        $(this).children('.error-list').children().remove();
         e.preventDefault();
         $.ajax({
             method: "POST",
@@ -85,31 +68,15 @@ $(window).on('load', function() {
             data: $(this).serialize(),
             success: (data) => {
                 if (data.valid) {
-                    $('#success-message')[0].removeAttribute('hidden')
+                    success_message.removeAttribute('hidden')
                 } else {
                     let errors = data.errors;
-                    if (errors.expires) {
-                        errors.expires.forEach((val) => {
+                    if (errors.description) {
+                        errors.description.forEach((val) => {
                             $('<ul></ul>')
                                 .addClass("center-text list-group-item list-group-item-danger")
                                 .text(val)
-                                .appendTo($('.error-list[error-for="expires"]').first())
-                        })
-                    }
-                    if (errors.reason) {
-                        errors.reason.forEach((val) => {
-                            $('<ul></ul>')
-                                .addClass("center-text list-group-item list-group-item-danger")
-                                .text(val)
-                                .appendTo($('.error-list[error-for="reason"]').first())
-                        })
-                    }
-                    if (errors.note) {
-                        errors.note.forEach((val) => {
-                            $('<ul></ul>')
-                                .addClass("center-text list-group-item list-group-item-danger")
-                                .text(val)
-                                .appendTo($('.error-list[error-for="note"]').first())
+                                .appendTo(rows.children('.error-list[error-for="note"]').first())
                         })
                     }
                 }
@@ -119,6 +86,9 @@ $(window).on('load', function() {
     });
     $('#submit-ban-form').click(() => {
         $('#ban-form').submit();
+    });
+    $('#submit-note-form').click(() => {
+        $('#note-form').submit();
     })
     $('#set-expire').click(function() {
         let field = $('#expires')[0];
@@ -163,4 +133,26 @@ $(window).on('load', function() {
             }
         })
     });
+})
+
+$(window).on('load', function() {
+    $('#expires').datetimepicker({
+        format: 'DD/MM/YYYY HH:mm',
+        showTodayButton: true,
+        showClear: true,
+        showClose: true,
+        icons: {
+            time: 'far fa-clock',
+            date: 'fas fa-calendar',
+            up: 'fas fa-arrow-up',
+            down: 'fas fa-arrow-down',
+            previous: 'fas fa-chevron-left',
+            next: 'fas fa-chevron-right',
+            today: 'fas fa-calendar-check-o',
+            clear: 'fas fa-trash',
+            close: 'fas fa-times'
+        },
+        timeZone: 'utc-0'
+    })
+    
 })
