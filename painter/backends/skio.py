@@ -8,11 +8,10 @@ from functools import wraps
 from painter.models.role import Role
 import json
 
-TypeCall = Callable[[Any], Any]
 sio = SocketIO(logger=True)
 
 
-def socket_io_authenticated_only(f: TypeCall) -> TypeCall:
+def socket_io_authenticated_only(f: Callable[[Any], Any]) -> Callable[[Any], Any]:
     @wraps(f)
     def wrapped(*args, **kwargs) -> Any:
         if current_user.is_anonymous or not current_user.is_active:
@@ -22,15 +21,15 @@ def socket_io_authenticated_only(f: TypeCall) -> TypeCall:
     return wrapped
 
 
-def socket_io_role_required(role: Role) -> TypeCall:
+def socket_io_role_required(role: Role) -> Callable[[Any], Any]:
     """
     :param role: the required role to pass
     :return: the socket.io view, but now only allows if the user is authenticated
     """
-    def wrapped(f: TypeCall) -> TypeCall:
+    def wrapped(f: Callable[[Any], Any]) -> Callable[[Any], Any]:
         @wraps(f)
         def wrapped2(*args, **kwargs) -> Any:
-            if current_user.has_required_status(role):
+            if not current_user.has_required_status(role):
                 disconnect()
             else:
                 return f(*args, **kwargs)
@@ -118,5 +117,28 @@ class PaintNamespace(Namespace):
             return 'undefined'
 
 
+class AdminNamespace(Namespace):
+    @socket_io_role_required(Role.admin)
+    def on_connect(self):
+        print(4)
+
+    def on_turn_app(self, to_turn_board):
+        if to_turn_board == '1':
+            lock.enable()
+            PAINT_NAMESPACE.play_place()
+        elif to_turn_board == '0':
+            lock.disable()
+            PAINT_NAMESPACE.pause_place()
+        else:
+            return {'success': False, 'response': 'Not A Valid Input'}
+        return {'success': True, 'response': str(1-int(to_turn_board))}
+
+
 PAINT_NAMESPACE = PaintNamespace('/paint')
+ADMIN_NAMESPACE = AdminNamespace('/admin-io')
 sio.on_namespace(PAINT_NAMESPACE)
+sio.on_namespace(ADMIN_NAMESPACE)
+
+"""
+need to make a class decorator for
+"""

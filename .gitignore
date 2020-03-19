@@ -12,3 +12,4 @@ painter/web/package-lock.json
 painter/web/package.json
 certificate.json
 venv/
+count.py

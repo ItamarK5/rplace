@@ -140,7 +140,7 @@ def change_ban_status(user: User) -> Response:
         )
         datastore.session.add(record)
         datastore.session.commit()
-        user.forget_is_active()
+        user.forget_last_record()
         return jsonify({'valid': True})
     # else
     else:
@@ -167,10 +167,10 @@ def add_note(user: User) -> Response:
             user=user.id,
             writer=current_user.id,
             declared=datetime.now(),
-            description=escape(form.description),
+            description=escape(form.description.data),
         ))
         datastore.session.commit()
-        user.forget_is_active()
+        user.forget_last_record()
         return jsonify({'valid': True})
     # else
     else:
@@ -228,3 +228,11 @@ def get_user_notes(user: User):
     max_per_page = validate_get_notes_param('max-per-page')
     page = validate_get_notes_param('per-page')
     # get note number x
+
+"""
+1) Get Notes
+2) Delete Note
+3) Remove Note
+4) Admin Only - Remove Note
+5) Superuser Only - Remove
+"""

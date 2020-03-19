@@ -67,7 +67,10 @@ def signup() -> Response:
                             form.password.data, \
                             form.email.data
         # sending the mail
-        login_error = send_signing_up_message(name, email, TokenSerializer.signup.dumps(
+        send_signing_up_message(
+            name,
+            email,
+            TokenSerializer.signup.dumps(
             {
                 'email': email,
                 'username': name,
@@ -75,15 +78,12 @@ def signup() -> Response:
                 'password': User.encrypt_password(pswd, name)
             }
         ))
-        if not login_error:
-            form.email.errors.append('Bad Header')
-        else:
-            return render_template(
-                'transport/complete-signup.html',
-                username=name,
-                view_ref='auth.login',
-                view_name='login'
-            )
+        return render_template(
+            'transport/complete-signup.html',
+            username=name,
+            view_ref='auth.login',
+            view_name='login'
+        )
     return render_template('forms/signup.html', form=form)
 
 

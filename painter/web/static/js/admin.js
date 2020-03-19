@@ -1,4 +1,6 @@
+const sock = io('/admin-io', {transports:['websocket']})
 $(document).ready(() => {
+    sock.connect()
     $('[data-toggle="tooltip"]').tooltip();
     $('tr').click(function() {
         let name = $(this).children('.name-col').text();
@@ -7,18 +9,31 @@ $(document).ready(() => {
         };
     });
     $('#place-button').click(function(){
-        let state = $(this).attr('state');
+        let board_state = $(this).attr('state');
         let button = this;
         Swal.fire({
             title: 'Are you sure?',
-            text: `You want to ${state == "1" ? "pause" : "unpause"} the place`,
+            text: `You want to ${board_state == "1" ? "pause" : "unpause"} the place`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
           }).then((result) => {
             if (result.value) {
-                console.log(name)
+              console.log(sock.connected)
+              sock.emit('turn_app', board_state, (success, response) => {
+                if(success){
+                  text = `The place is ${response == '0' ? 'paused' : 'unpause'}`;
+                  $(button).attr('state', response);
+                  $(button).children('h6').text(response == '0' ? 'Turn Place On' : 'Turn Place Off')
+                  }
+                  Swal.fire({
+                      title: success ? `App is ${response == '0' ? 'paused' : 'unpause'}` : 'Error!',
+                      icon:  success ? 'success' : 'error',
+                      text: text
+                  });
+                })
+                /*
               $.ajax({
                   url:`/set-power-button`,
                   method:'POST',
@@ -47,6 +62,7 @@ $(document).ready(() => {
                       })
                   }
               })
+              */
             }
           })
     })

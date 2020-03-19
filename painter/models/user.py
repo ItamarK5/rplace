@@ -72,7 +72,7 @@ class User(datastore.Model, UserMixin):
         """
         return super().get_id() + '&' + self.password
 
-    @cache.memoize(timeout=1)
+    @cache.memoize(timeout=300)
     def __get_last_record_identifier(self) -> Union[str, int]:
         """
         :return:
@@ -88,7 +88,15 @@ class User(datastore.Model, UserMixin):
         identifier = self.__get_last_record_identifier()
         if identifier == 'none':
             return None
-        return Record.query.get(identifier)
+        # maybe the admin deleted the record for some strange reason
+        record = Record.query.get(identifier)
+        if record is None:
+            # calculate again
+            self.forget_last_record()
+            # will forget so just call the function to do the same thing
+            return self.get_last_record()
+        # else
+        return record
 
     @property
     def is_active(self) -> bool:
@@ -108,12 +116,12 @@ class User(datastore.Model, UserMixin):
                                          description=f"The record was set to expire at {last_record.expire}"
                                                      f"and the user tried to log in"
                                          ))
-            self.forget_is_active()
+            self.forget_last_record()
             return not last_record.active       # replace the active
         # else
         return last_record.active       # isnt expired, so must has the other status
 
-    def forget_is_active(self):
+    def forget_last_record(self):
         cache.delete_memoized(self.__get_last_record_identifier, self)
 
     def record_message(self) -> Optional[Markup]:
