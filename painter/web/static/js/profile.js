@@ -169,7 +169,7 @@ function onShowingEditPreferencesModal(button, modal){
     addForm($('#setting-form'), field, button.parent().siblings('.setting-val').children('h5').text())
     $('#setting-alert').hide()
 }
-const sock = io();
+const sock = io('/profile');
 $(document).ready(() =>{
     //tooltips       
     $('#modal-change-preference').on('shown.bs.modal', function (event) {

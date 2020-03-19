@@ -743,7 +743,8 @@ const pen = {
         this.updateOffset();
     },
     setColorButton(button) {
-        this.color = parseInt(button.attr('value'));
+		console.log(button)
+		this.color = parseInt(button.attr('value'));
         $('.colorButton[picked="1"]').attr('picked', '0');
         button.attr('picked', '1');
     },
@@ -758,7 +759,7 @@ const pen = {
      * @param {number} value
      */
     set color(value) {
-        if (value > 0 && value < 16 && this.__color != value) {
+        if (value >= 0 && value < 16 && this.__color != value) {
             this.__color = value;
             board.drawBoard()
         }
@@ -1134,16 +1135,8 @@ $(document).ready(function() {
         });
     });
     // Connection on
-    sock.on('reconnect', () => {
-        Swal.fire({
-            icon: 'success',
-            title: 'Reconnected to the server',
-            text: 'Server Connection returned',
-        })
-    });
-    sock.on('pause-board', (is_paused) => {
+    sock.on('change-lock-state', (is_paused) => {
         // if data is true
-        console.log(5)
         if (is_paused) {
             // unpause code
             lock_object.lock();
@@ -1151,7 +1144,14 @@ $(document).ready(function() {
             // pause code
             lock_object.unlock();
         }
-    })
+    });
+    sock.on('reconnect', () => {
+        Swal.fire({
+            icon: 'success',
+            title: 'Reconnected to the server',
+            text: 'Server Connection returned',
+        })
+    });
     $('#coordinates').hover(function() {
         board.updateCoords();
     }, function() {
@@ -1361,7 +1361,7 @@ $(document).ready(function() {
         });
     });
     $('.colorButton').each(function() {
-        $(this).css('background-color', Colors.colors[parseInt($(this).attr('value'))].css_format()); // set colors
+		$(this).css('background-color', Colors.colors[parseInt($(this).attr('value'))].css_format()); // set colors
     }).click(function(event) {
         event.preventDefault(); // prevent default clicking
         pen.setColorButton($(this))

@@ -12,6 +12,7 @@ import json
 # declaring socketio namespace names
 PAINT_NAMESPACE = '/paint'
 ADMIN_NAMESPACE = '/admin'
+PROFILE_NAMESPACE = '/profile'
 sio = SocketIO(logger=True)
 
 
@@ -20,7 +21,7 @@ def socket_io_authenticated_only(f: Callable[[Any], Any]) -> Callable[[Any], Any
     def wrapped(*args, **kwargs) -> Any:
         print(f)
         if current_user.is_anonymous or not current_user.is_active:
-            disconnect()
+            raise disconnect()
         else:
             return f(*args, **kwargs)
     return wrapped
@@ -54,6 +55,7 @@ def task_set_board(x: int, y: int, color: int) -> None:
     """
     board.set_at(x, y, color)
     sio.emit('set-board', (x, y, color), namespace=PAINT_NAMESPACE)
+
 
 @sio.on('connect', PAINT_NAMESPACE)
 @socket_io_authenticated_only
@@ -128,14 +130,20 @@ def set_board(params: Any) -> str:
 def connect():
     pass
 
-@sio.on('turn-app', ADMIN_NAMESPACE)
+
+@sio.on('change-lock-state', ADMIN_NAMESPACE)
 @socket_io_role_required(Role.admin)
-def turn_app(board_switch_state: str):
-    if board_switch_state not in ('1', '0'):
+def change_lock_state(new_state: Any):
+    print(3, new_state)
+    if not isinstance(new_state, bool):
         return {'success': False, 'response': 'Not A Valid Input'}
-    set_board_active = board_switch_state == '0'  # disabled = 0, active = 1
-    lock.set_switch(set_board_active)
-    sio.emit('turn-app', namespace=ADMIN_NAMESPACE)
-    sio.emit('turn-app', namespace=PAINT_NAMESPACE)
-    return {'success': True, 'response': set_board_active}
+    # prevent collision
+    print(new_state)
+    if lock.set_switch(new_state):
+        sio.emit('change-lock-board', new_state, namespace=ADMIN_NAMESPACE, include_self=False)
+        sio.emit('set-lock-state', new_state, namespace=PAINT_NAMESPACE)
+        return {'success': True, 'response': new_state}
+    else:
+        return {'success': True, 'response': new_state}
+
 

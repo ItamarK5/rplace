@@ -150,8 +150,8 @@ $(window).on('load', function() {
             next: 'fas fa-chevron-right',
             today: 'fas fa-calendar-check-o',
             clear: 'fas fa-trash',
-            close: 'fas fa-times'
-        },
+			close: 'fas fa-times'
+		},
         timeZone: 'utc-0'
     })
     
