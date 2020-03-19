@@ -9,11 +9,16 @@ from painter.models.role import Role
 import json
 
 
+# declaring socketio namespace names
+PAINT_NAMESPACE = '/paint'
+ADMIN_NAMESPACE = '/admin'
 sio = SocketIO(logger=True)
+
 
 def socket_io_authenticated_only(f: Callable[[Any], Any]) -> Callable[[Any], Any]:
     @wraps(f)
     def wrapped(*args, **kwargs) -> Any:
+        print(f)
         if current_user.is_anonymous or not current_user.is_active:
             disconnect()
         else:
@@ -28,115 +33,109 @@ def socket_io_role_required(role: Role) -> Callable[[Any], Any]:
     """
     def wrapped(f: Callable[[Any], Any]) -> Callable[[Any], Any]:
         @wraps(f)
-        def wrapped2(*args, **kwargs) -> Any:
+        def wrapper(*args, **kwargs) -> Any:
             if not current_user.has_required_status(role):
                 disconnect()
             else:
                 return f(*args, **kwargs)
-        return socket_io_authenticated_only(wrapped2)
+        return socket_io_authenticated_only(wrapper)
     return wrapped
 
 
-class PaintNamespace(Namespace):
-    @staticmethod
-    def on_connect() -> None:
-        """
-        :return: nothing
-        when connects to PaintNamespace, prevent anonymous users from using SocketIO
-        """
-        if not current_user.is_authenticated:
-            raise ConnectionRefusedError()
+def task_set_board(x: int, y: int, color: int) -> None:
+    """
+    :param x: valid x coordinate
+    :param y: valid y coordinate
+    :param color: color of the pixel
+    :return: nothing
+    sets a pixel on the screen
+    -- sets the pixel in the redis server
+    -- brodcast to all watchers that the pixel has changed
+    """
+    board.set_at(x, y, color)
+    sio.emit('set-board', (x, y, color), namespace=PAINT_NAMESPACE)
 
-    @staticmethod
-    @socket_io_authenticated_only
-    def on_get_data():
-        return {
-            'board': board.get_board(),
-            'time': str(current_user.next_time),
-            'lock': not lock.is_enabled()
-        }
+@sio.on('connect', PAINT_NAMESPACE)
+@socket_io_authenticated_only
+def connect():
+    """
+    :return: suppose to do thing, just reject any connection from users
+    """
+    pass
 
-    def set_at(self, x: int, y: int, color: int) -> None:
-        """
-        :param x: valid x coordinate
-        :param y: valid y coordinate
-        :param color: color of the pixel
-        :return: nothing
-        sets a pixel on the screen
-        -- sets the pixel in the redis server
-        -- brodcast to all watchers that the pixel has changed
-        """
-        board.set_at(x, y, color)
-        self.emit('set_board', (x, y, color))
 
-    def switch_paint(self, set_active: bool) -> None:
-        self.emit('pause-board', not set_active)
+@sio.on('get-starter', PAINT_NAMESPACE)
+@socket_io_authenticated_only
+def get_start_data():
+    return {
+        'board': board.get_board(),
+        'time': str(current_user.next_time),
+        'lock': not lock.is_enabled()
+    }
 
-    @socket_io_authenticated_only
-    def on_set_board(self, params: Dict[str, Any]) -> str:
-        """
-        :param params: params given to the Dictionary
-        :return: string represent the next time the user can update the canvas,
-                 or undefined if couldn't update the screen
-        """
-        # somehow logged out between requests
-        try:
-            current_time = datetime.utcnow()
-            if current_user.next_time > current_time:
-                return json.dumps({'code': 'time', 'status': str(current_user.next_time)})
-            if not lock.is_enabled():
-                return json.dumps({'code': 'lock', 'status': 'true'})
-            # validating parameter
-            if 'x' not in params or (not isinstance(params['x'], int)) or not (0 <= params['x'] < 1000):
-                return 'undefined'
-            if 'y' not in params or (not isinstance(params['y'], int)) or not (0 <= params['y'] < 1000):
-                return 'undefined'
-            if 'color' not in params or (not isinstance(params['color'], int)) or not (0 <= params['color'] < 16):
-                return 'undefined'
-            next_time = current_time
-            current_user.next_time = next_time
-            datastore.session.add(current_user)
-            datastore.session.commit()
-            x, y, clr = int(params['x']), int(params['y']), int(params['color'])
-            sio.start_background_task(self.set_at, x=x, y=y, color=clr)
-            # setting the board
-            """
-            if x % 2 == 0:
-                board[y, x // 2] &= 0xF0
-                board[y, x // 2] |= clr
-            else:
-                board[y, x // 2] &= 0x0F
-                board[y, x // 2] |= clr << 4
-            """
-            #        board.set_at(x, y, color)
-            return json.dumps({'code': 'time', 'value': str(next_time)})
-        except Exception as e:
-            print(e, e.args)
+
+@sio.on('set-board', PAINT_NAMESPACE)
+@socket_io_authenticated_only
+def set_board(params: Any) -> str:
+    """
+    :param params: params given to the Dictionary
+    :return: string represent the next time the user can update the canvas,
+             or undefined if couldn't update the screen
+    """
+    # somehow logged out between requests
+    try:
+        current_time = datetime.utcnow()
+        if current_user.next_time > current_time:
+            return json.dumps({'code': 'time', 'status': str(current_user.next_time)})
+        if not lock.is_enabled():
+            return json.dumps({'code': 'lock', 'status': 'true'})
+        # validating parameter
+        if 'x' not in params or (not isinstance(params['x'], int)) or not (0 <= params['x'] < 1000):
             return 'undefined'
+        if 'y' not in params or (not isinstance(params['y'], int)) or not (0 <= params['y'] < 1000):
+            return 'undefined'
+        if 'color' not in params or (not isinstance(params['color'], int)) or not (0 <= params['color'] < 16):
+            return 'undefined'
+        next_time = current_time
+        current_user.next_time = next_time
+        datastore.session.add(current_user)
+        datastore.session.commit()
+        x, y, clr = int(params['x']), int(params['y']), int(params['color'])
+        sio.start_background_task(task_set_board, x=x, y=y, color=clr)
+        # setting the board
+        """
+        if x % 2 == 0:
+            board[y, x // 2] &= 0xF0
+            board[y, x // 2] |= clr
+        else:
+            board[y, x // 2] &= 0x0F
+            board[y, x // 2] |= clr << 4
+        """
+        #        board.set_at(x, y, color)
+        return json.dumps({'code': 'time', 'value': str(next_time)})
+    except Exception as e:
+        print(e, e.args)
+        return 'undefined'
 
-
-class AdminNamespace(Namespace):
-    @socket_io_role_required(Role.admin)
-    def on_connect(self):
-        print(4)
-
-    @socket_io_role_required(Role.admin)
-    def on_turn_app(self, board_switch_state: str) -> Dict:
-        if board_switch_state not in ('1', '0'):
-            return {'success': False, 'response': 'Not A Valid Input'}
-        set_board_active = board_switch_state == '0'  # disabled = 0, active = 1
-        lock.set_switch(set_board_active)
-        PAINT_NAMESPACE.switch_paint(set_board_active)
-        return {'success': True, 'response': set_board_active}
-
-
-
-
-PAINT_NAMESPACE = PaintNamespace('/paint')
-ADMIN_NAMESPACE = AdminNamespace('/admin-io')
-sio.on_namespace(PAINT_NAMESPACE)
-sio.on_namespace(ADMIN_NAMESPACE)
 
 """
-need to make a class decorator for
+    Admin Namespace
 """
+
+
+@sio.on('connect', ADMIN_NAMESPACE)
+@socket_io_role_required(Role.admin)
+def connect():
+    pass
+
+@sio.on('turn-app', ADMIN_NAMESPACE)
+@socket_io_role_required(Role.admin)
+def turn_app(board_switch_state: str):
+    if board_switch_state not in ('1', '0'):
+        return {'success': False, 'response': 'Not A Valid Input'}
+    set_board_active = board_switch_state == '0'  # disabled = 0, active = 1
+    lock.set_switch(set_board_active)
+    sio.emit('turn-app', namespace=ADMIN_NAMESPACE)
+    sio.emit('turn-app', namespace=PAINT_NAMESPACE)
+    return {'success': True, 'response': set_board_active}
+

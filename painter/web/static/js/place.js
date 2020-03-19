@@ -813,7 +813,7 @@ const pen = {
             });
         }
         else {
-            sock.emit('set_board', {
+            sock.emit('set-board', {
                 'color': this.__color,
                 'x': this.x,
                 'y': this.y,
@@ -1108,7 +1108,7 @@ const sock = io('/paint', {
 });
 $(document).ready(function() {
     sock.on('connect', function() {
-        sock.emit('get_data', (data) => {
+        sock.emit('get-starter', (data) => {
             progress.setTime(data.time)
             board.buildBoard(new Uint8Array(data.board));
             if (data.lock) {
@@ -1123,7 +1123,7 @@ $(document).ready(function() {
     board.construct();
     pen.construct();
     query.setHash();
-    sock.on('set_board', (x, y, color_idx) => board.setAt(x, y, color_idx));
+    sock.on('set-board', (x, y, color_idx) => board.setAt(x, y, color_idx));
     // Lost connection
     sock.on('disconnect', () => {
         board.reset_board_build();
