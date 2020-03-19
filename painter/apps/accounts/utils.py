@@ -5,7 +5,7 @@ from flask import Flask
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from wtforms.validators import HostnameValidation
 from painter.models.user import reNAME, rePSWD
-from painter.extensions import cache
+from painter.backends.extensions import cache
 
 user_regex = re.compile(
         r"(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*\Z"  # dot-atom

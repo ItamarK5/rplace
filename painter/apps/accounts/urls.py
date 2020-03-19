@@ -5,7 +5,7 @@ from flask import Blueprint, url_for, render_template, redirect, current_app, re
 from flask_login import logout_user, current_user, login_user
 from werkzeug.wrappers import Response
 from painter.others.constants import WEB_FOLDER
-from painter.extensions import datastore
+from painter.backends.extensions import datastore
 from painter.models.user import Role
 from painter.models.user import User
 from .forms import LoginForm, SignUpForm, RevokeForm, ChangePasswordForm

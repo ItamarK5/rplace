@@ -8,7 +8,7 @@ A backend to work with the board on redis
 
 board_lock = Lock()
 _BOADR_REDIS_KEY = 'board'
-BOARD_TEMP = b'\x00'*500*1000
+board_temp = b'\x00'*500*1000
 
 
 def make_board() -> None:
@@ -54,7 +54,7 @@ def get_board() -> bytes:
     :return: returns a copy of the board in bytes format
     """
     #return rds_backend.get(_BOADR_REDIS_KEY)
-    return BOARD_TEMP
+    return board_temp
 
 
 def debug_board() -> None:

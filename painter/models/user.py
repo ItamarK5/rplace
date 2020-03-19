@@ -4,12 +4,11 @@ from typing import Optional, Union
 from flask_login import UserMixin
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.dialects.sqlite import DATETIME, SMALLINT
-from sqlalchemy.orm import relationship
 from .role import Role
 from .enumint import SmallEnum
 from ..config import Config
-from ..extensions import datastore, cache
-from painter.extensions import login_manager
+from painter.backends.extensions import datastore, cache
+from painter.backends.extensions import login_manager
 from .notes import Record, Note
 from datetime import datetime
 from flask import Markup

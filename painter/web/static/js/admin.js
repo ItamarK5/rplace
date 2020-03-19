@@ -1,3 +1,5 @@
+const ConvertBoolToInteger = (val) => val ? 1 : 0;
+
 const sock = io('/admin-io', {transports:['websocket']})
 $(document).ready(() => {
     sock.connect()
@@ -20,19 +22,19 @@ $(document).ready(() => {
             cancelButtonColor: '#d33',
           }).then((result) => {
             if (result.value) {
-              console.log(sock.connected)
-              sock.emit('turn_app', board_state, (success, response) => {
-                if(success){
-                  text = `The place is ${response == '0' ? 'paused' : 'unpause'}`;
-                  $(button).attr('state', response);
-                  $(button).children('h6').text(response == '0' ? 'Turn Place On' : 'Turn Place Off')
-                  }
-                  Swal.fire({
-                      title: success ? `App is ${response == '0' ? 'paused' : 'unpause'}` : 'Error!',
-                      icon:  success ? 'success' : 'error',
-                      text: text
-                  });
-                })
+              sock.emit('turn_app', board_state, (data) => {
+                if(data.success){
+                  console.log(data)
+                  text = `The place is ${data.response == '0' ? 'paused' : 'unpause'}`;
+                  $(button).attr('state', ConvertBoolToInteger(data.response));
+                  $(button).children('h6').text(data.response == '0' ? 'Turn Place On' : 'Turn Place Off')
+                }
+                Swal.fire({
+                    title: data.success ? `App is ${data.response == '0' ? 'paused' : 'unpause'}` : 'Error!',
+                    icon:  data.success ? 'success' : 'error',
+                    text: data.response
+                });
+              });
                 /*
               $.ajax({
                   url:`/set-power-button`,

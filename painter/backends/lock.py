@@ -23,21 +23,28 @@ def is_enabled() -> bool:
     return _enable_edit_board == _ENABLE   # but in reallity bool(rds_backend.get(_ENABLE_EDIT_BOARD_KEY)
 
 
-def enable() -> int:
+def enable() -> bool:
     global _enable_edit_board, _flag_lock
     if _enable_edit_board != _ENABLE:
         _enable_edit_board = _ENABLE
     # return rds_backend.set(_ENABLE_EDIT_BOARD, _ENABLE)
-    return 1
+    return True
 
 
-def disable() -> int:
+def disable() -> bool:
     global _enable_edit_board
     if _enable_edit_board != _DISABLE:
         _enable_edit_board = _DISABLE
-    # return rds_backend.set(_ENABLE_EDIT_BOARD, _DISALBE)
+    # return bool(rds_backend.set(_ENABLE_EDIT_BOARD, _DISALBE))
     # rds_backend.set(1)
-    return 0
+    return True
 
 
-__all__ = ['init_app', 'enable', 'disable', 'is_enabled']
+def set_switch(set_active: bool) -> bool:
+    if set_active:
+        return enable()
+    # else
+    return disable()
+
+
+__all__ = ['init_app', 'enable', 'disable', 'is_enabled', 'set_switch']

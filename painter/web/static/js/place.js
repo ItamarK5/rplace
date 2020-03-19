@@ -500,8 +500,8 @@ const query = {
             return scale;
         }
         // second get from hash
-        scale = window.location.hash.match(reHashY);
-        scale = parseFloat(scale)
+        scale = window.location.hash.match(reHashScale);
+        scale = parseFloat(getFirstIfAny(scale))
         if ((!isNaN(scale)) && is_valid_scale(scale)) {
             return scale;
         }
@@ -612,7 +612,7 @@ const cursor = {
         }
     },
     setPen() {
-        this.setCursor(progress.work.isWorking || lock.locked ? Cursors.Wait : Cursors.Pen)
+        this.setCursor(progress.work.isWorking || lock_object.locked ? Cursors.Wait : Cursors.Pen)
     },
     grab() {
         this.setCursor(Cursors.grabbing);
@@ -770,10 +770,19 @@ const pen = {
         return (!this.__disable) && this.hasColor && this.isAtBoard()
     },
     setPixel() {
+        if(!sock.connected) {
+            Swal.fire({
+                title: 'Server Not Found',
+                imageHeight: 300,
+                imageUrl:'https://i.chzbgr.com/full/570936064/hF75ECDD4/error-404-server-not-found',
+                imageAlt:'Server Not Found and Also this image, maybe you out of internet',
+                text:'The Server Cannot be Found, if you wait a little it might be found',
+                confirmButtonText: 'To Waiting'
+            })
+        }
         if (!board.is_ready) {
             Swal.fire({
                 title: 'Wait for the board',
-                imageHeight: 300,
                 text: 'Wait for the board to load before doing something'
             });
         }
@@ -786,14 +795,14 @@ const pen = {
                 text: 'Wait for your cooldown to end'
             });
         }
-        else if (lock.locked) {
+        else if (lock_object.locked) {
             Swal.fire({
                 title: 'Canvas is closed',
                 imageUrl: 'https://img.memecdn.com/door-lock_o_2688511.jpg',
                 imageHeight: 250,
                 imageAlt: 'SocialPainterDash canvas is currently closed',
                 text: 'Wait an admin will open it up',
-                confirmButtonText: 'Waiting'
+                confirmButtonText: 'To Waiting'
             });
         }
         else if (!this.hasColor) {
@@ -815,7 +824,7 @@ const pen = {
                 // else it must be json
                 data = JSON.parse(value);
                 if (data.code == 'lock' && data.value == 'true') {
-                    lock.lock()
+                    lock_object.lock()
                 } else if (data.code == 'set-time') {
                     progress.setTime(data.value)
                 }
@@ -823,7 +832,7 @@ const pen = {
         }
     }
 }
-const lock = {
+const lock_object = {
     __locked: false,
     get locked() {
         return this.__locked;
@@ -1103,7 +1112,7 @@ $(document).ready(function() {
             progress.setTime(data.time)
             board.buildBoard(new Uint8Array(data.board));
             if (data.lock) {
-                lock.lock()
+                lock_object.lock();
             }
         });
     })
@@ -1132,14 +1141,15 @@ $(document).ready(function() {
             text: 'Server Connection returned',
         })
     });
-    sock.on('pause-board', (data) => {
+    sock.on('pause-board', (is_paused) => {
         // if data is true
-        if (data) {
+        console.log(5)
+        if (is_paused) {
             // unpause code
-            lock.unlock();
+            lock_object.lock();
         } else {
             // pause code
-            lock.lock();
+            lock_object.unlock();
         }
     })
     $('#coordinates').hover(function() {

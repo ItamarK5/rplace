@@ -1,6 +1,6 @@
-from typing import Dict, List, Any, List
+from typing import Dict, Any, List
 from painter.celery import celery
-from painter.extensions import mailbox
+from painter.backends.extensions import mailbox
 from flask_mail import Message
 from flask import current_app
 

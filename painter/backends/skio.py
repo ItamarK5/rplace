@@ -1,15 +1,15 @@
 from datetime import datetime
 from typing import Any, Dict, Callable
 from flask_login import current_user
+from .extensions import datastore
 from flask_socketio import SocketIO, Namespace, ConnectionRefusedError, disconnect
 from painter.backends import board, lock
-from painter.extensions import datastore
 from functools import wraps
 from painter.models.role import Role
 import json
 
-sio = SocketIO(logger=True)
 
+sio = SocketIO(logger=True)
 
 def socket_io_authenticated_only(f: Callable[[Any], Any]) -> Callable[[Any], Any]:
     @wraps(f)
@@ -68,13 +68,9 @@ class PaintNamespace(Namespace):
         """
         board.set_at(x, y, color)
         self.emit('set_board', (x, y, color))
-        print(3)
 
-    def pause_place(self) -> None:
-        self.emit('pause-board', 0)
-
-    def play_place(self):
-        self.emit('pause-board', 1)
+    def switch_paint(self, set_active: bool) -> None:
+        self.emit('pause-board', not set_active)
 
     @socket_io_authenticated_only
     def on_set_board(self, params: Dict[str, Any]) -> str:
@@ -99,6 +95,8 @@ class PaintNamespace(Namespace):
                 return 'undefined'
             next_time = current_time
             current_user.next_time = next_time
+            datastore.session.add(current_user)
+            datastore.session.commit()
             x, y, clr = int(params['x']), int(params['y']), int(params['color'])
             sio.start_background_task(self.set_at, x=x, y=y, color=clr)
             # setting the board
@@ -122,16 +120,16 @@ class AdminNamespace(Namespace):
     def on_connect(self):
         print(4)
 
-    def on_turn_app(self, to_turn_board):
-        if to_turn_board == '1':
-            lock.enable()
-            PAINT_NAMESPACE.play_place()
-        elif to_turn_board == '0':
-            lock.disable()
-            PAINT_NAMESPACE.pause_place()
-        else:
+    @socket_io_role_required(Role.admin)
+    def on_turn_app(self, board_switch_state: str) -> Dict:
+        if board_switch_state not in ('1', '0'):
             return {'success': False, 'response': 'Not A Valid Input'}
-        return {'success': True, 'response': str(1-int(to_turn_board))}
+        set_board_active = board_switch_state == '0'  # disabled = 0, active = 1
+        lock.set_switch(set_board_active)
+        PAINT_NAMESPACE.switch_paint(set_board_active)
+        return {'success': True, 'response': set_board_active}
+
+
 
 
 PAINT_NAMESPACE = PaintNamespace('/paint')

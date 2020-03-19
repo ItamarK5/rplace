@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, abort, request, url_for, redirect,
 from flask.wrappers import Response
 from flask_login import current_user
 from painter.models.role import Role
-from painter.extensions import datastore
+from painter.backends.extensions import datastore
 from painter.models.notes import Record, Note
 from painter.models.user import User
 from painter.models.user import reNAME
@@ -12,7 +12,6 @@ from .forms import RecordForm, NoteForm
 from .utils import only_if_superior, admin_only, superuser_only, json_response, validate_get_notes_param
 from ..profile_form import PreferencesForm
 from painter.backends.skio import PAINT_NAMESPACE, lock
-from sqlalchemy.orm import polymorphic_union
 
 admin_router = Blueprint(
     'admin',
