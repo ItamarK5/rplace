@@ -140,8 +140,8 @@ def change_lock_state(new_state: Any):
     # prevent collision
     print(new_state)
     if lock.set_switch(new_state):
-        sio.emit('change-lock-board', new_state, namespace=ADMIN_NAMESPACE, include_self=False)
-        sio.emit('set-lock-state', new_state, namespace=PAINT_NAMESPACE)
+        sio.emit('change-lock-state', new_state, namespace=PAINT_NAMESPACE)
+        sio.emit('set-lock-state', new_state, namespace=ADMIN_NAMESPACE, include_self=False)
         return {'success': True, 'response': new_state}
     else:
         return {'success': True, 'response': new_state}

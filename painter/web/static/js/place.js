@@ -1135,14 +1135,16 @@ $(document).ready(function() {
         });
     });
     // Connection on
-    sock.on('change-lock-state', (is_paused) => {
-        // if data is true
-        if (is_paused) {
-            // unpause code
-            lock_object.lock();
+    sock.on('change-lock-state', (new_state) => {
+		// if new state is active == true
+		console.log(new_state)
+		console.log(new_state)
+        if (new_state) {
+			// pause code
+			lock_object.unlock();
         } else {
             // pause code
-            lock_object.unlock();
+            lock_object.lock();
         }
     });
     sock.on('reconnect', () => {
