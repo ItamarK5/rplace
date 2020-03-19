@@ -2,10 +2,10 @@ from os.path import join as path_join
 
 from flask import Blueprint, render_template, Response, jsonify
 from flask_login import login_required, current_user
-from painter.others.constants import WEB_FOLDER
-from painter.backends.extensions import datastore
-from ..profile_form import PreferencesForm
 
+from painter.backends.extensions import datastore
+from painter.others.constants import WEB_FOLDER
+from painter.others.profile_form import PreferencesForm
 
 place_router = Blueprint(
     'place',

@@ -1,77 +1,79 @@
 {% macro row(field, icon_class, label, id) %}
 <div class="form-row mb-1 mt-1">
-  <div class="input-group">
-    <div class="input-group-prepend">
+    <div class="input-group">
+        <div class="input-group-prepend">
       <span class="input-group-text">
         <i class="{{icon_class}} mr-1"></i>{{label.text|title}}
       </span>
-     </div>
-    {{field}}
-  </div>
+        </div>
+        {{field}}
+    </div>
 </div>
 <div class="form-row">
-  <li class="error-list list-group" error-for="{{id}}"></li>
+    <li class="error-list list-group" error-for="{{id}}"></li>
 </div>
 {% endmacro %}
-<section class="modal fade" id="banModal" tabindex="-2" role="dialog" aria-labelledby="#ban-title" aria-hidden="true">
+<section aria-hidden="true" aria-labelledby="#ban-title" class="modal fade" id="banModal" role="dialog" tabindex="-2">
     <div class="modal-dialog modal-dialog-centered" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="ban-title">Ban Options</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-            <form id="ban-form" method="POST" action="{{url_for('admin.change_ban_status', name=user.username)}}">
-              <div class="form-row">
-              <div class="alert alert-success success-message" hidden>
-                You Added a record to the user
-              </div>  
-              </div>
-              <div class="form-row">
-                Currently:<b>{% if user.is_active %}Active{% else %}Banned{% endif %}</b>
-              </div>
-              <div class="form-row mb-1">
-                <div class="form-check form-check-inline"> {# no ban - default #}
-                  {{ban_form.set_banned(class="custom-check-input form-inline")}}
-                  <label class="custom-check-label" for="{{ban_form.set_banned.id}}">To Ban The User</label>
-                </div>
-              </div>
-              <div class="form-row">
-                <li class="error-list list-group" error-for="{{ban_form.set_banned.id}}"></li>
-              </div>
-              <div class="form-row mb-1 mt-1">
-                <div class="input-group">
-                  <div class="input-group-prepend">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ban-title">Ban Options</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{{url_for('admin.change_ban_status', name=user.username)}}" id="ban-form" method="POST">
+                    <div class="form-row">
+                        <div class="alert alert-success success-message" hidden>
+                            You Added a record to the user
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        Currently:<b>{% if user.is_active %}Active{% else %}Banned{% endif %}</b>
+                    </div>
+                    <div class="form-row mb-1">
+                        <div class="form-check form-check-inline"> {# no ban - default #}
+                            {{ban_form.set_banned(class="custom-check-input form-inline")}}
+                            <label class="custom-check-label" for="{{ban_form.set_banned.id}}">To Ban The User</label>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <li class="error-list list-group" error-for="{{ban_form.set_banned.id}}"></li>
+                    </div>
+                    <div class="form-row mb-1 mt-1">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
                     <span class="input-group-text">
                       <i class="far fa-calendar mr-1"></i>{{ban_form.expires.label.text|title}}
                     </span>
+                            </div>
+                            {{ban_form.expires(type='text', class='form-control datetimepicker-input')}}
+                            <div class="input-group-append">
+                                <div class="input-group-text">
+                                    <input aria-label="add time" id="set-expire" type="checkbox">
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                  {{ban_form.expires(type='text', class='form-control datetimepicker-input')}}
-                  <div class="input-group-append">
-                    <div class="input-group-text">
-                      <input type="checkbox" id="set-expire" aria-label="add time">
-                      </div>                          
-                  </div>
-                </div>
-              </div>
-              <div class="form-row">
-                <li class="error-list list-group" error-for="{{ban_form.expires.id}}"></li>
-              </div>
-              {{row(ban_form.reason(type="text", class="form-control mw-100 mh-100"), 'far fa-clipboard', ban_form.reason.label, ban_form.reason.id)}}
-              {{row(ban_form.note(type="text", class="form-control mw-100 mh-100"), 'fas fa-sticky-note', ban_form.note.label, ban_form.note.id)}}
-              <div class="form-row">
-                <li class="list-group" id="any-error-list">
+                    <div class="form-row">
+                        <li class="error-list list-group" error-for="{{ban_form.expires.id}}"></li>
+                    </div>
+                    {{row(ban_form.reason(type="text", class="form-control mw-100 mh-100"), 'far fa-clipboard',
+                    ban_form.reason.label, ban_form.reason.id)}}
+                    {{row(ban_form.note(type="text", class="form-control mw-100 mh-100"), 'fas fa-sticky-note',
+                    ban_form.note.label, ban_form.note.id)}}
+                    <div class="form-row">
+                        <li class="list-group" id="any-error-list">
 
-                </li>
-              </div>
-            </form>
+                        </li>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-dismiss="modal" type="button">Close</button>
+                <button class="btn btn-primary" id="submit-ban-form" type="button">Save changes</button>
+            </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" id="submit-ban-form">Save changes</button>
-        </div>
-      </div>
     </div>
 </section>

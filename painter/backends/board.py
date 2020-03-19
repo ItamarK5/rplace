@@ -1,5 +1,7 @@
 from threading import Lock
+
 from flask import Flask
+
 from .extensions import rds_backend
 
 """
@@ -8,7 +10,7 @@ A backend to work with the board on redis
 
 board_lock = Lock()
 _BOADR_REDIS_KEY = 'board'
-board_temp = b'\x00'*500*1000
+board_temp = b'\x00' * 500 * 1000
 
 
 def make_board() -> None:
@@ -53,7 +55,7 @@ def get_board() -> bytes:
     """
     :return: returns a copy of the board in bytes format
     """
-    #return rds_backend.get(_BOADR_REDIS_KEY)
+    # return rds_backend.get(_BOADR_REDIS_KEY)
     return board_temp
 
 

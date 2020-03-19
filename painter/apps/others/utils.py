@@ -1,6 +1,8 @@
 from typing import Optional
+
 from werkzeug import Request
 from werkzeug.exceptions import BadRequest, Forbidden, NotFound, HTTPException
+
 MEME_PAGE_ERROR_CODES = {BadRequest.code, Forbidden.code, NotFound.code}
 
 
@@ -22,4 +24,4 @@ def is_valid_meme_request(request: Request) -> bool:
     request_xhr_key = request.headers.get('X-Requested-With')
     # return "is not ajax request"
     # => valid meme request
-    return not(request_xhr_key and request_xhr_key == 'XMLHttpRequest')
+    return not (request_xhr_key and request_xhr_key == 'XMLHttpRequest')

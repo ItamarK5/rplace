@@ -11,5 +11,5 @@
 {% block submit %}Change Password{% endblock %}
 {% block imports %}
 {{super()}}
-<script type="text/javascript" src="{{url_for('other.serve_static', key='auth.js')}}"></script>
+<script src="{{url_for('other.serve_static', key='auth.js')}}" type="text/javascript"></script>
 {% endblock %}

@@ -7,7 +7,8 @@
     <!-- Boostrap Style -->
     <link crossorigin="anonymous" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
           integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" rel="stylesheet">
-    <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css"
+    <link crossorigin="anonymous"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css"
           integrity="sha256-/sdxenK1NDowSNuphgwjv8wSosSNZB0t5koXqd7XqOI=" rel="stylesheet"/>
     <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.css"
           integrity="sha256-wMES50JHO82E/LjWWLWeCXXQahHeA0oemqGIfMkD5BI=" rel="stylesheet"/>
@@ -18,7 +19,8 @@
     <link href="//cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@3/dark.css" rel="stylesheet">
     <!--io-->
     <title>Admin Privilage</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js" integrity="sha256-bQmrZe4yPnQrLTY+1gYylfNMBuGfnT/HKsCGX+9Xuqo=" crossorigin="anonymous"></script>
+    <script crossorigin="anonymous"
+            integrity="sha256-bQmrZe4yPnQrLTY+1gYylfNMBuGfnT/HKsCGX+9Xuqo=" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
 </head>
 <body>
 {% with current_page = 'admin' %}
@@ -45,13 +47,14 @@
             </thead>
             <tbody>
             {% for user in pagination.items %}
-            <tr {% if current_user == user %} class="user-row"{% endif %}>
-            <td class="text-center prvg-col" data-toggle="tooltip" data-placement="left" title="{{user.role.title}}">
-                <i class="fa {{user.role.icon}}"></i>
-            </td>
-            <td class="text-center name-col">{{user.username}}</td>
-            <td class="text-center mail-col">{{user.email}}</td>
-            <td class="text-center time-col">{{user|draw_time}}</td>
+            <tr %} %} class="user-row" current_user== endif if user {% {%>
+                <td class="text-center prvg-col" data-placement="left" data-toggle="tooltip"
+                    title="{{user.role.title}}">
+                    <i class="fa {{user.role.icon}}"></i>
+                </td>
+                <td class="text-center name-col">{{user.username}}</td>
+                <td class="text-center mail-col">{{user.email}}</td>
+                <td class="text-center time-col">{{user|draw_time}}</td>
             </tr>
             </tbody>
             {% endfor %}
@@ -60,7 +63,8 @@
     <!-- Page List -->
     <div class="row justify-content-center">
         <div class="list-group list-group-horizontal" id="page-list">
-            <a {% if pagination.has_prev%}href='{{url_for("admin.admin", page=pagination.prev_num)}}'{% endif %} class='list-group-item list-group-item-action{% if not pagination.has_prev %} disabled{% endif %}'>Prev</a>
+            <a %} class='list-group-item list-group-item-action{% if not pagination.has_prev %} disabled{% endif %}' endif if pagination.has_prev%}href='{{url_for("admin.admin", page=pagination.prev_num)}}' {%
+               {%>Prev</a>
             {% if pagination.has_prev or pagination.has_next %}
             {% for page in pagination.iter_pages() %}
             {% if page %}
@@ -71,7 +75,8 @@
             {% endif %}
             {% endfor %}
             {% endif %}
-            <a {% if pagination.has_next%}href='{{url_for("admin.admin", page=pagination.next_num)}}'{% endif %} class='list-group-item list-group-item-action{% if not pagination.has_next %} disabled{% endif %}'>Next</a>
+            <a %} class='list-group-item list-group-item-action{% if not pagination.has_next %} disabled{% endif %}' endif if pagination.has_next%}href='{{url_for("admin.admin", page=pagination.next_num)}}' {%
+               {%>Next</a>
         </div>
     </div>
     <script type="text/javascript">
@@ -83,8 +88,10 @@
                 }
             }
         });
+
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9.10.1/dist/sweetalert2.all.min.js" integrity="sha256-NLINqBk3iRBQfTFKCFqlWEXfKlk7GfR45ZuSp6nJ/yw=" crossorigin="anonymous"></script>
+    <script crossorigin="anonymous"
+            integrity="sha256-NLINqBk3iRBQfTFKCFqlWEXfKlk7GfR45ZuSp6nJ/yw=" src="https://cdn.jsdelivr.net/npm/sweetalert2@9.10.1/dist/sweetalert2.all.min.js"></script>
     <!-- Document said to put it here so it be faster -->
     <!-- popper.js - needed for bootstarp -->
     <script crossorigin="anonymous"
@@ -94,6 +101,6 @@
     <script crossorigin="anonymous"
             integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
             src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
-    <script src="{{url_for('other.serve_static', key='admin.js')}}" type="text/javascript"></script>            
+    <script src="{{url_for('other.serve_static', key='admin.js')}}" type="text/javascript"></script>
 </body>
 </html>
