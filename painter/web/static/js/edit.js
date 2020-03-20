@@ -34,7 +34,7 @@ function ajax_error_alert(err) {
 }
 
 function x(form_selector){
-	return _.object(_.map($(`${selector}`).serialize().split('&'), (field) => field.split('=')))
+	$(selector).children('input').each((a,b,c) => {console.log(a,b,c);})
 }
 
 $(document).ready(() => {

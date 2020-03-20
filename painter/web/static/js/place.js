@@ -18,7 +18,7 @@ const DIRECTION_MAP = [
         key: 'ArrowLeft',
         dir: [-1, 0],
         set: false
-    }, // 
+    }, // left
     {
         key: 'ArrowRight',
         dir: [1, 0],
@@ -1152,10 +1152,6 @@ $(document).ready(function() {
             text: 'Server Connection returned',
         })
     });
-    sock.on('reconnect_error', (a) => {
-        alert(a)
-        console.log(a)
-    })
     $('#coordinates').hover(function() {
         board.updateCoords();
     }, function() {
