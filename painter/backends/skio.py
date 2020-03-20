@@ -37,6 +37,7 @@ def socket_io_role_required_connection(role: Role, desc: Optional[str] = None) -
     return wrapped
 
 
+
 def socket_io_authenticated_only_event(f:Callable[[Any], Any]) -> Callable[[Any], Any]:
     @wraps(f)
     def wrapped(*args, **kwargs) -> Any:
@@ -61,6 +62,7 @@ def socket_io_role_required_event(role: Role, desc: Optional[str] = None) -> Cal
                 raise ConnectionRefusedError(desc) if desc else ConnectionRefusedError()
             else:
                 return f(*args, **kwargs)
+
         return socket_io_authenticated_only_connection(wrapper)
     return wrapped
 

@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict
+from typing import Any
 from painter.models.user import User
 from painter.backends import lock
 from painter.backends.skio import (
@@ -7,37 +7,9 @@ from painter.backends.skio import (
     PROFILE_NAMESPACE, emit_namespaces,
     socket_io_role_required_connection, socket_io_role_required_event,
 )
-from painter.backends.extensions import datastore
-from werkzeug.datastructures import MultiDict
-from flask import request
-from flask_login import current_user
 from painter.models.role import Role
-from painter.models.notes import Note, Record
-from flask_socketio import join_room, ConnectionRefusedError, rooms, disconnect
+from flask_socketio import join_room, ConnectionRefusedError, rooms
 from .forms import NoteForm, RecordForm
-from functools import wraps
-from datetime import datetime
-from flask import escape, json
-
-
-def socket_io_require_user_room(f: Callable) -> Callable:
-    @wraps(f)
-
-    def wrapper(*args, **kwargs):
-        client_rooms = rooms(request.sid)
-        for room in client_rooms:
-            if room.endswith('-room'):
-                name = room.split('-')
-                user = User.query.filter_by(username=name).first()
-                if user is None:
-                    disconnect()
-                else:
-                    return f(user=user, *args, **kwargs)
-            # else
-            else:
-                raise ConnectionRefusedError()
-    return wrapper
-
 
 @sio.on('connect', ADMIN_NAMESPACE)
 @socket_io_role_required_connection(Role.admin)
@@ -61,52 +33,16 @@ def change_lock_state(new_state: Any):
 
 @sio.on('connect', EDIT_PROFILE_NAMESPACE)
 @socket_io_role_required_connection(Role.admin)
-def connect():
-    pass
+def connect(query: str):
+    user = User.query.filter_by(query).first()
+    if user is None or user.is_superior_to(query):
+        raise ConnectionRefusedError()
+    join_room(f'{query}-room')
 
 
-@sio.on('join', EDIT_PROFILE_NAMESPACE)
+@sio.on('add-note', EDIT_PROFILE_NAMESPACE)
 @socket_io_role_required_event(Role.admin)
-def join_profile(username: str):
-    if not isinstance(username, str):
-        disconnect()
-    user = User.query.filter_by(username=username).first()
-    print(user)
-    if user is None or not current_user.is_superior_to(user):
-        disconnect()
-    else:
-        join_room(f'{username}-room')
-
-
-@sio.on('add-record', EDIT_PROFILE_NAMESPACE)
-@socket_io_role_required_event(Role.admin)
-def add_record(user:User, message: Dict[str, str]):
-    if not isinstance(message, dict):
-        return flask_json.dumps(success=False, error='unvalid inputs')
-    for pair in message.items():
-        for item in pair:
-            if not isinstance(item, str):
-                return json.dumps(success=False, error='unvalid inputs')
-    form = RecordForm(MultiDict(message))
-    if form.validate():
-        record = Record(
-            user=user.id,
-            description=escape(form.note.data),
-            declared=datetime.now(),
-            writer=current_user.id,
-            active=not form.set_banned.data,
-            expire=form.expires.data,
-            reason=escape(form.reason.data)
-        )
-        datastore.session.add(record)
-        datastore.session.commit()
-        user.forget_last_record()
-        return {'valid': True}
-    # else
-    else:
-        return {
-            'valid': False,
-            'errors': dict(
-                [(field.name, field.errors) for field in form]
-            )
-        }
+def set_preference(form_args):
+    print(form_args)
+    if form_args is None:
+        return None
