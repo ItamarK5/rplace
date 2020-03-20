@@ -1,6 +1,7 @@
-from flask_wtf import *
-from wtforms import TextAreaField, validators, BooleanField, DateTimeField, ValidationError, Field
 from datetime import datetime, timedelta
+
+from flask_wtf import *
+from wtforms import TextAreaField, validators, BooleanField, DateTimeField, ValidationError
 
 
 class RecordForm(FlaskForm):

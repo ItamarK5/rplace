@@ -1,4 +1,3 @@
-
 const NoteTypeEnums = {
     limited_active: {row_color:'bg-success', text:'0'},
     limited_banned: {row_color:'table-warning', text:'1'},
@@ -333,7 +332,6 @@ function filterResponse(field, val){
     } else {
         return val;
     }
-
 }
 
 function onShowingEditPreferencesModal(button, modal){

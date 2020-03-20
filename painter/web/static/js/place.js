@@ -1027,13 +1027,11 @@ const board = {
     setZoomStyle() {
         let zoom_button = $('#zoom-button')
         if (query.scale >= 25) {
-            zoom_button.children('span').addClass('fa-search-minus')
-                .removeClass('fa-search-plus');
+            zoom_button.children('span').addClass('fa-search-minus').removeClass('fa-search-plus');
             zoom_button.css('cursor', 'zoom-out');
         }
         else {
-            zoom_button.children('span').addClass('fa-search-plus')
-                .removeClass('fa-search-minus');
+            zoom_button.children('span').addClass('fa-search-plus').removeClass('fa-search-minus');
             zoom_button.css('cursor', 'zoom-in');
         }
     },

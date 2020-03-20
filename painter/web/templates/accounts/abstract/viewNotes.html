@@ -1,25 +1,26 @@
-<section class="modal fade" id="noteModal" tabindex="-3" role="dialog" aria-labelledby="#note-title" aria-hidden="true">
+<section aria-hidden="true" aria-labelledby="#note-title" class="modal fade" id="noteModal" role="dialog" tabindex="-3">
     <div class="modal-dialog modal-dialog-centered" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="note-title">Note Options</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-            <div class="row">
-                <div class="col">
-                    {% include 'notePagination.html' %}
-                </div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="note-title">Note Options</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
                     <div class="col">
+                        {% include 'notePagination.html' %}
+                    </div>
+                    <div class="col">
+                    </div>
                 </div>
             </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-dismiss="modal" type="button">Close</button>
+                <button class="btn btn-primary" id="submit-note-form" type="button">Save changes</button>
+            </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" id="submit-note-form">Save changes</button>
-        </div>
-    </div> {# https://getbootstrap.com/docs/4.0/components/modal/ #}
-  </div>
+        {# https://getbootstrap.com/docs/4.0/components/modal/ #}
+    </div>
 </section>

@@ -1,26 +1,28 @@
-<div class="modal" tabindex="-1" role="dialog" id="modal-change-preference" aria-labelledby="#modal-title" aria-hidden="true">
+<div aria-hidden="true" aria-labelledby="#modal-title" class="modal" id="modal-change-preference" role="dialog"
+     tabindex="-1">
     <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="modal-title" style="text-transform: capitalize !important;"></h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-title" style="text-transform: capitalize !important;"></h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="setting-alert"></div>
+                <div class="mt-1 mb-1"></div>   <!--space-->
+                <form action="{{action}}" id="setting-form" method="POST">
+                    {{form.hidden_tag()}}
+                    <div class="text-center justify-content-center form-row" id="row-describer">
+                        <span class="font-weight-bold font-size-15 justify-content-center"
+                              id="setting-describer"></span><br>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-dismiss="modal" type="button">Close</button>
+                <button class="btn btn-primary" id="save-setting" type="button">Save changes</button>
+            </div>
         </div>
-        <div class="modal-body">
-            <div id="setting-alert"></div>
-            <div class="mt-1 mb-1"></div>   <!--space-->
-            <form method="POST" action="{{action}}" id="setting-form">
-                {{form.hidden_tag()}}
-                <div class="text-center justify-content-center form-row" id="row-describer">
-                <span id="setting-describer" class="font-weight-bold font-size-15 justify-content-center"></span><br>
-                </div>
-            </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" id="save-setting">Save changes</button>
-        </div>
-      </div>
     </div>
 </div>
