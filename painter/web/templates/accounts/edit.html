@@ -7,6 +7,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/css/tempusdominus-bootstrap-4.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/js/regular.min.js" integrity="sha256-DgfbtH6ya+miGHqPZNQCTK3JPq0KdQg45kOZzmotUoM=" crossorigin="anonymous"></script>
 <link href="//cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@3/dark.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js" integrity="sha256-G7A4JrJjJlFqP0yamznwPjAApIKPkadeHfyIwiaa9e0=" crossorigin="anonymous"></script>
+<style>textarea{resize:none;}</style>
 {% endblock %}
 {% block user_preferences %}
 {% if current_user.has_required_status(Role.superuser) %}
@@ -51,7 +53,8 @@
 {% block javascriptCDN %}
 {{super()}}
 <script type="text/javascript">
-    let csrf_token = "{{ csrf_token() }}";
+    // here to place sock.io instend of this
+    const csrf_token = "{{ csrf_token() }}";
     $.ajaxSetup({
         beforeSend: function(xhr, settings) {
             if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
