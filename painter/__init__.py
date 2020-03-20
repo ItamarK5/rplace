@@ -29,6 +29,7 @@ from painter.backends.extensions import datastore, mailbox, engine, login_manage
 
 sio.init_app(
     app,
+    engineio_logger=True,
     # message_queue='redis://192.168.0.214:6379/0',
 )
 
