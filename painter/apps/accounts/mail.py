@@ -1,7 +1,7 @@
 from os import path
-
+from flask import current_app
 from flask import render_template
-
+from flask_mail import Message
 from painter.others.constants import MIME_TYPES
 from .tasks import send_mail
 
@@ -29,7 +29,7 @@ def send_signing_up_message(name: str, address: str, token: str) -> None:
                     'headers': [('Content-ID', '<favicon>')]
                 }
             ]
-        })
+    })
 
 
 def send_revoke_password_message(name: str, address: str, token: str) -> None:
@@ -55,4 +55,4 @@ def send_revoke_password_message(name: str, address: str, token: str) -> None:
                     'headers': [('Content-ID', '<favicon>')]
                 }
             ]
-        })
+    })

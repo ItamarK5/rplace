@@ -5,22 +5,17 @@
 {% endmacro %}
 <div class="justify-content-center">
     <div class="list-group list-group-horizontal" id="page-list">
-        <button %} class='list-group-item list-group-item-action{% if not pagination.has_prev %} disabled{% endif %}' endif if pagination.has_prev%}href='{{url_for(".edit", page=pagination.prev_num)}}' {%
-                {%>
-            Prev</a>
-            {% if objects.has_prev or pagination.has_next %}
-            {% for page in objects.iter_pages() %}
-            {% if page %}
-            <button class="list-group-item list-group-action{% if page == pagination.page %} active{% endif %}"
-                    href="{{url_for('admin.admin', page=page)}}">{{page}}</a>
-                {% else %}
-                <a class="list-group-item disabled">...</a>
-                {% endif %}
-                {% endfor %}
-                {% endif %}
-                <button %} class='list-group-item list-group-item-action{% if not pagination.has_next %} disabled{% endif %}' endif if pagination.has_next%}href='{{url_for("admin.admin", page=pagination.next_num)}}'
-                        {%
-                        {%>
-                    Next</a>
+        <button {% if pagination.has_prev%}href='{{url_for(".edit", page=pagination.prev_num)}}'{% endif %} class='list-group-item list-group-item-action{% if not pagination.has_prev %} disabled{% endif %}'>Prev</a>
+        {% if objects.has_prev or pagination.has_next %}
+        {% for page in objects.iter_pages() %}
+        {% if page %}
+        <button class="list-group-item list-group-action{% if page == pagination.page %} active{% endif %}"
+           href="{{url_for('admin.admin', page=page)}}">{{page}}</a>
+        {% else %}
+        <a class="list-group-item disabled">...</a>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+        <button {% if pagination.has_next%}href='{{url_for("admin.admin", page=pagination.next_num)}}'{% endif %} class='list-group-item list-group-item-action{% if not pagination.has_next %} disabled{% endif %}'>Next</a>
     </div>
 </div>

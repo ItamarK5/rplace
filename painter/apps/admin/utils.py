@@ -6,8 +6,8 @@ from flask_login import current_user
 from flask_login import fresh_login_required
 from werkzeug import Response
 
-from painter.models.role import Role
 from painter.models.user import User, reNAME
+from painter.models.role import Role
 
 
 def admin_only(f: Callable) -> Callable:
@@ -24,7 +24,6 @@ def admin_only(f: Callable) -> Callable:
         # else
         else:
             abort(404)
-
     return wrapped
 
 
@@ -36,7 +35,6 @@ def superuser_only(f: Callable) -> Callable:
         # else
         else:
             abort(404)
-
     return admin_only(wrapped)
 
 
@@ -59,11 +57,10 @@ def only_if_superior(f: Callable[[User], Response]) -> Callable[[str], Response]
         elif not current_user.is_superior_to(user):
             abort(403, 'Cannot access user')  # Forbidden
         return f(user=user, *args, **kwargs)
+    return admin_only(wrapped)      # uses admin_only to check if the user is authenticated and at least admin
 
-    return admin_only(wrapped)  # uses admin_only to check if the user is authenticated and at least admin
 
-
-def json_response(success: bool, text: str) -> Response:
+def json_response(success: bool, text:str) -> Response:
     return jsonify({
         'success': int(success),
         'text': text
@@ -72,8 +69,8 @@ def json_response(success: bool, text: str) -> Response:
 
 def validate_get_notes_param(arg_name: str) -> Optional[int]:
     arg = request.args.get(arg_name, 'None')
-    if arg.isdigit():  # all digits => int
+    if arg.isdigit():   # all digits => int
         return int(arg)
-    else:  # else abort Bad Request
+    else:   # else abort Bad Request
         abort(400, 'Unvalid value')
     return arg

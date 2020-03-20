@@ -1,11 +1,12 @@
 from flask_caching import Cache
 from flask_login import LoginManager
 from flask_mail import Mail
-from flask_redis import FlaskRedis
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
-
 from painter.config import Config
+from flask_login import LoginManager
+from flask_redis import FlaskRedis
+
 
 mailbox = Mail()
 rds_backend = FlaskRedis()

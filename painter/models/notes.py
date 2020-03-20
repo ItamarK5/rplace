@@ -1,9 +1,7 @@
-from datetime import datetime
-
 from sqlalchemy import Column, ForeignKey, Integer, String, case
 from sqlalchemy.dialects.sqlite import DATETIME, BOOLEAN
-
 from painter.backends.extensions import datastore
+from datetime import datetime
 
 """
     need to ask what is better:

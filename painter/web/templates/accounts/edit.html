@@ -4,13 +4,10 @@
 {%- set action = url_for('admin.profile_ajax', name=user.username) %}
 {% block css %}
 {{super()}}
-<link href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/css/tempusdominus-bootstrap-4.min.css"
-      rel="stylesheet"/>
-<script crossorigin="anonymous"
-        integrity="sha256-DgfbtH6ya+miGHqPZNQCTK3JPq0KdQg45kOZzmotUoM=" src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/js/regular.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/css/tempusdominus-bootstrap-4.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/js/regular.min.js" integrity="sha256-DgfbtH6ya+miGHqPZNQCTK3JPq0KdQg45kOZzmotUoM=" crossorigin="anonymous"></script>
 <link href="//cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@3/dark.css" rel="stylesheet">
-<script crossorigin="anonymous"
-        integrity="sha256-G7A4JrJjJlFqP0yamznwPjAApIKPkadeHfyIwiaa9e0=" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js" integrity="sha256-G7A4JrJjJlFqP0yamznwPjAApIKPkadeHfyIwiaa9e0=" crossorigin="anonymous"></script>
 <style>textarea{resize:none;}</style>
 {% endblock %}
 {% block user_preferences %}
@@ -23,7 +20,7 @@
 {% block container %}
 {{super()}}
 <div class="row justify-content-center">
-    <div aria-label="Toolbar with button groups" class="btn-toolbar" role="toolbar">
+    <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
         <div class="btn-group mr-2" role="group">
             {{button_model('Add Record', 'banModal', 'fas fa-ban', 'Ban', classes="btn-secondary")}}
             {{button_model('Add Note', 'noteModal', 'far fa-sticky-note', 'Note', classes="btn-secondary")}}
@@ -31,22 +28,20 @@
             {% if current_user.has_required_status(Role.superuser) %}
             {% if user.role == Role.common %}
             <span>
-                <button class="btn btn-secondary" enum-name="{{Role.admin.name|title}}" id="rank-button" title="change rank"
-                        type="button">
+                <button type="button" class="btn btn-secondary" id="rank-button" title="change rank" enum-name="{{Role.admin.name|title}}">
                     <i class="fas {{Role.admin.icon}}"></i>
                 </button>
             </span>
             {% else %}
             <span>
-                <button class="btn btn-secondary" enum-name="{{Role.common.name|title}}" id="rank-button" title="change rank"
-                        type="button">
+                <button type="button" class="btn btn-secondary" id="rank-button" title="change rank" enum-name="{{Role.common.name|title}}">
                     <i class="fas {{Role.common.icon}}"></i>
                 </button>
             </span>
             {% endif %}
             {% endif %}
         </div>
-    </div>
+      </div>
 </div>
 {% endblock %}
 {% block modals %}
@@ -67,14 +62,10 @@
             }
         }
     });
-
 </script>
-<script crossorigin="anonymous"
-        integrity="sha256-NLINqBk3iRBQfTFKCFqlWEXfKlk7GfR45ZuSp6nJ/yw=" src="https://cdn.jsdelivr.net/npm/sweetalert2@9.10.1/dist/sweetalert2.all.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"
-        type="text/javascript"></script>{# datetime input #}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/js/tempusdominus-bootstrap-4.min.js"
-        type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@9.10.1/dist/sweetalert2.all.min.js" integrity="sha256-NLINqBk3iRBQfTFKCFqlWEXfKlk7GfR45ZuSp6nJ/yw=" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>{# datetime input #}
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/js/tempusdominus-bootstrap-4.min.js"></script>
 {% endblock %}
 {% block javascript %}
 <script src="{{url_for('other.serve_static', key='edit.js')}}"></script>

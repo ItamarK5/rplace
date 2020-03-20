@@ -1,8 +1,7 @@
 {% macro settingField(key, val) %}
 <tr class="mb-2 justify-content-center" id="row-{{key}}">
     <td class="justify-content-center align-content-center">
-        <button class="btn btn-outline-light w-100 h-100 block text-center text-xl" data-target="#modal-change-preference"
-                data-toggle="modal" id="{{key}}-active">
+        <button id="{{key}}-active" class="btn btn-outline-light w-100 h-100 block text-center text-xl" data-toggle="modal" data-target="#modal-change-preference">
             <i class="fas fa-edit"></i>
         </button>
     </td>
@@ -18,16 +17,16 @@
 {% endmacro %}
 {{edit_title('Preferences')}}
 <table class="table table-striped table-dark table-bordered table-sm">
-    <thead>
+<thead>
     <th class="text-center" style="width:5%">Edit:</th>
     <th class="text-center" style="width:15%">Name:</th>
     <th class="text-center" style="width:80%">Value:</th>
-    </thead>
-    <tbody class="text-center">
+</thead>
+<tbody class="text-center">
     {{settingField('x', user.x)}}
     {{settingField('y', user.y)}}
     {{settingField('scale', user.scale)}}
     {{settingField('color', user.color|color)}}
     {{settingField('url', user.chat)}}
-    </tbody>
+</tbody>
 </table>

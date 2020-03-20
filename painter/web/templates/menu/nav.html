@@ -3,8 +3,8 @@
     {% with set_navigator = page and page==current_page %}
     <a class="nav-link fas {{fa}} btn {% if set_navigator %}set{% endif %}" data-placement="bottom"
        data-toggle="tooltip" href="{{url_for(url)}}" title="{{title|striptags|title}}">
-        {% if set_navigator%}
-        <span><span class="sr-only">(current)</span>
+       {% if set_navigator%}
+       <span><span class="sr-only">(current)</span>
        {% endif %}
     </a>
     {% endwith %}

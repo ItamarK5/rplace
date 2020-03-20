@@ -1,5 +1,4 @@
 from sys import argv
-
 from painter import *
 
 if __name__ == '__main__':
@@ -9,5 +8,6 @@ if __name__ == '__main__':
         host='0.0.0.0',
         port=argv[1] if len(argv) > 1 else 8080,
     )
+
 
 #  celery -A proj worker -P eventlet -c 1000

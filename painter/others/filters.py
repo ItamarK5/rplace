@@ -1,9 +1,9 @@
 from typing import Optional, Union, List
 
-from painter import app
-from painter.models.user import User, Role
-from painter.others.constants import COLORS
 from painter.others.constants import MINUTES_COOLDOWN
+from painter.models.user import User, Role
+from painter import app
+from painter.others.constants import COLORS
 
 
 @app.template_filter('draw_time')

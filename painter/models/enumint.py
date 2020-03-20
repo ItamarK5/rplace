@@ -1,6 +1,5 @@
 from enum import IntEnum
 from typing import Type, Any
-
 from sqlalchemy import SmallInteger, TypeDecorator
 
 

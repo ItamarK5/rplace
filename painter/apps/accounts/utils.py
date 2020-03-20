@@ -1,19 +1,16 @@
 import re
-from functools import wraps
 from typing import Any, Optional, Tuple, Dict, Callable, Union
-
+from functools import wraps
 from flask import Flask
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from wtforms.validators import HostnameValidation
-
-from painter.backends.extensions import cache
 from painter.models.user import reNAME, rePSWD
+from painter.backends.extensions import cache
 
 user_regex = re.compile(
-    r"(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*\Z"  # dot-atom
-    r'|^"([\001-\010\013\014\016-\037!#-\[\]-\177]|\\[\001-\011\013\014\016-\177])*"\Z)',  # quoted-string
-    re.IGNORECASE)
-
+        r"(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*\Z"  # dot-atom
+        r'|^"([\001-\010\013\014\016-\037!#-\[\]-\177]|\\[\001-\011\013\014\016-\177])*"\Z)',  # quoted-string
+        re.IGNORECASE)
 
 class TokenSerializer:
     # https://realpython.com/handling-email-confirmation-in-flask/
@@ -117,7 +114,6 @@ def cache_signature_view(max_timeout: int) -> Callable:
          of the token analyzer function
         :return: function that cached the return answer of the analyze, for speed
         """
-
         @wraps(f)
         def wrapped(token: str) -> Union[str, int]:
             key = str(f) + '&' + token
@@ -126,7 +122,5 @@ def cache_signature_view(max_timeout: int) -> Callable:
                 answer, timeout = f(key)
                 cache.set(key, answer, timeout=min(max_timeout, timeout) if timeout is not None else max_timeout)
             return cached_value
-
         return wrapped
-
     return decorator

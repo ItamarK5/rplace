@@ -1,52 +1,48 @@
-<section aria-hidden="true" aria-labelledby="#history-title" class="modal fade" id="historyModal" role="dialog"
-         tabindex="-3">
+<section class="modal fade" id="historyModal" tabindex="-3" role="dialog" aria-labelledby="#history-title" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="history-title">Notes History</h5>
-                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <table class="table">
-                        <thead>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="history-title">Notes History</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <table class="table">
+                    <thead>
                         <tr>
-                            <th scope="col">Written By</th>
-                            <th scope="col">Date</th>
-                            <th scope="col">Type</th>
+                          <th scope="col">Written By</th>
+                          <th scope="col">Date</th>
+                          <th scope="col">Type</th>
                         </tr>
-                        </thead>
-                    </table>
-                </div>
-                {#
-                <form action="{{url_for('admin.add_note', name=user.username)}}" id="note-form" method="POST">
-                    <div class="form-row">
-                        <div class="alert alert-success" hidden id="success-message-note">
+                      </thead>
+                </table>
+            </div>
+            {#<form id="note-form" method="POST" action="{{url_for('admin.add_note', name=user.username)}}">
+              <div class="form-row">
+                <div class="alert alert-success" id="success-message-note" hidden>
 
-                        </div>
-                    </div>
-                    <div class="form-row mb-1 mt-1">
-                        <div class="input-group">
-                            <div class="input-group-prepend">
+                </div>
+              </div>
+              <div class="form-row mb-1 mt-1">
+                <div class="input-group">
+                  <div class="input-group-prepend">
                     <span class="input-group-text">
                       <i class='fas fa-sticky-note mr-1'></i>{{note_form.description.label.text|title}}
                     </span>
-                            </div>
-                            {{note_form.description(type="text", class="form-control mw-100 mh-100")}}
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <li class="error-list list-group" error-for="{{note_form.description.id}}"></li>
-                    </div>
-                </form>
-            </div>
-            #}
-            <div class="modal-footer">
-                <button class="btn btn-danger" data-dismiss="modal" type="button">Close</button>
-            </div>
+                   </div>
+                   {{note_form.description(type="text", class="form-control mw-100 mh-100")}}
+                </div>
+              </div>
+              <div class="form-row">
+                <li class="error-list list-group" error-for="{{note_form.description.id}}"></li>
+              </div>
+            </form>
+        </div>#}
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
         </div>
-        {# https://getbootstrap.com/docs/4.0/components/modal/ #}
-    </div>
+    </div> {# https://getbootstrap.com/docs/4.0/components/modal/ #}
+  </div>
 </section>

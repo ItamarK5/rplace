@@ -1,18 +1,17 @@
 {% macro edit_title(text) %}
 <div class="justify-content-center center-text row mb-2">
-    <h4 class="font-weight-bold"><u>{{text}}</u></h4>
+    <h4 class="font-weight-bold"><u>{{text}}</u></h4>            
 </div>
 {% endmacro %}
 {% macro pre_input_text(text, for_input, id=None, classes="") %}
 <div class="input-group-prepend">
-    <span class="custom-input-text{{classes|class_ftr}}" for="{{for_input}}" id="{{id}}">{{text}}</span>
+    <span id="{{id}}" class="custom-input-text{{classes|class_ftr}}" for="{{for_input}}">{{text}}</span>
 </div>
 {% endmacro %}
 {% macro button_model(span, modal, fa, title='none', placement="top", classes=None) %}
 {# http://jsfiddle.net/sso79Ldj/1/ #}
-<span data-target="#{{modal}}" data-toggle="modal" id={{span}}>
-    <button class="btn{{classes|class_ftr}}" data-placement="{{placement}}" data-toggle="tooltip" title="{{title}}"
-            type="button">
+<span data-toggle="modal" data-target="#{{modal}}" id={{span}}>
+    <button type="button" class="btn{{classes|class_ftr}}" data-placement="{{placement}}" title="{{title}}" data-toggle="tooltip">
         <i class="{{fa}}"></i>
     </button>
 </span>

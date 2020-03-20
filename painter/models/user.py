@@ -1,19 +1,17 @@
 import re
-from datetime import datetime
 from hashlib import pbkdf2_hmac
 from typing import Optional, Union
-
-from flask import Markup
 from flask_login import UserMixin
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.dialects.sqlite import DATETIME, SMALLINT
-
+from .role import Role
+from .enumint import SmallEnum
+from ..config import Config
 from painter.backends.extensions import datastore, cache
 from painter.backends.extensions import login_manager
-from .enumint import SmallEnum
 from .notes import Record, Note
-from .role import Role
-from ..config import Config
+from datetime import datetime
+from flask import Markup
 
 reNAME = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
 rePSWD = re.compile(r'^[a-f0-9]{128}$')  # password hashed so get hash value
@@ -105,9 +103,9 @@ class User(datastore.Model, UserMixin):
         :return: user if the user active -> can login
         """
         last_record = self.get_last_record()
-        if last_record is None:  # user has not record
+        if last_record is None:      # user has not record
             return True
-        if last_record.expire is None:  # record has no expire date
+        if last_record.expire is None:   # record has no expire date
             return last_record.active
         if last_record.expire < datetime.now():
             datastore.session.add(Record(user=self,
@@ -118,9 +116,9 @@ class User(datastore.Model, UserMixin):
                                                      f"and the user tried to log in"
                                          ))
             self.forget_last_record()
-            return not last_record.active  # replace the active
+            return not last_record.active       # replace the active
         # else
-        return last_record.active  # isnt expired, so must has the other status
+        return last_record.active       # isnt expired, so must has the other status
 
     def forget_last_record(self):
         cache.delete_memoized(self.__get_last_record_identifier, self)

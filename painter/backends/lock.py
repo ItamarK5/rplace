@@ -1,20 +1,18 @@
-from flask import Flask
-
 from .extensions import rds_backend
-
+from flask import Flask
 """
     represnting an ability of the admin to prevent users from setting pixels
 """
-_DISABLE = 0  # False
-_ENABLE = 1  # True
+_DISABLE = 0    # False
+_ENABLE = 1     # True
 _ENABLE_EDIT_BOARD_KEY = 'enable-edit-board'
-_enable_edit_board = _ENABLE  # determine if can shutdown the server
+_enable_edit_board = _ENABLE                      # determine if can shutdown the server
 _flag_lock = False
 
 
 def create_object():
     if not rds_backend.exists(_ENABLE_EDIT_BOARD_KEY):
-        rds_backend.set(_ENABLE_EDIT_BOARD_KEY, _ENABLE)  # default allow
+        rds_backend.set(_ENABLE_EDIT_BOARD_KEY, _ENABLE)     # default allow
 
 
 def init_app(app: Flask) -> None:
@@ -22,7 +20,7 @@ def init_app(app: Flask) -> None:
 
 
 def is_enabled() -> bool:
-    return _enable_edit_board == _ENABLE  # but in reallity bool(rds_backend.get(_ENABLE_EDIT_BOARD_KEY)
+    return _enable_edit_board == _ENABLE   # but in reallity bool(rds_backend.get(_ENABLE_EDIT_BOARD_KEY)
 
 
 def enable() -> bool:

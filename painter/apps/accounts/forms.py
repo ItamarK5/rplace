@@ -1,9 +1,9 @@
 import re
 
-from flask_wtf import FlaskForm
 from wtforms import *
 from wtforms.fields.html5 import EmailField
 
+from flask_wtf import FlaskForm
 from painter.models.user import User
 
 
@@ -11,7 +11,6 @@ class LoginForm(FlaskForm):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.non_field_errors = []
-
     name = 'login'
     title = 'Welcome Back to Social Painter'
     username = StringField(

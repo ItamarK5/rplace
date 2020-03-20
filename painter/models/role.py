@@ -25,6 +25,7 @@ ROLE_ICON = {
     Role.superuser: 'fa-user-secret'
 }
 
+
 ROLE_TITLE = {
     Role.superuser: 'Superuser',
     Role.admin: 'Admin',

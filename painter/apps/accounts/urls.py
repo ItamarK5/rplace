@@ -4,14 +4,13 @@ from os import path
 from flask import Blueprint, url_for, render_template, redirect, current_app, request
 from flask_login import logout_user, current_user, login_user
 from werkzeug.wrappers import Response
-
+from painter.others.constants import WEB_FOLDER
 from painter.backends.extensions import datastore
 from painter.models.user import Role
 from painter.models.user import User
-from painter.others.constants import WEB_FOLDER
 from .forms import LoginForm, SignUpForm, RevokeForm, ChangePasswordForm
-from .mail import send_signing_up_message, send_revoke_password_message
 from .utils import *
+from .mail import send_signing_up_message, send_revoke_password_message
 
 # router blueprint -> routing all pages that relate to authorization
 accounts_router = Blueprint('auth',
@@ -39,7 +38,7 @@ def login() -> Response:
     entire_form_error = []
     extra_error = None
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()  # usernames are unique
+        user = User.query.filter_by(username=form.username.data).first()    # usernames are unique
         if user is None and User.encrypt_password(form.username.data, form.password.data):
             form.password.errors.append('username and password don\'t match')
             form.username.errors.append('username and password don\'t match')
@@ -72,13 +71,13 @@ def signup() -> Response:
             name,
             email,
             TokenSerializer.signup.dumps(
-                {
-                    'email': email,
-                    'username': name,
-                    # to hex to prevent any chance of decode the key and then changing it to SQL function
-                    'password': User.encrypt_password(pswd, name)
-                }
-            ))
+            {
+                'email': email,
+                'username': name,
+                # to hex to prevent any chance of decode the key and then changing it to SQL function
+                'password': User.encrypt_password(pswd, name)
+            }
+        ))
         return render_template(
             'transport/complete-signup.html',
             username=name,

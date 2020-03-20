@@ -1,13 +1,11 @@
 from __future__ import absolute_import
-
 from os import path
-
-import eventlet
 from flask import Flask
-
 from painter.others.constants import WEB_FOLDER
 from .config import Config  # config
 
+
+import eventlet
 eventlet.monkey_patch()
 
 app = Flask(
@@ -20,10 +18,10 @@ app = Flask(
 
 app.config.from_object(Config)
 
+
 from painter.backends.skio import sio
 from flask_wtf.csrf import CSRFProtect
 from painter.backends.extensions import datastore, mailbox, engine, login_manager, cache
-
 # a must import
 
 
@@ -40,28 +38,18 @@ CSRFProtect(app)
 # firebase.init_app(app)
 # insert other staff
 
-from .apps import place
+from .apps import other_router, place_router, accounts_router, admin_router
+app.register_blueprint(other_router)
+app.register_blueprint(place_router)
+app.register_blueprint(accounts_router)
+app.register_blueprint(admin_router)
 
-app.register_blueprint(place.place_router)
-
-from .apps import accounts
-
-app.register_blueprint(accounts.accounts_router)
-
-from .apps import admin
-
-app.register_blueprint(admin.admin_router)
-
-from .apps import others
-
-app.register_blueprint(others.other_router)
 
 # include other staff
 from .others import filters
-
 # backends
-from .backends import extensions, board, lock
 
+from .backends import extensions, board, lock
 # extensions.rds_backend.init_app(app)
 # board.init_app(app)
 # lock.init_app(app)

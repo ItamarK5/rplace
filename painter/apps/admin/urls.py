@@ -3,16 +3,15 @@ from datetime import datetime
 from flask import Blueprint, render_template, abort, request, url_for, redirect, jsonify, escape
 from flask.wrappers import Response
 from flask_login import current_user
-
-from painter.backends import lock
+from painter.models.role import Role
 from painter.backends.extensions import datastore
 from painter.models.notes import Record, Note
-from painter.models.role import Role
 from painter.models.user import User
 from painter.models.user import reNAME
-from painter.others.profile_form import PreferencesForm
 from .forms import RecordForm, NoteForm
 from .utils import only_if_superior, admin_only, superuser_only, json_response, validate_get_notes_param
+from ..profile_form import PreferencesForm
+from painter.backends.skio import PAINT_NAMESPACE, lock
 
 admin_router = Blueprint(
     'admin',
@@ -205,7 +204,7 @@ def set_admin_button():
 @only_if_superior
 def set_role(user: User) -> Response:
     if not current_user.has_required_status(Role.superuser):
-        abort(404)  # forbidden
+        abort(404)   # forbidden
     # get value
     if request.data == b'Admin':
         new_role = Role.admin
@@ -229,11 +228,10 @@ def get_user_notes(user: User):
     page = validate_get_notes_param('per-page')
     # get note number x
 
-
 """
-    1) Get Notes
-    2) Delete Note
-    3) Remove Note
-    4) Admin Only - Remove Note
-    5) Superuser Only - Remove
+1) Get Notes
+2) Delete Note
+3) Remove Note
+4) Admin Only - Remove Note
+5) Superuser Only - Remove
 """

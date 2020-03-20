@@ -13,6 +13,7 @@ MIME_TYPES = {
     'jpeg': 'image/jpeg'
 }
 
+
 WEB_FOLDER = path.join(path.dirname(path.dirname(path.abspath(__file__))), 'web')
 # time
 MINUTES_COOLDOWN = timedelta(minutes=1)

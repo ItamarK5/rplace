@@ -9,8 +9,7 @@
     <!-- Boostrap Style -->
     <link crossorigin="anonymous" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
           integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" rel="stylesheet">
-    <link crossorigin="anonymous"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css"
+    <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css"
           integrity="sha256-/sdxenK1NDowSNuphgwjv8wSosSNZB0t5koXqd7XqOI=" rel="stylesheet"/>
     <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.css"
           integrity="sha256-wMES50JHO82E/LjWWLWeCXXQahHeA0oemqGIfMkD5BI=" rel="stylesheet"/>
@@ -18,64 +17,59 @@
           integrity="sha256-UZFVAO0Fn854ajzdWnJ2Oze6k1X4LNqE2RJPW3MBfq8=" rel="stylesheet"/>
     <link href="{{url_for('other.serve_static', key='auth.css')}}" rel="stylesheet">
     <script crossorigin="anonymous"
-            integrity="sha256-O4179En8zabOlPYBNvGp8cF0uh0vnSZpW4Q6Ul1h+8c="
-            src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore.js"></script>
+            integrity="sha256-O4179En8zabOlPYBNvGp8cF0uh0vnSZpW4Q6Ul1h+8c=" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore.js"></script>
     <title>{{ form.title }} </title>
     {% endblock %}
 </head>
 <body>
 {% block body %}
-<div class="container">
+    <div class="container">
     <section class="row justify-content-center align-items-center">
-        {% block form %}
-        <form class="w-75 x-auto y-auto" id="submit-form" method="POST" url="{{ request.url }}">
-            {{ form.hidden_tag() }}{% block before_title %}{% endblock %}
-            <div class="form-row mb-1s display-2 text-center">
-                <!-- warning was used as nice title -->
-                <h2 class="mx-auto text-warning non-select"><u>{{form.title}}</u></h2>
-            </div>
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
+    {% block form %}
+    <form id="submit-form" class="w-75 x-auto y-auto" method="POST" url="{{ request.url }}">
+        {{ form.hidden_tag() }}{% block before_title %}{% endblock %}
+        <div class="form-row mb-1s display-2 text-center">
+            <!-- warning was used as nice title -->
+            <h2 class="mx-auto text-warning non-select"><u>{{form.title}}</u></h2>
+        </div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
             <ul class="flashes list-group">
-                {% for category, message in messages %}
-                <li class="list-group-item list-group-item-warning">{{ message }}</li>
-                {% endfor %}
+            {% for category, message in messages %}
+            <li class="list-group-item list-group-item-warning">{{ message }}</li>
+            {% endfor %}
             </ul>
-            {% endif %}
-            {% endwith %}
-            {% block before_image %}{% endblock %}
-            <img class="rounded mx-auto d-block mb-2"
-                 height="250" src="{{url_for('other.serve_static', key='favicon.gif')}}"
-                 width="190">
-            {% block fields %}
-            {% endblock %}
-            <input name="next" type="hidden" value="{{ request.args.get('next', '') }}"/>
-            <div class="row justify-content-around mx-auto mt-1">
-                {% block links %}{% endblock %}
-            </div>
-            <div class="form-row justify-content-center mt-2">
-                <button class="btn btn-primary" id="submit-button" type="submit">{% block submit %}{% endblock %}
-                </button>
-            </div>
-        </form>
+        {% endif %}
+        {% endwith %}
+        {% block before_image %}{% endblock %}
+        <img class="rounded mx-auto d-block mb-2"
+             height="250" src="{{url_for('other.serve_static', key='favicon.gif')}}"
+             width="190">
+        {% block fields %}
         {% endblock %}
-    </section>
+        <input name="next" type="hidden" value="{{ request.args.get('next', '') }}"/>
+        <div class="row justify-content-around mx-auto mt-1">
+            {% block links %}{% endblock %}
+        </div>
+        <div class="form-row justify-content-center mt-2">
+            <button class="btn btn-primary" id="submit-button" type="submit">{% block submit %}{% endblock %}</button>
+        </div>
+    </form>
+    {% endblock %}
+</section>
 </div>
 {% endblock %}
 {% block imports %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/2.3.1/jsencrypt.js" integrity="sha256-EC4uJBUVJajz55e16crIlugfOU9dQLHFVqVjw9E0wpI=" crossorigin="anonymous"></script>
 <script crossorigin="anonymous"
-        integrity="sha256-EC4uJBUVJajz55e16crIlugfOU9dQLHFVqVjw9E0wpI="
-        src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/2.3.1/jsencrypt.js"></script>
-<script crossorigin="anonymous"
-        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-        src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+    integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+    src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
 <!-- bootstarp -->
 <script crossorigin="anonymous"
-        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
-        src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+    src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
 {% endblock %}
-{#
-<script src="https://www.gstatic.com/firebasejs/7.9.1/firebase-app.js"></script>
+{#<script src="https://www.gstatic.com/firebasejs/7.9.1/firebase-app.js"></script>
 <!-- TODO: Add SDKs for Firebase products that you want to use
      https://firebase.google.com/docs/web/setup#available-libraries -->
 <script src="https://www.gstatic.com/firebasejs/7.9.1/firebase-analytics.js"></script>
@@ -94,11 +88,8 @@
   // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
   firebase.analytics();
-
-
 </script>
-<script src="https://www.gstatic.com/firebasejs/7.9.1/firebase-auth.js"></script>
-#}
+<script src="https://www.gstatic.com/firebasejs/7.9.1/firebase-auth.js"></script>#}
 <!-- popper.js - needed for bootstarp -->
 
 </body>
