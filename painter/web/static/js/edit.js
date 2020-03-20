@@ -33,8 +33,13 @@ function ajax_error_alert(err) {
     })
 }
 
-function x(form_selector){
-	return _.object(_.map($(`${selector}`).serialize().split('&'), (field) => field.split('=')))
+function FormArgs(selector){
+    let arr = _.map(
+        selector.serialize().split('&'), 
+        (field) => field.split('=')
+    )
+    arr.push(['csrf_token', csrf_token])
+	return _.object(arr)
 }
 
 $(document).ready(() => {
@@ -44,62 +49,56 @@ $(document).ready(() => {
             success_message.toggleAttribute('hidden');
         }
         $('.error-list').children().remove();
-		e.preventDefault();
-        $.ajax({
-            method: "POST",
-            url: this.getAttribute('action'),
-            data: $(this).serialize(),
-            success: (data) => {
-                if (data.valid) {
-                    success_message.removeAttribute('hidden')
-                } else {
-					let fields = data.errors;
-					console.log(fields)
-                    _.pairs(data.errors).forEach(function(row){
-						let field = row[0];
-						let errors = row[1];
-						console.log(field, errors);
-						errors.forEach(function(err){
-							$('<ul></ul>')
-							.text(err)
-							.addClass("center-text list-group-item list-group-item-danger")
-							.appendTo($(`#ban-form .error-list[error-for="${field}"]`).first())
-						})
-					})
-                }
-            },
-            error: ajax_error_alert
-        })
+        e.preventDefault();
+        let args = FormArgs($('#ban-form'))
+        sock.emit('add-record', args, (data) => {
+            console.log(data)
+            if (data.valid) {
+                success_message.removeAttribute('hidden')
+            } else {
+                let fields = data.errors;
+                console.log(fields)
+                _.pairs(data.errors).forEach(function(row){
+                    let field = row[0];
+                    let errors = row[1];
+                    console.log(field, errors);
+                    errors.forEach(function(err){
+                        $('<ul></ul>')
+                        .text(err)
+                        .addClass("center-text list-group-item list-group-item-danger")
+                        .appendTo($(`#ban-form .error-list[error-for="${field}"]`).first())
+                    })
+                })
+            }
+        });
     });
     $('#note-form').submit(function(e) {
-        let success_message = formRows('#note-form').children('.success-message')[0];
+        let success_message = $('#note-form .success-message')[0];
         if (!success_message.hasAttribute('hidden')) {
             success_message.toggleAttribute('hidden');
         }
-        let rows = formRows(this);
-        $(this).children('.error-list').children().remove();
+        $('#note-form .error-list').children().remove();
         e.preventDefault();
-        $.ajax({
-            method: "POST",
-            url: this.getAttribute('action'),
-            data: $(this).serialize(),
-            success: (data) => {
-                if (data.valid) {
-                    success_message.removeAttribute('hidden')
-                } else {
-                    let errors = data.errors;
-                    if (errors.description) {
-                        errors.description.forEach((val) => {
-                            $('<ul></ul>')
-                                .addClass("center-text list-group-item list-group-item-danger")
-                                .text(val)
-                                .appendTo(rows.children('.error-list[error-for="note"]').first())
-                        })
-                    }
-                }
-            },
-            error: ajax_error_alert
+        sock.emit('add-note', FormArgs($(this)), (data) => {
+            if (data.valid) {
+                success_message.removeAttribute('hidden')
+            } else {
+                let fields = data.errors;
+                console.log(fields)
+                _.pairs(data.errors).forEach(function(row){
+                    let field = row[0];
+                    let errors = row[1];
+                    console.log(field, errors);
+                    errors.forEach(function(err){
+                        $('<ul></ul>')
+                        .text(err)
+                        .addClass("center-text list-group-item list-group-item-danger")
+                        .appendTo($(`#note-form .error-list[error-for="${field}"]`).first())
+                    })
+                })
+            }
         })
+        e.preventDefault();
     });
     $('#submit-ban-form').click(() => {
         $('#ban-form').submit();
@@ -345,7 +344,16 @@ function onShowingEditPreferencesModal(button, modal){
     addForm($('#setting-form'), field, button.parent().siblings('.setting-val').children('h5').text())
     $('#setting-alert').hide()
 }
-const sock = io('/profile');
+const sock = io('/edit-profile');
+sock.on('connect', () => {
+    url_recipe = window.location.pathname.split('/')
+    sock.emit('join', url_recipe[url_recipe.length-1])
+})
+sock.on('reconnect', () => {
+    url_recipe = window.location.pathname.split('/')
+    sock.emit('join', url_recipe[url_recipe.length-1])
+});
+
 $(document).ready(() =>{
     //tooltips       
     $('#modal-change-preference').on('shown.bs.modal', function (event) {
