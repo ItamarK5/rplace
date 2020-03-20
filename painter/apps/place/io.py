@@ -1,13 +1,12 @@
 import json
 from datetime import datetime
 from typing import Any
-
-from flask_login import current_user
+from flask_login import current_user, logout_user
 
 from painter.backends import lock, board
 from painter.backends.extensions import datastore
 from painter.backends.skio import (
-    sio, PAINT_NAMESPACE, socket_io_authenticated_only
+    sio, PAINT_NAMESPACE, socket_io_authenticated_only_connection
 )
 
 
@@ -26,7 +25,7 @@ def task_set_board(x: int, y: int, color: int) -> None:
 
 
 @sio.on('connect', PAINT_NAMESPACE)
-@socket_io_authenticated_only
+@socket_io_authenticated_only_connection
 def connect():
     """
     :return: suppose to do thing, just reject any connection from users
@@ -35,7 +34,7 @@ def connect():
 
 
 @sio.on('get-starter', PAINT_NAMESPACE)
-@socket_io_authenticated_only
+@socket_io_authenticated_only_connection
 def get_start_data():
     return {
         'board': board.get_board(),
@@ -45,7 +44,7 @@ def get_start_data():
 
 
 @sio.on('set-board', PAINT_NAMESPACE)
-@socket_io_authenticated_only
+@socket_io_authenticated_only_connection
 def set_board(params: Any) -> str:
     """
     :param params: params given to the Dictionary
