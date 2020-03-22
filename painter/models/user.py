@@ -7,7 +7,6 @@ from flask import Markup
 from flask_login import UserMixin
 from sqlalchemy import Column, Integer, String, desc
 from sqlalchemy.dialects.sqlite import DATETIME, SMALLINT
-from sqlalchemy.orm import relationship, backref
 from painter.backends.extensions import datastore, cache
 from painter.backends.extensions import login_manager
 from .enumint import SmallEnum

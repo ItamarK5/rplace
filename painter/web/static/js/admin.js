@@ -7,7 +7,28 @@ function ChangeLockButton(new_state) {
   	lock_button.children('h6').text(new_state ? 'Turn Place Off' : 'Turn Place On')
 }
 
-const sock = io('/admin', {transports:['websocket']})
+const sock = io('/admin')
+
+function refresh_button_state(){
+	$.ajax({
+		url:'/get-active-state',
+		method:'GET',
+		contentType:'application/json;charset=UTF-8',
+		success: function(lock_state){
+			ChangeLockButton(JSON.parse(lock_state));
+		}
+	})
+}
+
+sock.on('connect', () => {
+	refresh_button_state()
+});
+sock.on('set-lock-state', (callback) => {
+	ChangeLockButton(callback)
+});
+sock.on('reconnect', () => 	refresh_button_state());
+
+
 $(document).ready(() => {
 	sock.connect()
 	$('[data-toggle="tooltip"]').tooltip();
@@ -28,23 +49,27 @@ $(document).ready(() => {
 			cancelButtonColor: '#d33',
 		}).then((result) => {
 			if (result.value) {
-				sock.emit('change-lock-state', board_state  == '0', (callback) => {
-					if(callback.success){
-						ChangeLockButton(callback.response);
-					}
-					Swal.fire({
-						title: callback.success ? `App is ${callback.response ? 'paused' : 'unpause'}` : 'Error!',
-						icon:  callback.success ? 'success' : 'error',
-						text: callback.success ? 'You lock/unlock board for all users' : callback.response
-					});
-				});
+				$.ajax({
+					url:'/change-lock-state',
+					method:'POST',
+					contentType:'application/json;charset=UTF-8',
+					data:board_state,
+					success:function(message){
+						Swal.fire({
+							title: message.success ? `App is ${message.text ? 'paused' : 'unpause'}` : 'Error!',
+							icon:  message.success ? 'success' : 'error',
+							text: message.success ? 'You lock/unlock board for all users' : message.text
+						});
+					},
+					error:(error) => {
+						console.log(error)
+						Swal.fire({
+							icon:'error',
+							title:error.statusText ? '' : 'Error',
+							html:error.responseText
+					})}
+				})
 			}
 		})
 	});
-	sock.on('set-lock-state', (callback) => {
-		alert('hello')
-		if(callback){
-			return;
-		}
-	})
 });

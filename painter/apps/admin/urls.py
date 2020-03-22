@@ -1,6 +1,7 @@
+from typing import Any
 from datetime import datetime
 from typing import Dict
-from flask import Blueprint, render_template, abort, request, url_for, redirect, jsonify, escape
+from flask import Blueprint, render_template, abort, request, url_for, redirect, jsonify, escape, json
 from flask.wrappers import Response
 from flask_login import current_user
 
@@ -13,6 +14,7 @@ from painter.models.user import reNAME
 from painter.others.profile_form import PreferencesForm
 from .forms import RecordForm, NoteForm
 from .utils import only_if_superior, admin_only, superuser_only, json_response, validate_get_notes_param
+from painter.backends.skio import ADMIN_NAMESPACE, PAINT_NAMESPACE, sio
 
 
 admin_router = Blueprint(
@@ -167,7 +169,7 @@ def add_note(user: User) -> Response:
         datastore.session.add(Note(
             user_subject_id=user.id,
             user_writer_id=current_user.id,
-            declared=datetime.now(),
+            post_date=datetime.now(),
             description=escape(form.description.data),
         ))
         datastore.session.commit()
@@ -183,24 +185,23 @@ def add_note(user: User) -> Response:
         })
 
 
-@admin_router.route('/set-power-button', methods=('POST',))
+@admin_router.route('/change-lock-state', methods=('POST',))
 @superuser_only
 def set_admin_button():
-    if not current_user.has_required_status(Role.superuser):
-        abort(403)  # forbidden
-    # else
-    if request.data != b'1' and request.data != b'0':
+    print(request.data)
+    if request.data not in (b'1', b'0'):
         return json_response(False, 'Unknown data')
+    new_state = request.data == b'0'
     # else
-    is_game_paused = request.data == b'0'
-    if is_game_paused:
-        lock.enable()
-        PAINT_NAMESPACE.play_place()
-    else:
-        lock.disable()
-        PAINT_NAMESPACE.pause_place()
-    return json_response(True, '1' if is_game_paused else '0')
+    lock.set_switch(new_state)
+    sio.emit('change-lock-state', new_state, namespace=PAINT_NAMESPACE)
+    sio.emit('set-lock-state', new_state, namespace=ADMIN_NAMESPACE)
+    return json_response(True, new_state)
 
+
+@admin_router.route('/get-active-state', methods=('GET',))
+def get_active_state():
+    return jsonify(lock.is_enabled())
 
 @admin_router.route('/set-user-role/<string:name>', methods=('POST',))
 @only_if_superior
@@ -229,13 +230,14 @@ def get_user_notes(user: User):
     # max_per_page = validate_get_notes_param('max-per-page')
     page = validate_get_notes_param('page')
     # get note number x
-    pagination = user.related_notes.paginate(page=page)
+    pagination = user.related_notes.paginate(page=page, max_per_page=10)
     print(pagination.items)
     return jsonify(
         query=[item.json_format() for item in pagination.items],
         next_ref=pagination.next_num,
         prev_ref=pagination.prev_num,
-        pages=tuple(pagination.iter_pages())
+        pages=tuple(pagination.iter_pages()),
+        current_page=pagination.page
     )
 
 

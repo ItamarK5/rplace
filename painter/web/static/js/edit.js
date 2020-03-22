@@ -1,10 +1,10 @@
 const history_table = $('#history-table');
 const NoteTypeEnums = {
-    unbanned_date: {row_class:'bg-success', text:'Future Unbanned Record'},
-    banned_date: {row_class:'table-warning', text:'Future Banned Record'},
-    unbanned: {row_class:'table-success', text:'Active Record'},
-    banned: {row_class:'table-danger', text:'Banned Record'},
-    note : {row_class:'note', text:'Note Record'},
+    unbanned_date: {row_class:'primary', text:'Future Unbanned Record'},
+    banned_date: {row_class:'warning', text:'Future Banned Record'},
+    unbanned: {row_class:'success', text:'Active Record'},
+    banned: {row_class:'danger', text:'Banned Record'},
+    note : {row_class:'info', text:'Note Record'},
     /**
      * 
      * @param {Note object} note 
@@ -18,25 +18,102 @@ const MakeNoteRow = (note) => {
     console.log(note)
     // note attributes needed:
     let note_row_type = NoteTypeEnums[note.type];
-    let row = $('<tr></tr>').addClass(note_row_type.row_class);
+    console.log(note_row_type)
+    let row = $('<tr></tr>').addClass('table-' + note_row_type.row_class).addClass('note-history-row').attr('note-type', note.type);
     row.append($('<td></td>').text(note.post_date));
     row.append($('<td></td>').text(note.writer));
-    row.append($('<td></td>').text(note_row_type.text))
+    row.append($('<td></td>').text(note_row_type.text));
     return row;
+}
+
+function pageButton(num, text=null){
+    if(text == null){
+        text = num.toString()
+    }
+    // then
+    let button = $('<button></button>').attr({
+        type:'button',
+        href: num
+    }).text(text).addClass('btn').addClass('btn-secondary').addClass('page-button');
+    if(_.isNull(num)){
+        button.addClass('disabled')
+    }
+    return button
+}
+
+const focusNoteRow = (page_button) => {
+    let row_class = NoteTypeEnums[$(page_button).attr('note-type')].row_class
+    $(page_button).addClass(`bg-${row_class}`);
+    $(page_button).removeClass(`table-${row_class}`);
+}
+
+const unfocusNoteRow = (page_button) => {
+    let row_class = NoteTypeEnums[$(page_button).attr('note-type')].row_class
+    $(page_button).addClass(`table-${row_class}`);
+    $(page_button).removeClass(`bg-${row_class}`);
 }
 
 const notes = {
     pages:null,
-    pref_ref:null,
+    prev_ref:null,
     next_ref:null,
+    current_page:null,
     query:null,
     update_notes(){
-        console.log(this)
+        this.makeHistory()
+        this.makePages()
+    },
+    makeHistory(){
         history_table.children('tr').remove();
         this.query.forEach((value) => {
-            console.log(value)
             history_table.append(MakeNoteRow(value))
+        });
+        $('.note-history-row').hover(
+            function() {
+                focusNoteRow(this)
+            },
+            function(){
+                if(!this.hasAttribute('is-selected')){
+                    unfocusNoteRow(this);                                    
+                }
+            }
+        )
+        $('.note-history-row').click(function() {
+            let sibling = $(this).siblings('tr[is-selected="1"]')[0];
+            if(sibling){
+                sibling.removeAttribute('is-selected');
+                unfocusNoteRow(sibling);
+            }
+            $(this).attr('is-selected', '1');
+            focusNoteRow(this);
         })
+    },
+    makePages(){
+        let page_group = $('#page-group');
+        page_group.children().remove();
+        page_group.append(pageButton(this.prev_ref, 'Prev'));
+        this.pages.forEach((val) => {
+            let button = pageButton(val);
+            console.log(val, this.current_page)
+            if(val == this.current_page){
+                button.addClass('active')
+            }
+            page_group.append(button)
+        })
+        page_group.append(pageButton(this.next_ref, 'Next'));
+        $('.page-button').click(function(e) {
+            if($(this).hasClass('disabled')){
+                e.preventDefault();
+                Swal.fire({
+                    icon:'error',
+                    title:'Cannot access page'
+                })
+            } else if($(this).hasClass('active')){
+                e.preventDefault()
+            } else {
+                ajax_get_page(this.getAttribute('href'))
+            }
+        });
     }
 };
 
@@ -50,21 +127,34 @@ function ajax_error_alert(err) {
 
 
 function ajax_get_page(page=1){
-    $.ajax({
+    return $.ajax({
         url:'/get-notes',
         method:'GET',
         data: {name:GetUserName(), page:parseInt(page)},
         contentType: 'application/json;charset=UTF-8',
         success: (data) => {
-            console.log(data)
             notes.pages=data.pages;
             notes.query=data.query;
             notes.prev_ref=data.prev_ref;
             notes.next_ref=data.next_ref;
+            notes.current_page=data.current_page;
             notes.update_notes()
         }
     })
 }
+
+const sock = io('/edit-profile');
+
+sock.on('connect', () => {
+    url_recipe = window.location.pathname.split('/')
+    sock.emit('join', url_recipe[url_recipe.length-1])
+})
+
+sock.on('reconnect', () => {
+    url_recipe = window.location.pathname.split('/')
+    sock.emit('join', url_recipe[url_recipe.length-1])
+});
+
 
 function FormArgs(selector){
     let arr = _.map(
@@ -77,6 +167,18 @@ function FormArgs(selector){
 
 $(document).ready(() => {
     $('[data-toggle="tooltip"]').tooltip()
+    $('#historyModal').on('show.bs.modal', (e) => {
+        console.log()
+        if(notes.current_page == null){
+            e.stopPropagation();
+            Swal.fire({
+                icon:'warning',
+                title:'Didnt gain history',
+                text:'Cant load notes history from server, pless wait until it loads'
+            })
+    
+        }
+    })
     ajax_get_page();
     $('#ban-form').submit(function(e) {
         let success_message = $('#ban-form .success-message')[0];
@@ -195,6 +297,20 @@ $(document).ready(() => {
             }
         })
     });
+    $('#refresh-history').click(function(){
+        $(this).text('')
+        $(this).append(
+            $('<div></div>')
+            .addClass('text-secondary spinner-border')
+            .append($('<span></span>')
+            .addClass('sr-only')
+            .text('Loading'))
+        )
+        ajax_get_page(notes.current_page).then(() => {
+            $('#refresh-history').children('div').remove();
+            $('#refresh-history').text('refresh');
+        })
+    });
 })
 
 $(window).on('load', function() {
@@ -218,66 +334,3 @@ $(window).on('load', function() {
     })
     
 });
-
-const sock = io('/edit-profile');
-sock.on('connect', () => {
-    url_recipe = window.location.pathname.split('/')
-    sock.emit('join', url_recipe[url_recipe.length-1])
-})
-sock.on('reconnect', () => {
-    url_recipe = window.location.pathname.split('/')
-    sock.emit('join', url_recipe[url_recipe.length-1])
-});
-
- /*
-    $('#setting-form').submit((e) => {
-        e.preventDefault();
-        let form = $('#setting-form');
-        $.ajax({
-            url:form.attr('action'),
-            type:form.attr('method'),
-            data:form.serialize(),
-            success: (data) => {
-                $('.info-div').addClass('d-none');
-                console.log(data);
-                if(data.valid){
-                    $('#success-form').text('values have changed').removeClass('d-none');
-                } else {
-                    data.errors.forEach((val) => {
-                        let ele = $(`.errors-list[for="${val[0]}"]`);
-                        val[1].forEach((err) => {
-                            $('<span>').text(err).appendTo(ele[0]);
-                        });
-                    });
-                    data.values.forEach((val) => {
-                        $(`#${val[0]}`).val(val[1].toString()).change();
-                    });
-                }
-            }
-        })
-    });
-    $('.range-text').each((idx, ele) => {
-        let inp = $(`#${ele.getAttribute('for')}`);
-        console.log(inp, ele);
-        $(ele).text(inp.val());
-    });
-    let colors = $('#colors')
-    colors.children('option').each(function(idx, elem) {
-        $(elem).css({
-            'background-color':$(elem).text().toLowerCase(),
-            color: $(elem).text().toLowerCase() == 'black' ? 'white' : 'black'
-        });   
-    });
-    $('.custom-range').change(function(e){
-        $('.range-text')
-            .filter(`span[for="${this.id}"]`)
-            .text(this.value);
-    });
-    colors.change(function(e) {
-        let option = $(this).children('option:selected');
-        $(this).css({
-            'background-color':$(option).text().toLowerCase(),
-            color: $(option).text().toLowerCase() == 'black' ? 'white' : 'black'
-        });
-    })
-    */

@@ -1,7 +1,9 @@
 {% macro note_description(key, title, addon_class='') %}
 <div class="input-group" id="{{ket}}-box" data-toggle="tooltip" data-placement="top" title="{{title}}">
     <div class="input-group-prepend">
-        <span class='input-group-text {{addon_class}}' for='{{key}}-input'>{{text|title}}:</span>
+        <span class='input-group-text' for='{{key}}-input'>
+            <i class="{{addon_class}}"></i>
+        </span>
     </div>
     <input type="text" class="form-control" id="{{key}}-input" disabled>
 </div>
@@ -25,25 +27,33 @@
             </div>
             <div class="modal-body">
                 <div class="row">
-                    <div class="col">
-                        <table class="table" id="history-table">
-                            <thead>
-                            <tr>
-                                <th scope="col">Date</th>
-                                <th scope="col">Written By</th>
-                                <th scope="col">Type</th>
-                            </tr>
-                            </thead>
-                        </table>
+                    <div class="col-5">
+                        <div class="row justify-content-center">
+                            <button id="refresh-history" class="btn btn-primary">Refresh</button>
+                        </div>
+                        <div class="row">
+                            <table class="table" id="history-table">
+                                <thead>
+                                <tr>
+                                    <th scope="col">Date</th>
+                                    <th scope="col">Written By</th>
+                                    <th scope="col">Type</th>
+                                </tr>
+                                </thead>
+                            </table>
+                        </div>
+                        <div class="row justify-content-center">
+                            <div class="btn-group" role="group" aria-label="page group" id="page-group"></div>
+                        </div>        
                     </div>
                     <div class="col" id="view-record">
                         <div class="row justify-content-around mb-1 ml-1">
-                            <div class="col-5">{{note_description('post-date', 'Posted')}}</div>
-                            <div class="col-5">{{note_description('writer', 'Writer')}}</div>
+                            <div class="col-5">{{note_description('post-date', 'Posted', 'far fa-clock')}}</div>
+                            <div class="col-5">{{note_description('writer', 'Writer', 'fas fa-pen-fancy')}}</div>
                         </div>
                         <div class="row justify-content-around mb-1 ml-1">
-                            <div class="col-5">{{note_description('affect-from', 'affect-from')}}</div>
-                            <div class="col-5">{{note_description('active', 'Status')}}</div>
+                            <div class="col-5">{{note_description('affect-from', 'Takes Effect from', 'fas fa-calendar')}}</div>
+                            <div class="col-5">{{note_description('active', 'Status', 'fas fa-cogs')}}</div>
                         </div>
                         <div class="row justify-content-around mb-1 ml-1">
                             {{big_note_description('reason', 'Reason')}}
@@ -53,7 +63,6 @@
                         </div>
                     </div>
                 </div>
-
             <div class="modal-footer">
                 <button class="btn btn-danger" data-dismiss="modal" type="button">Close</button>
             </div>
