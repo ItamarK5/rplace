@@ -1,13 +1,17 @@
 import json
 from datetime import datetime
 from typing import Any
-from flask_login import current_user, logout_user
+from flask_login import current_user
 
 from painter.backends import lock, board
 from painter.backends.extensions import datastore
 from painter.backends.skio import (
-    sio, PAINT_NAMESPACE, socket_io_authenticated_only_connection
+    sio, PAINT_NAMESPACE,
+    socket_io_authenticated_only_connection,
+    socket_io_authenticated_only_event,
+    PROFILE_NAMESPACE
 )
+from flask_socketio import join_room
 
 
 def task_set_board(x: int, y: int, color: int) -> None:
@@ -34,7 +38,7 @@ def connect():
 
 
 @sio.on('get-starter', PAINT_NAMESPACE)
-@socket_io_authenticated_only_connection
+@socket_io_authenticated_only_event
 def get_start_data():
     return {
         'board': board.get_board(),
@@ -44,7 +48,7 @@ def get_start_data():
 
 
 @sio.on('set-board', PAINT_NAMESPACE)
-@socket_io_authenticated_only_connection
+@socket_io_authenticated_only_event
 def set_board(params: Any) -> str:
     """
     :param params: params given to the Dictionary
@@ -88,5 +92,11 @@ def set_board(params: Any) -> str:
 
 
 """
-    Admin Namespace
+    Preference Namespace
 """
+
+
+@sio.on('connect', PROFILE_NAMESPACE)
+@socket_io_authenticated_only_event
+def connect():
+    join_room('room-'+current_user.username)

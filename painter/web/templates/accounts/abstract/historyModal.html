@@ -1,6 +1,21 @@
-<section aria-hidden="true" aria-labelledby="#history-title" class="modal fade" id="historyModal" role="dialog"
-         tabindex="-3">
-    <div class="modal-dialog modal-dialog-centered" role="document">
+{% macro note_description(key, title, addon_class='') %}
+<div class="input-group" id="{{ket}}-box" data-toggle="tooltip" data-placement="top" title="{{title}}">
+    <div class="input-group-prepend">
+        <span class='input-group-text {{addon_class}}' for='{{key}}-input'>{{text|title}}:</span>
+    </div>
+    <input type="text" class="form-control" id="{{key}}-input" disabled>
+</div>
+{% endmacro %}
+{% macro big_note_description(key, title) %}
+<div class="input-group" id="{{ket}}-box" data-toggle="tooltip" data-placement="top" title="{{title}}">
+    <div class="input-group-prepend">
+        <span class='input-group-text' for='{{key}}-input'></span>
+    </div>
+    <textarea class="form-control" id="{{key}}-input" disabled></textarea>
+</div>
+{% endmacro %}
+<section aria-hidden="true" aria-labelledby="#history-title" class="modal fade" id="historyModal" role="dialog" tabindex="-3">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="history-title">Notes History</h5>
@@ -10,39 +25,35 @@
             </div>
             <div class="modal-body">
                 <div class="row">
-                    <table class="table">
-                        <thead>
-                        <tr>
-                            <th scope="col">Written By</th>
-                            <th scope="col">Date</th>
-                            <th scope="col">Type</th>
-                        </tr>
-                        </thead>
-                    </table>
+                    <div class="col">
+                        <table class="table" id="history-table">
+                            <thead>
+                            <tr>
+                                <th scope="col">Date</th>
+                                <th scope="col">Written By</th>
+                                <th scope="col">Type</th>
+                            </tr>
+                            </thead>
+                        </table>
+                    </div>
+                    <div class="col" id="view-record">
+                        <div class="row justify-content-around mb-1 ml-1">
+                            <div class="col-5">{{note_description('post-date', 'Posted')}}</div>
+                            <div class="col-5">{{note_description('writer', 'Writer')}}</div>
+                        </div>
+                        <div class="row justify-content-around mb-1 ml-1">
+                            <div class="col-5">{{note_description('affect-from', 'affect-from')}}</div>
+                            <div class="col-5">{{note_description('active', 'Status')}}</div>
+                        </div>
+                        <div class="row justify-content-around mb-1 ml-1">
+                            {{big_note_description('reason', 'Reason')}}
+                        </div>
+                        <div class="row justify-content-around mb-1 ml-1">
+                            {{big_note_description('reason', 'Description')}}
+                        </div>
+                    </div>
                 </div>
-                {#
-                <form action="{{url_for('admin.add_note', name=user.username)}}" id="note-form" method="POST">
-                    <div class="form-row">
-                        <div class="alert alert-success" hidden id="success-message-note">
 
-                        </div>
-                    </div>
-                    <div class="form-row mb-1 mt-1">
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                    <span class="input-group-text">
-                      <i class='fas fa-sticky-note mr-1'></i>{{note_form.description.label.text|title}}
-                    </span>
-                            </div>
-                            {{note_form.description(type="text", class="form-control mw-100 mh-100")}}
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <li class="error-list list-group" error-for="{{note_form.description.id}}"></li>
-                    </div>
-                </form>
-            </div>
-            #}
             <div class="modal-footer">
                 <button class="btn btn-danger" data-dismiss="modal" type="button">Close</button>
             </div>

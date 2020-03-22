@@ -15,7 +15,7 @@
 {% endblock %}
 {% block user_preferences %}
 {% if current_user.has_required_status(Role.superuser) %}
-{% include 'accounts/abstract/profile-preferences-edit.html' %}
+{% include 'accounts/abstract/profile-preferences-view.html' %}
 {% else %}
 {% include 'accounts/abstract/profile-preferences-view.html' %}
 {% endif %}

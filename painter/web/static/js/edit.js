@@ -1,35 +1,68 @@
+const history_table = $('#history-table');
 const NoteTypeEnums = {
-    limited_active: {row_color:'bg-success', text:'0'},
-    limited_banned: {row_color:'table-warning', text:'1'},
-    perment_active: {row_color:'table-success', text:'2'},
-    perment_banned: {row_color:'table-danger', text:'3'},
-    note : {row_color:'note'},
+    unbanned_date: {row_class:'bg-success', text:'Future Unbanned Record'},
+    banned_date: {row_class:'table-warning', text:'Future Banned Record'},
+    unbanned: {row_class:'table-success', text:'Active Record'},
+    banned: {row_class:'table-danger', text:'Banned Record'},
+    note : {row_class:'note', text:'Note Record'},
     /**
      * 
      * @param {Note object} note 
      */
-    get_note_type(note) {
-        if(!_.has(note, 'reason')){ // is info
-            return this.info;
-        } else if(this.expires == 'None'){
-            return this.limited_active ? note.active : this.limited_banned;
-        } // else:
-        return this.limited_active ? note.active : this.limited_banned;
-    }
+
 }
+
+const GetUserName = () => window.location.pathname.split('/')[2];
 
 const MakeNoteRow = (note) => {
+    console.log(note)
     // note attributes needed:
-    let note_row_type = NoteTypeEnums.get_note_type(note);
-    let row = $('<tr></tr>').addClass(note_row_type);    
+    let note_row_type = NoteTypeEnums[note.type];
+    let row = $('<tr></tr>').addClass(note_row_type.row_class);
+    row.append($('<td></td>').text(note.post_date));
+    row.append($('<td></td>').text(note.writer));
+    row.append($('<td></td>').text(note_row_type.text))
+    return row;
 }
 
-var notes = null;
+const notes = {
+    pages:null,
+    pref_ref:null,
+    next_ref:null,
+    query:null,
+    update_notes(){
+        console.log(this)
+        history_table.children('tr').remove();
+        this.query.forEach((value) => {
+            console.log(value)
+            history_table.append(MakeNoteRow(value))
+        })
+    }
+};
+
 function ajax_error_alert(err) {
     Swal.fire({
         title: 'Error!',
         icon: 'error',
         html: err.responseText
+    })
+}
+
+
+function ajax_get_page(page=1){
+    $.ajax({
+        url:'/get-notes',
+        method:'GET',
+        data: {name:GetUserName(), page:parseInt(page)},
+        contentType: 'application/json;charset=UTF-8',
+        success: (data) => {
+            console.log(data)
+            notes.pages=data.pages;
+            notes.query=data.query;
+            notes.prev_ref=data.prev_ref;
+            notes.next_ref=data.next_ref;
+            notes.update_notes()
+        }
     })
 }
 
@@ -39,10 +72,12 @@ function FormArgs(selector){
         (field) => field.split('=')
     )
     arr.push(['csrf_token', csrf_token])
-	return _.object(arr)
+	return _.object(arr);
 }
 
 $(document).ready(() => {
+    $('[data-toggle="tooltip"]').tooltip()
+    ajax_get_page();
     $('#ban-form').submit(function(e) {
         let success_message = $('#ban-form .success-message')[0];
         if (!success_message.hasAttribute('hidden')) {
@@ -51,25 +86,30 @@ $(document).ready(() => {
         $('.error-list').children().remove();
         e.preventDefault();
         let args = FormArgs($('#ban-form'))
-        sock.emit('add-record', args, (data) => {
-            console.log(data)
-            if (data.valid) {
-                success_message.removeAttribute('hidden')
-            } else {
-                let fields = data.errors;
-                console.log(fields)
-                _.pairs(data.errors).forEach(function(row){
-                    let field = row[0];
-                    let errors = row[1];
-                    console.log(field, errors);
-                    errors.forEach(function(err){
-                        $('<ul></ul>')
-                        .text(err)
-                        .addClass("center-text list-group-item list-group-item-danger")
-                        .appendTo($(`#ban-form .error-list[error-for="${field}"]`).first())
+        $.ajax({
+            url:$(this).attr('action'),
+            method:'POST',
+            data:args,
+            success: (data) => {
+                if (data.valid) {
+                    success_message.removeAttribute('hidden')
+                } else {
+                    let fields = data.errors;
+                    // need to work for csrf error
+                    _.pairs(data.errors).forEach(function(row){
+                        let field = row[0];
+                        let errors = row[1];
+                        console.log(field, errors);
+                        errors.forEach(function(err){
+                            $('<ul></ul>')
+                            .text(err)
+                            .addClass("center-text list-group-item list-group-item-danger")
+                            .appendTo($(`#ban-form .error-list[error-for="${field}"]`).first())
+                        })
                     })
-                })
-            }
+                }
+            },
+            error:ajax_error_alert
         });
     });
     $('#note-form').submit(function(e) {
@@ -77,28 +117,34 @@ $(document).ready(() => {
         if (!success_message.hasAttribute('hidden')) {
             success_message.toggleAttribute('hidden');
         }
+        let args = FormArgs($(this));
         $('#note-form .error-list').children().remove();
         e.preventDefault();
-        sock.emit('add-note', FormArgs($(this)), (data) => {
-            if (data.valid) {
-                success_message.removeAttribute('hidden')
-            } else {
-                let fields = data.errors;
-                console.log(fields)
-                _.pairs(data.errors).forEach(function(row){
-                    let field = row[0];
-                    let errors = row[1];
-                    console.log(field, errors);
-                    errors.forEach(function(err){
-                        $('<ul></ul>')
-                        .text(err)
-                        .addClass("center-text list-group-item list-group-item-danger")
-                        .appendTo($(`#note-form .error-list[error-for="${field}"]`).first())
+        $.ajax({
+            url:$(this).attr('action'),
+            method:'POST',
+            data:args,
+            success: (data) => {
+                if (data.valid) {
+                    success_message.removeAttribute('hidden')
+                } else {
+                    let fields = data.errors;
+                    // need to work for csrf error
+                    _.pairs(data.errors).forEach(function(row){
+                        let field = row[0];
+                        let errors = row[1];
+                        console.log(field, errors);
+                        errors.forEach(function(err){
+                            $('<ul></ul>')
+                            .text(err)
+                            .addClass("center-text list-group-item list-group-item-danger")
+                            .appendTo($(`#note-form .error-list[error-for="${field}"]`).first())
+                        })
                     })
-                })
-            }
-        })
-        e.preventDefault();
+                }
+            },
+            error:ajax_error_alert
+        });
     });
     $('#submit-ban-form').click(() => {
         $('#ban-form').submit();
@@ -106,8 +152,8 @@ $(document).ready(() => {
     $('#submit-note-form').click(() => {
         $('#note-form').submit();
     })
-    $('#set-expire').click(function() {
-        let field = $('#expires')[0];
+    $('#set-affect-from').click(function() {
+        let field = $('#affect_from')[0];
         console.log(this, this.checked)
         if (this.checked) {
             field.removeAttribute('disabled');
@@ -115,7 +161,7 @@ $(document).ready(() => {
             field.setAttribute('disabled', 'disabled')
         }
     })
-    $('#expires').attr('disabled', 'disabled');
+    $('#affect_from').attr('disabled', 'disabled');
     $('#rank-button').click(function() {
         let name = this.getAttribute('enum-name');
         console.log(name, 5)
@@ -131,7 +177,7 @@ $(document).ready(() => {
             if (result.value) {
                 console.log(name)
                 $.ajax({
-                    url: `/set-user-role/${window.location.pathname.split('/')[2]}`,
+                    url: `/set-user-role/${GetUserName()}`,
                     method: 'POST',
                     contentType: 'application/json;charset=UTF-8',
                     data: name,
@@ -152,7 +198,7 @@ $(document).ready(() => {
 })
 
 $(window).on('load', function() {
-    $('#expires').datetimepicker({
+    $('#affect_from').datetimepicker({
         format: 'DD/MM/YYYY HH:mm',
         showTodayButton: true,
         showClear: true,
@@ -172,178 +218,7 @@ $(window).on('load', function() {
     })
     
 });
-//-----------------------------------------------------------------------------
 
-const FORM_INPUT = '#setting-input'
-const GET_FIELD = /.+(?=-active)/i
-// minimal title regex to find all non-upper characters after space or nothing
-const ToTitleCaseRegex = /(<=\x20|^)[a-z]/g;
-const COLORS = [
-    'white', 'black', 'gray', 'silver',
-    'red', 'pink', 'brown', 'orange',
-    'olive', 'yellow', 'green', 'lime',
-    'blue', 'aqua', 'purple', 'magenta'
-]
-
-const SettingDescriber = $('#setting-describer');
-/**
- * 
- * @param {String} clr 
- * @returns {object} object
- */
-function setColor(clr){
-    return {
-        'background-color':clr,
-        color:clr != 'black' ? 'black' : 'white'    
-    }
-}
-
-String.prototype.toTitleCase = function(){
-    return this.replace(ToTitleCaseRegex, (str) => str.toUpperCase())
-}
-
-const hideModalAlert = () => $('#setting-alert').hide();
-/**
- * 
- * @param {HTMLFormElement} form 
- * @param {String} val 
- */
-function AddUlrInput(form, val){
-    let group = $('<div></div>').addClass('input-group input-group-default').attr('id', FORM_INPUT.slice(1)+'-father').appendTo(form)
-    $('<input>').attr({
-        id:FORM_INPUT.slice(1),
-        name:'url',
-        class:'form-control',
-        value:val == 'None' ? '' : val,
-        type:'text',
-    }).on('input', function(e){
-        hideModalAlert();
-    }).appendTo(group);
-    let append_group = $('<div></div>').addClass('input-group-append').appendTo(group);
-    let btn = $('<button></button>').addClass('btn btn-outline-secondary').attr('type', 'button').appendTo(append_group);
-    $('<span></span>').addClass('fas fa-trash-alt').appendTo(btn);
-    btn.click(function(e){
-        $(FORM_INPUT).val('');
-        e.preventDefault();
-    });
-    $('#row-describer').hide();
-}
-
-/**
- * 
- * @param {HTMLFormElement} form 
- * @param {String} field 
- * @param {any} val 
- * add input to the form depending the value of field
- */
-function addForm(form, field, val){
-    switch(field){
-        case 'x': {
-            SettingDescriber.show()
-            SettingDescriber.text(val);
-            $('<input>').attr({
-                id:FORM_INPUT.slice(1),
-                name:'x',
-                class:'form-control-range',
-                min:0,
-                max:999,
-                value:parseInt(val),
-                type:'range',
-            })
-            .addClass('form-control-range')
-            .change(function(e){
-                SettingDescriber.text(this.value);
-                hideModalAlert();
-            }).appendTo(form);
-            SettingDescriber.text(val);            
-            break;
-        }
-        case 'y':{
-            SettingDescriber.show();
-            SettingDescriber.val(val)
-            $('<input>').attr({
-                id:FORM_INPUT.slice(1),
-                name:'y',
-                min:0,
-                max:999,
-                value:parseInt(val),
-                type:'range',
-            })
-            .addClass('form-control-range')
-            .change(function(){
-                SettingDescriber.text(this.value);
-                hideModalAlert();
-            }).appendTo(form);
-            SettingDescriber.text(val)
-            break;
-        }
-        case 'scale': {
-            SettingDescriber.show()
-            SettingDescriber.text(val);
-            $('<input>').attr({
-                id:FORM_INPUT.slice(1),
-                name:'scale',
-                min:1,
-                max:50,
-                value:parseInt(val),
-                type:'range',
-            }).addClass('form-control-range').change(function(){
-                SettingDescriber.text(this.value.toString());
-                hideModalAlert()
-            }).appendTo(form);
-            SettingDescriber.text(val.toString())
-            break;
-        }
-        case 'color': {
-            SettingDescriber.hide()
-            let color_selector = $('<select>').attr({
-                id:FORM_INPUT.slice(1),
-                name:'color',
-            }).addClass('custom-select').appendTo(form);
-            COLORS.forEach(
-                (color_val,idx) => {
-                    let option = $('<option></option>').css(setColor(color_val)).attr('value',idx).text(color_val).appendTo(color_selector);
-                    if(val == color_val){
-                        option.attr('selected', '');
-                    }
-                    
-            });
-            $('#row-describer').hide();
-            break;
-        }
-        case 'url': {
-            SettingDescriber.hide()
-            AddUlrInput(form, val);
-            break;
-        }
-        default:{
-            
-            break;
-        }
-    }
-}
-
-function filterResponse(field, val){
-    if(field == 'color'){
-        return COLORS[val];
-    } else if(field == 'url'){
-        return val == '' ? 'None' : val;
-    } else {
-        return val;
-    }
-}
-
-function onShowingEditPreferencesModal(button, modal){
-    let field = GET_FIELD.exec(button.attr('id'))[0];
-    if(field == null){
-        modal.hide();
-    }
-    $(FORM_INPUT+'-father').remove()
-    $(FORM_INPUT).remove()
-    $('#modal-title').text(`Change ${field}`);
-    addForm($('#setting-form'), field, button.parent().siblings('.setting-val').children('h5').text())
-    $('#setting-alert').hide()
-}
 const sock = io('/edit-profile');
 sock.on('connect', () => {
     url_recipe = window.location.pathname.split('/')
@@ -352,47 +227,6 @@ sock.on('connect', () => {
 sock.on('reconnect', () => {
     url_recipe = window.location.pathname.split('/')
     sock.emit('join', url_recipe[url_recipe.length-1])
-});
-
-$(document).ready(() =>{
-    //tooltips       
-    $('#modal-change-preference').on('shown.bs.modal', function (event) {
-        console.log(event);
-        $('#row-describer').show();
-        let button = $(event.relatedTarget ? event.relatedTarget : $('button:hover')[0]);
-        console.log(button)
-        let modal = $(this);
-        onShowingEditPreferencesModal(button, modal);
-    })
-    //submit form
-    $('#save-setting').click(function(e) {
-        $('#setting-form').submit();
-    });
-    //first name change
-    $('#setting-form').submit(function(e){
-        e.preventDefault();
-        let form = $(this);
-        $.ajax({
-            url:form.attr('action'),
-            type:form.attr('method'),
-            data:form.serialize(),
-            success: (response) => {
-                console.log(response)
-                $('#setting-alert')
-                    .show()
-                    .text(response.success ? 'Changed Successfully' : response.errors.join('\n'))
-                    .addClass(response.success ? 'alert-success' : 'alert-danger')
-                    .removeClass(response.success ? 'alert-danger' : 'alert-success');
-                if(response.success){
-                    $(`#text-${response.id}`).text(filterResponse(response.id, response.val));
-                }
-            },
-            error: (data) =>{
-                // read later https://stackoverflow.com/a/3543713
-                console.log(data)
-            }
-        });
-    })
 });
 
  /*

@@ -1153,7 +1153,6 @@ $(document).ready(function() {
         })
     });
     sock.on('reconnect_error', (a) => {
-        alert(a)
         console.log(a)
     })
     $('#coordinates').hover(function() {

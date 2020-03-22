@@ -1,10 +1,11 @@
 from datetime import datetime
 
 from sqlalchemy import Column, ForeignKey, Integer, String, case
+from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.sqlite import DATETIME, BOOLEAN
-
+from typing import Dict
 from painter.backends.extensions import datastore
-
+from flask_login import current_user
 """
     need to ask what is better:
     1) Note and subclass of Note named Record
@@ -15,11 +16,15 @@ from painter.backends.extensions import datastore
 
 class Note(datastore.Model):
     id = Column(Integer(), primary_key=True, unique=True, autoincrement=True)
-    user = Column(Integer(), ForeignKey('user.id'), nullable=False)
+    user_subject_id = Column(Integer(), ForeignKey('user.id'), nullable=False)
     description = Column(String(), nullable=False)
-    declared = Column(DATETIME(), default=datetime.now, nullable=False)
-    writer = Column(Integer(), ForeignKey('user.id'), nullable=False)
+    post_date = Column(DATETIME(), default=datetime.now, nullable=False)
+    user_writer_id = Column(Integer(), ForeignKey('user.id'), nullable=False)
     is_record = Column(BOOLEAN(), nullable=True)
+
+    user_subject = relationship('User', foreign_keys=[user_subject_id], uselist=False)
+    user_writer = relationship('User', foreign_keys=[user_writer_id], uselist=False)
+
     sqlite_autoincrement = True
     __mapper_args__ = {
         'polymorphic_identity': 'note',
@@ -34,11 +39,23 @@ class Note(datastore.Model):
         kwargs.setdefault('is_record', False)
         super().__init__(*args, **kwargs)
 
+    def _json_format(self) -> Dict:
+        return {
+            # 'writer': User.query.get(self.writer),
+            'description': self.description,
+            'post_date': self.post_date.strftime("%m/%d/%Y, %H:%M:%S"),
+            'writer': self.user_writer.username,
+            'type': 'note',
+        }
+
+    def json_format(self):
+        return self._json_format()
+
 
 class Record(Note):
     id = Column(Integer(), ForeignKey('note.id'), primary_key=True)
     active = Column(BOOLEAN(), nullable=False)
-    expire = Column(DATETIME(), nullable=True, default=None)
+    affect_from = Column(DATETIME(), nullable=True, default=None)
     reason = Column(String(), nullable=False)
     sqlite_autoincrement = True
     __mapper_args__ = {
@@ -47,3 +64,24 @@ class Record(Note):
 
     def __init__(self, *args, **kwargs):
         super().__init__(is_record=True, *args, **kwargs)
+
+    def __get_note_type(self):
+        if self.active and self.affect_from:
+            return 'unbanned_date'
+        elif self.active and not self.affect_from:
+            return 'unbanned'
+        elif (not self.active) and not self.affect_from:
+            return 'banned'
+        elif self.affect_from and not self.active:
+            return 'banned_date'
+
+    def _json_format(self) -> Dict:
+        # get type
+        dictionary = super()._json_format()
+        dictionary.update({
+            'type': self.__get_note_type(),
+            'affect_from': self.affect_from if self.affect_from is not None else None,
+            'reason': str(self.reason),
+            'active': self.active
+        })
+        return dictionary

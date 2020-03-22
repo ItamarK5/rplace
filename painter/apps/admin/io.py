@@ -22,20 +22,18 @@ from flask import escape, json
 
 def socket_io_require_user_room(f: Callable) -> Callable:
     @wraps(f)
-
     def wrapper(*args, **kwargs):
         client_rooms = rooms(request.sid)
         for room in client_rooms:
-            if room.endswith('-room'):
-                name = room.split('-')
+            if room.startswith('room-'):
+                name = room.split('-')[1]
                 user = User.query.filter_by(username=name).first()
                 if user is None:
                     disconnect()
                 else:
-                    return f(user=user, *args, **kwargs)
-            # else
-            else:
-                raise ConnectionRefusedError()
+                    return f(user, *args, **kwargs)
+        # else if not found
+        raise ConnectionRefusedError()
     return wrapper
 
 
@@ -75,38 +73,4 @@ def join_profile(username: str):
     if user is None or not current_user.is_superior_to(user):
         disconnect()
     else:
-        join_room(f'{username}-room')
-
-
-@sio.on('add-record', EDIT_PROFILE_NAMESPACE)
-@socket_io_role_required_event(Role.admin)
-def add_record(user:User, message: Dict[str, str]):
-    if not isinstance(message, dict):
-        return flask_json.dumps(success=False, error='unvalid inputs')
-    for pair in message.items():
-        for item in pair:
-            if not isinstance(item, str):
-                return json.dumps(success=False, error='unvalid inputs')
-    form = RecordForm(MultiDict(message))
-    if form.validate():
-        record = Record(
-            user=user.id,
-            description=escape(form.note.data),
-            declared=datetime.now(),
-            writer=current_user.id,
-            active=not form.set_banned.data,
-            expire=form.expires.data,
-            reason=escape(form.reason.data)
-        )
-        datastore.session.add(record)
-        datastore.session.commit()
-        user.forget_last_record()
-        return {'valid': True}
-    # else
-    else:
-        return {
-            'valid': False,
-            'errors': dict(
-                [(field.name, field.errors) for field in form]
-            )
-        }
+        join_room(f'room-{username}')

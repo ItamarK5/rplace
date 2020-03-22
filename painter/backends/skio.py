@@ -14,7 +14,6 @@ def socket_io_authenticated_only_connection(f: Callable[[Any], Any]) -> Callable
             disconnect('Not Authenticated')
         else:
             return f(*args, **kwargs)
-
     return wrapped
 
 

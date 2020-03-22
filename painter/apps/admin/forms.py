@@ -6,16 +6,16 @@ from wtforms import TextAreaField, validators, BooleanField, DateTimeField, Vali
 
 class RecordForm(FlaskForm):
     set_banned = BooleanField('active')
-    expires: DateTimeField = DateTimeField(
-        'expire',
+    affect_from: DateTimeField = DateTimeField(
+        'affect from',
         format='%d/%m/%Y %H:%M',
         validators=[
             validators.Optional(),
         ],
         render_kw={
-            'data-target': "#expires",
+            'data-target': "#affect_from",
             'data-toggle': 'datetimepicker',
-            'aria-label': 'reason to ban/unban the player'
+            'aria-label': 'date to start the effect'
         }
     )
     reason = TextAreaField(
@@ -25,7 +25,7 @@ class RecordForm(FlaskForm):
             validators.length(-1, 256, message="The reason must be less then 256 characters"),
         ],
     )
-    note = TextAreaField(
+    note_description = TextAreaField(
         'description',
         [
             validators.required(),
@@ -33,7 +33,7 @@ class RecordForm(FlaskForm):
         ],
     )
 
-    def validate_expires(self, field: DateTimeField) -> None:
+    def validate_affect_from(self, field: DateTimeField) -> None:
         # get field data
         if field.data is not None:
             now = datetime.now()

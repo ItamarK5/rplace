@@ -5,9 +5,9 @@ from typing import Optional, Union
 
 from flask import Markup
 from flask_login import UserMixin
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, desc
 from sqlalchemy.dialects.sqlite import DATETIME, SMALLINT
-
+from sqlalchemy.orm import relationship, backref
 from painter.backends.extensions import datastore, cache
 from painter.backends.extensions import login_manager
 from .enumint import SmallEnum
@@ -25,6 +25,7 @@ reEMAIL = re.compile(
 
 class User(datastore.Model, UserMixin):
     __tablename__ = 'user'
+
     id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
     username = Column(String(15), unique=True, nullable=False)
     password = Column(String(128), nullable=False)
@@ -38,12 +39,17 @@ class User(datastore.Model, UserMixin):
     # default color black
     color = Column(SMALLINT(), default=1, nullable=False)
     url = Column(String(), default=None, nullable=True)
+    # https://stackoverflow.com/a/11579347
     sqlite_autoincrement = True
 
     def __init__(self, password=None, hash_password=None, **kwargs) -> None:
         if hash_password is not None and password is None:
             password = self.encrypt_password(kwargs.get('username'), hash_password)
         super().__init__(password=password, **kwargs)
+
+    @property
+    def related_notes(self):
+        return Note.query.filter_by(user_subject_id=self.id).order_by(desc(Note.post_date))
 
     def set_password(self, password: str) -> None:
         self.password = self.encrypt_password(password, self.username)
@@ -74,24 +80,22 @@ class User(datastore.Model, UserMixin):
         return super().get_id() + '&' + self.password
 
     @cache.memoize(timeout=300)
-    def __get_last_record_identifier(self) -> Union[str, int]:
+    def __get_last_record(self) -> Union[str, int]:
         """
         :return:
         """
-        record = Record.query.filter_by(
-            user=self.id,
-        ).order_by(Note.declared.desc()).first()
+        record = self.related_notes.filter_by(is_record=True).first()
         if record is None:
             return 'none'
         return record.id
 
     def get_last_record(self) -> Optional[Record]:
-        identifier = self.__get_last_record_identifier()
+        identifier = self.__get_last_record()
         if identifier == 'none':
             return None
         # maybe the admin deleted the record for some strange reason
         record = Record.query.get(identifier)
-        if record is None:
+        if record is None or record.user_subject_id != self.id:
             # calculate again
             self.forget_last_record()
             # will forget so just call the function to do the same thing
@@ -107,14 +111,14 @@ class User(datastore.Model, UserMixin):
         last_record = self.get_last_record()
         if last_record is None:  # user has not record
             return True
-        if last_record.expire is None:  # record has no expire date
+        if last_record.affect_from is None:  # record has no expire date
             return last_record.active
-        if last_record.expire < datetime.now():
+        if last_record.affect_from < datetime.now():
             datastore.session.add(Record(user=self,
                                          result=not last_record.active,
                                          declared=datetime.now(),
                                          reason='Timed passed',
-                                         description=f"The record was set to expire at {last_record.expire}"
+                                         description=f"The record was set to expire at {last_record.affect_from}"
                                                      f"and the user tried to log in"
                                          ))
             self.forget_last_record()
@@ -123,7 +127,7 @@ class User(datastore.Model, UserMixin):
         return last_record.active  # isnt expired, so must has the other status
 
     def forget_last_record(self):
-        cache.delete_memoized(self.__get_last_record_identifier, self)
+        cache.delete_memoized(self.__get_last_record, self)
 
     def record_message(self) -> Optional[Markup]:
         record = self.get_last_record()
@@ -131,8 +135,8 @@ class User(datastore.Model, UserMixin):
             return None
         # else
         text = f'user {self.username}, you are banned from Social Painter, '
-        if record.expire is not None:
-            text += f"until {record.expire.strftime('%m/%d/%Y, %H:%M')}, "
+        if record.affect_from is not None:
+            text += f"until {record.affect_from.strftime('%m/%d/%Y, %H:%M')}, "
         return Markup(text + f'because you <b>{record.reason}</b>')
 
 

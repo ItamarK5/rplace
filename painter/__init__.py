@@ -23,7 +23,7 @@ app.config.from_object(Config)
 from painter.backends.skio import sio
 from flask_wtf.csrf import CSRFProtect
 from painter.backends.extensions import datastore, mailbox, engine, login_manager, cache
-
+from . import models
 # a must import
 
 

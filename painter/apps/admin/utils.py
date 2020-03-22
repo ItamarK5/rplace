@@ -49,8 +49,15 @@ def only_if_superior(f: Callable[[User], Response]) -> Callable[[str], Response]
     """
 
     @wraps(f)
-    def wrapped(name: str, *args, **kwargs) -> Response:
+    def wrapped(*args, **kwargs) -> Response:
         # check user name
+        if 'name' in kwargs:
+            name = kwargs.pop('name')
+        else:
+            name = request.args.get('name', None)
+            print(type(name), name)
+            if not isinstance(name, str):
+                abort(400)
         if not reNAME.match(name):
             abort(404, 'Cannot access user')
         user = User.query.filter_by(username=name).first()
@@ -59,7 +66,6 @@ def only_if_superior(f: Callable[[User], Response]) -> Callable[[str], Response]
         elif not current_user.is_superior_to(user):
             abort(403, 'Cannot access user')  # Forbidden
         return f(user=user, *args, **kwargs)
-
     return admin_only(wrapped)  # uses admin_only to check if the user is authenticated and at least admin
 
 

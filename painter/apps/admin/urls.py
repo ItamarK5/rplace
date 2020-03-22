@@ -1,5 +1,5 @@
 from datetime import datetime
-
+from typing import Dict
 from flask import Blueprint, render_template, abort, request, url_for, redirect, jsonify, escape
 from flask.wrappers import Response
 from flask_login import current_user
@@ -13,6 +13,7 @@ from painter.models.user import reNAME
 from painter.others.profile_form import PreferencesForm
 from .forms import RecordForm, NoteForm
 from .utils import only_if_superior, admin_only, superuser_only, json_response, validate_get_notes_param
+
 
 admin_router = Blueprint(
     'admin',
@@ -130,12 +131,12 @@ def change_ban_status(user: User) -> Response:
     # check a moment for time
     if form.validate_on_submit():
         record = Record(
-            user=user.id,
+            user_subject_id=user.id,
             description=escape(form.note.data),
-            declared=datetime.now(),
-            writer=current_user.id,
+            post_date=datetime.now(),
+            user_writer_id=current_user.id,
             active=not form.set_banned.data,
-            expire=form.expires.data,
+            affect_from=form.affect_from.data,
             reason=escape(form.reason.data)
         )
         datastore.session.add(record)
@@ -164,8 +165,8 @@ def add_note(user: User) -> Response:
     # check a moment for time
     if form.validate_on_submit():
         datastore.session.add(Note(
-            user=user.id,
-            writer=current_user.id,
+            user_subject_id=user.id,
+            user_writer_id=current_user.id,
             declared=datetime.now(),
             description=escape(form.description.data),
         ))
@@ -222,13 +223,48 @@ def set_role(user: User) -> Response:
     return json_response(True, 'Pless refresh the page to see changes')
 
 
-@admin_router.route('/get-user-notes/<string:name>', methods=('GET',))
+@admin_router.route('/get-notes', methods=('GET',))
 @only_if_superior
 def get_user_notes(user: User):
-    max_per_page = validate_get_notes_param('max-per-page')
-    page = validate_get_notes_param('per-page')
+    # max_per_page = validate_get_notes_param('max-per-page')
+    page = validate_get_notes_param('page')
     # get note number x
+    pagination = user.related_notes.paginate(page=page)
+    print(pagination.items)
+    return jsonify(
+        query=[item.json_format() for item in pagination.items],
+        next_ref=pagination.next_num,
+        prev_ref=pagination.prev_num,
+        pages=tuple(pagination.iter_pages())
+    )
 
+
+@admin_router.route('/add-record', methods=('POST',))
+@only_if_superior
+def add_record(user: User, message: Dict[str, str]):
+    form = RecordForm()
+    if form.validate_on_submit():
+        record = Record(
+            user=user.id,
+            description=escape(form.note.data),
+            declared=datetime.now(),
+            writer=current_user.id,
+            active=not form.set_banned.data,
+            affect_from=form.affect_from.data,
+            reason=escape(form.reason.data)
+        )
+        datastore.session.add(record)
+        datastore.session.commit()
+        user.forget_last_record()
+        return {'valid': True}
+    # else
+    else:
+        return {
+            'valid': False,
+            'errors': dict(
+                [(field.name, field.errors) for field in form]
+            )
+        }
 
 """
     1) Get Notes
