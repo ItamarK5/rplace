@@ -39,17 +39,19 @@ class Note(datastore.Model):
         kwargs.setdefault('is_record', False)
         super().__init__(*args, **kwargs)
 
-    def _json_format(self) -> Dict:
+    def _json_format(self, user) -> Dict:
         return {
+            'id': self.id,
             # 'writer': User.query.get(self.writer),
             'description': self.description,
             'post_date': self.post_date.strftime("%m/%d/%Y, %H:%M:%S"),
             'writer': self.user_writer.username,
             'type': 'note',
+            'can_edit': user.can_edit_note(self)
         }
 
-    def json_format(self):
-        return self._json_format()
+    def json_format(self, user):
+        return self._json_format(user)
 
 
 class Record(Note):
@@ -75,9 +77,9 @@ class Record(Note):
         elif self.affect_from and not self.active:
             return 'banned_date'
 
-    def _json_format(self) -> Dict:
+    def _json_format(self, user) -> Dict:
         # get type
-        dictionary = super()._json_format()
+        dictionary = super()._json_format(user)
         dictionary.update({
             'type': self.__get_note_type(),
             'affect_from': self.affect_from if self.affect_from is not None else None,

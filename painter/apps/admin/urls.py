@@ -1,7 +1,6 @@
-from typing import Any
 from datetime import datetime
 from typing import Dict
-from flask import Blueprint, render_template, abort, request, url_for, redirect, jsonify, escape, json
+from flask import Blueprint, render_template, abort, request, url_for, redirect, jsonify
 from flask.wrappers import Response
 from flask_login import current_user
 
@@ -134,12 +133,12 @@ def change_ban_status(user: User) -> Response:
     if form.validate_on_submit():
         record = Record(
             user_subject_id=user.id,
-            description=escape(form.note.data),
+            description=form.note_description.data,
             post_date=datetime.now(),
             user_writer_id=current_user.id,
             active=not form.set_banned.data,
             affect_from=form.affect_from.data,
-            reason=escape(form.reason.data)
+            reason=form.reason.data
         )
         datastore.session.add(record)
         datastore.session.commit()
@@ -170,7 +169,7 @@ def add_note(user: User) -> Response:
             user_subject_id=user.id,
             user_writer_id=current_user.id,
             post_date=datetime.now(),
-            description=escape(form.description.data),
+            description=form.description.data,
         ))
         datastore.session.commit()
         user.forget_last_record()
@@ -188,7 +187,6 @@ def add_note(user: User) -> Response:
 @admin_router.route('/change-lock-state', methods=('POST',))
 @superuser_only
 def set_admin_button():
-    print(request.data)
     if request.data not in (b'1', b'0'):
         return json_response(False, 'Unknown data')
     new_state = request.data == b'0'
@@ -203,12 +201,14 @@ def set_admin_button():
 def get_active_state():
     return jsonify(lock.is_enabled())
 
+
 @admin_router.route('/set-user-role/<string:name>', methods=('POST',))
 @only_if_superior
 def set_role(user: User) -> Response:
     if not current_user.has_required_status(Role.superuser):
-        abort(404)  # forbidden
+        abort(403)  # forbidden
     # get value
+    print(request.data)
     if request.data == b'Admin':
         new_role = Role.admin
     elif request.data == b'Common':
@@ -231,9 +231,8 @@ def get_user_notes(user: User):
     page = validate_get_notes_param('page')
     # get note number x
     pagination = user.related_notes.paginate(page=page, max_per_page=10)
-    print(pagination.items)
     return jsonify(
-        query=[item.json_format() for item in pagination.items],
+        query=[item.json_format(current_user) for item in pagination.items],
         next_ref=pagination.next_num,
         prev_ref=pagination.prev_num,
         pages=tuple(pagination.iter_pages()),
@@ -248,12 +247,12 @@ def add_record(user: User, message: Dict[str, str]):
     if form.validate_on_submit():
         record = Record(
             user=user.id,
-            description=escape(form.note.data),
+            description=form.note.data,
             declared=datetime.now(),
             writer=current_user.id,
             active=not form.set_banned.data,
             affect_from=form.affect_from.data,
-            reason=escape(form.reason.data)
+            reason=form.reason.data
         )
         datastore.session.add(record)
         datastore.session.commit()

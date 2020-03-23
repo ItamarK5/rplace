@@ -5,21 +5,21 @@ const NoteTypeEnums = {
     unbanned: {row_class:'success', text:'Active Record'},
     banned: {row_class:'danger', text:'Banned Record'},
     note : {row_class:'info', text:'Note Record'},
-    /**
-     * 
-     * @param {Note object} note 
-     */
-
 }
 
 const GetUserName = () => window.location.pathname.split('/')[2];
 
-const MakeNoteRow = (note) => {
-    console.log(note)
+const MakeNoteRow = (note, idx) => {
     // note attributes needed:
     let note_row_type = NoteTypeEnums[note.type];
     console.log(note_row_type)
-    let row = $('<tr></tr>').addClass('table-' + note_row_type.row_class).addClass('note-history-row').attr('note-type', note.type);
+    let row = $('<tr></tr>')
+                .addClass('table-' + note_row_type.row_class)
+                .addClass('note-history-row')
+                .attr({
+                    'note-type': note.type,
+                    'data-item': idx
+                });
     row.append($('<td></td>').text(note.post_date));
     row.append($('<td></td>').text(note.writer));
     row.append($('<td></td>').text(note_row_type.text));
@@ -53,21 +53,42 @@ const unfocusNoteRow = (page_button) => {
     $(page_button).removeClass(`bg-${row_class}`);
 }
 
+function displayNoteView(note){
+    console.log(note)
+    if(note.type == 'note'){
+        $('.record-row:not(.d-none)').addClass('d-none')
+    } else {
+        $('.record-row.d-none').removeClass('d-none');
+    }
+    $('#post-date-field').val(note.post_date);
+    $('#writer-field').val(note.writer);
+    $('#description-field').text(note.description)
+    if(note.type != 'note'){
+        $('#affect-from-field').val(_.isNull(note.affect_from) ? note.post_date : note.affect_from);    // if the date was from the same time
+        $('#active-field').val(note.active);
+        $('#reason-field').text(note.reason);
+    }
+}
+
 const notes = {
     pages:null,
     prev_ref:null,
     next_ref:null,
     current_page:null,
     query:null,
+    get_row_note(row_selector) {
+        return this.query[parseInt($(row_selector).attr('data-item'))];
+    },
     update_notes(){
         this.makeHistory()
         this.makePages()
     },
     makeHistory(){
         history_table.children('tr').remove();
-        this.query.forEach((value) => {
-            history_table.append(MakeNoteRow(value))
+        this.query.forEach((value, idx) => {
+            history_table.append(MakeNoteRow(value, idx))
         });
+        // events
         $('.note-history-row').hover(
             function() {
                 focusNoteRow(this)
@@ -86,11 +107,13 @@ const notes = {
             }
             $(this).attr('is-selected', '1');
             focusNoteRow(this);
+            console.log(notes.get_row_note(this))
+            displayNoteView(notes.get_row_note(this));
         })
     },
     makePages(){
         let page_group = $('#page-group');
-        page_group.children().remove();
+        $('.page-button').remove()
         page_group.append(pageButton(this.prev_ref, 'Prev'));
         this.pages.forEach((val) => {
             let button = pageButton(val);
@@ -168,7 +191,6 @@ function FormArgs(selector){
 $(document).ready(() => {
     $('[data-toggle="tooltip"]').tooltip()
     $('#historyModal').on('show.bs.modal', (e) => {
-        console.log()
         if(notes.current_page == null){
             e.stopPropagation();
             Swal.fire({

@@ -24,6 +24,7 @@ def place():
 
 
 @place_router.route('/', methods=('GET',))
+@place_router.route('/home', methods=('GET',))
 @login_required
 def home() -> Response:
     """

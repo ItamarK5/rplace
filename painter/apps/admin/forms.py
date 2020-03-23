@@ -22,14 +22,14 @@ class RecordForm(FlaskForm):
         'reason',
         [
             validators.required(),
-            validators.length(-1, 256, message="The reason must be less then 256 characters"),
+            validators.length(-1, 512, message="The reason must be less or equal to 512 characters"),
         ],
     )
     note_description = TextAreaField(
         'description',
         [
             validators.required(),
-            validators.length(-1, 256, message="a description must be less then 256 characters"),
+            validators.length(-1, 512, message="a description must be less or equal to 512 characters"),
         ],
     )
 

@@ -71,6 +71,9 @@ class User(datastore.Model, UserMixin):
     def is_superior_to(self, other) -> bool:
         return self.role > other.role or self.role == Role.superuser
 
+    def can_edit_note(self, note: Note) -> bool:
+        return self.id == note.user_writer_id
+
     def get_id(self) -> str:
         """
         :return: the "id" of the user, the key to be used to identified it
