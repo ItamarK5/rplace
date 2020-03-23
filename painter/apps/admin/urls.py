@@ -154,6 +154,33 @@ def change_ban_status(user: User) -> Response:
         })
 
 
+@admin_router.route('/add-record', methods=('POST',))
+@only_if_superior
+def add_record(user: User, message: Dict[str, str]):
+    form = RecordForm()
+    if form.validate_on_submit():
+        record = Record(
+            user=user.id,
+            description=form.note.data,
+            declared=datetime.now(),
+            writer=current_user.id,
+            active=not form.set_banned.data,
+            affect_from=form.affect_from.data,
+            reason=form.reason.data
+        )
+        datastore.session.add(record)
+        datastore.session.commit()
+        user.forget_last_record()
+        return {'valid': True}
+    # else
+    else:
+        return {
+            'valid': False,
+            'errors': dict(
+                [(field.name, field.errors) for field in form]
+            )
+        }
+
 @admin_router.route('/add-note/<string:name>', methods=('POST',))
 @only_if_superior
 def add_note(user: User) -> Response:
@@ -165,17 +192,20 @@ def add_note(user: User) -> Response:
     form = NoteForm()
     # check a moment for time
     if form.validate_on_submit():
-        datastore.session.add(Note(
+        print(4)
+        note = Note(
             user_subject_id=user.id,
             user_writer_id=current_user.id,
             post_date=datetime.now(),
             description=form.description.data,
-        ))
+        )
+        datastore.session.add(note)
         datastore.session.commit()
         user.forget_last_record()
         return jsonify({'valid': True})
     # else
     else:
+        print(form.errors)
         return jsonify({
             'valid': False,
             'errors': dict(
@@ -230,7 +260,7 @@ def get_user_notes(user: User):
     # max_per_page = validate_get_notes_param('max-per-page')
     page = validate_get_notes_param('page')
     # get note number x
-    pagination = user.related_notes.paginate(page=page, max_per_page=10)
+    pagination = user.related_notes.paginate(page=page, max_per_page=5)
     return jsonify(
         query=[item.json_format(current_user) for item in pagination.items],
         next_ref=pagination.next_num,
@@ -238,34 +268,6 @@ def get_user_notes(user: User):
         pages=tuple(pagination.iter_pages()),
         current_page=pagination.page
     )
-
-
-@admin_router.route('/add-record', methods=('POST',))
-@only_if_superior
-def add_record(user: User, message: Dict[str, str]):
-    form = RecordForm()
-    if form.validate_on_submit():
-        record = Record(
-            user=user.id,
-            description=form.note.data,
-            declared=datetime.now(),
-            writer=current_user.id,
-            active=not form.set_banned.data,
-            affect_from=form.affect_from.data,
-            reason=form.reason.data
-        )
-        datastore.session.add(record)
-        datastore.session.commit()
-        user.forget_last_record()
-        return {'valid': True}
-    # else
-    else:
-        return {
-            'valid': False,
-            'errors': dict(
-                [(field.name, field.errors) for field in form]
-            )
-        }
 
 """
     1) Get Notes

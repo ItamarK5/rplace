@@ -141,6 +141,7 @@ const notes = {
 };
 
 function ajax_error_alert(err) {
+    console.log(err)
     Swal.fire({
         title: 'Error!',
         icon: 'error',
@@ -166,6 +167,15 @@ function ajax_get_page(page=1){
     })
 }
 
+function FormArgs(selector){
+    let arr = _.map(
+        selector.serialize().split('&'), 
+        (field) => field.split('=')
+    )
+    arr.push(['csrf_token', ''])
+	return _.object(arr);
+}
+
 const sock = io('/edit-profile');
 
 sock.on('connect', () => {
@@ -178,15 +188,6 @@ sock.on('reconnect', () => {
     sock.emit('join', url_recipe[url_recipe.length-1])
 });
 
-
-function FormArgs(selector){
-    let arr = _.map(
-        selector.serialize().split('&'), 
-        (field) => field.split('=')
-    )
-    arr.push(['csrf_token', csrf_token])
-	return _.object(arr);
-}
 
 $(document).ready(() => {
     $('[data-toggle="tooltip"]').tooltip()
@@ -215,10 +216,10 @@ $(document).ready(() => {
             method:'POST',
             data:args,
             success: (data) => {
-                if (data.valid) {
+                console.log(data, typeof(data))
+               if (data.valid) {
                     success_message.removeAttribute('hidden')
                 } else {
-                    let fields = data.errors;
                     // need to work for csrf error
                     _.pairs(data.errors).forEach(function(row){
                         let field = row[0];
@@ -244,21 +245,17 @@ $(document).ready(() => {
         let args = FormArgs($(this));
         $('#note-form .error-list').children().remove();
         e.preventDefault();
-        $.ajax({
+        $.post({
             url:$(this).attr('action'),
-            method:'POST',
             data:args,
             success: (data) => {
                 if (data.valid) {
                     success_message.removeAttribute('hidden')
                 } else {
-                    let fields = data.errors;
                     // need to work for csrf error
                     _.pairs(data.errors).forEach(function(row){
                         let field = row[0];
-                        let errors = row[1];
-                        console.log(field, errors);
-                        errors.forEach(function(err){
+                        row[1].forEach(function(err){
                             $('<ul></ul>')
                             .text(err)
                             .addClass("center-text list-group-item list-group-item-danger")
@@ -267,8 +264,7 @@ $(document).ready(() => {
                     })
                 }
             },
-            error:ajax_error_alert
-        });
+        }).fail(ajax_error_alert)
     });
     $('#submit-ban-form').click(() => {
         $('#ban-form').submit();
@@ -354,5 +350,4 @@ $(window).on('load', function() {
 		},
         timeZone: 'utc-0'
     })
-    
 });
