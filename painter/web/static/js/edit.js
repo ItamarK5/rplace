@@ -9,17 +9,14 @@ const NoteTypeEnums = {
 
 const GetUserName = () => window.location.pathname.split('/')[2];
 
-const MakeNoteRow = (note, idx) => {
+
+const MakeNoteRow = (note) => {
     // note attributes needed:
     let note_row_type = NoteTypeEnums[note.type];
-    console.log(note_row_type)
     let row = $('<tr></tr>')
                 .addClass('table-' + note_row_type.row_class)
                 .addClass('note-history-row')
-                .attr({
-                    'note-type': note.type,
-                    'data-item': idx
-                });
+                .attr({'data-item': note.id});
     row.append($('<td></td>').text(note.post_date));
     row.append($('<td></td>').text(note.writer));
     row.append($('<td></td>').text(note_row_type.text));
@@ -27,34 +24,35 @@ const MakeNoteRow = (note, idx) => {
 }
 
 function pageButton(num, text=null){
-    if(text == null){
-        text = num.toString()
+    if(_.isNull(text)){
+        text = _.isNull(num) ? 'none' : num.toString() 
     }
     // then
     let button = $('<button></button>').attr({
         type:'button',
-        href: num
+        href: _.isNull(num) || isNaN(num) ? 'none' : num.toString() 
     }).text(text).addClass('btn').addClass('btn-secondary').addClass('page-button');
-    if(_.isNull(num)){
+    if(isNaN(num)){
         button.addClass('disabled')
     }
+    console.log(button)
     return button
 }
 
-const focusNoteRow = (page_button) => {
-    let row_class = NoteTypeEnums[$(page_button).attr('note-type')].row_class
-    $(page_button).addClass(`bg-${row_class}`);
-    $(page_button).removeClass(`table-${row_class}`);
+const focusNoteRow = (note_row) => {
+    console.log(note_row);
+    let row_class = NoteTypeEnums[notes.get_row_note(note_row).type].row_class
+    $(note_row).addClass(`bg-${row_class}`);
+    $(note_row).removeClass(`table-${row_class}`);
 }
 
-const unfocusNoteRow = (page_button) => {
-    let row_class = NoteTypeEnums[$(page_button).attr('note-type')].row_class
-    $(page_button).addClass(`table-${row_class}`);
-    $(page_button).removeClass(`bg-${row_class}`);
+const unfocusNoteRow = (note_row) => {
+    let row_class = NoteTypeEnums[notes.get_row_note(note_row).type].row_class
+    $(note_row).addClass(`table-${row_class}`);
+    $(note_row).removeClass(`bg-${row_class}`);
 }
 
 function displayNoteView(note){
-    console.log(note)
     if(note.type == 'note'){
         $('.record-row:not(.d-none)').addClass('d-none')
     } else {
@@ -77,7 +75,12 @@ const notes = {
     current_page:null,
     query:null,
     get_row_note(row_selector) {
-        return this.query[parseInt($(row_selector).attr('data-item'))];
+        return this.query[
+            _.findIndex(
+                this.query, 
+                (note) => note.id == parseInt($(row_selector).attr('data-item'))
+            )
+        ];
     },
     update_notes(){
         this.makeHistory()
@@ -107,15 +110,17 @@ const notes = {
             }
             $(this).attr('is-selected', '1');
             focusNoteRow(this);
-            console.log(notes.get_row_note(this))
             displayNoteView(notes.get_row_note(this));
         })
     },
     makePages(){
         let page_group = $('#page-group');
-        $('.page-button').remove()
+        $('.page-button').remove();
         page_group.append(pageButton(this.prev_ref, 'Prev'));
         this.pages.forEach((val) => {
+            if(_.isNull(val)){
+                val = '...'
+            }
             let button = pageButton(val);
             console.log(val, this.current_page)
             if(val == this.current_page){
@@ -134,14 +139,13 @@ const notes = {
             } else if($(this).hasClass('active')){
                 e.preventDefault()
             } else {
-                ajax_get_page(this.getAttribute('href'))
+                ajaxGetPage(this.getAttribute('href'))
             }
         });
     }
 };
 
-function ajax_error_alert(err) {
-    console.log(err)
+function ajaxErrorAlert(err) {
     Swal.fire({
         title: 'Error!',
         icon: 'error',
@@ -150,11 +154,10 @@ function ajax_error_alert(err) {
 }
 
 
-function ajax_get_page(page=1){
-    return $.ajax({
+function ajaxGetPage(page=1){
+    return $.get({
         url:'/get-notes',
-        method:'GET',
-        data: {name:GetUserName(), page:parseInt(page)},
+        data: {name:GetUserName(), page:parseInt(page)},       
         contentType: 'application/json;charset=UTF-8',
         success: (data) => {
             notes.pages=data.pages;
@@ -167,14 +170,21 @@ function ajax_get_page(page=1){
     })
 }
 
-function FormArgs(selector){
-    let arr = _.map(
-        selector.serialize().split('&'), 
-        (field) => field.split('=')
-    )
-    arr.push(['csrf_token', ''])
-	return _.object(arr);
-}
+$.fn.serializeForm = function() {
+    var output = {csrf_token:csrf_token};
+    var fields_array = this.serializeArray();
+    $.each(fields_array, function() {
+        if (output[this.name]) {
+            if (!output[this.name].push) {
+                output[this.name] = [output[this.name]];
+            }
+            output[this.name].push(this.value || '');
+        } else {
+            output[this.name] = this.value || '';
+        }
+    });
+    return output;
+};
 
 const sock = io('/edit-profile');
 
@@ -202,7 +212,7 @@ $(document).ready(() => {
     
         }
     })
-    ajax_get_page();
+    ajaxGetPage();
     $('#ban-form').submit(function(e) {
         let success_message = $('#ban-form .success-message')[0];
         if (!success_message.hasAttribute('hidden')) {
@@ -210,11 +220,12 @@ $(document).ready(() => {
         }
         $('.error-list').children().remove();
         e.preventDefault();
-        let args = FormArgs($('#ban-form'))
+        let args = $(this).serializeForm();
+        console.log(args)
         $.ajax({
             url:$(this).attr('action'),
             method:'POST',
-            data:args,
+            data:JSON.stringify(args),
             success: (data) => {
                 console.log(data, typeof(data))
                if (data.valid) {
@@ -234,7 +245,7 @@ $(document).ready(() => {
                     })
                 }
             },
-            error:ajax_error_alert
+            error:ajaxErrorAlert
         });
     });
     $('#note-form').submit(function(e) {
@@ -242,12 +253,14 @@ $(document).ready(() => {
         if (!success_message.hasAttribute('hidden')) {
             success_message.toggleAttribute('hidden');
         }
-        let args = FormArgs($(this));
+        let args = $(this).serializeForm();
         $('#note-form .error-list').children().remove();
         e.preventDefault();
+        console.log(args)
         $.post({
             url:$(this).attr('action'),
-            data:args,
+            data:JSON.stringify(args),
+            contentType: "application/json;charset=utf-8",
             success: (data) => {
                 if (data.valid) {
                     success_message.removeAttribute('hidden')
@@ -263,8 +276,8 @@ $(document).ready(() => {
                         })
                     })
                 }
-            },
-        }).fail(ajax_error_alert)
+            }
+        }).fail(ajaxErrorAlert);
     });
     $('#submit-ban-form').click(() => {
         $('#ban-form').submit();
@@ -274,7 +287,6 @@ $(document).ready(() => {
     })
     $('#set-affect-from').click(function() {
         let field = $('#affect_from')[0];
-        console.log(this, this.checked)
         if (this.checked) {
             field.removeAttribute('disabled');
         } else {
@@ -284,7 +296,6 @@ $(document).ready(() => {
     $('#affect_from').attr('disabled', 'disabled');
     $('#rank-button').click(function() {
         let name = this.getAttribute('enum-name');
-        console.log(name, 5)
         Swal.fire({
             title: 'Are you sure?',
             text: `You want to set this user's rank to ${name}`,
@@ -295,7 +306,6 @@ $(document).ready(() => {
             confirmButtonText: 'Yes Set Rank!'
         }).then((result) => {
             if (result.value) {
-                console.log(name)
                 $.ajax({
                     url: `/set-user-role/${GetUserName()}`,
                     method: 'POST',
@@ -310,7 +320,7 @@ $(document).ready(() => {
                         });
                     },
                     // error message
-                    error: ajax_error_alert
+                    error: ajaxErrorAlert
                 })
             }
         })
@@ -324,11 +334,25 @@ $(document).ready(() => {
             .addClass('sr-only')
             .text('Loading'))
         )
-        ajax_get_page(notes.current_page).then(() => {
+        ajaxGetPage(notes.current_page).then(() => {
             $('#refresh-history').children('div').remove();
             $('#refresh-history').text('refresh');
         })
     });
+    $('#remove-note-button').click(() => {
+        let selected_row = $('.note-row.is-selected')[0];
+        if(selected_row){
+            $.post({
+                url:'/remove-note',
+                data:$(selected_row).attr('data-item'),
+                success: (response) => {
+                    if(response.success){
+                        $()
+                    }
+                }
+            })
+        }
+    })
 })
 
 $(window).on('load', function() {

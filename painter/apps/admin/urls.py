@@ -181,6 +181,7 @@ def add_record(user: User, message: Dict[str, str]):
             )
         }
 
+
 @admin_router.route('/add-note/<string:name>', methods=('POST',))
 @only_if_superior
 def add_note(user: User) -> Response:
@@ -189,6 +190,7 @@ def add_note(user: User) -> Response:
     :return: nothing
     adds a ban record for the user
     """
+    print(request.data)
     form = NoteForm()
     # check a moment for time
     if form.validate_on_submit():
@@ -209,7 +211,7 @@ def add_note(user: User) -> Response:
         return jsonify({
             'valid': False,
             'errors': dict(
-                [(field.name, field.errors) for field in form if field.id != 'csrf_token']
+                [(field.name, field.errors) for field in iter(form) if field.id != 'csrf_token']
             )
         })
 

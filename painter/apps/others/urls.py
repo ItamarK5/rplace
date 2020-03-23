@@ -4,13 +4,13 @@ from typing import Union, Optional
 
 from flask import (
     Blueprint, render_template, send_from_directory,
-    abort, Response, request
+    abort, Response, request, jsonify
 )
 from flask_wtf.csrf import CSRFError  # ignore all
 from werkzeug.exceptions import HTTPException
 
 from painter.others.constants import MIME_TYPES, WEB_FOLDER
-from .utils import get_file_type, has_meme_images
+from .utils import get_file_type, has_meme_images, is_ajax_request
 
 other_router = Blueprint(
     'other',
@@ -39,18 +39,19 @@ def meme_image(error: str) -> Response:
 
 def error_meme_render(e: HTTPException,
                       case: Optional[str] = None, page_title: Optional[str] = None,
-                      name: Optional[str] = None) -> Union[str, HTTPException]:
+                      name: Optional[str] = None) -> Response:
     case = case or str(e.code)
     name = name or str(e.name)
     if case not in listdir(path.join(other_router.static_folder, 'memes')):
         return e  # return default error
-    return render_template(
-        'memes/meme.html',
-        case=case,
-        title=name,
-        description=e.description or name,
-        page_title=case if page_title is None else page_title
-    )
+    else:
+        return render_template(
+            'memes/meme.html',
+            case=case,
+            title=name,
+            description=e.description or name,
+            page_title=case if page_title is None else page_title
+        )
 
 
 @other_router.app_errorhandler(CSRFError)
@@ -59,17 +60,19 @@ def handle_csrf_error(e: CSRFError) -> Response:
     :param e: csrf error
     :return: csrf error meme html page if valid meme request
     """
-    return error_meme_render(
-        e,
-        'csrf',
-        'unvalid csrf token',
-        'Cross-Site-Forgery-Key Error'
-    )
+    if not is_ajax_request(request):
+        return error_meme_render(
+            e,
+            'csrf',
+            'unvalid csrf token',
+            'Cross-Site-Forgery-Key Error'
+        )
+    return e
 
 
 @other_router.app_errorhandler(HTTPException)
 def error_handler(e: HTTPException) -> Union[str, HTTPException]:
-    if has_meme_images(e):
+    if has_meme_images(e) and not is_ajax_request(request):
         return error_meme_render(e)
     return e
 

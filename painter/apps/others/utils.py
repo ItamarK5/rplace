@@ -16,13 +16,10 @@ def get_file_type(file_path: str) -> Optional[str]:
         return file_path[index_start + 1:]
     return None
 
-"""
-def is_valid_meme_request(request: Request) -> bool:
-    if 'text/html' not in request.accept_mimetypes:
-        return False
+
+def is_ajax_request(request: Request) -> bool:
     # check for ajax XMLRequest
     request_xhr_key = request.headers.get('X-Requested-With')
     # return "is not ajax request"
     # => valid meme request
-    return not (request_xhr_key and request_xhr_key == 'XMLHttpRequest')
-"""
+    return request_xhr_key and request_xhr_key == 'XMLHttpRequest'
