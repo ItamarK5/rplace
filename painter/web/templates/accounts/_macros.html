@@ -10,10 +10,10 @@
 {% endmacro %}
 {% macro button_model(span, modal, fa, title='none', placement="top", classes=None) %}
 {# http://jsfiddle.net/sso79Ldj/1/ #}
-<span data-target="#{{modal}}" data-toggle="modal" id={{span}}>
+<div data-target="#{{modal}}" data-toggle="modal" id="{{span}}">
     <button class="btn{{classes|class_ftr}}" data-placement="{{placement}}" data-toggle="tooltip" title="{{title}}"
             type="button">
         <i class="{{fa}}"></i>
     </button>
-</span>
+</div>
 {% endmacro %}

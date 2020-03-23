@@ -23,7 +23,7 @@ const MakeNoteRow = (note) => {
     return row;
 }
 
-function pageButton(num, text=null){
+function makePageButton(num, text=null){
     if(_.isNull(text)){
         text = _.isNull(num) ? 'none' : num.toString() 
     }
@@ -116,19 +116,19 @@ const notes = {
     makePages(){
         let page_group = $('#page-group');
         $('.page-button').remove();
-        page_group.append(pageButton(this.prev_ref, 'Prev'));
+        page_group.append(makePageButton(this.prev_ref, 'Prev'));
         this.pages.forEach((val) => {
             if(_.isNull(val)){
                 val = '...'
             }
-            let button = pageButton(val);
+            let button = makePageButton(val);
             console.log(val, this.current_page)
             if(val == this.current_page){
                 button.addClass('active')
             }
             page_group.append(button)
         })
-        page_group.append(pageButton(this.next_ref, 'Next'));
+        page_group.append(makePageButton(this.next_ref, 'Next'));
         $('.page-button').click(function(e) {
             if($(this).hasClass('disabled')){
                 e.preventDefault();
@@ -340,14 +340,14 @@ $(document).ready(() => {
         })
     });
     $('#remove-note-button').click(() => {
-        let selected_row = $('.note-row.is-selected')[0];
+        let selected_row = $('.note-history-row[is-selected="1"]')[0];
+        console.log($(selected_row).attr('data-item'))
         if(selected_row){
             $.post({
-                url:'/remove-note',
-                data:$(selected_row).attr('data-item'),
+                url:`/delete-note`,
+                data:{idx:$(selected_row).attr('data-item').toString()},
                 success: (response) => {
                     if(response.success){
-                        $()
                     }
                 }
             })

@@ -271,6 +271,24 @@ def get_user_notes(user: User):
         current_page=pagination.page
     )
 
+
+@admin_router.route('/delete-note', methods=('POST', ))
+def remove_user_note():
+    note_id = request.get_json()
+    print(note_id, 6)
+    if note_id is None:
+        abort(400)
+    # else
+    print(request.args, note_id)
+    note = Note.query.get('note_id')
+    if note is None:
+        abort(404, description="Note Not Found")
+    # handle updates
+    datastore.session.delete(note)
+    datastore.session.commit()
+    if note.user_subject.last_record == note:
+        note.user_subject.forget_last_record()
+
 """
     1) Get Notes
     2) Delete Note
