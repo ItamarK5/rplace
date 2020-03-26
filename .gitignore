@@ -14,3 +14,7 @@ certificate.json
 venv/
 count.py
 *.docx
+config.ini
+parser.py
+config.ini
+*.tmp

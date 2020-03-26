@@ -6,7 +6,7 @@ import eventlet
 from flask import Flask
 
 from painter.others.constants import WEB_FOLDER
-from .config import Config  # config
+from .config import read_configuretion  # config
 
 eventlet.monkey_patch()
 
@@ -18,7 +18,7 @@ app = Flask(
     root_path=WEB_FOLDER
 )
 
-app.config.from_object(Config)
+app.config.update(read_configuretion())
 
 from painter.backends.skio import sio
 from flask_wtf.csrf import CSRFProtect

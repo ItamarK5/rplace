@@ -44,6 +44,7 @@ const getFirstIfAny = (group) => _.isNull(group) ? null : group[0]
 const clamp = (v, max, min) => Math.max(min, Math.min(v, max));
 const is_valid_scale = scale => MIN_SCALE <= scale && scale <= MAX_SCALE;
 const is_valid_pos = v => 0 <= v && v < CANVAS_SIZE;
+const is_valid_color = num => num instanceof Number && num >= 0 && num < 16
 const IsSwalClose = () => _.isUndefined($('.swal2-container')[0])
 const getUTCTimestamp = () => {
     let tm = new Date();
@@ -56,15 +57,16 @@ const getUTCTimestamp = () => {
         tm.getUTCSeconds(),
         tm.getUTCMilliseconds())
 }
-/**
- * 
- * @param {int} flag 
- */
 const HashChangeFlag = {
     Needed: 'Needed',
     Disabled: 'Disabled',
     Enabled: 'Enabled'
 }
+/**
+ * 
+ * @param {int} flag 
+ */
+
 const MaskHashChangeFlag = (flag) => flag == HashChangeFlag.Disabled ? HashChangeFlag.Needed : flag
 /* View in fullscreen */
 //https://www.w3schools.com/howto/howto_js_fullscreen.asp
@@ -612,7 +614,7 @@ const cursor = {
         }
     },
     setPen() {
-        this.setCursor(progress.work.isWorking || lock_object.locked ? Cursors.Wait : Cursors.Pen)
+        this.setCursor(progress.work.isWorking || serverStates.locked ? Cursors.Wait : Cursors.Pen)
     },
     grab() {
         this.setCursor(Cursors.grabbing);
@@ -749,7 +751,7 @@ const pen = {
         button.attr('picked', '1');
     },
     get hasColor() {
-        return (!isNaN(this.__color)) && this.__color > 0 && this.__color < 16;
+        return is_valid_color(this.__color);
     },
     // color getter ans setter
     get color() {
@@ -780,6 +782,8 @@ const pen = {
                 text:'The Server Cannot be Found, if you wait a little it might be found',
                 confirmButtonText: 'To Waiting'
             })
+            // also again check with server if 5 seconds after didnt load
+            
         }
         if (!board.is_ready) {
             Swal.fire({
@@ -796,7 +800,7 @@ const pen = {
                 text: 'Wait for your cooldown to end'
             });
         }
-        else if (lock_object.locked) {
+        else if (serverStates.locked) {
             Swal.fire({
                 title: 'Canvas is closed',
                 imageUrl: 'https://img.memecdn.com/door-lock_o_2688511.jpg',
@@ -825,7 +829,7 @@ const pen = {
                 // else it must be json
                 data = JSON.parse(value);
                 if (data.code == 'lock' && data.value == 'true') {
-                    lock_object.lock()
+                    serverStates.lock()
                 } else if (data.code == 'set-time') {
                     progress.setTime(data.value)
                 }
@@ -833,20 +837,7 @@ const pen = {
         }
     }
 }
-const lock_object = {
-    __locked: false,
-    get locked() {
-        return this.__locked;
-    },
-    lock() {
-        this.__locked = true;
-        $('#lock-colors').attr('lock', 1);
-    },
-    unlock() {
-        this.__locked = false;
-        $('#lock-colors').attr('lock', 0);
-    }
-}
+
 const board = {
     imgCanvas: null,
     ctx_image: null,
@@ -923,7 +914,7 @@ const board = {
             this.key_move_interval = null;
         }
     },
-    //uffer on chrome takes ~1552 ms -- even less
+    //buffer on chrome takes ~1552 ms -- even less
     __buildBoard(buffer) {
         let image_data = new ImageData(CANVAS_SIZE, CANVAS_SIZE);
         let image_buffer = new Uint32Array(image_data.data.buffer);
@@ -946,22 +937,26 @@ const board = {
         // set a pixel at a position
         // x: int (0 < x < 1000)
         // y: int (0 < x < 1000)
-        if (color_idx < 0 || color_idx > 15) {
+        
+        if ((!color_idx instanceof Number) || color_idx < 0 || color_idx > 15) {
             // swal event
+            throw_message('the server/you (if you trying) are trying to set a non valid color')
         }
-        if (!(is_valid_pos(x) && is_valid_pos(y))) {
+        else if (!(is_valid_pos(x) && is_valid_pos(y))) {
             throw_message('given position of point isnt valid')
         }
-        color = Colors.colors[color_idx].css_format();
-        if (this.is_ready) {
-            this.__setAt(x, y, color)
-        }
         else {
-            this.pixelQueue.push({
-                x: x,
-                y: y,
-                color: color
-            }); // insert
+            color = Colors.colors[color_idx].css_format();
+            if (this.is_ready) {
+                this.__setAt(x, y, color)
+            }
+            else {
+                this.pixelQueue.push({
+                    x: x,
+                    y: y,
+                    color: color
+                }); // insert
+            }
         }
     },
     // empty the pixel queen
@@ -1006,7 +1001,7 @@ const board = {
         pen.updateOffset()
         board.drawBoard();
     },
-    // level 3
+    //f level 3
     setCanvasZoom() {
         //https://www.html5rocks.com/en/tutorials/canvas/hidpi/
         let width = innerWidth * devicePixelRatio;
@@ -1100,18 +1095,34 @@ const board = {
             });
     }
 };
-//const performance_arr = []
+
 const sock = io('/paint', {
     autoConnect: false,
     transports: ['websocket'] // or [ 'websocket', 'polling' ], which is the same thing
 });
+
+const serverStates = {
+    __locked: false,
+    get locked() {
+        return this.__locked;
+    },
+    lock() {
+        this.__locked = true;
+        $('#lock-colors').attr('lock', 1);
+    },
+    unlock() {
+        this.__locked = false;
+        $('#lock-colors').attr('lock', 0);
+    },
+}
+
 $(document).ready(function() {
     sock.on('connect', function() {
         sock.emit('get-starter', (data) => {
             progress.setTime(data.time)
             board.buildBoard(new Uint8Array(data.board));
             if (data.lock) {
-                lock_object.lock();
+                serverStates.lock();
             }
         });
     })
@@ -1139,10 +1150,10 @@ $(document).ready(function() {
 		console.log(new_state)
         if (new_state) {
 			// pause code
-			lock_object.unlock();
+			serverStates.unlock();
         } else {
             // pause code
-            lock_object.lock();
+            serverStates.lock();
         }
     });
     sock.on('reconnect', () => {
@@ -1152,8 +1163,13 @@ $(document).ready(function() {
             text: 'Server Connection returned',
         })
     });
-    sock.on('reconnect_error', (a) => {
-        console.log(a)
+    sock.on('reconnect_error', () => {
+        //staff
+        Swal.fire({
+            icon: 'error',
+            title: 'Connection Lost',
+            text: 'Lost Connection with the server',
+        })
     })
     $('#coordinates').hover(function() {
         board.updateCoords();

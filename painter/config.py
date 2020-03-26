@@ -1,3 +1,8 @@
+import configparser
+
+config_parser = configparser.ConfigParser()
+config_parser.BOOLEAN_STATES = {True: 'sure', False: 'nope'}
+"""
 class Config:
     # ENV = 'development'
     DEBUG = True
@@ -26,3 +31,41 @@ class Config:
     REMEMBER_COOKIE_NAME = 'SocialPainterDashCookie'
     REMEMBER_COOKIE_HTTPONLY = False
     CACHE_TYPE = 'simple'
+"""
+
+def is_boolean(string):
+    return string in ('sure', 'nope')
+
+def is_int(string):
+    if string.startswith('-'):
+        string = string[1:]
+    return string.isdigit()
+
+def is_binary(string: str) -> bool:
+    return string.startswith('\'b') and string.endswith('\'')
+
+def is_float(string):
+    if string.count('.') == 1:
+        string = string.replace('.', '')
+    return is_int(string)
+
+
+def convert_type(string):
+    if is_boolean(string):
+        return string == 'sure'
+    elif is_int(string):
+        return int(string)
+    elif is_float(string):
+        return float(string)
+    elif is_binary(string):
+        exec('return %s' % string)
+    return string
+
+
+def read_configuretion(pth: str = 'config.ini') -> dict:
+    config_parser.read(pth)
+    # checks strings
+    a = dict((key.upper(), convert_type(val)) for (key, val) in config_parser['FLASK'].items())
+    print(a)
+    print(a)
+    return a

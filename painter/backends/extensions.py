@@ -5,12 +5,12 @@ from flask_redis import FlaskRedis
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 
-from painter.config import Config
+from .. import app
 
 mailbox = Mail()
 rds_backend = FlaskRedis()
 datastore = SQLAlchemy()
-engine = create_engine(Config.SQLALCHEMY_DATABASE_URI)
+engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 # encrypt = FlaskEncrypt()
 cache = Cache(config={'CACHE_TYPE': 'simple'})
 login_manager = LoginManager()
