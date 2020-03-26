@@ -221,11 +221,11 @@ $(document).ready(() => {
         $('.error-list').children().remove();
         e.preventDefault();
         let args = $(this).serializeForm();
-        console.log(args)
         $.ajax({
             url:$(this).attr('action'),
             method:'POST',
             data:JSON.stringify(args),
+            contentType: "application/json;charset=utf-8",
             success: (data) => {
                 console.log(data, typeof(data))
                if (data.valid) {

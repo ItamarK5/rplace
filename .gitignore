@@ -13,3 +13,4 @@ painter/web/package.json
 certificate.json
 venv/
 count.py
+*.docx

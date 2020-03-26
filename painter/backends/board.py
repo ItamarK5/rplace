@@ -4,12 +4,11 @@ from flask import Flask
 
 from .extensions import rds_backend
 
-"""
-A backend to work with the board on redis
-"""
+""" A backend to work with the board on redis """
+
 
 board_lock = Lock()
-_BOADR_REDIS_KEY = 'board'
+_BOARD_REDIS_KEY = 'board'
 board_temp = b'\x00' * 500 * 1000
 
 
@@ -19,8 +18,8 @@ def make_board() -> None:
     check if there is a board object in redis
     if not creates new one
     """
-    if not rds_backend.exists('board'):
-        rds_backend.set(_BOADR_REDIS_KEY, '\00' * 1000 * 500)
+    if not rds_backend.exists(_BOARD_REDIS_KEY):
+        rds_backend.set(_BOARD_REDIS_KEY, '\00' * 1000 * 500)
 
 
 def init_app(app: Flask) -> None:

@@ -22,7 +22,7 @@ accounts_router = Blueprint('auth',
 @accounts_router.before_app_first_request
 def init_tokens() -> None:
     """
-    :return: init the token generator
+    :return: init the token generator object
     """
     TokenSerializer.init_serializer(current_app)
 
@@ -30,7 +30,6 @@ def init_tokens() -> None:
 @accounts_router.route('/login', methods=('GET', 'POST'), )
 def login() -> Response:
     """
-    added in version 1.0.0
     :return: login page response
     """
     if current_user.is_authenticated:
@@ -115,13 +114,9 @@ def revoke() -> Response:
             """render_template('transport/revoke-unknown-user.html')"""
     return render_template('forms/revoke.html', form=form)
 
-
+"""
 @accounts_router.route('/refresh', methods=['GET', 'POST'])
 def refresh() -> Response:
-    """
-        added in version 1.0.0
-        :return: login page response
-        """
     if current_user.is_authenticated:
         redirect('place.home')
     form = LoginForm()
@@ -144,6 +139,7 @@ def refresh() -> Response:
                            form=form,
                            entire_form_errors=entire_form_error,
                            extra_error=extra_error)
+"""
 
 
 @accounts_router.route('/change-password/<string:token>', methods=['GET', 'POST'])

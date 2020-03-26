@@ -30,6 +30,7 @@ from . import models
 sio.init_app(
     app,
     # message_queue='redis://192.168.0.214:6379/0',
+    message_queue='pyamqp://guest@localhost//'  # testing
 )
 
 datastore.init_app(app)

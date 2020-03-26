@@ -16,6 +16,9 @@ user_regex = re.compile(
 
 
 class TokenSerializer:
+    """
+    object holding itsdangerous initilizers, using the flask config
+    """
     # https://realpython.com/handling-email-confirmation-in-flask/
     signup: URLSafeTimedSerializer
     revoke: URLSafeTimedSerializer
