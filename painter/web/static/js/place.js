@@ -44,7 +44,7 @@ const getFirstIfAny = (group) => _.isNull(group) ? null : group[0]
 const clamp = (v, max, min) => Math.max(min, Math.min(v, max));
 const is_valid_scale = scale => MIN_SCALE <= scale && scale <= MAX_SCALE;
 const is_valid_pos = v => 0 <= v && v < CANVAS_SIZE;
-const is_valid_color = num => num instanceof Number && num >= 0 && num < 16
+const is_valid_color = num => Number.isInteger(num) && num >= 0 && num < 16
 const IsSwalClose = () => _.isUndefined($('.swal2-container')[0])
 const getUTCTimestamp = () => {
     let tm = new Date();
