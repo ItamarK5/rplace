@@ -141,7 +141,6 @@ class User(datastore.Model, UserMixin):
             text += f"until {record.affect_from.strftime('%m/%d/%Y, %H:%M')}, "
         return Markup(text + f'because you <b>{record.reason}</b>')
 
-
 @login_manager.user_loader
 def load_user(user_token: str) -> Optional[User]:
     """

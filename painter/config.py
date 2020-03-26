@@ -1,8 +1,10 @@
-import configparser
+"""`import configparser
 
 config_parser = configparser.ConfigParser()
 config_parser.BOOLEAN_STATES = {True: 'sure', False: 'nope'}
 """
+
+
 class Config:
     # ENV = 'development'
     DEBUG = True
@@ -31,6 +33,9 @@ class Config:
     REMEMBER_COOKIE_NAME = 'SocialPainterDashCookie'
     REMEMBER_COOKIE_HTTPONLY = False
     CACHE_TYPE = 'simple'
+
+def get_config():
+    return dict((key, getattr(Config, key)) for key in Config.__dict__.keys() if not key.startswith('__'))
 """
 
 def is_boolean(string):
@@ -41,8 +46,10 @@ def is_int(string):
         string = string[1:]
     return string.isdigit()
 
+
 def is_binary(string: str) -> bool:
-    return string.startswith('\'b') and string.endswith('\'')
+    return string.startswith('\'b') and string.endswith('\'') and string.count('\'')-string.count('\\\'') <= 0
+
 
 def is_float(string):
     if string.count('.') == 1:
@@ -69,3 +76,4 @@ def read_configuretion(pth: str = 'config.ini') -> dict:
     print(a)
     print(a)
     return a
+"""

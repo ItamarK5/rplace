@@ -4,7 +4,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String, case
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.sqlite import DATETIME, BOOLEAN
 from typing import Dict
-from painter.backends.extensions import datastore
+from ..backends.extensions import datastore
 from flask_login import current_user
 """
     need to ask what is better:

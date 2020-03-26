@@ -10,7 +10,7 @@ from painter.models.notes import Record, Note
 from painter.models.role import Role
 from painter.models.user import User
 from painter.models.user import reNAME
-from painter.others.profile_form import PreferencesForm
+from painter.others.preference_form import PreferencesForm
 from .forms import RecordForm, NoteForm
 from .utils import only_if_superior, admin_only, superuser_only, json_response, validate_get_notes_param
 from painter.backends.skio import ADMIN_NAMESPACE, PAINT_NAMESPACE, sio

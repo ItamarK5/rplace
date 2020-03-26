@@ -26,7 +26,7 @@ def init_app(app: Flask) -> None:
     """
     :param app: a flask appilcation
     :return: nothing
-    runs functions on the app before starting the application
+    runs functions on the app before sarting the application
     -- creates the board
     """
     app.before_first_request(make_board)

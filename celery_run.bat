@@ -1,1 +1,1 @@
-venv\Scripts\celery.exe -A painter.celery worker -P eventlet -c 1000
+start venv\Scripts\celery.exe -A celery worker -P eventlet -c 1000 -h %hi

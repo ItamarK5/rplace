@@ -15,7 +15,7 @@ user_regex = re.compile(
     re.IGNORECASE)
 
 
-class TokenSerializer:
+class TokenSerializer(object):
     """
     object holding itsdangerous initilizers, using the flask config
     """

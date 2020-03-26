@@ -1135,14 +1135,6 @@ $(document).ready(function() {
     query.setHash();
     sock.on('set-board', (x, y, color_idx) => board.setAt(x, y, color_idx));
     // Lost connection
-    sock.on('disconnect', () => {
-        board.reset_board_build();
-        Swal.fire({
-            icon: 'error',
-            title: 'Lost connection with the server',
-            text: 'Server Lost Connection',
-        });
-    });
     // Connection on
     sock.on('change-lock-state', (new_state) => {
 		// if new state is active == true
@@ -1164,6 +1156,7 @@ $(document).ready(function() {
         })
     });
     sock.on('reconnect_error', () => {
+        board.reset_board_build();
         //staff
         Swal.fire({
             icon: 'error',

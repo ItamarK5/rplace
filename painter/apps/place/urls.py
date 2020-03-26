@@ -5,7 +5,7 @@ from flask_login import login_required, current_user
 
 from painter.backends.extensions import datastore
 from painter.others.constants import WEB_FOLDER
-from painter.others.profile_form import PreferencesForm
+from painter.others.preference_form import PreferencesForm
 
 place_router = Blueprint(
     'place',

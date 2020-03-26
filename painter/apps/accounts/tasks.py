@@ -4,7 +4,7 @@ from flask import current_app
 from flask_mail import Message
 
 from painter.backends.extensions import mailbox
-from painter.celery import celery
+from mail import celery
 
 
 @celery.task(name='send-mail')
