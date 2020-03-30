@@ -1,10 +1,3 @@
-"""`import configparser
-
-config_parser = configparser.ConfigParser()
-config_parser.BOOLEAN_STATES = {True: 'sure', False: 'nope'}
-"""
-
-
 class Config:
     # ENV = 'development'
     DEBUG = True
@@ -39,48 +32,4 @@ class Config:
 def get_config():
     return dict((key, getattr(Config, key)) for key in Config.__dict__.keys() if not key.startswith('__'))
 
-
-"""
-
-def is_boolean(string):
-    return string in ('sure', 'nope')
-
-def is_int(string):
-    if string.startswith('-'):
-        string = string[1:]
-    return string.isdigit()
-
-
-def is_binary(string: str) -> bool:
-    return string.startswith('\'b') and string.endswith('\'') and string.count('\'')-string.count('\\\'') <= 0
-
-
-def is_float(string):
-    if string.count('.') == 1:
-        string = string.replace('.', '')
-    return is_int(string)
-
-
-def convert_type(string):
-    if is_boolean(string):
-        return string == 'sure'
-    elif is_int(string):
-        return int(string)
-    elif is_float(string):
-        return float(string)
-    elif is_binary(string):
-        exec('return %s' % string)
-    return string
-
-
-def read_configuretion(pth: str = 'config.ini') -> dict:
-    config_parser.read(pth)
-    # checks strings
-    a = dict((key.upper(), convert_type(val)) for (key, val) in config_parser['FLASK'].items())
-    print(a)
-    print(a)
-    return a
-"""
-"""
-3Std/+K)h)Yvab"L"9WNGd8
-"""
+#a4<`LsNv>!n}$8?6%MQHXjS^!_
