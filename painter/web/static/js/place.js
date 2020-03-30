@@ -381,7 +381,7 @@ const progress = {
         }
     },
     updateTimer() {
-        // Updates the prorgess bar and timer each interval
+        // Updates the progess bar and timer each interval
         // Math.max the time until cooldown ends in ms, compare if positive (the time has not passed),
         // ceil to round up, I want to prevent the progress showing time up to that
         let seconds_left = Math.ceil(Math.max(this.time - getUTCTimestamp(),

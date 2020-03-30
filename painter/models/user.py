@@ -42,6 +42,12 @@ class User(datastore.Model, UserMixin):
     sqlite_autoincrement = True
 
     def __init__(self, password=None, hash_password=None, **kwargs) -> None:
+        """
+        :param password: raw password
+        :param hash_password: the password post hash
+        :param kwargs: the other arguments passed to the Modal constructor
+        to switch between initing using hashed password or not
+        """
         if hash_password is not None and password is None:
             password = self.encrypt_password(kwargs.get('username'), hash_password)
         super().__init__(password=password, **kwargs)
@@ -59,7 +65,7 @@ class User(datastore.Model, UserMixin):
             'sha512',
             password.encode(),
             username.encode(),
-            app.config.USER_PASSWORD_ROUNDS
+            app.config['USER_PASSWORD_ROUNDS']
         ).hex()
 
     def __repr__(self) -> str:
@@ -140,6 +146,7 @@ class User(datastore.Model, UserMixin):
         if record.affect_from is not None:
             text += f"until {record.affect_from.strftime('%m/%d/%Y, %H:%M')}, "
         return Markup(text + f'because you <b>{record.reason}</b>')
+
 
 @login_manager.user_loader
 def load_user(user_token: str) -> Optional[User]:

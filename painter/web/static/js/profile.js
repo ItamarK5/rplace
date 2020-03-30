@@ -185,7 +185,7 @@ $(document).ready(() =>{
         $('#setting-form').submit();
     });
     //first name change
-    $('#setting-form').submit(function(e){
+    $('.setting-form').submit(function(e){
         e.preventDefault();
         let form = $(this);
         $.ajax({

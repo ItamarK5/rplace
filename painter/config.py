@@ -9,7 +9,8 @@ class Config:
     # ENV = 'development'
     DEBUG = True
     SEND_FILE_MAX_AGE_DEFAULT = 1
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///C:\\Cyber\\2020\\rplace\\database.db'
+    # SQLALCHEMY_DATABASE_URI = 'sqlite:///C:\\Cyber\\2020\\rplace\\database.db'
+    SQLALCHEMY_DATABASE_URI = ''
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     SECRET_KEY = b'O\x0c\xaf\xe9\xd2\x9b#\x0f\xcaB\xa4B\xa7\xf2f:\xda5\xcf\x104\x16A\xbd'
     MAIL_SERVER = 'smtp.gmail.com'
@@ -34,8 +35,11 @@ class Config:
     REMEMBER_COOKIE_HTTPONLY = False
     CACHE_TYPE = 'simple'
 
+
 def get_config():
     return dict((key, getattr(Config, key)) for key in Config.__dict__.keys() if not key.startswith('__'))
+
+
 """
 
 def is_boolean(string):
@@ -76,4 +80,7 @@ def read_configuretion(pth: str = 'config.ini') -> dict:
     print(a)
     print(a)
     return a
+"""
+"""
+3Std/+K)h)Yvab"L"9WNGd8
 """

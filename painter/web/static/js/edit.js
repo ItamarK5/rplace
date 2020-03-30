@@ -28,11 +28,12 @@ function makePageButton(num, text=null){
         text = _.isNull(num) ? 'none' : num.toString() 
     }
     // then
+    is_disabled =  _.isNull(num) || isNaN(num);
     let button = $('<button></button>').attr({
         type:'button',
-        href: _.isNull(num) || isNaN(num) ? 'none' : num.toString() 
+        href: is_disabled ? 'none' : num.toString()
     }).text(text).addClass('btn').addClass('btn-secondary').addClass('page-button');
-    if(isNaN(num)){
+    if(is_disabled){
         button.addClass('disabled')
     }
     console.log(button)
