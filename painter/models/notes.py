@@ -1,8 +1,7 @@
 from datetime import datetime
 
-from sqlalchemy import Column, ForeignKey, Integer, String, case
+from sqlalchemy import Column, ForeignKey, Integer, String, case, Boolean, DateTime
 from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.sqlite import DATETIME, BOOLEAN
 from typing import Dict
 from ..backends.extensions import datastore
 from flask_login import current_user
@@ -18,9 +17,9 @@ class Note(datastore.Model):
     id = Column(Integer(), primary_key=True, unique=True, autoincrement=True)
     user_subject_id = Column(Integer(), ForeignKey('user.id'), nullable=False)
     description = Column(String(), nullable=False)
-    post_date = Column(DATETIME(), default=datetime.now, nullable=False)
+    post_date = Column(DateTime(), default=datetime.now, nullable=False)
     user_writer_id = Column(Integer(), ForeignKey('user.id'), nullable=False)
-    is_record = Column(BOOLEAN(), nullable=True)
+    is_record = Column(Boolean(), nullable=True)
 
     user_subject = relationship('User', foreign_keys=[user_subject_id], uselist=False)
     user_writer = relationship('User', foreign_keys=[user_writer_id], uselist=False)
@@ -56,8 +55,8 @@ class Note(datastore.Model):
 
 class Record(Note):
     id = Column(Integer(), ForeignKey('note.id'), primary_key=True)
-    active = Column(BOOLEAN(), nullable=False)
-    affect_from = Column(DATETIME(), nullable=True, default=None)
+    active = Column(Boolean(), nullable=False)
+    affect_from = Column(DateTime(), nullable=True, default=None)
     reason = Column(String(), nullable=False)
     sqlite_autoincrement = True
     __mapper_args__ = {

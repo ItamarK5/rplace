@@ -5,8 +5,7 @@ from typing import Optional, Union
 
 from flask import Markup
 from flask_login import UserMixin
-from sqlalchemy import Column, Integer, String, desc
-from sqlalchemy.dialects.sqlite import DATETIME, SMALLINT
+from sqlalchemy import Column, Integer, String, desc, SmallInteger, DateTime
 from painter.backends.extensions import datastore, cache
 from painter.backends.extensions import login_manager
 from .enumint import SmallEnum
@@ -29,17 +28,16 @@ class User(datastore.Model, UserMixin):
     username = Column(String(15), unique=True, nullable=False)
     password = Column(String(128), nullable=False)
     email = Column(String(254), unique=True, nullable=False)
-    next_time = Column(DATETIME(), default=datetime.utcnow, nullable=False)
-    creation = Column(DATETIME(), default=datetime.utcnow, nullable=False)
+    next_time = Column(DateTime(), default=datetime.utcnow, nullable=False)
+    creation = Column(DateTime(), default=datetime.utcnow, nullable=False)
     role = Column(SmallEnum(Role), default=Role.common, nullable=False)
-    x = Column(SMALLINT(), default=500, nullable=False)
-    y = Column(SMALLINT(), default=500, nullable=False)
-    scale = Column(SMALLINT(), default=4, nullable=False)
+    x = Column(SmallInteger(), default=500, nullable=False)
+    y = Column(SmallInteger(), default=500, nullable=False)
+    scale = Column(SmallInteger(), default=4, nullable=False)
     # default color black
-    color = Column(SMALLINT(), default=1, nullable=False)
+    color = Column(SmallInteger(), default=1, nullable=False)
     url = Column(String(), default=None, nullable=True)
     # https://stackoverflow.com/a/11579347
-    sqlite_autoincrement = True
 
     def __init__(self, password=None, hash_password=None, **kwargs) -> None:
         """
