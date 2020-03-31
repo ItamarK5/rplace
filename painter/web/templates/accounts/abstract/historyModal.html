@@ -28,7 +28,7 @@
             <div class="modal-body">
                 <div class="row">
                     <div class="col">
-                        <div class="row justify-content-center">
+                        <div class="row justify-content-center mb-1">
                             <button id="refresh-history" class="btn btn-primary">Refresh</button>
                         </div>
                         <div class="row">
@@ -42,16 +42,16 @@
                                 </thead>
                             </table>
                         </div>
-                        <div class="row justify-content-center mb-2">
+                        <div class="row justify-content-center mb-1">
                             <div class="btn-group" role="group" aria-label="page group" id="page-group"></div>
                         </div>        
                     </div>
                     <div class="col justify-content-center" id="view-record">
-                        <div class="row justify-content-around mb-1 ml-1">
+                        <div class="row justify-content-around my-1">
                             <div class="col-5">{{note_description('post-date', 'Posted', 'far fa-clock')}}</div>
                             <div class="col-5">{{note_description('writer', 'Writer', 'fas fa-pen-fancy')}}</div>
                         </div>
-                        <div class="row justify-content-around mb-1 ml-1 record-row">
+                        <div class="row justify-content-around my-1 record-row">
                             <div class="col-5">{{note_description('affect-from', 'Takes Effect from', 'fas fa-calendar')}}</div>
                             <div class="col-5">{{note_description('active', 'Status', 'fas fa-cogs')}}</div>
                         </div>
@@ -61,9 +61,9 @@
                         <div class="row justify-content-around m-1">
                             {{big_note_description('description', 'Description')}}
                         </div>
-                        <div id="edit-note-tools" class="row justify-content-around">
+                        <div id="edit-note-tools" class="row justify-content-around d-none">
                             <button type="button" id="remove-note-button" class="btn btn-danger">Remove</button>
-                            <button type="button" id="edit-note-button" class="btn btn-warning">Edit</button>
+                            <button type="button" id="edit-note-button" class="btn btn-warning" disabled>Change</button>
                         </div>
                     </div>
                 </div>

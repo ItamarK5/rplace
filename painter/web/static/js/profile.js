@@ -73,8 +73,8 @@ $(document).ready(() =>{
         let parent = getModalParent(form);
         let success_div = getModalMessageElement(parent, 'success');
         let error_div = getModalMessageElement(parent, 'error');
-        success_div.addClass('d-none')
-        error_div.addClass('d-none')
+        success_div.addClass('d-none');
+        error_div.addClass('d-none');
         error_div.children().remove();
         console.log(parent)
         $.ajax({

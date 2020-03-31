@@ -1,4 +1,6 @@
+// shortcuts
 const history_table = $('#history-table');
+// map for note type
 const NoteTypeEnums = {
     unbanned_date: {row_class:'primary', text:'Future Unbanned Record'},
     banned_date: {row_class:'warning', text:'Future Banned Record'},
@@ -7,22 +9,27 @@ const NoteTypeEnums = {
     note : {row_class:'info', text:'Note Record'},
 }
 
+// get the user name from the url (that suppose to be)
 const GetUserName = () => window.location.pathname.split('/')[2];
-
-
+const getTargetRow = () => $('tr[targeted="true"]');
+// create row note from note data
 const MakeNoteRow = (note) => {
     // note attributes needed:
     let note_row_type = NoteTypeEnums[note.type];
     let row = $('<tr></tr>')
                 .addClass('table-' + note_row_type.row_class)
                 .addClass('note-history-row')
-                .attr({'data-item': note.id});
+                .attr({
+                    'data-item': note.id,
+                    'data-toggle': 'button'
+                });
     row.append($('<td></td>').text(note.post_date));
     row.append($('<td></td>').text(note.writer));
     row.append($('<td></td>').text(note_row_type.text));
     return row;
 }
 
+// create page button from page data
 function makePageButton(num, text=null){
     if(_.isNull(text)){
         text = _.isNull(num) ? 'none' : num.toString() 
@@ -41,19 +48,26 @@ function makePageButton(num, text=null){
 }
 
 const focusNoteRow = (note_row) => {
-    console.log(note_row);
-    let row_class = NoteTypeEnums[notes.get_row_note(note_row).type].row_class
+    let row_class = NoteTypeEnums[notes.get_notes_row(note_row).type].row_class
     $(note_row).addClass(`bg-${row_class}`);
     $(note_row).removeClass(`table-${row_class}`);
 }
 
 const unfocusNoteRow = (note_row) => {
-    let row_class = NoteTypeEnums[notes.get_row_note(note_row).type].row_class
+    let row_class = NoteTypeEnums[notes.get_notes_row(note_row).type].row_class
     $(note_row).addClass(`table-${row_class}`);
     $(note_row).removeClass(`bg-${row_class}`);
 }
 
 function displayNoteView(note){
+    console.log(Boolean(note), note)
+    note = Boolean(note) ? note : {
+        type:'note',
+        post_date:'',
+        writer:'',
+        description:'',  
+        can_edit:false     
+    }
     if(note.type == 'note'){
         $('.record-row:not(.d-none)').addClass('d-none')
     } else {
@@ -66,7 +80,19 @@ function displayNoteView(note){
         $('#affect-from-field').val(_.isNull(note.affect_from) ? note.post_date : note.affect_from);    // if the date was from the same time
         $('#active-field').val(note.active);
         $('#reason-field').text(note.reason);
+    } else {
+        $('#reason-field').text('')
+        $('#affect-from-field').text('')
+        $('#active-field').text('')
     }
+    if(note.can_edit){
+        $('#edit-note-tools').removeClass('d-none');
+        $('#description-field').prop('disabled', false);
+    } else {
+        $('#edit-note-tools').addClass('d-none');
+        $('#description-field').prop('disabled', true);
+    }
+    $('#edit-note-button').prop('disabled', true)
 }
 
 const notes = {
@@ -74,8 +100,18 @@ const notes = {
     prev_ref:null,
     next_ref:null,
     current_page:null,
+    __display_note:null,
     query:null,
-    get_row_note(row_selector) {
+    get display_note() {
+        return this.__display_note;
+    },
+    set display_note(value){
+        if(value != this.__display_note){
+            this.__display_note = value;   
+            displayNoteView(value);
+        }
+    },
+    get_notes_row(row_selector) {
         return this.query[
             _.findIndex(
                 this.query, 
@@ -98,20 +134,22 @@ const notes = {
                 focusNoteRow(this)
             },
             function(){
-                if(!this.hasAttribute('is-selected')){
-                    unfocusNoteRow(this);                                    
+                if($(this).attr('targeted') != 'true'){
+                    unfocusNoteRow(this);     
                 }
             }
         )
         $('.note-history-row').click(function() {
-            let sibling = $(this).siblings('tr[is-selected="1"]')[0];
-            if(sibling){
-                sibling.removeAttribute('is-selected');
-                unfocusNoteRow(sibling);
-            }
-            $(this).attr('is-selected', '1');
+            let data_item = $(this).attr('data-item');
+            $('tr[targeted="true"]').each(function() {
+                if(this.attr('data-item') = data_item){
+                    $(this).attr('targeted', "true");
+                    unfocusNoteRow(this);
+                }
+            })
+            $(this).attr('targeted', "true");
             focusNoteRow(this);
-            displayNoteView(notes.get_row_note(this));
+            notes.display_note = notes.get_notes_row(this);
         })
     },
     makePages(){
@@ -167,7 +205,8 @@ function ajaxGetPage(page=1){
             notes.next_ref=data.next_ref;
             notes.current_page=data.current_page;
             notes.update_notes()
-        }
+        },
+        error:ajaxErrorAlert
     })
 }
 
@@ -186,19 +225,6 @@ $.fn.serializeForm = function() {
     });
     return output;
 };
-
-const sock = io('/edit-profile');
-
-sock.on('connect', () => {
-    url_recipe = window.location.pathname.split('/')
-    sock.emit('join', url_recipe[url_recipe.length-1])
-})
-
-sock.on('reconnect', () => {
-    url_recipe = window.location.pathname.split('/')
-    sock.emit('join', url_recipe[url_recipe.length-1])
-});
-
 
 $(document).ready(() => {
     $('[data-toggle="tooltip"]').tooltip()
@@ -341,21 +367,41 @@ $(document).ready(() => {
         })
     });
     $('#remove-note-button').click(() => {
-        let selected_row = $('.note-history-row[is-selected="1"]')[0];
-        console.log($(selected_row).attr('data-item'))
-        if(selected_row){
+        let targeted_row = getTargetRow();
+        if(targeted_row){
             $.post({
                 url:`/delete-note`,
-                data:{idx:$(selected_row).attr('data-item').toString()},
+                data:{idx:targeted_row.attr('data-item').toString()},
                 success: (response) => {
                     if(response.success){
+                        Swal.alert({
+                            icon:'success',
+                            text:'Success',
+                            error:'The Note was removed'
+                        })
                     }
-                }
+                    note.display_note = null;
+                    targeted_row.remove()
+                },
+                error: ajaxErrorAlert
             })
         }
     })
+    $('#description-field').on('input', function(e) {
+        console.log(notes.display_note)
+        if(notes.display_note){
+            $('#edit-note-button').prop('disabled', $(this).val() == notes.display_note.description)
+        }
+    })
+    $('edit-note-button').click(() => {
+        $.ajax(() => {
+            
+        })
+    })
+
 })
 
+/** serialize the date input */
 $(window).on('load', function() {
     $('#affect_from').datetimepicker({
         format: 'DD/MM/YYYY HH:mm',

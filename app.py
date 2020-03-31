@@ -5,7 +5,7 @@ from painter import app, sio
 if __name__ == '__main__':
     sio.run(
         app,
-        debug=True,
+        debug=False,
         host='0.0.0.0',
         port=argv[1] if len(argv) > 1 else 8080,
     )
