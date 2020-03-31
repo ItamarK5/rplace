@@ -50,8 +50,8 @@
         </div>
         {{render_link('home-button', 'home')}}
         {{render_link('logout-button', 'sign-out-alt')}}
-        {% if url %}
-        <div class="icon-button" href={{url}} id="chat-button">
+        {% if current_user.url %}
+        <div class="icon-button" href={{current_user.url}} id="chat-button">
             <span class="fas fa-comment-dots"></span>
         </div>
         {% endif %}

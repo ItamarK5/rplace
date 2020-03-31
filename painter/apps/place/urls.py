@@ -52,7 +52,7 @@ def profile_ajax():
         # you can only set 1 preference at a time
         key, val = form.safe_first_hidden_fields()
         if key == 'url':
-            current_user.url = val if val != '' and val is not None else None
+            current_user.url = val if val else None
         elif key == 'x':
             current_user.x = val
         elif key == 'y':

@@ -3,8 +3,8 @@ from typing import Dict, Any, List
 from flask import current_app
 from flask_mail import Message
 
-from painter.backends.extensions import mailbox
 from mail import celery
+from painter.backends.extensions import mailbox
 
 
 @celery.task(name='send-mail')

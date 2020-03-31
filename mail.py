@@ -1,5 +1,7 @@
 from celery import Celery
+
 from painter import app
+
 
 def make_celery(app):
     celery = Celery(app.import_name,  # backend=app.config['CELERY_RESULT_BACKEND'],

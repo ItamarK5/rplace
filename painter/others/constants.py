@@ -19,6 +19,6 @@ MINUTES_COOLDOWN = timedelta(minutes=1)
 COLORS = (
     "white", "black", "gray", "silver",
     "red", "pink", "brown", "orange",
-    "olive, yellow", "green", "lime",
+    "olive", "yellow", "green", "lime",
     "blue", "aqua", "purple", "magenta"
 )

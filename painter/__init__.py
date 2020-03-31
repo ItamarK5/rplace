@@ -5,8 +5,8 @@ from os import path
 import eventlet
 from flask import Flask
 
-from .others.constants import WEB_FOLDER
 from .config import get_config  # config
+from .others.constants import WEB_FOLDER
 
 eventlet.monkey_patch()
 

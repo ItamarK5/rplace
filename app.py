@@ -1,7 +1,7 @@
 from sys import argv
-from painter import app, sio, config
-import eventlet
-from eventlet import wsgi
+
+from painter import app, sio
+
 if __name__ == '__main__':
     sio.run(
         app,

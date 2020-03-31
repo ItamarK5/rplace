@@ -1,23 +1,18 @@
-from typing import Any, Callable, Dict
-from painter.models.user import User
+from functools import wraps
+from typing import Any, Callable
+
+from flask import request
+from flask_login import current_user
+from flask_socketio import join_room, ConnectionRefusedError, rooms, disconnect
+
 from painter.backends import lock
 from painter.backends.skio import (
     sio, ADMIN_NAMESPACE,
     PAINT_NAMESPACE, EDIT_PROFILE_NAMESPACE,
-    PROFILE_NAMESPACE, emit_namespaces,
     socket_io_role_required_connection, socket_io_role_required_event,
 )
-from painter.backends.extensions import datastore
-from werkzeug.datastructures import MultiDict
-from flask import request
-from flask_login import current_user
 from painter.models.role import Role
-from painter.models.notes import Note, Record
-from flask_socketio import join_room, ConnectionRefusedError, rooms, disconnect
-from .forms import NoteForm, RecordForm
-from functools import wraps
-from datetime import datetime
-from flask import escape, json
+from painter.models.user import User
 
 
 def socket_io_require_user_room(f: Callable) -> Callable:

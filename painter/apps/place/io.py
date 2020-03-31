@@ -1,7 +1,9 @@
 import json
 from datetime import datetime
 from typing import Any
+
 from flask_login import current_user
+from flask_socketio import join_room
 
 from painter.backends import lock, board
 from painter.backends.extensions import datastore
@@ -11,7 +13,6 @@ from painter.backends.skio import (
     socket_io_authenticated_only_event,
     PROFILE_NAMESPACE
 )
-from flask_socketio import join_room
 
 
 def task_set_board(x: int, y: int, color: int) -> None:

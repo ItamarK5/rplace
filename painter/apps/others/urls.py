@@ -4,7 +4,7 @@ from typing import Union, Optional
 
 from flask import (
     Blueprint, render_template, send_from_directory,
-    abort, Response, request, jsonify
+    abort, Response, request
 )
 from flask_wtf.csrf import CSRFError  # ignore all
 from werkzeug.exceptions import HTTPException

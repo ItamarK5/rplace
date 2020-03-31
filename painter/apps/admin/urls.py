@@ -1,11 +1,13 @@
 from datetime import datetime
 from typing import Dict
+
 from flask import Blueprint, render_template, abort, request, url_for, redirect, jsonify
 from flask.wrappers import Response
 from flask_login import current_user
 
 from painter.backends import lock
 from painter.backends.extensions import datastore
+from painter.backends.skio import ADMIN_NAMESPACE, PAINT_NAMESPACE, sio
 from painter.models.notes import Record, Note
 from painter.models.role import Role
 from painter.models.user import User
@@ -13,8 +15,6 @@ from painter.models.user import reNAME
 from painter.others.preference_form import PreferencesForm
 from .forms import RecordForm, NoteForm
 from .utils import only_if_superior, admin_only, superuser_only, json_response, validate_get_notes_param
-from painter.backends.skio import ADMIN_NAMESPACE, PAINT_NAMESPACE, sio
-
 
 admin_router = Blueprint(
     'admin',
@@ -288,11 +288,3 @@ def remove_user_note():
     datastore.session.commit()
     if note.user_subject.last_record == note:
         note.user_subject.forget_last_record()
-
-"""
-    1) Get Notes
-    2) Delete Note
-    3) Remove Note
-    4) Admin Only - Remove Note
-    5) Superuser Only - Remove
-"""

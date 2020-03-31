@@ -34,9 +34,10 @@ class PreferencesForm(FlaskForm):
         ],
     )
     color = SelectField(
+        label='Select Color',
         coerce=int,
         choices=tuple(
-            [(i, COLORS[i]) for i in range(len(COLORS))]
+            [(i, COLORS[i].title()) for i in range(len(COLORS))]
         ),
         validators=[
             validators.Optional(),
@@ -59,8 +60,7 @@ class PreferencesForm(FlaskForm):
         for f in self.__iter__():
             if isinstance(f, text_field_types):
                 f = getattr(self, f, None)
-            print(f is None, isinstance(f.widget, HiddenInput),
-                  (not f.raw_data), f.id in self.errors, f.id)
+
             if f is None or isinstance(f.widget, HiddenInput) \
                     or (not f.raw_data) or f.id in self.errors:
                 continue

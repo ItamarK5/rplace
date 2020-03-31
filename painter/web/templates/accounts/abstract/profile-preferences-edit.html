@@ -1,7 +1,7 @@
-{% macro settingField(key, val) %}
+{% macro settingField(key, val, modal, describe) %}
 <tr class="mb-2 justify-content-center" id="row-{{key}}">
     <td class="justify-content-center align-content-center">
-        <button class="btn btn-outline-light w-100 h-100 block text-center text-xl" data-target="#modal-change-preference"
+        <button class="btn btn-outline-light w-100 h-100 block text-center text-xl" data-target="{{modal}}"
                 data-toggle="modal" id="{{key}}-active">
             <i class="fas fa-edit"></i>
         </button>
@@ -12,7 +12,7 @@
         </h5>
     </td>
     <td class="justify-content-center setting-val">
-        <h5 class="text-break text-warning" id="text-{{key}}">{{val|string|title}}</h5>
+        <h5 class="text-break text-warning" id="text-{{key}}" aria-describedat="#{{describe}}">{{val|string|title}}</h5>
     </td>
 </tr>
 {% endmacro %}
@@ -24,10 +24,10 @@
     <th class="text-center" style="width:80%">Value:</th>
     </thead>
     <tbody class="text-center">
-    {{settingField('x', user.x)}}
-    {{settingField('y', user.y)}}
-    {{settingField('scale', user.scale)}}
-    {{settingField('color', user.color|color)}}
-    {{settingField('url', user.chat)}}
+    {{settingField('x', user.x, '#modal-change-x', form.x.id)}}
+    {{settingField('y', user.y, '#modal-change-y', form.y.id)}}
+    {{settingField('scale', user.scale, '#modal-change-scale', form.scale.id)}}
+    {{settingField('color', user.color|color, '#modal-change-color', form.color.id)}}
+    {{settingField('url', user.url, '#modal-change-url', form.url.id)}}
     </tbody>
 </table>
