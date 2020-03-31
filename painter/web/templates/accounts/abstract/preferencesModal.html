@@ -1,16 +1,23 @@
+{% macro alerts() %}
+<div class="alert if-success d-none alert alert-success">
+    <span>Success, You changed the value</span>
+</div>
+<div class="if-error d-none list-group-flush" role='alert'></div>
+{% endmacro %}
+{% macro modal_header(modal_name, label) %}
+<div class="modal-header">
+    <h5 class="modal-title" id="{{modal_name}}-title" style="text-transform: capitalize !important;">{{label}}</h5>
+    <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+{% endmacro %}
 {% macro simple_preference_modal(index, modal_name, action, field, input, value) %}
 <div aria-hidden="true" aria-labelledby="#{{modal_name}}-title" class="modal" id="{{modal_name}}" role="dialog" tabindex="-{{index}}">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="{{modal_name}}-title" style="text-transform: capitalize !important;">{{input.label}}</h5>
-                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
+            {{modal_header(modal_name, input.label)}}
             <div class="modal-body">
-                <div id="setting-alert"></div>
-                <div class="mt-1 mb-1"></div>   <!--space-->
                 <form action="{{action}}" class="setting-form" method="POST" id="{{modal_name}}-form">
                     <div class="text-center justify-content-center form-row" class="row-describer">
                         <span class="font-weight-bold font-size-15 justify-content-center"
@@ -18,6 +25,7 @@
                     </div>
                     {{field}}
                 </form>
+                {{alerts()}}
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-dismiss="modal" type="button">Close</button>
@@ -34,18 +42,12 @@
 <div aria-hidden="true" aria-labelledby="#modal-change-color-title" class="modal" id="modal-change-color" role="dialog" tabindex="-4">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modal-change-color-title" style="text-transform: capitalize !important;">{{form.color.label.id}}</h5>
-                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
+            {{modal_header('modal-change-color', form.color.label)}}
             <div class="modal-body">
-                <div id="setting-alert"></div>
-                <div class="mt-1 mb-1"></div>   <!--space-->
                 <form action="{{url_for('place.profile_ajax')}}" class="setting-form" method="POST" id="modal-change-color">
                     {{form.color(class="custom-select")}}
                 </form>
+                {{alerts()}}
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-dismiss="modal" type="button">Close</button>
@@ -58,15 +60,8 @@
 <div aria-hidden="true" aria-labelledby="#modal-change-url-title" class="modal" id="modal-change-url" role="dialog" tabindex="-5">
 <div class="modal-dialog" role="document">
    <div class="modal-content">
-       <div class="modal-header">
-           <h5 class="modal-title" id="modal-change-url-title" style="text-transform: capitalize !important;">{{form.url.label}}</h5>
-           <button aria-label="Close" class="close" data-dismiss="modal" type="button">
-               <span aria-hidden="true">&times;</span>
-           </button>
-       </div>
+       {{modal_header('modal-change-url', form.url.label)}}
        <div class="modal-body">
-           <div id="setting-alert"></div>
-           <div class="mt-1 mb-1"></div>   <!--space-->
            <form action="{{url_for('place.profile_ajax')}}" class="setting-form" method="POST">
             <div class="input-group">
                 <div class="input-group-append">
@@ -77,6 +72,7 @@
                 {{form.url(class="form-control", value=user.url)}}
             </div>
            </form>
+           {{alerts()}}
        </div>
        <div class="modal-footer">
            <button class="btn btn-secondary" data-dismiss="modal" type="button">Close</button>

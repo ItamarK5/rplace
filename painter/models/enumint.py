@@ -9,7 +9,6 @@ class SmallEnum(TypeDecorator):
     Enables passing in a Python enum and storing the enum's *value* in the db.
     The default would have stored the enum's *name* (ie the string).
     """
-
     impl = SmallInteger
 
     def __init__(self, enum_type: Type[IntEnum], *args, **kwargs) -> None:

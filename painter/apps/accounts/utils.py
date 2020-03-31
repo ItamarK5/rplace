@@ -1,13 +1,15 @@
+from flask_login import current_user
 import re
 from functools import wraps
 from typing import Any, Optional, Tuple, Dict, Callable, Union
 
-from flask import Flask
+from flask import Flask, flash, redirect
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from wtforms.validators import HostnameValidation
 
 from painter.backends.extensions import cache
 from painter.models.user import reNAME, rePSWD
+
 
 user_regex = re.compile(
     r"(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*\Z"  # dot-atom
@@ -112,15 +114,14 @@ def is_valid_change_password_token(token: Any) -> bool:
     # name
     return True
 
-
+"""
 def cache_signature_view(max_timeout: int) -> Callable:
     def decorator(f: Callable[[str], Tuple[Union[str, int], int]]) -> Callable[[str], Union[str, int]]:
-        """
-        :param f: function the gets a string (token) and returns a tuple containing user\response message
-         of the token analyzer function
-        :return: function that cached the return answer of the analyze, for speed
-        """
-
+        #/
+        #:param f: function the gets a string (token) and returns a tuple containing user\response message
+        # of the token analyzer function
+        #:return: function that cached the return answer of the analyze, for speed
+        #/
         @wraps(f)
         def wrapped(token: str) -> Union[str, int]:
             key = str(f) + '&' + token
@@ -131,5 +132,22 @@ def cache_signature_view(max_timeout: int) -> Callable:
             return cached_value
 
         return wrapped
-
     return decorator
+"""
+
+
+def anonymous_required() -> Callable[[Callable[[Any], Any]], Any]:
+    """
+        :param message: message the user will recieve if he already logined
+        :return: if the user is logined, redirects the user to another url
+        decorator for a url, redirects the user if he is logined to home
+    """
+    def wrapped(f: Callable) -> Callable:
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            if current_user.is_anonymous:
+                return redirect('/home')
+            # else
+            return f(*args, **kwargs)
+        return wrapper
+    return wrapped

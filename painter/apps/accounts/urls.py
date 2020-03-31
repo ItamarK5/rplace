@@ -27,7 +27,8 @@ def init_tokens() -> None:
     TokenSerializer.init_serializer(current_app)
 
 
-@accounts_router.route('/login', methods=('GET', 'POST'), )
+@accounts_router.route('/login', methods=('GET', 'POST'))
+@anonymous_required()
 def login() -> Response:
     """
     :return: login page response
@@ -57,6 +58,7 @@ def login() -> Response:
 
 
 @accounts_router.route('/signup', methods=('GET', 'POST'))
+@anonymous_required()
 def signup() -> Response:
     """
     :return: sign-up user response
@@ -88,6 +90,7 @@ def signup() -> Response:
 
 
 @accounts_router.route('/revoke', methods=['GET', 'POST'])
+@anonymous_required()
 def revoke() -> Response:
     """
     :return: revoke password view
@@ -143,6 +146,7 @@ def refresh() -> Response:
 
 
 @accounts_router.route('/change-password/<string:token>', methods=['GET', 'POST'])
+@anonymous_required()
 def change_password(token: str) -> Response:
     """
     :param token: token url represent saving url
@@ -185,6 +189,7 @@ def change_password(token: str) -> Response:
 
 
 @accounts_router.route('/logout', methods=('GET', 'POST'))
+@anonymous_required()
 def logout() -> Response:
     if not current_user.is_anonymous:
         logout_user()
@@ -192,6 +197,7 @@ def logout() -> Response:
 
 
 @accounts_router.route('/confirm/<string:token>', methods=('GET',))
+@anonymous_required()
 def confirm(token: str) -> Response:
     extracted = extract_signature(token, is_valid_signup_token, TokenSerializer.signup)
     if extracted is None:

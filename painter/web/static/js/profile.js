@@ -1,8 +1,10 @@
+const BLACK_INDEX = 1;
+const ColorPicker = $('#color')
 const COLORS = [
-    'white', 'black', 'gray', 'silver',
-    'red', 'pink', 'brown', 'orange',
-    'olive', 'yellow', 'green', 'lime',
-    'blue', 'aqua', 'purple', 'magenta'
+    'White', 'Black', 'Gray', 'Silver',
+    'Red', 'Pink', 'Brown', 'Orange',
+    'Olive', 'Yellow', 'Green', 'Lime',
+    'Blue', 'Aqua', 'Purple', 'Magenta'
 ]
 
 const valueConvertor = (id, val) => {
@@ -14,6 +16,23 @@ const valueConvertor = (id, val) => {
         default:
             return val
     }
+}
+
+const getModalMessageElement = (modal_query, success_or_error) => $(`#${modal_query.attr('id')} .if-${success_or_error}`);
+const getModalParent = (query) => query.parents('.modal').first();
+
+const setColorSelector = (jquery_ele, idx) => {
+    jquery_ele.css('background-color', COLORS[idx].toLowerCase());
+    jquery_ele.css('color', () => idx ==  BLACK_INDEX ? 'white': 'black')
+}
+const colorSelector = () => {
+    ColorPicker.children().each(function(idx) {
+        let ele = $(this);
+        setColorSelector(ele, idx)
+        if(ele.attr('val') == ColorPicker.val()){
+            setColorSelector(ColorPicker, idx)
+        }
+    })
 }
 
 $(document).ready(() =>{
@@ -29,6 +48,8 @@ $(document).ready(() =>{
     $('.form-control-range').change(function(e){
         $(`*[field-related="#${this.getAttribute('id')}"]`).text($(this).val())
     });
+    $('#color').attr('selected', $(`#color > option:contains('${$('#text-color').text()}')`).attr('value'));
+    colorSelector();
     $('#delete-url').click(function() {
         let button = this;
         Swal.fire({
@@ -39,6 +60,7 @@ $(document).ready(() =>{
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
         }).then((result) => {
+            console.log(result)
             if(result.value){
                 $(`${$(button).attr('data-target')}`).val('')
             }
@@ -48,20 +70,40 @@ $(document).ready(() =>{
         console.log(5)
         e.preventDefault();
         let form = $(this);
+        let parent = getModalParent(form);
+        let success_div = getModalMessageElement(parent, 'success');
+        let error_div = getModalMessageElement(parent, 'error');
+        success_div.addClass('d-none')
+        error_div.addClass('d-none')
+        error_div.children().remove();
+        console.log(parent)
         $.ajax({
             url:form.attr('action'),
             type:form.attr('method'),
             data:form.serialize(),
             success: (response) => {
-                console.log(response)
-                console.log(`*[aria-describedat='#${response.id}']`)
-                let r = $(`*[aria-describedat='#${response.id}']`);
-                console.log(r)
-                r.text(valueConvertor(response.id, response.val))
+                message_element = response.success ? success_div : error_div;
+                message_element.removeClass('d-none')
+                if(response.success){
+                    $(`*[aria-describedat='#${response.id}']`).text(valueConvertor(response.id, response.val));
+                    error_div.addClass('d-none')
+                    success_div.removeClass('d-none')
+                } else {
+                    success_div.addClass('d-none')
+                    error_div.removeClass('d-none')
+                    response.errors.forEach(val => {
+                        $('<ul></ul>').addClass('list-group-item list-group-item-danger').text(val).appendTo(error_div[0])
+                    });
+                }
+                
             },
-            error: (data) =>{
+            error: (err) =>{
                 // read later https://stackoverflow.com/a/3543713
-                console.log(data)
+                Swal.fire({
+                    icon:'error',
+                    title:'Error',
+                    html:err.responseText
+                });
             }
         });
     })

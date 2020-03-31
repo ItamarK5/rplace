@@ -18,6 +18,7 @@ other_router = Blueprint(
     static_folder=path.join(WEB_FOLDER),
 )
 
+
 @other_router.route('/meme/<string:error>')
 def meme_image(error: str) -> Response:
     if str(error) not in listdir(path.join(other_router.static_folder, 'memes')):

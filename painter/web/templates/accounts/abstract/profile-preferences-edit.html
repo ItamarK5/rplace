@@ -12,7 +12,7 @@
         </h5>
     </td>
     <td class="justify-content-center setting-val">
-        <h5 class="text-break text-warning" id="text-{{key}}" aria-describedat="#{{describe}}">{{val|string|title}}</h5>
+        <h5 class="text-break text-warning" id="text-{{key}}" aria-describedat="#{{describe}}">{{val|string}}</h5>
     </td>
 </tr>
 {% endmacro %}
@@ -27,7 +27,7 @@
     {{settingField('x', user.x, '#modal-change-x', form.x.id)}}
     {{settingField('y', user.y, '#modal-change-y', form.y.id)}}
     {{settingField('scale', user.scale, '#modal-change-scale', form.scale.id)}}
-    {{settingField('color', user.color|color, '#modal-change-color', form.color.id)}}
+    {{settingField('color', user.color|color|title, '#modal-change-color', form.color.id)}}
     {{settingField('url', user.url, '#modal-change-url', form.url.id)}}
     </tbody>
 </table>

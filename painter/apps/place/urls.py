@@ -23,7 +23,6 @@ def place():
     return render_template('place.html')
 
 
-@place_router.route('/', methods=('GET',))
 @place_router.route('/home', methods=('GET',))
 @login_required
 def home() -> Response:
