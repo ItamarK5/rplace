@@ -189,7 +189,6 @@ def change_password(token: str) -> Response:
 
 
 @accounts_router.route('/logout', methods=('GET', 'POST'))
-@anonymous_required()
 def logout() -> Response:
     if not current_user.is_anonymous:
         logout_user()

@@ -1,3 +1,4 @@
+{% from 'global.jinja' import message_alert %}
 {% from 'forms/_macros.html' import render_field, render_errors, render_link %}
 <html>
 <head>
@@ -26,7 +27,7 @@
 <body>
 {% block body %}
 <div class="container">
-    <section class="row justify-content-center align-items-center">
+    <div class="row justify-content-center align-items-center">
         {% block form %}
         <form class="w-75 x-auto y-auto" id="submit-form" method="POST" url="{{ request.url }}">
             {{ form.hidden_tag() }}{% block before_title %}{% endblock %}
@@ -34,15 +35,7 @@
                 <!-- warning was used as nice title -->
                 <h2 class="mx-auto text-warning non-select"><u>{{form.title}}</u></h2>
             </div>
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-            <ul class="flashes list-group">
-                {% for category, message in messages %}
-                <li class="list-group-item list-group-item-warning">{{ message }}</li>
-                {% endfor %}
-            </ul>
-            {% endif %}
-            {% endwith %}
+            {{message_alert()}}
             {% block before_image %}{% endblock %}
             <img class="rounded mx-auto d-block mb-2"
                  height="250" src="{{url_for('other.serve_static', key='favicon.gif')}}"
@@ -59,7 +52,7 @@
             </div>
         </form>
         {% endblock %}
-    </section>
+    </div>
 </div>
 {% endblock %}
 {% block imports %}

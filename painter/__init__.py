@@ -18,8 +18,8 @@ app = Flask(
     root_path=WEB_FOLDER
 )
 
-#app.config.update(read_configuretion())
-app.config.update(get_config())
+
+app.config.from_object('painter.config.Config')
 
 from painter.backends.skio import sio
 from flask_wtf.csrf import CSRFProtect

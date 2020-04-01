@@ -8,13 +8,6 @@ const NoteTypeEnums = {
     banned: {row_class:'danger', text:'Banned Record'},
     note : {row_class:'info', text:'Note Record'},
 }
-const NULL_NOTE = {
-    type:'note',
-    post_date:'',
-    writer:'',
-    description:'',  
-    can_edit:false
-}
 
 
 // get the user name from the url (that suppose to be)
@@ -191,15 +184,16 @@ const notes = {
     }
 };
 
-function ajaxErrorAlert(err, result_func) {
-    let swal = Swal.fire({
+// ajax error response
+function ajaxErrorAlert(error, result_func) {
+    let alert = Swal.fire({
         title: 'Error!',
         icon: 'error',
-        html: err.responseText
+        html: err.responseText,
         showCanelButton: _.isFunction(result_func)
     })
     if(result_func){
-        swal.then(result_func);
+        alert.then((result) => result_func(result, error))
     }
 }
 
@@ -408,9 +402,20 @@ $(document).ready(() => {
     })
     $('edit-note-button').click(() => {
         if(notes.current_display.can_edit){
-            $.ajax({
-                
-            })
+            $.post({
+                url:'/change-note',
+                data: {
+                    id:notes.current_display.id,
+                    desc:$('#description-field').text()
+                },
+                success(response){
+                    Swal.alert({
+                        icon:response.success ? 'success' : 'error',
+                        title:response.success ? 'Success' : 'Error',
+                        text:response.text
+                    })
+                }
+            }).fail(ajaxErrorAlert)
         }
     })
 

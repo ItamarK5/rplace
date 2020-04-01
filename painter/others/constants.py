@@ -12,10 +12,12 @@ MIME_TYPES = {
     'gif': 'image/gif',
     'jpeg': 'image/jpeg'
 }
-
+# folder for all web related staff.
 WEB_FOLDER = path.join(path.dirname(path.dirname(path.abspath(__file__))), 'web')
-# time
+# time between each draw for user
 MINUTES_COOLDOWN = timedelta(minutes=1)
+
+# Colors of pixels in order
 COLORS = (
     "white", "black", "gray", "silver",
     "red", "pink", "brown", "orange",

@@ -26,6 +26,9 @@ class Config:
     REMEMBER_COOKIE_NAME = 'SocialPainterDashCookie'
     REMEMBER_COOKIE_HTTPONLY = False
     CACHE_TYPE = 'simple'
+    # non login options
+    NON_LOGIN_ROUTE = 'place.home'
+    NON_LOGIN_MESSAGE = 'You were redirected from pages that are for non autheneticated users'
 
 
 def get_config():

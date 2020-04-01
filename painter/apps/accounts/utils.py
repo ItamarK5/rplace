@@ -1,9 +1,9 @@
 from flask_login import current_user
 import re
 from functools import wraps
-from typing import Any, Optional, Tuple, Dict, Callable, Union
+from typing import Any, Optional, Tuple, Dict, Callable
 
-from flask import Flask, flash, redirect
+from flask import Flask, redirect, current_app, url_for, flash
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from wtforms.validators import HostnameValidation
 
@@ -146,7 +146,8 @@ def anonymous_required() -> Callable[[Callable[[Any], Any]], Any]:
         @wraps(f)
         def wrapper(*args, **kwargs):
             if not current_user.is_anonymous:
-                return redirect('/home')
+                flash(current_app.config.get('NON_LOGIN_MESSAGE'))
+                return redirect(url_for(current_app.config.get('NON_LOGIN_ROUTE')))
             # else
             return f(*args, **kwargs)
         return wrapper

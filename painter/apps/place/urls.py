@@ -86,5 +86,6 @@ def profile_ajax():
     })
     # else
 
+
 # force redirect to home
 place_router.add_url_rule('/', 'home-redirect', auto_redirect('/home'), methods=('GET',))
