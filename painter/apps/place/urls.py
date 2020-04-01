@@ -1,11 +1,13 @@
 from os.path import join as path_join
 
-from flask import Blueprint, render_template, Response, jsonify
+from flask import Blueprint, render_template, Response, jsonify, redirect
 from flask_login import login_required, current_user
 
 from painter.backends.extensions import datastore
 from painter.others.constants import WEB_FOLDER
 from painter.others.preference_form import PreferencesForm
+from painter.apps.place.util import auto_redirect
+
 
 place_router = Blueprint(
     'place',
@@ -46,9 +48,15 @@ def profile():
 @place_router.route('/preferences-submit', methods=("POST",))
 @login_required
 def profile_ajax():
+    """
+    view function that process a POST request from client
+    thr url is for submiting a form request related
+    to change a preference value by the user
+    """
     form = PreferencesForm()
     if form.validate_on_submit():
         # you can only set 1 preference at a time
+        # detecting the key \ val of the submitted form
         key, val = form.safe_first_hidden_fields()
         if key == 'url':
             current_user.url = val if val else None
@@ -77,3 +85,6 @@ def profile_ajax():
         'errors': next(iter(form.errors.values()))
     })
     # else
+
+# force redirect to home
+place_router.add_url_rule('/', 'home-redirect', auto_redirect('/home'), methods=('GET',))

@@ -138,14 +138,14 @@ def cache_signature_view(max_timeout: int) -> Callable:
 
 def anonymous_required() -> Callable[[Callable[[Any], Any]], Any]:
     """
-        :param message: message the user will recieve if he already logined
-        :return: if the user is logined, redirects the user to another url
-        decorator for a url, redirects the user if he is logined to home
+    :param message: message the user will recieve if he already logined
+    :return: if the user is logined, redirects the user to another url
+    decorator for a url, redirects the user if he is logined to home
     """
     def wrapped(f: Callable) -> Callable:
         @wraps(f)
         def wrapper(*args, **kwargs):
-            if current_user.is_anonymous:
+            if not current_user.is_anonymous:
                 return redirect('/home')
             # else
             return f(*args, **kwargs)

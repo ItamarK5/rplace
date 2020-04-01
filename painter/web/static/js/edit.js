@@ -8,6 +8,14 @@ const NoteTypeEnums = {
     banned: {row_class:'danger', text:'Banned Record'},
     note : {row_class:'info', text:'Note Record'},
 }
+const NULL_NOTE = {
+    type:'note',
+    post_date:'',
+    writer:'',
+    description:'',  
+    can_edit:false
+}
+
 
 // get the user name from the url (that suppose to be)
 const GetUserName = () => window.location.pathname.split('/')[2];
@@ -21,7 +29,6 @@ const MakeNoteRow = (note) => {
                 .addClass('note-history-row')
                 .attr({
                     'data-item': note.id,
-                    'data-toggle': 'button'
                 });
     row.append($('<td></td>').text(note.post_date));
     row.append($('<td></td>').text(note.writer));
@@ -184,12 +191,16 @@ const notes = {
     }
 };
 
-function ajaxErrorAlert(err) {
-    Swal.fire({
+function ajaxErrorAlert(err, result_func) {
+    let swal = Swal.fire({
         title: 'Error!',
         icon: 'error',
         html: err.responseText
+        showCanelButton: _.isFunction(result_func)
     })
+    if(result_func){
+        swal.then(result_func);
+    }
 }
 
 
@@ -207,7 +218,9 @@ function ajaxGetPage(page=1){
             notes.update_notes()
         },
         error:ajaxErrorAlert
-    })
+    }).catch(error => {
+        ajaxErrorAlert({responseText:'fail-to-get-message'})
+    });
 }
 
 $.fn.serializeForm = function() {
@@ -394,9 +407,11 @@ $(document).ready(() => {
         }
     })
     $('edit-note-button').click(() => {
-        $.ajax(() => {
-            
-        })
+        if(notes.current_display.can_edit){
+            $.ajax({
+                
+            })
+        }
     })
 
 })

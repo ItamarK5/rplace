@@ -12,18 +12,6 @@
         <label class="custom-control-label text-warning non-select" for="{{form.remember.id}}">{{form.remember.label.text}}</label>
     </div>
 </div>
-<script>
-$(document).ready(function(){
-    if(!navigator.cookieEnabled){
-        $('#remember-me-row')[0].addAttribute('disabled');
-        $('#{{form.remember.id}}').attr(
-            'title', 'You must enable cookies in this site to use the remember me feature'
-        )
-    }
-});
-
-
-</script>
 {% endblock %}
 {% block links %}
 {{ render_link('signup-link', 'Are you new?', url_for('auth.signup')) }}
