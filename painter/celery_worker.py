@@ -1,20 +1,28 @@
-from typing import Dict, Any, List
+from celery import Celery
 
+
+def init_celery(celery, app) -> None:
+    celery.conf.update(app.config)
+
+
+celery = Celery(
+    __name__,
+    backend= 'pyamqp://guest@localhost//'
+)
+
+
+from typing import Dict, Any, List
 from flask import current_app
 from flask_mail import Message
-
-from mail import celery
 from painter.backends.extensions import mailbox
+from .celery_worker import celery
 
-
-@celery.task(name='send-mail')
+@celery.Task(name='send-mail')
 def send_mail(subject: str,
               recipients: List[str],
               body: str,
               html: str,
               attachments: List[Dict[str, Any]]) -> None:
-    # safe
-    print(0)
     with current_app.app_context():
         message = Message(
             subject,
@@ -31,4 +39,4 @@ def send_mail(subject: str,
                     headers=attach['headers']
                 )
         mailbox.send(message)
-    print(1)
+

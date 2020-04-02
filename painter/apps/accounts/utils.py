@@ -9,7 +9,7 @@ from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from wtforms.validators import HostnameValidation
 from painter.models.user import reNAME, rePSWD
 from flask import current_app
-
+from .router import accounts_router
 
 email_regex = re.compile(
     r"(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*\Z"  # dot-atom
@@ -41,7 +41,7 @@ class TokenSerializer(object):
             salt=app.config['TOKEN_REVOKE_SALT']
         )
 
-
+@accounts_router.before_app_first_request
 def init_tokens() -> None:
     """
     :return: init the token generator object

@@ -13,7 +13,7 @@ from painter.backends.extensions import login_manager
 from .enumint import SmallEnum
 from .notes import Record, Note
 from .role import Role
-from .. import app
+from .. import __init__
 
 reNAME = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
 rePSWD = re.compile(r'^[a-f0-9]{128}$')  # password hashed so get hash value
@@ -81,7 +81,7 @@ class User(datastore.Model, UserMixin):
             'sha512',
             password.encode(),
             username.encode(),
-            app.config['USER_PASSWORD_ROUNDS']
+            __init__.config['USER_PASSWORD_ROUNDS']
         ).hex()
 
     def __repr__(self) -> str:

@@ -16,26 +16,28 @@ def create_app():
         template_folder=path.join(WEB_FOLDER, 'templates'),
     )
 
-    app.config.from_pyfile('others\\config.py')
+    app.config.from_pyfile('config.py')
     from painter.backends.skio import sio
-    from flask_wtf.csrf import CSRFProtect
-    from painter.backends.extensions import datastore, mailbox, engine, login_manager, cache
-    from . import models
+    from painter.celery_worker import celery_worker, init_celery
+    init_celery(celery_worker, app)
     # a must import
     sio.init_app(
         app,
         # message_queue='redis://192.168.0.214:6379/0',
         message_queue='pyamqp://guest@localhost//'  # testing
     )
+    from painter.backends.extensions import datastore, generate_engine, mailbox, login_manager, cache, csrf
     # ext
     datastore.init_app(app)
+    generate_engine(app)
     mailbox.init_app(app)
     login_manager.init_app(app)
     cache.init_app(app)
-    CSRFProtect(app)
-    # firebase.init_app(app)
+    csrf.init_app(app)
+    # adding filters
+    from .others.filters import add_filters
+    add_filters(app)
     # insert other staff
-    app.register_blueprint()
     from .apps import place
     app.register_blueprint(place.place_router)
     from .apps import accounts
@@ -56,18 +58,3 @@ def create_app():
     datastore.create_all(app=app)
     # end creation
     return app, sio
-
-
-def run_socketio(host: str = '0.0.0.0',
-                 port: int = 8080, **kwargs):
-    """
-    :return: nothing, litterly returns nothing
-    starts the app via a function
-    """
-    app, sio = create_app()
-    sio.run(
-        app,
-        host,
-        port,
-        **kwargs
-    )
