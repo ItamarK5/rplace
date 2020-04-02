@@ -56,4 +56,3 @@ def send_revoke_password_message(name: str, address: str, token: str) -> None:
                 }
             ]
         })
-

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from flask_login import current_user
 import re
 from functools import wraps
@@ -7,9 +8,10 @@ from flask import Flask, redirect, current_app, url_for, flash
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from wtforms.validators import HostnameValidation
 from painter.models.user import reNAME, rePSWD
+from flask import current_app
 
 
-user_regex = re.compile(
+email_regex = re.compile(
     r"(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*\Z"  # dot-atom
     r'|^"([\001-\010\013\014\016-\037!#-\[\]-\177]|\\[\001-\011\013\014\016-\177])*"\Z)',  # quoted-string
     re.IGNORECASE)
@@ -40,6 +42,13 @@ class TokenSerializer(object):
         )
 
 
+def init_tokens() -> None:
+    """
+    :return: init the token generator object
+    """
+    TokenSerializer.init_serializer(current_app)
+
+
 def extract_signature(token: str,
                       valid_predicate: Callable[[Any], bool],
                       serializer: URLSafeTimedSerializer) -> Optional[Tuple[Any, float]]:
@@ -60,7 +69,7 @@ def is_valid_address(address: str) -> bool:
     if '@' not in address:
         return False
     user_part, domain_part = address.rsplit('@', 1)
-    if not user_regex.match(user_part):
+    if not email_regex.match(user_part):
         return False
     if not HostnameValidation(require_tld=False)(domain_part):
         return False

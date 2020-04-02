@@ -4,17 +4,9 @@ from flask import Blueprint, render_template, Response, jsonify, redirect
 from flask_login import login_required, current_user
 
 from painter.backends.extensions import datastore
-from painter.others.constants import WEB_FOLDER
+from . import place_router
 from painter.others.preference_form import PreferencesForm
 from painter.apps.place.util import auto_redirect
-
-
-place_router = Blueprint(
-    'place',
-    'place',
-    static_folder=path_join(WEB_FOLDER, 'static'),
-    template_folder=path_join(WEB_FOLDER, 'templates')
-)
 
 
 @place_router.route('/place', methods=('GET',))

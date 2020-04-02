@@ -1,3 +1,5 @@
+from werkzeug import exceptions
+from flask import render_template, Response
 from typing import Optional
 
 from werkzeug import Request
@@ -6,7 +8,7 @@ from werkzeug.exceptions import BadRequest, Forbidden, NotFound, HTTPException
 MEME_PAGE_ERROR_CODES = {BadRequest.code, Forbidden.code, NotFound.code}
 
 
-def has_meme_images(e: HTTPException) -> bool:
+def has_matched_image(e: HTTPException) -> bool:
     return e.code in MEME_PAGE_ERROR_CODES
 
 
@@ -23,3 +25,20 @@ def is_ajax_request(request: Request) -> bool:
     # return "is not ajax request"
     # => valid meme request
     return request_xhr_key and request_xhr_key == 'XMLHttpRequest'
+
+
+def render_error_page(e: exceptions.HTTPException,
+                      case: Optional[str] = None, page_title: Optional[str] = None,
+                      name: Optional[str] = None) -> Response:
+    case = case or str(e.code)
+    name = name or str(e.name)
+    if case not in listdir(path.join(other_router.static_folder, 'memes')):
+        return e  # return default error
+    else:
+        return render_template(
+            'memes/meme.html',
+            case=case,
+            title=name,
+            description=e.description or name,
+            page_title=case if page_title is None else page_title
+        )

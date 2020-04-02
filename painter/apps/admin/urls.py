@@ -1,27 +1,24 @@
 from datetime import datetime
 from typing import Dict
 
-from werkzeug import exceptions
-from flask import Blueprint, render_template, abort, request, url_for, redirect, jsonify, current_app
+from flask import render_template, abort, request, url_for, redirect, jsonify
 from flask.wrappers import Response
 from flask_login import current_user
 from flask_wtf.csrf import CSRFError
+from sqlalchemy.orm.exc import NoResultFound
+from werkzeug import exceptions
+
 from painter.backends import lock
 from painter.backends.extensions import datastore
 from painter.backends.skio import ADMIN_NAMESPACE, PAINT_NAMESPACE, sio
-from sqlalchemy.orm.exc import NoResultFound
 from painter.models.notes import Record, Note
 from painter.models.role import Role
 from painter.models.user import User
 from painter.models.user import reNAME
 from painter.others.preference_form import PreferencesForm
+from . import admin_router
 from .forms import RecordForm, NoteForm
 from .utils import only_if_superior, admin_only, superuser_only, json_response, validate_get_notes_param
-
-admin_router = Blueprint(
-    'admin',
-    'admin',
-)
 
 
 @admin_router.after_request
@@ -283,7 +280,9 @@ def get_user_notes(user: User):
 def remove_user_note():
     # in case of fail aborts json error
     try:
-        note_idx = int(request.get_json())
+        note_idx = request.get_json()
+        if not isinstance(note_idx, int):
+            raise TypeError()
     except (exceptions.BadRequest, ValueError, TypeError, KeyError):
         abort(exceptions.BadRequest.code, 'Not valid data')
     # else

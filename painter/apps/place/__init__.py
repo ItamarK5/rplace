@@ -1,2 +1,5 @@
+from .router import place_router
 from . import io
-from .urls import place_router
+from . import urls
+
+__all__ = ['place_router']

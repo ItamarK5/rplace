@@ -1,2 +1,5 @@
+from .router import admin_router
+from . import urls
 from . import io
-from .urls import admin_router
+
+__all__ = ['admin_router']
