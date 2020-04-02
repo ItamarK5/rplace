@@ -5,10 +5,11 @@ from werkzeug import exceptions
 from flask import Blueprint, render_template, abort, request, url_for, redirect, jsonify, current_app
 from flask.wrappers import Response
 from flask_login import current_user
-
+from flask_wtf.csrf import CSRFError
 from painter.backends import lock
 from painter.backends.extensions import datastore
 from painter.backends.skio import ADMIN_NAMESPACE, PAINT_NAMESPACE, sio
+from sqlalchemy.orm.exc import NoResultFound
 from painter.models.notes import Record, Note
 from painter.models.role import Role
 from painter.models.user import User
@@ -47,8 +48,12 @@ def admin() -> str:
     # try get page
     page = request.args.get('page', '1')
     if not page.isdigit():
-        abort(exceptions.Forbidden, 'Given page isn\'t a number', description='Are you, an admin of this site is'
-                                                                              ' mocking this program by editing this?')
+        abort(
+            exceptions.BadRequest.code,
+            title='Given page isn\'t a number',
+            description='Are you, an admin of this site is mocking this program by editing this?')
+    # page to integer
+    page = int(page)
     if not (1 <= page <= pagination.pages):
         return redirect(url_for('/admin', args={'page': '1'}))
     return render_template('accounts/admin.html', pagination=pagination, lock=lock.is_enabled())
@@ -144,7 +149,7 @@ def change_ban_status(user: User) -> Response:
         return jsonify({'valid': True})
     # else
     elif form.csrf_token.errors:
-        abort()
+        abort(CSRFError)
     else:
         # csrf token has its own action
         return jsonify({
@@ -173,10 +178,10 @@ def add_record(user: User, message: Dict[str, str]):
         datastore.session.commit()
         user.forget_last_record()
         return {'valid': True}
-    # else
+    # csrf token has its own action
+    elif form.csrf_token.errors:
+        abort(CSRFError)
     else:
-        # csrf token has its own action
-
         return {
             'valid': False,
             'errors': dict(
@@ -210,7 +215,6 @@ def add_note(user: User) -> Response:
         return jsonify({'valid': True})
     # else
     else:
-        print(form.errors)
         return jsonify({
             'valid': False,
             'errors': dict(
@@ -277,43 +281,51 @@ def get_user_notes(user: User):
 
 @admin_router.route('/delete-note', methods=('POST',))
 def remove_user_note():
-    note_index = request.get_json()
-    if note_index is None:
-        abort(exceptions.BadRequest.code, 'Not valid data')
-    elif not isinstance(note_index, int):
+    # in case of fail aborts json error
+    try:
+        note_idx = int(request.get_json())
+    except (exceptions.BadRequest, ValueError, TypeError, KeyError):
         abort(exceptions.BadRequest.code, 'Not valid data')
     # else
-    note = Note.query.get_or_404(note_index, description="Note Was Removed")
-    # handle updates
+    note = Note.query.get_or_404(note_idx, description="Note Was Removed")
+    # clears the key
     user_last_record = note.user_subject.get_last_record()
     if user_last_record is None or user_last_record.equals(note):
         note.user_subject.forget_last_record()
     try:
         datastore.session.delete(note)
         datastore.session.commit()
-    except Exception as e:
-        print(e, type(e))
-        abort(404, description="Note Was Removed")
+    # it must have been removed
+    except NoResultFound:
+        abort(401, description="Note Was Removed")
     return jsonify({'status': 200, 'response': 'Note Removed Successfully'})
 
 
 @admin_router.route('/change-note-description', methods=('POST',))
 def change_note_description():
-    note_index = request.get_json()
-    if note_index is None:
+    note_index = None
+    description = None
+    try:
+        data = request.get_json()
+        note_index = data['id']
+        description = data['description']
+        # checking for type
+        if not (isinstance(description, str) or isinstance(note_index, int)):
+            raise TypeError()
+    except (exceptions.BadRequest, ValueError, TypeError, KeyError) as e:
+        print(e)
         abort(exceptions.BadRequest.code, 'Not valid data')
-    elif not isinstance(note_index, int):
-        abort(exceptions.BadRequest.code, 'Not valid data')
+    if len(description) > 512:
+        abort(exceptions.BadRequest.code, 'Note/Record\'s description cannot be more'
+                                          ' then 512, you passed {0}'.format(len(description)))
     # else
     note = Note.query.get_or_404(note_index, description="Note Was Removed")
     # handle updates
-    user_last_record = note.user_subject.get_last_record()
-    if user_last_record is None or user_last_record.equals(note):
-        note.user_subject.forget_last_record()
+    note.description = description
     try:
-        datastore.session.delete(note)
+        datastore.session.add(note)
         datastore.session.commit()
-    except Exception as e:
-        print(e, type(e))
-        abort(404, description="Note Was Removed")
+    # NoResult => object removed
+    except NoResultFound:
+        abort(404, description='Note was removed')
     return jsonify({'status': 200, 'response': 'Note Removed Successfully'})

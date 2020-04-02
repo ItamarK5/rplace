@@ -6,9 +6,8 @@ if __name__ == '__main__':
     sio.run(
         app,
         debug=True,
-        host='0.0.0.0',
+        host='192.168.1.10',
         port=argv[1] if len(argv) > 1 else 8080,
     )
-    # wsgi.server(eventlet.listen(('', int(argv[1]) if len(argv) > 1 else 8080)), app)
 
 #  celery -A proj worker -P eventlet -c 1000

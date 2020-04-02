@@ -7,23 +7,10 @@ from werkzeug.wrappers import Response
 
 from painter.backends.extensions import datastore
 from painter.models.user import Role, User
-from painter.others.constants import WEB_FOLDER
 from .forms import LoginForm, SignUpForm, RevokeForm, ChangePasswordForm
 from .mail import send_signing_up_message, send_revoke_password_message
 from .utils import *
-
-# router blueprint -> routing all pages that relate to authorization
-accounts_router = Blueprint('auth',
-                            'auth',
-                            template_folder=path.join(WEB_FOLDER, 'templates'))
-
-
-@accounts_router.before_app_first_request
-def init_tokens() -> None:
-    """
-    :return: init the token generator object
-    """
-    TokenSerializer.init_serializer(current_app)
+from . import accounts_router
 
 
 @accounts_router.route('/login', methods=('GET', 'POST'))

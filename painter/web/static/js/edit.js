@@ -29,6 +29,12 @@ const MakeNoteRow = (note) => {
     return row;
 }
 
+/**
+ * @param {XMLHttpResponse} xhr 
+ * @return {Boolean} if its a 404 response (not found)
+ */
+const isNotFoundResponse = (xhr) => _.has(xhr, 'status') && xhr.status == 404;
+
 // create page button from page data
 function makePageButton(num, text=null){
     if(_.isNull(text)){
@@ -103,14 +109,14 @@ const notes = {
     prev_ref:null,
     next_ref:null,
     current_page:null,
-    __display_note:null,
+    __selected_note:null,
     query:null,
-    get display_note() {
-        return this.__display_note;
+    get selected_note() {
+        return this.__selected_note;
     },
-    set display_note(value){
-        if(value != this.__display_note){
-            this.__display_note = value;   
+    set selected_note(value){
+        if(value != this.__selected_note){
+            this.__selected_note = value;   
             displayNoteView(value);
         }
     },
@@ -155,7 +161,7 @@ const notes = {
             })
             $(this).attr('targeted', "true");
             focusNoteRow(this);
-            notes.display_note = notes.get_notes_row(this);
+            notes.selected_note = notes.get_notes_row(this);
         })
     },
     makePages(){
@@ -188,10 +194,11 @@ const notes = {
             }
         });
     },
-    removeNote(note_idx){
-        $(`.note-history-row[data-item="${note_idx}"]`).remove();
-        if(this.display_note.id == note_idx){
-            this.display_note = null;   // clears the display note column
+    removeNote(remove_note_id){
+        this.notes = _.filter(this.notes, (note) => note.id != remove_note_id)
+        $(`.note-history-row[data-item="${remove_note_id}"]`).remove();
+        if(this.selected_note.id == remove_note_id){
+            this.selected_note = null;   // clears the display note column
         }
 
     }
@@ -409,7 +416,7 @@ $(document).ready(() => {
                     notes.removeNote(note_idx)
                 },
             }).catch((error) => {
-                if(_.has(error, 'status') && error.status == 404){
+                if(isNotFoundResponse(error)){
                     // then the note isnt found so it must have been deleted
                     display.remove_note(note_id)
                 }
@@ -418,32 +425,34 @@ $(document).ready(() => {
         }
     })
     $('#description-field').on('input', function(e) {
-        console.log(notes.display_note)
-        if(notes.display_note){
-            $('#edit-note-button').prop('disabled', $(this).val() == notes.display_note.description)
+        console.log(notes.selected_note)
+        if(notes.selected_note){
+            $('#edit-note-button').prop('disabled', $(this).val() == notes.selected_note.description)
         }
     })
     $('#edit-note-button').click(() => {
-        if(notes.displayed_note.can_edit){
-            console.log(5)
+        if(notes.selected_note.can_edit){
+            let note_id = notes.selected_note.id
             $.post({
                 url:'/change-note-description',
-                data: {
-                    id:notes.display_note.id,
+                data: JSON.stringify({
+                    id:notes.selected_note.id,
                     description:$('#description-field').text()
-                },
+                }),
                 contentType: 'application/json;charset=UTF-8',
-                success(response){
-                    console.log(response)
+                success(response) {
+                    console.log(text)
                     Swal.alert({
-                        icon:response.success ? 'success' : 'error',
-                        title:response.success ? 'Success' : 'Error',
-                        text:response.text
+                        icon:'success',
+                        title:'success',
+                        text:text
                     })
                 }
-            }).catch((error) => {
-                console.log(error)
+            }).catch(error => {
                 //throw ajax alert
+                if(isNotFoundResponse(error)){
+                    notes.removeNote(note_id)
+                }
                 ajaxErrorAlert(error);
             })
         }
