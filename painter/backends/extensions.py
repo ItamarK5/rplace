@@ -1,4 +1,3 @@
-from celery import Celery
 from flask_wtf import CSRFProtect
 from flask_caching import Cache
 from flask_login import LoginManager
@@ -7,7 +6,7 @@ from flask_redis import FlaskRedis
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 
-from .. import __init__
+from .. import app
 
 mailbox = Mail()
 rds_backend = FlaskRedis()
@@ -19,22 +18,6 @@ login_manager = LoginManager()
 
 def generate_engine(app):
     create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-
-
-def make_celery(app):
-    celery = Celery(app.import_name,  # backend=app.config['CELERY_RESULT_BACKEND'],
-                    broker=app.config['CELERY_BROKER_URL'])
-    celery.conf.update(app.config)
-
-    class ContextTask(celery.Task):
-        abstract = True
-
-        def __call__(self, *args, **kwargs):
-            with app.app_context():
-                return celery.Task.__call__(self, *args, **kwargs)
-
-    celery.Task = ContextTask
-    return celery
 
 
 # setting values for flask-login

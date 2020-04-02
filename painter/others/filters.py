@@ -1,7 +1,7 @@
 from flask import Flask
 from typing import Optional, Union, List
 
-from painter import __init__
+from painter import app
 from painter.models.user import User, Role
 from painter.others.constants import COLORS
 from painter.others.constants import MINUTES_COOLDOWN
@@ -37,7 +37,7 @@ def color(color_idx: int) -> str:
 
 
 def add_filters(app: Flask) -> None:
-    app.add_template_filter('draw_time', draw_time)
-    app.add_template_filter('is_admin', is_admin)
-    app.add_template_filter('class_ftr', class_ftr)
-    app.add_template_filter('color', color)
+    app.add_template_filter(draw_time, 'draw_time')
+    app.add_template_filter(is_admin, 'is_admin')
+    app.add_template_filter(class_ftr, 'class_ftr')
+    app.add_template_filter(color, 'color')

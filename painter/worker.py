@@ -1,23 +1,20 @@
+from flask_mail import Message
+from flask import current_app
+from typing import List, Dict, Any
 from celery import Celery
-
+from .backends.extensions import mailbox
 
 def init_celery(celery, app) -> None:
     celery.conf.update(app.config)
-
+    return celery
 
 celery = Celery(
     __name__,
-    backend= 'pyamqp://guest@localhost//'
+    backend='amqp://guest@localhost//'
 )
 
 
-from typing import Dict, Any, List
-from flask import current_app
-from flask_mail import Message
-from painter.backends.extensions import mailbox
-from .celery_worker import celery
-
-@celery.Task(name='send-mail')
+@celery.task(name='send-mail')
 def send_mail(subject: str,
               recipients: List[str],
               body: str,

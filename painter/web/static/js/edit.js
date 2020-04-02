@@ -67,7 +67,7 @@ const loseFocusNoteRow = (note_row) => {
     $(note_row).removeClass(`bg-${row_class}`);
 }
 
-function displayNoteView(note){
+function showNoteDetails(note){
     // note, if note is false like null or undefined, sets undefined.
     note = Boolean(note) ? note : {
         type:'note',
@@ -117,7 +117,7 @@ const notes = {
     set selected_note(value){
         if(value != this.__selected_note){
             this.__selected_note = value;   
-            displayNoteView(value);
+            showNoteDetails(value);
         }
     },
     get_notes_row(row_selector) {
@@ -155,7 +155,7 @@ const notes = {
             $('tr[targeted="true"]').each(function() {
                 // this refereced to the current targeted row
                 if($(this).attr('data-item') != data_item){
-                    $(this).attr('targeted', "true");
+                    $(this).attr('targeted', "false");
                     loseFocusNoteRow(this);
                 }
             })
