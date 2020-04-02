@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Dict
 
-from flask import Blueprint, render_template, abort, request, url_for, redirect, jsonify
+from flask import Blueprint, render_template, abort, request, url_for, redirect, jsonify, current_app
 from flask.wrappers import Response
 from flask_login import current_user
 
@@ -272,19 +272,27 @@ def get_user_notes(user: User):
     )
 
 
-@admin_router.route('/delete-note', methods=('POST', ))
+@admin_router.route('/delete-note', methods=('POST',))
 def remove_user_note():
-    note_id = request.get_json()
-    print(note_id, 6)
-    if note_id is None:
-        abort(400)
+    remove_message = request.get_json()
+    if remove_message is None:
+        abort(400, 'Not valid request')
+    elif 'idx' not in remove_message:
+        abort(400, 'Not valid request')
+    note_idx = remove_message['idx']
+    print(note_idx)
+    if not isinstance(note_idx, int):
+        abort(400, 'Not valid request')
     # else
-    print(request.args, note_id)
-    note = Note.query.get('note_id')
+    note = Note.query.get(note_idx)
     if note is None:
-        abort(404, description="Note Not Found")
+        abort(404, description="Note Was Removed")
     # handle updates
-    datastore.session.delete(note)
-    datastore.session.commit()
     if note.user_subject.last_record == note:
         note.user_subject.forget_last_record()
+    try:
+        datastore.session.delete(note)
+        datastore.session.commit()
+    except Exception:
+        abort(404, description="Note Was Removed")
+    return jsonify({'status': 200, 'response': 'Note Removed Successfully'})

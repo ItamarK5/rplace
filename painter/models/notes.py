@@ -23,8 +23,10 @@ class Note(datastore.Model):
     user_writer_id = Column(Integer(), ForeignKey('user.id'), nullable=False)
     is_record = Column(BOOLEAN(), nullable=True)
 
-    user_subject = relationship('User', foreign_keys=[user_subject_id], uselist=False)
-    user_writer = relationship('User', foreign_keys=[user_writer_id], uselist=False)
+    # helped: https://stackoverflow.com/a/32899385
+    # relationships
+    user_subject = relationship('User', foreign_keys=user_subject_id, uselist=False, backref="subject")
+    user_writer = relationship('User', foreign_keys=user_writer_id, uselist=False, backref='writer')
 
     sqlite_autoincrement = True
     __mapper_args__ = {

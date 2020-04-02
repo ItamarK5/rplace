@@ -11,7 +11,7 @@ class Config:
     MAIL_USE_SSL = True
     MAIL_USE_TLS = False
     SESSION_PROTECTION = 'basic'
-    REDIS_URL = 'redis://192.168.0.219:6379/0'
+    REDIS_URL = 'redis://192.168.1.8:6379/0'
     MAIL_DEBUG = False
     MAIL_PORT = 465
     CELERY_BROKER_URL = 'pyamqp://guest@localhost//'  # 'redis://192.168.0.214:6379/0'

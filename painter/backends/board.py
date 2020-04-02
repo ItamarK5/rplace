@@ -40,14 +40,12 @@ def set_at(x: int, y: int, color: int) -> None:
     :return: nothing
     set a pixel on the board copy in the redis server
     """
-    """
-    bitfield = rds_backend.bitfield(_BOADR_REDIS_KEY)
+
+    bitfield = rds_backend.bitfield(_BOARD_REDIS_KEY)
     # need to count for little endian
     x_endian = x + (-1)**(x % 2)
     bitfield.set('u4', (y * 1000 + x_endian) * 4, color)
     bitfield.execute()
-    """
-    pass
 
 
 def get_board() -> bytes:

@@ -161,10 +161,12 @@ def load_user(user_token: str) -> Optional[User]:
     # first get the id
     identity_keys = user_token.split('&')  # password hash, email, user_id
     # validate for user
-    if len(identity_keys) != 2 or not identity_keys[0].isdigit():
+    if len(identity_keys) != 2:
         return None
     # get user, determine if
     user_id, password = identity_keys
+    if not user_id.isdigit():
+        return None
     user = User.query.get(int(user_id))
     # check for the validation of the identifier and keys
     # also prevent user if he isnt active -> banned

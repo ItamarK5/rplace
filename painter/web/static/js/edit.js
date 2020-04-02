@@ -47,20 +47,22 @@ function makePageButton(num, text=null){
     return button
 }
 
+// focus a note row, sets its background to bg type backrgound
 const focusNoteRow = (note_row) => {
     let row_class = NoteTypeEnums[notes.get_notes_row(note_row).type].row_class
     $(note_row).addClass(`bg-${row_class}`);
     $(note_row).removeClass(`table-${row_class}`);
 }
 
-const unfocusNoteRow = (note_row) => {
+// focus a note row, sets its background to bg type background
+const loseFocusNoteRow = (note_row) => {
     let row_class = NoteTypeEnums[notes.get_notes_row(note_row).type].row_class
     $(note_row).addClass(`table-${row_class}`);
     $(note_row).removeClass(`bg-${row_class}`);
 }
 
 function displayNoteView(note){
-    console.log(Boolean(note), note)
+    // note, if note is false like null or undefined, sets undefined.
     note = Boolean(note) ? note : {
         type:'note',
         post_date:'',
@@ -95,6 +97,7 @@ function displayNoteView(note){
     $('#edit-note-button').prop('disabled', true)
 }
 
+// storage of notes
 const notes = {
     pages:null,
     prev_ref:null,
@@ -135,16 +138,18 @@ const notes = {
             },
             function(){
                 if($(this).attr('targeted') != 'true'){
-                    unfocusNoteRow(this);     
+                    loseFocusNoteRow(this);     
                 }
             }
         )
+        // wrong in so many levels
         $('.note-history-row').click(function() {
             let data_item = $(this).attr('data-item');
             $('tr[targeted="true"]').each(function() {
-                if(this.attr('data-item') = data_item){
+                // this refereced to the current targeted row
+                if($(this).attr('data-item') != data_item){
                     $(this).attr('targeted', "true");
-                    unfocusNoteRow(this);
+                    loseFocusNoteRow(this);
                 }
             })
             $(this).attr('targeted', "true");
@@ -189,7 +194,7 @@ function ajaxErrorAlert(error, result_func) {
     let alert = Swal.fire({
         title: 'Error!',
         icon: 'error',
-        html: err.responseText,
+        html: error.responseText,
         showCanelButton: _.isFunction(result_func)
     })
     if(result_func){
@@ -197,7 +202,10 @@ function ajaxErrorAlert(error, result_func) {
     }
 }
 
-
+// get page by ajax request
+/**
+ * @param {Number} page 
+ */
 function ajaxGetPage(page=1){
     return $.get({
         url:'/get-notes',
@@ -217,8 +225,9 @@ function ajaxGetPage(page=1){
     });
 }
 
+// serialize form
 $.fn.serializeForm = function() {
-    var output = {csrf_token:csrf_token};
+    var output = { csrf_token : csrf_token };
     var fields_array = this.serializeArray();
     $.each(fields_array, function() {
         if (output[this.name]) {
@@ -233,6 +242,7 @@ $.fn.serializeForm = function() {
     return output;
 };
 
+// run when ready, when its safe to edit html elements 
 $(document).ready(() => {
     $('[data-toggle="tooltip"]').tooltip()
     $('#historyModal').on('show.bs.modal', (e) => {
@@ -255,7 +265,7 @@ $(document).ready(() => {
         $('.error-list').children().remove();
         e.preventDefault();
         let args = $(this).serializeForm();
-        $.ajax({
+        $.post({
             url:$(this).attr('action'),
             method:'POST',
             data:JSON.stringify(args),
@@ -279,8 +289,7 @@ $(document).ready(() => {
                     })
                 }
             },
-            error:ajaxErrorAlert
-        });
+        }).catch(ajaxErrorAlert)
     });
     $('#note-form').submit(function(e) {
         let success_message = $('#note-form .success-message')[0];
@@ -327,7 +336,7 @@ $(document).ready(() => {
             field.setAttribute('disabled', 'disabled')
         }
     })
-    $('#affect_from').attr('disabled', 'disabled');
+    //
     $('#rank-button').click(function() {
         let name = this.getAttribute('enum-name');
         Swal.fire({
@@ -375,10 +384,12 @@ $(document).ready(() => {
     });
     $('#remove-note-button').click(() => {
         let targeted_row = getTargetRow();
+        console.log(targeted_row)
         if(targeted_row){
             $.post({
                 url:`/delete-note`,
-                data:{idx:targeted_row.attr('data-item').toString()},
+                data:JSON.stringify({idx:parseInt(targeted_row.attr('data-item'))}),
+                contentType: 'application/json;charset=UTF-8',
                 success: (response) => {
                     if(response.success){
                         Swal.alert({
@@ -408,6 +419,7 @@ $(document).ready(() => {
                     id:notes.current_display.id,
                     desc:$('#description-field').text()
                 },
+                contentType: 'application/json;charset=UTF-8',
                 success(response){
                     Swal.alert({
                         icon:response.success ? 'success' : 'error',

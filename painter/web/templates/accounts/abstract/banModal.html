@@ -48,7 +48,7 @@
                                     <i class="far fa-calendar mr-1"></i>{{ban_form.affect_from.label.text|title}}
                                 </span>
                             </div>
-                            {{ban_form.affect_from(type='text', class='form-control datetimepicker-input')}}
+                            {{ban_form.affect_from(type='text', class='form-control datetimepicker-input', disabled=true)}}
                             <div class="input-group-append">
                                 <div class="input-group-text">
                                     <input aria-label="add time" id="set-affect-from" type="checkbox">
@@ -59,10 +59,8 @@
                     <div class="form-row">
                         <li class="error-list list-group" error-for="{{ban_form.affect_from.id}}"></li>
                     </div>
-                    {{row(ban_form.reason(type="text", class="form-control mw-100 mh-100"), 'far fa-clipboard',
-                    ban_form.reason.label, ban_form.reason.id)}}
-                    {{row(ban_form.note_description(type="text", class="form-control mw-100 mh-100"), 'fas fa-sticky-note',
-                    ban_form.note_description.label, ban_form.note_description.id)}}
+                    {{row(ban_form.reason(type="text", class="form-control mw-100 mh-100"), 'far fa-clipboard', ban_form.reason.label, ban_form.reason.id)}}
+                    {{row(ban_form.note_description(type="text", class="form-control mw-100 mh-100"), 'fas fa-sticky-note', ban_form.note_description.label, ban_form.note_description.id)}}
                     <div class="form-row">
                         <li class="list-group" id="any-error-list">
 

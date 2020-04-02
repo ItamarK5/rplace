@@ -1,6 +1,7 @@
 from datetime import timedelta
 from os import path
-
+# mime types the application send
+# for some strange reason
 MIME_TYPES = {
     'png': 'image/png',
     'ico': 'image/x-icon',
