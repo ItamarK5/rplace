@@ -137,6 +137,7 @@ const notes = {
                 focusNoteRow(this)
             },
             function(){
+                console.log($(this).attr('targeted'))
                 if($(this).attr('targeted') != 'true'){
                     loseFocusNoteRow(this);     
                 }
@@ -186,6 +187,13 @@ const notes = {
                 ajaxGetPage(this.getAttribute('href'))
             }
         });
+    },
+    removeNote(note_idx){
+        $(`.note-history-row[data-item="${note_idx}"]`).remove();
+        if(this.display_note.id == note_idx){
+            this.display_note = null;   // clears the display note column
+        }
+
     }
 };
 
@@ -299,7 +307,6 @@ $(document).ready(() => {
         let args = $(this).serializeForm();
         $('#note-form .error-list').children().remove();
         e.preventDefault();
-        console.log(args)
         $.post({
             url:$(this).attr('action'),
             data:JSON.stringify(args),
@@ -384,24 +391,29 @@ $(document).ready(() => {
     });
     $('#remove-note-button').click(() => {
         let targeted_row = getTargetRow();
+        let note_idx = parseInt(targeted_row.attr('data-item'))
         console.log(targeted_row)
         if(targeted_row){
             $.post({
                 url:`/delete-note`,
-                data:JSON.stringify({idx:parseInt(targeted_row.attr('data-item'))}),
+                data:JSON.stringify(note_idx),
                 contentType: 'application/json;charset=UTF-8',
                 success: (response) => {
                     if(response.success){
-                        Swal.alert({
+                        Swal.fire({
                             icon:'success',
                             text:'Success',
-                            error:'The Note was removed'
+                            error:response.text
                         })
                     }
-                    note.display_note = null;
-                    targeted_row.remove()
+                    notes.removeNote(note_idx)
                 },
-                error: ajaxErrorAlert
+            }).catch((error) => {
+                if(_.has(error, 'status') && error.status == 404){
+                    // then the note isnt found so it must have been deleted
+                    display.remove_note(note_id)
+                }
+                ajaxErrorAlert(error)
             })
         }
     })
@@ -411,23 +423,29 @@ $(document).ready(() => {
             $('#edit-note-button').prop('disabled', $(this).val() == notes.display_note.description)
         }
     })
-    $('edit-note-button').click(() => {
-        if(notes.current_display.can_edit){
+    $('#edit-note-button').click(() => {
+        if(notes.displayed_note.can_edit){
+            console.log(5)
             $.post({
-                url:'/change-note',
+                url:'/change-note-description',
                 data: {
-                    id:notes.current_display.id,
-                    desc:$('#description-field').text()
+                    id:notes.display_note.id,
+                    description:$('#description-field').text()
                 },
                 contentType: 'application/json;charset=UTF-8',
                 success(response){
+                    console.log(response)
                     Swal.alert({
                         icon:response.success ? 'success' : 'error',
                         title:response.success ? 'Success' : 'Error',
                         text:response.text
                     })
                 }
-            }).fail(ajaxErrorAlert)
+            }).catch((error) => {
+                console.log(error)
+                //throw ajax alert
+                ajaxErrorAlert(error);
+            })
         }
     })
 

@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Dict
 
+from werkzeug import exceptions
 from flask import Blueprint, render_template, abort, request, url_for, redirect, jsonify, current_app
 from flask.wrappers import Response
 from flask_login import current_user
@@ -46,12 +47,9 @@ def admin() -> str:
     # try get page
     page = request.args.get('page', '1')
     if not page.isdigit():
-        abort(400, 'Given page isn\'t a number', description='Are you mocking this program? you'
-                                                             ' an admin tries to edit the url')
-    page = int(page)
-    print(pagination.pages)
+        abort(exceptions.Forbidden, 'Given page isn\'t a number', description='Are you, an admin of this site is'
+                                                                              ' mocking this program by editing this?')
     if not (1 <= page <= pagination.pages):
-        print(1)
         return redirect(url_for('/admin', args={'page': '1'}))
     return render_template('accounts/admin.html', pagination=pagination, lock=lock.is_enabled())
 
@@ -64,13 +62,13 @@ def edit_user(name: str) -> Response:
     :returns: the web-page to edit the matched user (to the name) data
     """
     if reNAME.match(name) is None:
-        abort(400, 'Name isn\'t good')
+        abort(exceptions.BadRequest.code, 'Name isn\'t good')
     user = User.query.filter_by(username=name).first_or_404()
     if user == current_user:
         return redirect(url_for('place.profile'))
     if not current_user.is_superior_to(user):
         # forbidden error
-        abort(403, f"You are not allowed to edit the user {user.username}")
+        abort(exceptions.Forbidden.code, f"You are not allowed to edit the user {user.username}")
     preference_form = PreferencesForm()
     ban_form = RecordForm(set_banned=user.is_active)
     note_form = NoteForm()
@@ -145,11 +143,14 @@ def change_ban_status(user: User) -> Response:
         user.forget_last_record()
         return jsonify({'valid': True})
     # else
+    elif form.csrf_token.errors:
+        abort()
     else:
+        # csrf token has its own action
         return jsonify({
             'valid': False,
             'errors': dict(
-                [(field.name, field.errors) for field in form if field.id != 'csrf_token']
+                [(field.name, field.errors) for field in iter(form) if field.id != 'csrf_token']
             )
         })
 
@@ -174,10 +175,12 @@ def add_record(user: User, message: Dict[str, str]):
         return {'valid': True}
     # else
     else:
+        # csrf token has its own action
+
         return {
             'valid': False,
             'errors': dict(
-                [(field.name, field.errors) for field in form]
+                [(field.name, field.errors) for field in iter(form) if field.id != 'csrf_token']
             )
         }
 
@@ -238,7 +241,7 @@ def get_active_state():
 @only_if_superior
 def set_role(user: User) -> Response:
     if not current_user.has_required_status(Role.superuser):
-        abort(403)  # forbidden
+        abort(exceptions.Forbidden.code)  # forbidden
     # get value
     print(request.data)
     if request.data == b'Admin':
@@ -274,25 +277,43 @@ def get_user_notes(user: User):
 
 @admin_router.route('/delete-note', methods=('POST',))
 def remove_user_note():
-    remove_message = request.get_json()
-    if remove_message is None:
-        abort(400, 'Not valid request')
-    elif 'idx' not in remove_message:
-        abort(400, 'Not valid request')
-    note_idx = remove_message['idx']
-    print(note_idx)
-    if not isinstance(note_idx, int):
-        abort(400, 'Not valid request')
+    note_index = request.get_json()
+    if note_index is None:
+        abort(exceptions.BadRequest.code, 'Not valid data')
+    elif not isinstance(note_index, int):
+        abort(exceptions.BadRequest.code, 'Not valid data')
     # else
-    note = Note.query.get(note_idx)
-    if note is None:
-        abort(404, description="Note Was Removed")
+    note = Note.query.get_or_404(note_index, description="Note Was Removed")
     # handle updates
-    if note.user_subject.last_record == note:
+    user_last_record = note.user_subject.get_last_record()
+    if user_last_record is None or user_last_record.equals(note):
         note.user_subject.forget_last_record()
     try:
         datastore.session.delete(note)
         datastore.session.commit()
-    except Exception:
+    except Exception as e:
+        print(e, type(e))
+        abort(404, description="Note Was Removed")
+    return jsonify({'status': 200, 'response': 'Note Removed Successfully'})
+
+
+@admin_router.route('/change-note-description', methods=('POST',))
+def change_note_description():
+    note_index = request.get_json()
+    if note_index is None:
+        abort(exceptions.BadRequest.code, 'Not valid data')
+    elif not isinstance(note_index, int):
+        abort(exceptions.BadRequest.code, 'Not valid data')
+    # else
+    note = Note.query.get_or_404(note_index, description="Note Was Removed")
+    # handle updates
+    user_last_record = note.user_subject.get_last_record()
+    if user_last_record is None or user_last_record.equals(note):
+        note.user_subject.forget_last_record()
+    try:
+        datastore.session.delete(note)
+        datastore.session.commit()
+    except Exception as e:
+        print(e, type(e))
         abort(404, description="Note Was Removed")
     return jsonify({'status': 200, 'response': 'Note Removed Successfully'})

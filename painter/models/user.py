@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 from hashlib import pbkdf2_hmac
-from typing import Optional, Union
+from typing import Optional, TypeVar
 
 from flask import Markup
 from flask_login import UserMixin
@@ -17,10 +17,13 @@ from .. import app
 
 reNAME = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
 rePSWD = re.compile(r'^[a-f0-9]{128}$')  # password hashed so get hash value
-reEMAIL = re.compile(
-    r"(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*\Z"  # dot-atom
-    r'|^"([\001-\010\013\014\016-\037!#-\[\]-\177]|\\[\001-\011\013\014\016-\177])*"\Z)',  # quoted-string
-    re.IGNORECASE)
+
+
+# only defiend for the current model to user
+#_CachedRecordID, types for the options that the caching can cache
+
+_CachedRecordID = TypeVar('_CachedRecordID', str, int)
+_NO_RECORD = 'none'
 
 
 class User(datastore.Model, UserMixin):
@@ -31,14 +34,22 @@ class User(datastore.Model, UserMixin):
     password = Column(String(128), nullable=False)
     email = Column(String(254), unique=True, nullable=False)
     next_time = Column(DATETIME(), default=datetime.utcnow, nullable=False)
+    # when the user created
     creation = Column(DATETIME(), default=datetime.utcnow, nullable=False)
     role = Column(SmallEnum(Role), default=Role.common, nullable=False)
     x = Column(SMALLINT(), default=500, nullable=False)
+    # start y default
     y = Column(SMALLINT(), default=500, nullable=False)
+
+    # default scale value, 4
     scale = Column(SMALLINT(), default=4, nullable=False)
-    # default color black
+
+    # default color when entering, black
     color = Column(SMALLINT(), default=1, nullable=False)
+
+    # default url
     url = Column(String(), default=None, nullable=True)
+
     # https://stackoverflow.com/a/11579347
     sqlite_autoincrement = True
 
@@ -58,6 +69,10 @@ class User(datastore.Model, UserMixin):
         return Note.query.filter_by(user_subject_id=self.id).order_by(desc(Note.post_date))
 
     def set_password(self, password: str) -> None:
+        """
+        :param password: sets the user password
+        :return: sets the users password
+        """
         self.password = self.encrypt_password(password, self.username)
 
     @staticmethod
@@ -73,9 +88,18 @@ class User(datastore.Model, UserMixin):
         return f"<User(name={self.username}>"
 
     def has_required_status(self, role: Role) -> bool:
-        return self.role >= role
+        """
+        :param role: Enum represting the users current rule
+        :return: if the user is the level of the rule or above
+        """
+        return self.role >= role    # role is IntEnum
 
-    def is_superior_to(self, other) -> bool:
+    def is_superior_to(self, other: 'User') -> bool:
+        """
+
+        :param other: nothing
+        :return: if the user superier to the other user
+        """
         return self.role > other.role or self.role == Role.superuser
 
     def can_edit_note(self, note: Note) -> bool:
@@ -89,28 +113,23 @@ class User(datastore.Model, UserMixin):
         return super().get_id() + '&' + self.password
 
     @cache.memoize(timeout=300)
-    def __get_last_record(self) -> Union[str, int]:
+    def __get_last_record(self) -> Optional[str]:
         """
-        :return:
+        :return: an in
+        assumes that the notes are sorted by ids, that are auto
         """
-        record = self.related_notes.filter_by(is_record=True).first()
+        record = self.related_notes.first()
         if record is None:
             return 'none'
         return record.id
 
     def get_last_record(self) -> Optional[Record]:
+        """
+        :return: the last record written for the user, None if there arent any record
+        it uses the method __get_last_record for caching the result to handle less requirements
+        """
         identifier = self.__get_last_record()
-        if identifier == 'none':
-            return None
-        # maybe the admin deleted the record for some strange reason
-        record = Record.query.get(identifier)
-        if record is None or record.user_subject_id != self.id:
-            # calculate again
-            self.forget_last_record()
-            # will forget so just call the function to do the same thing
-            return self.get_last_record()
-        # else
-        return record
+        return None if identifier else Record.query.get(identifier)
 
     @property
     def is_active(self) -> bool:
@@ -139,6 +158,9 @@ class User(datastore.Model, UserMixin):
         cache.delete_memoized(self.__get_last_record, self)
 
     def record_message(self) -> Optional[Markup]:
+        """
+        :return: returns record message for a banned user, if the user isnt banned it returns None
+        """
         record = self.get_last_record()
         if record is None:
             return None
@@ -154,7 +176,7 @@ def load_user(user_token: str) -> Optional[User]:
     """
     :param user_token: the string value saved in a cookie/session of the user.
     :return: the matched user for the token
-    id&password
+    token is in the form of: id&password
     flask encrypts it so I dont worry
     """
     print(user_token)

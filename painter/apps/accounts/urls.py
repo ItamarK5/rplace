@@ -6,8 +6,7 @@ from flask_login import logout_user, current_user, login_user
 from werkzeug.wrappers import Response
 
 from painter.backends.extensions import datastore
-from painter.models.user import Role
-from painter.models.user import User
+from painter.models.user import Role, User
 from painter.others.constants import WEB_FOLDER
 from .forms import LoginForm, SignUpForm, RevokeForm, ChangePasswordForm
 from .mail import send_signing_up_message, send_revoke_password_message

@@ -23,12 +23,12 @@ class Note(datastore.Model):
     user_writer_id = Column(Integer(), ForeignKey('user.id'), nullable=False)
     is_record = Column(BOOLEAN(), nullable=True)
 
-    # helped: https://stackoverflow.com/a/32899385
     # relationships
-    user_subject = relationship('User', foreign_keys=user_subject_id, uselist=False, backref="subject")
-    user_writer = relationship('User', foreign_keys=user_writer_id, uselist=False, backref='writer')
+    user_subject = relationship('User', foreign_keys=user_subject_id, uselist=False)
+    user_writer = relationship('User', foreign_keys=user_writer_id, uselist=False)
 
     sqlite_autoincrement = True
+
     __mapper_args__ = {
         'polymorphic_identity': 'note',
         'polymorphic_on': case(
@@ -41,6 +41,15 @@ class Note(datastore.Model):
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('is_record', False)
         super().__init__(*args, **kwargs)
+
+    def equals(self, other: 'Note'):
+        """
+        :param other: it would be danger to mess with __eq__ because it is used by the sqlite model,
+        so I em using equals method
+        # source: https://stackoverflow.com/q/3453180
+        :return: True if object specific identifiers are equal, the date and id
+        """
+        return other.id == self.id and other.post_date == self.post_date
 
     def _json_format(self, user) -> Dict:
         return {
@@ -56,6 +65,11 @@ class Note(datastore.Model):
     def json_format(self, user):
         return self._json_format(user)
 
+    def are_same(self):
+        """
+        :return:
+        """
+        return self.post_date == self.post_date
 
 class Record(Note):
     id = Column(Integer(), ForeignKey('note.id'), primary_key=True)

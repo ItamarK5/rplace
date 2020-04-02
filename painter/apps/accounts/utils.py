@@ -6,8 +6,6 @@ from typing import Any, Optional, Tuple, Dict, Callable
 from flask import Flask, redirect, current_app, url_for, flash
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from wtforms.validators import HostnameValidation
-
-from painter.backends.extensions import cache
 from painter.models.user import reNAME, rePSWD
 
 
