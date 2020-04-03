@@ -19,34 +19,35 @@ class Start(Server):
         options = (
             Option('-h', '--host',
                    dest='host',
-                   default='0.0.0.0'),
+                   default='0.0.0.0',
+                   help=('host url of the server')),
             Option('-p', '--port',
                    dest='port',
                    type=int,
-                   default=8080),
+                   default=8080,
+                   help=('host port of the server')),
             Option('-d', '--debug',
                    action='store_true',
                    dest='use_debugger',
                    help=('enable the Werkzeug debugger (DO NOT use in '
                          'production code)'),
-                   default=self.use_debugger),
+                   default=self.use_debugger),  # True
             Option('-D', '--no-debug',
                    action='store_false',
                    dest='use_debugger',
                    help='disable the Werkzeug debugger',
-                   default=self.use_debugger),
-
+                   default=self.use_debugger),  # False
             Option('-r', '--reload',
                    action='store_true',
                    dest='use_reloader',
                    help=('monitor Python files for changes (not 100%% safe '
                          'for production use)'),
-                   default=self.use_reloader),
+                   default=self.use_reloader),  # True
             Option('-R', '--no-reload',
                    action='store_false',
                    dest='use_reloader',
                    help='do not monitor Python files for changes',
-                   default=self.use_reloader),
+                   default=self.use_reloader),  # False
         )
         return options
 
