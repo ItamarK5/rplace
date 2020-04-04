@@ -6,15 +6,16 @@ https://flask-script.readthedocs.io/en/latest/
 """
 import subprocess
 import sys
-
+import os
 from flask_script import Manager, Server, Option, Command
 from flask_script.cli import prompt_bool, prompt_choices, prompt
 from flask_script.commands import InvalidCommand
-
+from typing import Optional
 from .app import create_app, datastore, sio
 from .models.role import Role
 from .models.user import User
 from .others.manager_utils import NewUserForm
+from os import environ
 
 manager = Manager(create_app)
 
@@ -193,6 +194,19 @@ class CeleryWorker(Command):
             ['venv/scripts/celery.exe', 'worker', '-A', 'painter.celery_worker.celery', '-P', 'eventlet'] + argv
         )
         sys.exit(ret)
+
+
+def set_config(file_path, num=None):
+    if (not os.path.exists(file_path)) or os.path.isdir(file_path):
+        raise InvalidCommand("No file exists at: ")
+    #check enviroment
+
+
+
+set_config = Command(set_config)
+set_config.add_option(Option('--p', '-path', dest='file_path'))
+set_config.add_option(Option('--n', '-num', dest='num', default=None))
+manager.add_command('set-config', set_config)
 
 
 manager.add_command('celery', CeleryWorker)

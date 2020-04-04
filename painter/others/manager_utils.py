@@ -26,3 +26,6 @@ class NewUserForm(
     def validate_username(self, field) -> None:
         if User.query.filter_by(username=field.data).first() is not None:
             raise ValidationError('User with the username already exists')
+
+
+PAINTER_PATH = 'PAINTER-SOCIAL-CONFIG-PATHS'

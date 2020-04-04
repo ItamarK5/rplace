@@ -13,8 +13,6 @@ MIME_TYPES = {
     'gif': 'image/gif',
     'jpeg': 'image/jpeg'
 }
-# folder for all web related staff.
-WEB_FOLDER = path.join(path.dirname(path.dirname(path.abspath(__file__))), 'web')
 # time between each draw for user
 MINUTES_COOLDOWN = timedelta(minutes=1)
 

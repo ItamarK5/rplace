@@ -1,5 +1,5 @@
 """
-Auther Itamar Kannne
+Author: Itamar Kannne
 Main App
 """
 import sys
@@ -10,6 +10,7 @@ if __name__ == '__main__':
     try:
         manager.run()
     except InvalidCommand as err:
+        # prints
         print(err, file=sys.stderr)
         sys.exit(1)
 #  celery -A proj worker -P eventlet -c 1000

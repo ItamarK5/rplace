@@ -13,7 +13,6 @@ from flask import Flask
 from painter.backends.extensions import datastore, generate_engine, mailbox, login_manager, cache, csrf, redis
 from painter.backends.skio import sio
 # backends
-from .others.constants import WEB_FOLDER
 from .others.filters import add_filters
 from celery import Celery
 # monkey patching
@@ -32,7 +31,7 @@ def create_app(config_path: str = 'config.py', main: bool=True) -> Flask:    # T
         __name__,
         static_folder='',
         static_url_path='',
-        template_folder=path.join(WEB_FOLDER, 'templates'),
+        template_folder=path.join('web', 'templates'),
     )
     # The Application Configuration, import
     app.config.from_pyfile(config_path)

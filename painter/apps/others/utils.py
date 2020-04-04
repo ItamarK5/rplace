@@ -5,6 +5,7 @@ from flask import render_template, Response
 from werkzeug import Request
 from werkzeug import exceptions
 from werkzeug.exceptions import BadRequest, Forbidden, NotFound, HTTPException
+from flask import current_app
 
 MEME_PAGE_ERROR_CODES = {BadRequest.code, Forbidden.code, NotFound.code}
 
@@ -33,7 +34,9 @@ def render_error_page(e: exceptions.HTTPException,
                       name: Optional[str] = None) -> Response:
     case = case or str(e.code)
     name = name or str(e.name)
-    if case not in listdir(path.join(other_router.static_folder, 'memes')):
+    if case not in listdir(path.join(current_app.root_path,
+                                     'web',
+                                     'memes')):
         return e  # return default error
     else:
         return render_template(

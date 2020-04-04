@@ -1,10 +1,11 @@
+
 import random
 from os import path, listdir
 from typing import Union
 
 from flask import (
     send_from_directory,
-    abort, Response, request
+    abort, Response, request, current_app
 )
 from flask_wtf.csrf import CSRFError  # ignore all
 from werkzeug.exceptions import HTTPException
@@ -60,7 +61,7 @@ def serve_static(key: str) -> Response:
     file_format = get_file_type(key)
     if not file_format:  # include no item scenerio
         abort(404, 'Forgot placeing file type')
-    if file_format not in listdir(path.join(other_router.static_folder, 'static')):
+    if file_format not in listdir(path.join(current_app.root_path, 'web', 'static')):
         abort(404, 'unvalid file format')
     # meme type check
     mime_type = MIME_TYPES.get(file_format, None)
@@ -68,7 +69,7 @@ def serve_static(key: str) -> Response:
         abort(404, 'type not supported')
     try:
         return send_from_directory(
-            path.join(other_router.static_folder, 'static', key.split(".")[-1]),
+            path.join(current_app.root_path, 'web', 'static', key.split(".")[-1]),
             key,
             mimetype=mime_type
         )
@@ -80,7 +81,7 @@ def serve_static(key: str) -> Response:
 @other_router.route('/favicon.ico', methods=('GET',))
 def serve_icon() -> Response:
     return send_from_directory(
-        path.join(other_router.static_folder, 'static', 'ico'),
+        path.join(current_app.root_path, 'web', 'static', 'ico'),
         'favicon.ico',
         mimetype=MIME_TYPES['ico']
     )
