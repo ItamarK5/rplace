@@ -1,8 +1,10 @@
 from typing import Dict, Any, List
+
 from flask import current_app
 from flask_mail import Message
-from painter.backends.extensions import mailbox
+
 from painter import celery
+from painter.backends.extensions import mailbox
 
 
 @celery.Task(name='send-mail')

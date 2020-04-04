@@ -14,7 +14,6 @@ from .enumint import SmallEnum
 from .notes import Record, Note
 from .role import Role
 
-
 UsernamePattern = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
 HashPasswordPattern = re.compile(r'^[a-f0-9]{128}$')  # password hashed so get hash value
 

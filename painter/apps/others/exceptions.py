@@ -1,9 +1,10 @@
-from typing import Union, Optional
-from flask import request, render_template
-from typing import Optional
-from werkzeug import exceptions
-from werkzeug import Response
+from typing import Union
+
+from flask import request
 from flask_wtf.csrf import CSRFError
+from werkzeug import Response
+from werkzeug import exceptions
+
 from . import other_router
 from .utils import is_ajax_request, has_matched_image, render_error_page
 

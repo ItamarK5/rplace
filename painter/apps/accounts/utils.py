@@ -1,15 +1,16 @@
 from __future__ import absolute_import
-from flask_login import current_user
-import re
+
 from functools import wraps
 from typing import Any, Optional, Tuple, Dict, Callable
 
-from flask import Flask, redirect, current_app, url_for, flash
-from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
-from painter.models.user import UsernamePattern, HashPasswordPattern
+from flask import Flask, redirect, url_for, flash
 from flask import current_app
-from .router import accounts_router
+from flask_login import current_user
+from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
+
+from painter.models.user import UsernamePattern, HashPasswordPattern
 from .forms import SignUpTokenForm
+from .router import accounts_router
 
 
 class TokenSerializer(object):

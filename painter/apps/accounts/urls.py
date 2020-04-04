@@ -1,8 +1,7 @@
 import time
-from os import path
 
-from flask import Blueprint, url_for, render_template, redirect, current_app, request
-from flask_login import logout_user, current_user, login_user
+from flask import render_template, request
+from flask_login import logout_user, login_user
 from werkzeug.wrappers import Response
 
 from painter.backends.extensions import datastore
@@ -10,7 +9,6 @@ from painter.models.user import Role, User
 from .forms import LoginForm, SignUpForm, RevokePasswordForm, ChangePasswordForm
 from .mail import send_signing_up_message, send_revoke_password_message
 from .utils import *
-from . import accounts_router
 
 
 @accounts_router.route('/login', methods=('GET', 'POST'))

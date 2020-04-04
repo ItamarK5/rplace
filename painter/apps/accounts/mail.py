@@ -3,7 +3,7 @@ from os import path
 from flask import render_template
 
 from painter.others.constants import MIME_TYPES
-from painter.worker import send_mail
+from painter.tasks import send_mail
 
 
 def send_signing_up_message(name: str, address: str, token: str) -> None:

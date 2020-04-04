@@ -1,8 +1,9 @@
-from werkzeug import exceptions
-from flask import render_template, Response
+from . import other_router
+from os import path, listdir
 from typing import Optional
-
+from flask import render_template, Response
 from werkzeug import Request
+from werkzeug import exceptions
 from werkzeug.exceptions import BadRequest, Forbidden, NotFound, HTTPException
 
 MEME_PAGE_ERROR_CODES = {BadRequest.code, Forbidden.code, NotFound.code}

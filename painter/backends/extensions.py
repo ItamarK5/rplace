@@ -1,12 +1,10 @@
-from flask_wtf import CSRFProtect
 from flask_caching import Cache
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_redis import FlaskRedis
 from flask_sqlalchemy import SQLAlchemy
+from flask_wtf import CSRFProtect
 from sqlalchemy import create_engine
-
-from .. import app
 
 mailbox = Mail()
 redis = FlaskRedis()

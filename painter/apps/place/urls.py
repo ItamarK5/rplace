@@ -1,12 +1,10 @@
-from os.path import join as path_join
-
-from flask import Blueprint, render_template, Response, jsonify, redirect
+from flask import render_template, Response, jsonify
 from flask_login import login_required, current_user
 
-from painter.backends.extensions import datastore
-from . import place_router
-from painter.others.preference_form import PreferencesForm
 from painter.apps.place.util import auto_redirect
+from painter.backends.extensions import datastore
+from painter.others.preference_form import PreferencesForm
+from . import place_router
 
 
 @place_router.route('/place', methods=('GET',))

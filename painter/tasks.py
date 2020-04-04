@@ -1,17 +1,10 @@
-from flask_mail import Message
-from flask import current_app
 from typing import List, Dict, Any
-from celery import Celery
+
+from .app import celery
+from flask import current_app
+from flask_mail import Message
+
 from .backends.extensions import mailbox
-
-def init_celery(celery, app) -> None:
-    celery.conf.update(app.config)
-    return celery
-
-celery = Celery(
-    __name__,
-    backend='amqp://guest@localhost//'
-)
 
 
 @celery.task(name='send-mail')
@@ -36,4 +29,3 @@ def send_mail(subject: str,
                     headers=attach['headers']
                 )
         mailbox.send(message)
-

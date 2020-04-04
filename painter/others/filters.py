@@ -1,7 +1,7 @@
-from flask import Flask
 from typing import Optional, Union, List
 
-from painter import app
+from flask import Flask
+
 from painter.models.user import User, Role
 from painter.others.constants import COLORS
 from painter.others.constants import MINUTES_COOLDOWN

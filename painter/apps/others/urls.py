@@ -1,18 +1,17 @@
 import random
 from os import path, listdir
-from typing import Union, Optional
+from typing import Union
 
 from flask import (
-    Blueprint, render_template, send_from_directory,
+    send_from_directory,
     abort, Response, request
 )
 from flask_wtf.csrf import CSRFError  # ignore all
 from werkzeug.exceptions import HTTPException
 
-from painter.others.constants import MIME_TYPES, WEB_FOLDER
-from .utils import get_file_type, has_matched_image, is_ajax_request, render_error_page
+from painter.others.constants import MIME_TYPES
 from . import other_router
-
+from .utils import get_file_type, has_matched_image, is_ajax_request, render_error_page
 
 
 @other_router.route('/meme/<string:error>')

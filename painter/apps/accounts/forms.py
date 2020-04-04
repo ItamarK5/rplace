@@ -1,7 +1,7 @@
-import re
 from flask_wtf import FlaskForm
 from wtforms import *
 from wtforms.fields.html5 import EmailField
+
 from painter.models.user import User
 from painter.others.user_valid import (
     ABC_OR_DIGITS_VALIDATOR,

@@ -4,16 +4,17 @@ the manager module decorates the app by command line parameter
 the module is based of flask_script module
 https://flask-script.readthedocs.io/en/latest/
 """
-import sys
 import subprocess
-from .app import create_app, datastore, sio
-from flask_script import Manager, Server, Option, Command
-from flask_script.commands import InvalidCommand
-from flask_script.cli import prompt_bool, prompt_choices
-from .models.user import User
-from .models.role import Role
-from .others.manager_utils import NewUserForm
+import sys
 
+from flask_script import Manager, Server, Option, Command
+from flask_script.cli import prompt_bool, prompt_choices, prompt
+from flask_script.commands import InvalidCommand
+
+from .app import create_app, datastore, sio
+from .models.role import Role
+from .models.user import User
+from .others.manager_utils import NewUserForm
 
 manager = Manager(create_app)
 
@@ -95,7 +96,7 @@ class RunServer(Server):
         )
 
 
-@manager.option('--D', '-drop', dest='drop-first', help='drop before creating app', default=True)
+@manager.option('--d', '-drop', dest='drop-first', help='drop before creating app', default=True)
 def create_db(drop_first=False):
     if drop_first and prompt_bool('Are you sure you want to drop the table'):
         datastore.drop_all()
@@ -117,21 +118,15 @@ class CreateUser(Command):
         return (
             Option('--n', '-name', '-username',
                    dest='username',
-                   help='name of the new user',
-                   required=True),
+                   help='name of the new user'),
             Option('--p', '-password', '-pswd',
                    dest='password',
-                   help='password of the new user',
-                   required=True),
-            Option('--m', '-mail', '-addr',
-                   dest='mail_address',
-                   help='mail address of the new user',
-                   required=True),
-            Option('--r', '-role',
-                   dest='role',
+                   help='password of the new user'),
+            Option('--m', '-mail', '-addr', dest='mail_address',
+                   help='mail address of the new user'),
+            Option('--r', '-role', dest='role',
                    help='Role of the new User'),
             Option('--a', '-admin', dest='role',
-                   action='store_const', const='admin',
                    help='the users\'s role is setted to be admin'),
             Option('--u', '-user',
                    dest='role', default='user',
@@ -143,6 +138,12 @@ class CreateUser(Command):
         )
 
     def run(self, username, password, mail_address, role):
+        if username is None:
+            username = prompt('enter a username address of the user\nUsername: ')
+        if password is None:
+            password = prompt('you forgeot entering a password, pless enter 1\nPassword: ')
+        if mail_address is None:
+            mail_address = prompt('enter a mail address of the user\nMail:')
         if role is None:
             role = prompt_choices(
                 'You must pick a role, if not default is superuser',
@@ -166,9 +167,11 @@ class CreateUser(Command):
             mail_address=mail_address
         )
         if is_valid:
+            # to get first error
             for field in iter(form):
                 for error in field.errors:
                     raise InvalidCommand('{0}: {1}'.format(field.name, error))
+        # create user
         user = User(
             username=username,
             password=password,
@@ -187,10 +190,12 @@ class CeleryWorker(Command):
 
     def run(self, argv):
         ret = subprocess.call(
-            ['celery', 'worker', '-A', 'painter.celery', '-P', 'eventlet', '-l'] + argv)
+            ['venv/scripts/celery.exe', 'worker', '-A', 'painter.app.celery', '-P', 'eventlet'] + argv
+        )
         sys.exit(ret)
 
 
 manager.add_command('celery', CeleryWorker)
 manager.add_command("runserver", RunServer())
 manager.add_command("create-user", CreateUser())
+

@@ -1,6 +1,7 @@
-from typing import Tuple
-from werkzeug.datastructures import MultiDict
 import re
+from typing import Tuple
+
+from werkzeug.datastructures import MultiDict
 from wtforms import Form, StringField, validators
 
 NamePattern = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
@@ -11,7 +12,7 @@ PasswordPattern = re.compile(r'[a-z0-9]{6,16}$')
  Form Fields and messages
 """
 
-ABC_OR_DIGITS_PATTERN = re.compile(r'^[A-Z0-9]$', re.I)
+ABC_OR_DIGITS_PATTERN = re.compile(r'^[A-Z0-9]+$', re.I)
 ABC_OR_DIGITS_MESSAGE = 'Field must contain only abc chars or digits'
 HEX_PATTERN = re.compile(r'[a-f0-9]')
 HEX_PATTERN_MESSAGE = 'Field must only contain hex values, digits or characters a to f'

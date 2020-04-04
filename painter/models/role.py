@@ -1,5 +1,5 @@
-from typing import Optional
 from enum import IntEnum, auto
+from typing import Optional
 
 
 class Role(IntEnum):
