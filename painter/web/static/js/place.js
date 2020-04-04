@@ -415,6 +415,7 @@ const query = {
         this.cx = fragments.x;
         this.cy = fragments.y;
         this.scale = fragments.scale;
+        this.setHash = _.throttle(this.__setHash, 2000)
     },
     disableUpdateHash() {
         this.__can_set_hash = HashChangeFlag.Disabled;
@@ -573,19 +574,19 @@ const query = {
     },
     // set the window.loaction.hash to the query hash value
     // level 3
-    setHash() {
+    __setHash() {
         //  update location
         // first tried to update event set
         // now lets try using setTimeout
-        this.__can_set_hash = MaskHashChangeFlag(this.__can_set_hash)
-        if (this.canSetHash() && location.hash != this.hash()) {
+        //this.__can_set_hash = MaskHashChangeFlag(this.__can_set_hash)
+        if (/*this.canSetHash() &&*/ location.hash != this.hash()) {
             // change hash without triggering events
             // https://stackoverflow.com/a/5414951
             history.replaceState(null, null, document.location.pathname +
                 this.hash());
             //window.location.hash = this.hash;  
         }
-    }
+    },
 }
 const cursor = {
     last_cursor_non_forced: null,
@@ -668,7 +669,7 @@ const pen = {
         if (!color_button[0]) {
             color_button = $('.colorButton').first(); // black button
         }
-        this.setColorButton(color_button)
+        this.setColorButton(color_button);
     },
     disable() {
         if (!this.__disable) {
@@ -868,6 +869,7 @@ const board = {
         this.ctx_image = this.imgCanvas.getContext('2d');
         this.reset_board_build()
         this.updateZoom(); // also centers
+
     },
     get is_ready() {
         /**

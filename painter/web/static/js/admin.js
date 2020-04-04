@@ -1,5 +1,14 @@
+/**
+ * @name ToInt
+ * @returns integer form
+ */
 Boolean.prototype.toInt = function() { return this.valueOf() ? 1 : 0; }
 
+/**
+ * @name ChangeLockButton
+ * @param {Number} new_state 
+ * @summary updates the place_button for its new state
+ */
 function ChangeLockButton(new_state) {
 	let lock_button = $('#place-button')
   	text = `The place is ${new_state ? 'unpause' : 'pause'}`;
@@ -7,9 +16,14 @@ function ChangeLockButton(new_state) {
   	lock_button.children('h6').text(new_state ? 'Turn Place Off' : 'Turn Place On')
 }
 
+// creates the io object
 const sock = io('/admin')
 
-function refresh_button_state(){
+/**
+ * @name refreshButtonState
+ * @returns checks again the button state
+ */
+refreshButtonState => {
 	$.ajax({
 		url:'/get-active-state',
 		method:'GET',
@@ -20,14 +34,22 @@ function refresh_button_state(){
 	})
 }
 
+// refresh the button on connection
 sock.on('connect', () => {
-	refresh_button_state()
+	refreshButtonState();
 });
+// 
 sock.on('set-lock-state', (callback) => {
 	ChangeLockButton(callback)
 });
-sock.on('reconnect', () => 	refresh_button_state());
+sock.on('reconnect', () => 	refreshButtonState());
+sock.on('reconnect_error', () =>{
+	Swal.fire({
+		icon:'error',
+		title:'Server Not Found',
 
+	})
+})
 
 $(document).ready(() => {
 	sock.connect()

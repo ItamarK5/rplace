@@ -24,9 +24,10 @@ celery = Celery(
     __name__,
     backend='amqp://guest@localhost//'
 )
+# to register tasks
 
 
-def create_app(config_path: str = 'config.py') -> Flask:    # The Flask Application
+def create_app(config_path: str = 'config.py', main: bool=True) -> Flask:    # The Flask Application
     app = Flask(
         __name__,
         static_folder='',
@@ -37,9 +38,8 @@ def create_app(config_path: str = 'config.py') -> Flask:    # The Flask Applicat
     app.config.from_pyfile(config_path)
     # socketio
     sio.init_app(
-        app,
-        # message_queue='redis://192.168.0.214:6379/0',
-        # message_queue='pyamqp://guest@localhost//'  # testing
+        app if main else None,
+        message_queue='pyamqp://guest@localhost//'  # testing
     )
     # ext
     datastore.init_app(app)

@@ -29,9 +29,12 @@ const MakeNoteRow = (note) => {
     return row;
 }
 
+
 /**
+ * @name isNotFoundResponse
  * @param {XMLHttpResponse} xhr 
  * @return {Boolean} if its a 404 response (not found)
+ * @summary checks if the context isnt found
  */
 const isNotFoundResponse = (xhr) => _.has(xhr, 'status') && xhr.status == 404;
 

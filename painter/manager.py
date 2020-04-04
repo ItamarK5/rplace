@@ -190,7 +190,7 @@ class CeleryWorker(Command):
 
     def run(self, argv):
         ret = subprocess.call(
-            ['venv/scripts/celery.exe', 'worker', '-A', 'painter.app.celery', '-P', 'eventlet'] + argv
+            ['venv/scripts/celery.exe', 'worker', '-A', 'painter.celery_worker.celery', '-P', 'eventlet'] + argv
         )
         sys.exit(ret)
 
