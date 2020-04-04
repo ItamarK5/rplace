@@ -168,21 +168,22 @@ class CreateUser(Command):
             password=password,
             mail_address=mail_address
         )
-        if is_valid:
+        if not is_valid:
             # to get first error
             for field in iter(form):
                 for error in field.errors:
                     raise InvalidCommand('{0}: {1}'.format(field.name, error))
         # create user
-        user = User(
-            username=username,
-            password=password,
-            email=mail_address,
-            role=role_matched
-        )
-        datastore.session.add(user)
-        datastore.session.commit()
-        print('user created successfully')
+        else:
+            user = User(
+                username=username,
+                password=password,
+                email=mail_address,
+                role=role_matched
+            )
+            datastore.session.add(user)
+            datastore.session.commit()
+            print('user created successfully')
 
 
 class CeleryWorker(Command):

@@ -6,7 +6,7 @@ SQLALCHEMY_TRACK_MODIFICATIONS = True
 SECRET_KEY = b'O\x0c\xaf\xe9\xd2\x9b#\x0f\xcaB\xa4B\xa7\xf2f:\xda5\xcf\x104\x16A\xbd'
 MAIL_SERVER = 'smtp.gmail.com'
 MAIL_USERNAME = 'socialpainterdash@gmail.com'
-MAIL_PASSWORD = ',[+=dDAbg9a'
+MAIL_PASSWORD = 'EFnsDY8>.r^9n~u5FRT/%@n^'
 MAIL_USE_SSL = True
 MAIL_USE_TLS = False
 SESSION_PROTECTION = 'basic'
@@ -28,5 +28,3 @@ CACHE_TYPE = 'simple'
 # non login options
 NON_LOGIN_ROUTE = 'place.home'
 NON_LOGIN_MESSAGE = 'You were redirected from pages that are for non autheneticated users'
-
-# a4<`LsNv>!n}$8?6%MQHXjS^!_

@@ -27,7 +27,7 @@ celery = Celery(
 # to register tasks
 
 
-def create_app(config: str = 'config.py', main: bool=True) -> Flask:    # The Flask Application
+def create_app(config: str = 'config.py', main: bool = True) -> Flask:    # The Flask Application
     app = Flask(
         __name__,
         static_folder='',

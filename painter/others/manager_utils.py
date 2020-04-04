@@ -21,13 +21,13 @@ class NewUserForm(
     PasswordFieldMixin,
     MailAddressFieldMixin,
 ):
-    @staticmethod
-    def validate_mail_address(field) -> None:
+
+    def validate_mail_address(self, field) -> None:
         if User.query.filter_by(email=field.data).first() is not None:
             raise ValidationError('User with the mail address already exists')
 
     @staticmethod
-    def validate_username(field) -> None:
+    def validate_username(self, field) -> None:
         if User.query.filter_by(username=field.data).first() is not None:
             raise ValidationError('User with the username already exists')
 
