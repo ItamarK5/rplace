@@ -7,9 +7,10 @@ from typing import Any, Optional, Tuple, Dict, Callable
 from flask import Flask, redirect, current_app, url_for, flash
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from wtforms.validators import HostnameValidation
-from painter.models.user import reNAME, rePSWD
+from painter.models.user import UsernamePattern, HashPasswordPattern
 from flask import current_app
 from .router import accounts_router
+from painter.others.user_valid import UserForm
 
 email_regex = re.compile(
     r"(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*\Z"  # dot-atom
@@ -65,17 +66,6 @@ def extract_signature(token: str,
     return token, timestamp.timestamp()
 
 
-def is_valid_address(address: str) -> bool:
-    if '@' not in address:
-        return False
-    user_part, domain_part = address.rsplit('@', 1)
-    if not email_regex.match(user_part):
-        return False
-    if not HostnameValidation(require_tld=False)(domain_part):
-        return False
-    return True
-
-
 def is_valid_signup_token(token: Any) -> bool:
     """
     :param token: token passed
@@ -86,12 +76,17 @@ def is_valid_signup_token(token: Any) -> bool:
     if (not isinstance(token, Dict)) or len(token) != 3:
         return False
     # name
+    return UserForm.fast_validation(
+        username=token.get('username', ''),
+        password=token.get('password', ''),
+
+    )
     name = token.get('username', None)
-    if (not name) or not reNAME.match(name):
+    if (not name) or not UsernamePattern.match(name):
         return False
     # pswd
     pswd = token.get('password', None)
-    if (not pswd) or not rePSWD.match(pswd):
+    if (not pswd) or not HashPasswordPattern.match(pswd):
         return False
     # name
     mail_address = token.get('email', None)
@@ -112,11 +107,11 @@ def is_valid_change_password_token(token: Any) -> bool:
         return False
     # name
     name = token.get('username', None)
-    if (not name) or not reNAME.match(name):
+    if (not name) or not UsernamePattern.match(name):
         return False
     # pswd
     pswd = token.get('password', None)
-    if (not pswd) or not rePSWD.match(pswd):
+    if (not pswd) or not HashPasswordPattern.match(pswd):
         return False
     # name
     return True

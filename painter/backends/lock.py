@@ -1,6 +1,6 @@
 from flask import Flask
 
-from .extensions import rds_backend
+from .extensions import redis
 
 """
     represnting an ability of the admin to prevent users from setting pixels
@@ -13,8 +13,8 @@ _flag_lock = False
 
 
 def create_object():
-    if not rds_backend.exists(_ENABLE_EDIT_BOARD_KEY):
-        rds_backend.set(_ENABLE_EDIT_BOARD_KEY, _ENABLE)  # default allow
+    if not redis.exists(_ENABLE_EDIT_BOARD_KEY):
+        redis.set(_ENABLE_EDIT_BOARD_KEY, _ENABLE)  # default allow
 
 
 def init_app(app: Flask) -> None:

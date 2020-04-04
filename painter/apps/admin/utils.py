@@ -7,7 +7,7 @@ from flask_login import fresh_login_required
 from werkzeug import Response
 
 from painter.models.role import Role
-from painter.models.user import User, reNAME
+from painter.models.user import User, UsernamePattern
 
 
 def admin_only(f: Callable) -> Callable:
@@ -58,7 +58,7 @@ def only_if_superior(f: Callable[[User], Response]) -> Callable[[str], Response]
             print(type(name), name)
             if not isinstance(name, str):
                 abort(400)
-        if not reNAME.match(name):
+        if not UsernamePattern.match(name):
             abort(404, 'Cannot access user')
         user = User.query.filter_by(username=name).first()
         if user is None:

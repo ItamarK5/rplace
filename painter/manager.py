@@ -1,17 +1,30 @@
+"""
+Auther: Itamar Kanne
+the manager module decorates the app by command line parameter
+the module is based of flask_script module
+https://flask-script.readthedocs.io/en/latest/
+"""
 import sys
 import subprocess
 from .app import app, sio, datastore
 from flask_script import Manager, Server, Option, Command
 from flask import Flask
 from typing import Optional
+from .models.role import Role
+from
 
 manager = Manager(app)
 
 
 # https://github.com/miguelgrinberg/flack/blob/master/manage.py
 class Start(Server):
-    def run(self):
-        self()
+    """
+    The Start Server Command
+    the function get the following parameters:
+    ;host: the host to start the server
+    ;port: the port to start the server
+    ;local: the
+    """
 
     help = description = 'Runs the server'
 
@@ -68,12 +81,32 @@ class Start(Server):
             **self.server_options
         )
 
+@manager.option('--n', '-name', dest="name", help='name of the new user', required=True)
+@manager.option('--p', '-password', dest="name", help='password of the new user', required=True)
+@manager.option('--e', '-email', dest="name", help='email of the new user', required=True)
+@manager.option('--r', '-role', dest='role', help='Role of the new user, default admin')
+def add_user():
 
+
+@manager.option()
 @manager.command
-def createdb(drop_first = False):
+def createdb(drop_first=False):
     if drop_first:
         datastore.drop_all()
     datastore.create_all()
+
+
+class CreateUser(Command):
+    help = description = 'create a new user in the database'
+
+    def add_option(self, option):
+
+    def run(self, name, password, email, role='admin'):
+        # first decide between roles
+        if reNAME
+
+
+
 
 
 class CeleryWorker(Command):

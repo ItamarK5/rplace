@@ -4,7 +4,7 @@ import eventlet
 from flask import Flask
 from .others.constants import WEB_FOLDER
 from painter.backends.skio import sio
-from painter.backends.extensions import datastore, generate_engine, mailbox, login_manager, cache, csrf
+from painter.backends.extensions import datastore, generate_engine, mailbox, login_manager, cache, csrf, redis
 from .others import filters
 # backends
 from .backends import extensions, board, lock
@@ -13,15 +13,16 @@ from .others.filters import add_filters
 from .worker import celery, init_celery
 # monkey patch
 eventlet.monkey_patch()
+# The Flask Application
 app = Flask(
     __name__,
     static_folder='',
     static_url_path='',
     template_folder=path.join(WEB_FOLDER, 'templates'),
 )
-
-app.config.from_pyfile('config.py')
-# a must import
+# The Application Configuration, import
+app.config.from_pyfile('config')
+# socketio
 sio.init_app(
     app,
     # message_queue='redis://192.168.0.214:6379/0',
@@ -34,6 +35,7 @@ mailbox.init_app(app)
 login_manager.init_app(app)
 cache.init_app(app)
 csrf.init_app(app)
+redis.init_app(app)
 add_filters(app)
 # insert other staff
 app.register_blueprint(place.place_router)

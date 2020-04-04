@@ -2,7 +2,7 @@ from threading import Lock
 
 from flask import Flask
 
-from .extensions import rds_backend
+from .extensions import redis
 
 """ A backend to work with the board on redis """
 
@@ -18,8 +18,8 @@ def make_board() -> None:
     check if there is a board object in redis
     if not creates new one
     """
-    if not rds_backend.exists(_BOARD_REDIS_KEY):
-        rds_backend.set(_BOARD_REDIS_KEY, '\00' * 1000 * 500)
+    if not redis.exists(_BOARD_REDIS_KEY):
+        redis.set(_BOARD_REDIS_KEY, '\00' * 1000 * 500)
 
 
 def init_app(app: Flask) -> None:
@@ -41,7 +41,7 @@ def set_at(x: int, y: int, color: int) -> None:
     set a pixel on the board copy in the redis server
     """
 
-    bitfield = rds_backend.bitfield(_BOARD_REDIS_KEY)
+    bitfield = redis.bitfield(_BOARD_REDIS_KEY)
     # need to count for little endian
     x_endian = x + (-1)**(x % 2)
     bitfield.set('u4', (y * 1000 + x_endian) * 4, color)

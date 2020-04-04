@@ -3,7 +3,7 @@ from datetime import datetime
 from hashlib import pbkdf2_hmac
 from typing import Optional, TypeVar
 
-from flask import Markup
+from flask import Markup, current_app
 from flask_login import UserMixin
 from sqlalchemy import Column, Integer, String, desc
 from sqlalchemy.dialects.sqlite import DATETIME, SMALLINT
@@ -13,15 +13,16 @@ from painter.backends.extensions import login_manager
 from .enumint import SmallEnum
 from .notes import Record, Note
 from .role import Role
-from .. import app
-
-reNAME = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
-rePSWD = re.compile(r'^[a-f0-9]{128}$')  # password hashed so get hash value
 
 
-# only defiend for the current model to user
-#_CachedRecordID, types for the options that the caching can cache
+UsernamePattern = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
+HashPasswordPattern = re.compile(r'^[a-f0-9]{128}$')  # password hashed so get hash value
 
+
+"""
+    only defiend for the current model to user
+    #_CachedRecordID, types for the options that the caching can cache
+"""
 _CachedRecordID = TypeVar('_CachedRecordID', str, int)
 _NO_RECORD = 'none'
 
@@ -77,11 +78,17 @@ class User(datastore.Model, UserMixin):
 
     @staticmethod
     def encrypt_password(password: str, username: str) -> str:
+        """
+        :param password: encrypts the password
+        :param username:
+        :return: the encrypted password of the user
+        must run only after app initilize
+        """
         return pbkdf2_hmac(
             'sha512',
             password.encode(),
             username.encode(),
-            app.config['USER_PASSWORD_ROUNDS']
+            current_app.config.get('USER_PASSWORD_ROUNDS'),
         ).hex()
 
     def __repr__(self) -> str:

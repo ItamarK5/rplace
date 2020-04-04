@@ -9,7 +9,7 @@ from sqlalchemy import create_engine
 from .. import app
 
 mailbox = Mail()
-rds_backend = FlaskRedis()
+redis = FlaskRedis()
 datastore = SQLAlchemy()
 csrf = CSRFProtect()
 cache = Cache(config={'CACHE_TYPE': 'simple'})

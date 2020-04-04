@@ -1,24 +1,22 @@
 import re
-
 from flask_wtf import FlaskForm
 from wtforms import *
 from wtforms.fields.html5 import EmailField
-
 from painter.models.user import User
-
+from painter.
 
 class LoginForm(FlaskForm):
+    name = 'login'
+    title = 'Welcome Back to Social Painter'
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.non_field_errors = []
 
-    name = 'login'
-    title = 'Welcome Back to Social Painter'
     username = StringField(
         'username',
         validators=[
-            validators.data_required(message='You must enter something'),
-            validators.regexp(r'^[\w\d]+$', re.I, 'Input must only contain abc characters or digits'),
+            validators.DataRequired(message='Field must contain any string'),
+            validators.Regexp(r'^[\w\d]+$', re.I, 'Input must only contain abc characters or digits'),
             validators.length(5, 15, message='The Input length isnt valid, pass a name in length between 5 to 15', )
         ],
         render_kw={

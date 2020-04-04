@@ -14,7 +14,7 @@ from painter.backends.skio import ADMIN_NAMESPACE, PAINT_NAMESPACE, sio
 from painter.models.notes import Record, Note
 from painter.models.role import Role
 from painter.models.user import User
-from painter.models.user import reNAME
+from painter.models.user import UsernamePattern
 from painter.others.preference_form import PreferencesForm
 from . import admin_router
 from .forms import RecordForm, NoteForm
@@ -63,7 +63,7 @@ def edit_user(name: str) -> Response:
     :param: name of user
     :returns: the web-page to edit the matched user (to the name) data
     """
-    if reNAME.match(name) is None:
+    if UsernamePattern.match(name) is None:
         abort(exceptions.BadRequest.code, 'Name isn\'t good')
     user = User.query.filter_by(username=name).first_or_404()
     if user == current_user:

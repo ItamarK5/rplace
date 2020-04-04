@@ -1,3 +1,7 @@
+"""
+Auther Itamar Kannne
+Main App
+"""
 import sys
 from painter.manager import manager
 from flask_script.commands import InvalidCommand

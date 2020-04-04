@@ -18,6 +18,10 @@ def draw_time(user: User) -> str:
 
 
 def is_admin(user: User) -> bool:
+    """
+    :param user: a user
+    :return: returns if the user is admin
+    """
     return user.is_authenticated and user.role >= Role.admin
 
 
@@ -36,8 +40,8 @@ def color(color_idx: int) -> str:
     return COLORS[color_idx]
 
 
-def add_filters(app: Flask) -> None:
-    app.add_template_filter(draw_time, 'draw_time')
-    app.add_template_filter(is_admin, 'is_admin')
-    app.add_template_filter(class_ftr, 'class_ftr')
-    app.add_template_filter(color, 'color')
+def add_filters(flask_app: Flask) -> None:
+    flask_app.add_template_filter(draw_time, 'draw_time')
+    flask_app.add_template_filter(is_admin, 'is_admin')
+    flask_app.add_template_filter(class_ftr, 'class_ftr')
+    flask_app.add_template_filter(color, 'color')
