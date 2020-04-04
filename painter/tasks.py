@@ -21,12 +21,14 @@ def send_mail(subject: str,
             html=html
         )
         for attach in attachments:
-            with app.open_resource(path.join('/web', attach['path']), attach['read_mode']) as resource:
+            print(app.root_path)
+            with app.open_resource(path.join('web', attach['path']), attach['read_mode']) as resource:
                 message.attach(
                     content_type=attach['content_type'],
                     data=resource.read(),
                     disposition=attach['disposition'],
                     headers=attach['headers']
                 )
+        print(app.config)
         mailbox.send(message)
 

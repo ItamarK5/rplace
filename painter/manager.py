@@ -10,14 +10,11 @@ import os
 from flask_script import Manager, Server, Option, Command
 from flask_script.cli import prompt_bool, prompt_choices, prompt
 from flask_script.commands import InvalidCommand
-from typing import Optional
 from .app import create_app, datastore, sio
 from .models.role import Role
 from .models.user import User
-from .others.manager_utils import NewUserForm
-from os import environ
+from .others.manager_utils import NewUserForm, PAINTER_ENV_NAME, add_configure
 
-manager = Manager(create_app)
 
 
 class RunServer(Server):
@@ -95,6 +92,10 @@ class RunServer(Server):
             use_reloader=use_reloader,
             **self.server_options
         )
+
+
+manager = Manager(create_app)
+manager.add_option('--c', '-config', dest='config', default='config.py', required=False)
 
 
 @manager.option('--d', '-drop', dest='drop-first', help='drop before creating app', default=True)
@@ -187,20 +188,27 @@ class CreateUser(Command):
 class CeleryWorker(Command):
     """Starts the celery worker."""
     name = 'celery'
-    capture_all_args = True
 
-    def run(self, argv):
+    def run(self):
         ret = subprocess.call(
-            ['venv/scripts/celery.exe', 'worker', '-A', 'painter.celery_worker.celery', '-P', 'eventlet'] + argv
+            ['venv/scripts/celery.exe', 'worker', '-A', 'painter.celery_worker.celery', '-P', 'eventlet']
         )
         sys.exit(ret)
 
 
 def set_config(file_path, num=None):
     if (not os.path.exists(file_path)) or os.path.isdir(file_path):
-        raise InvalidCommand("No file exists at: ")
-    #check enviroment
-
+        raise InvalidCommand("No file exists at: {0}".format(file_path))
+    # check environment
+    if PAINTER_ENV_NAME not in os.environ:
+        if num is None:
+            os.environ[PAINTER_ENV_NAME] = file_path
+        else:
+            raise InvalidCommand("Cannot Access specific the painter path, so number dont matther")
+    else:
+        # add second
+        os.environ[PAINTER_ENV_NAME] = add_configure(os.environ.get(PAINTER_ENV_NAME), file_path, num)
+        print('Finished, Added Config File to environment')
 
 
 set_config = Command(set_config)

@@ -15,6 +15,7 @@ from painter.backends.skio import sio
 # backends
 from .others.filters import add_filters
 from celery import Celery
+from .others.manager_utils import get_config
 # monkey patching
 eventlet.monkey_patch()
 
@@ -26,7 +27,7 @@ celery = Celery(
 # to register tasks
 
 
-def create_app(config_path: str = 'config.py', main: bool=True) -> Flask:    # The Flask Application
+def create_app(config: str = 'config.py', main: bool=True) -> Flask:    # The Flask Application
     app = Flask(
         __name__,
         static_folder='',
@@ -34,7 +35,10 @@ def create_app(config_path: str = 'config.py', main: bool=True) -> Flask:    # T
         template_folder=path.join('web', 'templates'),
     )
     # The Application Configuration, import
-    app.config.from_pyfile(config_path)
+    # first checks if its from directly
+    if config.isdigit():
+        config = get_config(int(config))
+    app.config.from_pyfile(config)
     # socketio
     sio.init_app(
         app if main else None,
