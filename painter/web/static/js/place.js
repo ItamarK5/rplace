@@ -67,7 +67,6 @@ const HashChangeFlag = {
  * @param {int} flag 
  */
 
-const MaskHashChangeFlag = (flag) => flag == HashChangeFlag.Disabled ? HashChangeFlag.Needed : flag
 /* View in fullscreen */
 //https://www.w3schools.com/howto/howto_js_fullscreen.asp
 function openFullscreen() {
@@ -127,33 +126,29 @@ function NonSweetClick(selector) {
  * @param {String} cls 
  * @returns throws a message to the user that not blockes input
  */
-const throw_message = (msg, enter_sec = 1000, show_sec = 100, exit_sec = null, cls = null) =>
-    $("<div></div>").addClass(
-        `pop-up-message center nonselect${_.isString(cls) ? ' ' + cls : ''}`)
-    .text(msg).appendTo("body")
+const throw_message = (msg, enter_sec = 1000, show_sec = 100, exit_sec = 1000, cls = null) => {
+    let popup = $("<div></div>").addClass(`pop-up-message center nonselect${_.isString(cls) ? ' ' + cls : ''}`).text(msg).appendTo("body")
     // enter
-    .animate({
-        opacity: '70%'
-    }, enter_sec, function() {
+    popup.animate({opacity: '70%'}, enter_sec, function() {
         // keep the element amount of time
-        let self = this;
         setTimeout(function() {
                 exit_sec = isNaN(exit_sec) ? enter_sec : exit_sec;
                 if (exit_sec > 0) {
-                    $(self).animate({
+                    $(popup).animate({
                             opacity: '0'
                         },
                         exit_sec,
                         function() {
-                            $(this).parent().remove(self);
+                            $(this).remove(self);
                         });
                 } else {
-                    $(self).parent().remove(self);
+                    $(popup).remove();
                 }
             },
             show_sec
         );
     });
+}
 class PalColor {
     constructor(r, g, b, name) {
         this.r = r;
@@ -407,7 +402,6 @@ const query = {
     cx: DEFAULT_START_AXIS, // the x of the center pixel in the canvas on screen
     cy: DEFAULT_START_AXIS, // the y of the center pixel in the canvas on screen
     scale: DEFAULT_SCALE_MULTIPLAYER,
-    __can_set_hash: HashChangeFlag.Enabled,
     // constructialize the query object
     construct() {
         // set window hash to be valid
@@ -415,23 +409,8 @@ const query = {
         this.cx = fragments.x;
         this.cy = fragments.y;
         this.scale = fragments.scale;
-        this.setHash = _.throttle(this.__setHash, 2000)
-    },
-    disableUpdateHash() {
-        this.__can_set_hash = HashChangeFlag.Disabled;
-    },
-    enableUpdateHash() {
-        if (this.__can_set_hash != HashChangeFlag.Enabled) {
-            if (this.__can_set_hash == HashChangeFlag.Needed) {
-                this.__can_set_hash = HashChangeFlag.Enabled
-                this.setHash()
-            } else {
-                this.__can_set_hash = HashChangeFlag.Enabled;
-            }
-        }
-    },
-    canSetHash() {
-        return this.__can_set_hash == HashChangeFlag.Enabled
+        // update it just 0.5 seconds after stops changing
+        this.setHash = _.debounce(this.__setHash, 500)
     },
     // the hash of the window
     get __path() {
@@ -578,13 +557,10 @@ const query = {
         //  update location
         // first tried to update event set
         // now lets try using setTimeout
-        //this.__can_set_hash = MaskHashChangeFlag(this.__can_set_hash)
-        if (/*this.canSetHash() &&*/ location.hash != this.hash()) {
+        if (location.hash != this.hash()) {
             // change hash without triggering events
             // https://stackoverflow.com/a/5414951
-            history.replaceState(null, null, document.location.pathname +
-                this.hash());
-            //window.location.hash = this.hash;  
+            history.replaceState(null, null, document.location.pathname + this.hash());
         }
     },
 }
@@ -630,30 +606,7 @@ const cursor = {
             this.setCursor()
         }
     }
-    /*
-    __getDirCursor(dx, dy){
-        // x axis index = 0
-        // y axis index = 1
-        if(dx == 0 && dy == 0){
-            return null;
-        }
-        if(dx == 0){
-            return Cursors.Horizontal
-        } else if(dy == 0){
-            return Cursors.Vertical;
-        } else if(dy != dx) {
-            return Cursors.LinearUp;
-        } // else
-        return Cursors.LinearDown;
-    },
-    setDirCursor(dir){
-        let cur = this.__getDirCursor(dir[0], dir[1]);
-        if(_.isNull(cur)){
-           this.setPen();
-        } else {
-            this.setCursor(cur);
-        }
-    }*/
+
 }
 const pen = {
     x: null,
@@ -889,10 +842,11 @@ const board = {
     startKeyMoveLoop() {
         board.moveBoard(this.move_vector[0], this.move_vector[1])
         if (_.isNull(this.key_move_interval)) {
-            query.disableUpdateHash();
             this.key_move_interval = setInterval(() => {
-                board.moveBoard(this.move_vector[0], this
-                    .move_vector[1]);
+                board.moveBoard(
+                    this.move_vector[0],
+                    this.move_vector[1]
+                    );
             }, 100);
         }
     },
@@ -912,7 +866,6 @@ const board = {
         //cursor.setDirCursor(this.move_vector);
         if (this.move_vector[0] == 0 && this.move_vector[1] == 0) {
             clearInterval(this.key_move_interval)
-            query.enableUpdateHash();
             this.key_move_interval = null;
         }
     },
@@ -1194,7 +1147,6 @@ $(document).ready(function() {
         board.drag.startX = query.cx;
         board.drag.startY = query.cy;
         board.drag.active = true;
-        query.disableUpdateHash();
         // change cursor 100 seconds if don't move
     }).mouseenter(function(e) {
         cursor.setPen();
@@ -1211,7 +1163,6 @@ $(document).ready(function() {
     }).mouseup(() => {
         board.drag.active = false;
         cursor.setPen();
-        query.enableUpdateHash();
     })
     $(document).keypress(function(e) {
         // first check direction
