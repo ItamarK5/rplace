@@ -1,6 +1,7 @@
+from typing import Tuple
 from werkzeug.datastructures import MultiDict
 import re
-from wtforms import Form, StringField,  validators
+from wtforms import Form, StringField, validators
 
 NamePattern = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
 HashPasswordPattern = re.compile(r'^[a-f0-9]{128}$')  # password hashed so get hash value
@@ -23,28 +24,73 @@ PASSWORD_MAX_LENGTH = 16
 HASH_PASSWORD_MIN_LENGTH = 64
 HASH_PASSWORD_MAX_LENGTH = 64
 
+"""
+    validators
+"""
+ABC_OR_DIGITS_VALIDATOR = validators.Regexp(
+    ABC_OR_DIGITS_PATTERN,
+    message=ABC_OR_DIGITS_MESSAGE
+)
 
-class QuickFormMixin(Form):
+HEX_STRING_VALIDATOR = validators.Regexp(
+    HEX_PATTERN,
+    message=HEX_PATTERN_MESSAGE
+)
+
+"""
+    for the length validators I prefer the default validator message
+"""
+
+USERNAME_LENGTH_VALIDATOR = validators.Length(
+    USERNAME_MIN_LENGTH,
+    USERNAME_MAX_LENGTH
+)
+
+PASSWORD_LENGTH_VALIDATOR = validators.Length(
+    PASSWORD_MIN_LENGTH,
+    PASSWORD_MAX_LENGTH
+)
+
+HASHED_PASSWORD_LENGTH_VALIDATOR = validators.Length(
+    HASH_PASSWORD_MIN_LENGTH,
+    HASH_PASSWORD_MAX_LENGTH
+)
+
+
+class QuickForm(Form):
     """
     Simple Form using wtforms for quick validatons
     """
+
     @classmethod
-    def fast_validation(cls, **kwargs) -> bool:
+    def fast_validation(cls, **kwargs) -> Tuple['QuickForm', bool]:
+        form = cls(formdata=MultiDict(dict(kwargs)))
+        return form, form.validate()
+
+    @classmethod
+    def are_valid(cls, **kwargs) -> bool:
         """
         :param kwargs: arguments to pass for the validation form
         :return: boolean if the
         a nicely class method to quick validate forms
         """
-        return cls(MultiDict(**kwargs)).validate()
+        return cls.fast_validation(**kwargs)[1]
 
 
-class MailFieldMixin(object):
+class UsernameFieldMixin(object):
     """
-    MailMixn class
-    a class to inherit from to add a simple validation for mail address
+    UsernameFieldMixin class
+    a class to inherit from to add a simple validation for user password
     uses only for validating directly without rendering it
     """
-    mail_address = StringField('mail', validators=[validators.required(), validators.Email('Not valid Email')])
+    username = StringField(
+        'username',
+        validators=[
+            validators.data_required(),
+            ABC_OR_DIGITS_VALIDATOR,
+            USERNAME_LENGTH_VALIDATOR
+        ]
+    )
 
 
 class PasswordFieldMixin(object):
@@ -56,15 +102,9 @@ class PasswordFieldMixin(object):
     password = StringField(
         'password',
         validators=[
-            validators.required(),
-            validators.Regexp(
-                ABC_OR_DIGITS_PATTERN,
-                message=ABC_OR_DIGITS_MESSAGE
-            ),
-            validators.Length(
-                PASSWORD_MIN_LENGTH,
-                PASSWORD_MAX_LENGTH
-            )
+            validators.data_required(),
+            ABC_OR_DIGITS_VALIDATOR,
+            PASSWORD_LENGTH_VALIDATOR
         ]
     )
 
@@ -78,59 +118,24 @@ class HashPasswordFieldMixin(object):
     password = StringField(
         'password hashed',
         validators=[
-            validators.required(),
+            validators.data_required(),
             # hashed values can only be in hex, and there are small
-            validators.Regexp(
-                HEX_PATTERN,
-                message=HEX_PATTERN_MESSAGE
-            ),
-            validators.Length(
-                HASH_PASSWORD_MIN_LENGTH,
-                HASH_PASSWORD_MAX_LENGTH
-            )
+            HEX_STRING_VALIDATOR,
+            HASHED_PASSWORD_LENGTH_VALIDATOR
         ]
     )
 
 
-class PasswordFieldMixin(object):
+class MailAddressFieldMixin(object):
     """
-    PasswordFieldMixin class
-    a class to inherit from to add a simple validation for user password
+    MailAddressFieldMixin class
+    a class to inherit from to add a simple validation for hashed password
     uses only for validating directly without rendering it
     """
-    password = StringField(
-        u'password',
+    mail_address = StringField(
+        'mail',
         validators=[
-            validators.required(),
-            validators.Regexp(
-                ABC_OR_DIGITS_PATTERN,
-                message=ABC_OR_DIGITS_MESSAGE
-            ),
-            validators.Length(
-                PASSWORD_MIN_LENGTH,
-                PASSWORD_MAX_LENGTH
-            )
-        ]
-    )
-
-
-class UsernameFieldMixin(object):
-    """
-    UsernameFieldMixin class
-    a class to inherit from to add a simple validation for user password
-    uses only for validating directly without rendering it
-    """
-    username = StringField(
-        u'username',
-        validators=[
-            validators.required(),
-            validators.Regexp(
-                ABC_OR_DIGITS_PATTERN,
-                message=ABC_OR_DIGITS_MESSAGE
-            ),
-            validators.Length(
-                PASSWORD_MIN_LENGTH,
-                PASSWORD_MAX_LENGTH
-            )
+            validators.data_required(),
+            validators.Email()
         ]
     )

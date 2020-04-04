@@ -1,3 +1,4 @@
+from typing import Optional
 from enum import IntEnum, auto
 
 
@@ -15,8 +16,14 @@ class Role(IntEnum):
     def title(self):
         return ROLE_TITLE[self]
 
-    def members(self):
-        return tuple(self._member_map_.values())
+    @classmethod
+    def has_member(cls, name:str) -> bool:
+        return name in cls._member_names_
+
+    @classmethod
+    def get_member_or_none(cls, name: str) -> Optional['Role']:
+        return cls._member_map_[name] if cls.has_member(name) else None
+
 
 
 ROLE_ICON = {

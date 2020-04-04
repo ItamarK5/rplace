@@ -7,7 +7,7 @@ from werkzeug.wrappers import Response
 
 from painter.backends.extensions import datastore
 from painter.models.user import Role, User
-from .forms import LoginForm, SignUpForm, RevokeForm, ChangePasswordForm
+from .forms import LoginForm, SignUpForm, RevokePasswordForm, ChangePasswordForm
 from .mail import send_signing_up_message, send_revoke_password_message
 from .utils import *
 from . import accounts_router
@@ -81,7 +81,7 @@ def revoke() -> Response:
     """
     :return: revoke password view
     """
-    form = RevokeForm()
+    form = RevokePasswordForm()
     if form.validate_on_submit():
         """
         after user validation checks if the user exists

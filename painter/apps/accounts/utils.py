@@ -6,16 +6,10 @@ from typing import Any, Optional, Tuple, Dict, Callable
 
 from flask import Flask, redirect, current_app, url_for, flash
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
-from wtforms.validators import HostnameValidation
 from painter.models.user import UsernamePattern, HashPasswordPattern
 from flask import current_app
 from .router import accounts_router
-from painter.others.user_valid import UserForm
-
-email_regex = re.compile(
-    r"(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*\Z"  # dot-atom
-    r'|^"([\001-\010\013\014\016-\037!#-\[\]-\177]|\\[\001-\011\013\014\016-\177])*"\Z)',  # quoted-string
-    re.IGNORECASE)
+from .forms import SignUpTokenForm
 
 
 class TokenSerializer(object):
@@ -51,7 +45,8 @@ def init_tokens() -> None:
 
 
 def extract_signature(token: str,
-                      valid_predicate: Callable[[Any], bool],
+                      form: SignUpTokenForm,
+                      arguments: int,
                       serializer: URLSafeTimedSerializer) -> Optional[Tuple[Any, float]]:
     try:
         token, timestamp = serializer.loads(token, return_timestamp=True)
@@ -76,7 +71,7 @@ def is_valid_signup_token(token: Any) -> bool:
     if (not isinstance(token, Dict)) or len(token) != 3:
         return False
     # name
-    return UserForm.fast_validation(
+    return SignUpTokenForm.are_valid(
         username=token.get('username', ''),
         password=token.get('password', ''),
 

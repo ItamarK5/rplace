@@ -3,21 +3,28 @@ from flask_wtf import FlaskForm
 from wtforms import *
 from wtforms.fields.html5 import EmailField
 from painter.models.user import User
-from painter.
+from painter.others.user_valid import (
+    ABC_OR_DIGITS_VALIDATOR,
+    USERNAME_LENGTH_VALIDATOR,
+    PASSWORD_LENGTH_VALIDATOR,
+    MailAddressFieldMixin,
+    UsernameFieldMixin,
+    HashPasswordFieldMixin,
+    QuickForm,
+)
 
-class LoginForm(FlaskForm):
-    name = 'login'
-    title = 'Welcome Back to Social Painter'
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.non_field_errors = []
+"""
+FlaskForms Mixin
+"""
 
+
+class FlaskUsernameMixin(object):
     username = StringField(
         'username',
         validators=[
-            validators.DataRequired(message='Field must contain any string'),
-            validators.Regexp(r'^[\w\d]+$', re.I, 'Input must only contain abc characters or digits'),
-            validators.length(5, 15, message='The Input length isnt valid, pass a name in length between 5 to 15', )
+            validators.data_required(),
+            ABC_OR_DIGITS_VALIDATOR,
+            USERNAME_LENGTH_VALIDATOR
         ],
         render_kw={
             'data-toggle': 'tooltip',
@@ -25,12 +32,14 @@ class LoginForm(FlaskForm):
             'data-placement': 'top'
         })
 
+
+class FlaskPasswordMixin(object):
     password = PasswordField(
         'password',
         validators=[
             validators.data_required('You must enter something'),
-            validators.regexp(r'^[\w\d]+$', re.I, 'Input must only contain abc characters or digits'),
-            validators.length(6, 15, message='you have passed the length, pass name in length between 6 to 15')
+            ABC_OR_DIGITS_VALIDATOR,
+            PASSWORD_LENGTH_VALIDATOR,
         ],
         render_kw={
             'data-toggle': 'tooltip',
@@ -39,6 +48,47 @@ class LoginForm(FlaskForm):
             'data-placement': 'bottom'
         }
     )
+
+
+class FlaskConfirmPasswordMixin(object):
+    confirm_password = PasswordField(
+        'password confirm',
+        validators=[
+            validators.equal_to('password', 'Your password must match the origianl')
+        ], render_kw={
+            'data-toggle': 'tooltip',
+            'title': 'You must re-enter your password, so we be really sure that know your password',
+            'data-placement': 'right'
+        }
+    )
+
+
+class FlaskEmailMixin(object):
+    email = EmailField(
+        'Email',
+        validators=[
+            validators.data_required('You must enter a email'),
+            validators.Email(),
+
+        ], render_kw={
+            'data-toggle': 'tooltip',
+            # this is a joke, not really sending adds
+            'title': 'Your email address, so we can send it weekly adds',
+            'data-placement': 'right'
+        }
+    )
+
+
+# Real Flask Forms
+class LoginForm(FlaskForm,
+                FlaskUsernameMixin,
+                FlaskPasswordMixin):
+    name = 'login'
+    title = 'Welcome Back to Social Painter'
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.non_field_errors = []
 
     remember = BooleanField(
         'Remember me',
@@ -50,108 +100,49 @@ class LoginForm(FlaskForm):
     )
 
 
-class RevokeForm(FlaskForm):
+class RevokePasswordForm(FlaskForm,
+                         FlaskEmailMixin):
     name = 'revoke'
     title = 'Chnage Your Password'
-    email = EmailField(
-        'Email',
-        validators=[
-            validators.data_required('You must enter a email'),
-            validators.Email('Email not valid'),
-
-        ], render_kw={
-            'data-toggle': 'tooltip',
-            'title': 'Your email address, so we can send it weekly adds',
-            'data-placement': 'right'
-        }
-    )
 
 
-class ChangePasswordForm(FlaskForm):
+class ChangePasswordForm(FlaskForm,
+                         FlaskPasswordMixin,
+                         FlaskConfirmPasswordMixin):
+    name = 'change'
     title = 'Set new Password'
-    password = PasswordField(
-        'password',
-        validators=[
-            validators.data_required('You must enter something'),
-            validators.regexp(r'^[\w\d]+$', re.I, 'Input must only contain abc characters or digits'),
-            validators.length(6, 15, message='you have passed the length, pass name in length between 6 to 15')
-        ], render_kw={
-            'data-toggle': 'tooltip',
-            'title': 'It must only contain 6-15 abc chars or digits',
-            'data-placement': 'right'
-        })
-
-    confirm_password = PasswordField(
-        'password confirm',
-        validators=[
-            validators.equal_to('password', 'Your password must match the origianl')
-        ], render_kw={
-            'data-toggle': 'tooltip',
-            'title': 'You must re-enter your password, so we be really sure that know your password',
-            'data-placement': 'right'
-        })
 
 
-class SignUpForm(FlaskForm):
+class SignUpForm(FlaskForm,
+                 FlaskUsernameMixin,
+                 FlaskPasswordMixin,
+                 FlaskConfirmPasswordMixin,
+                 FlaskEmailMixin):
     name = 'sign-up'
     title = 'Welcome to Social Painter'
 
-    username = StringField(
-        'username',
-        validators=[
-            validators.data_required(message='You must enter something'),
-            validators.regexp(r'^[\w\d]+$', re.I, 'Input must only contain abc characters or digits'),
-            validators.length(5, 15, message='you have passed the length, pass name in length between 5 to 15', )
-        ], render_kw={
-            'data-toggle': 'tooltip',
-            'title': 'Your name, it must contain 5-15 characters and contains only abc chars\\digits',
-            'data-placement': 'right',
-        })
-
-    password = PasswordField(
-        'password',
-        validators=[
-            validators.data_required('You must enter something'),
-            validators.regexp(r'^[\w\d]+$', re.I, 'Input must only contain abc characters or digits'),
-            validators.length(6, 15, message='you have passed the length, pass name in length between 6 to 15')
-        ], render_kw={
-            'data-toggle': 'tooltip',
-            'title': 'It must only contain 6-15 abc chars or digits',
-            'data-placement': 'right'
-        })
-
-    confirm_password = PasswordField(
-        'password confirm',
-        validators=[
-            validators.equal_to('password', 'your password must match the origianl')
-        ], render_kw={
-            'data-toggle': 'tooltip',
-            'title': 'You must re-enter your password, so we be really sure that know your password',
-            'data-placement': 'right'
-        })
-
-    email = EmailField(
-        'Email',
-        validators=[
-            validators.data_required('You must enter a email'),
-            validators.Email('Email not valid'),
-
-        ], render_kw={
-            'data-toggle': 'tooltip',
-            'title': 'Your email address, so we can send it weekly adds',
-            'data-placement': 'right'
-        }
-    )
-
     def validate(self) -> bool:
+        """
+        :return: form validation
+        the form adds special validation to check if a user exists with the following values
+        """
         if not super().validate():
             return False
         is_dup_name = User.query.filter_by(username=self.username.data).first() is not None
         is_dup_email = User.query.filter_by(email=self.email.data).first() is not None
         if is_dup_name or is_dup_name:
             if is_dup_name:
-                self.username.errors.append('name already exists')
+                self.username.errors.append('Name already exists')
             if is_dup_email:
-                self.email.errors.append('email already exists')
+                self.email.errors.append('Email already exists')
             return False
         return True
+
+
+# Simple Forms for validations
+class SignUpTokenForm(QuickForm,
+                      UsernameFieldMixin,
+                      MailAddressFieldMixin,
+                      HashPasswordFieldMixin
+                      ):
+    pass

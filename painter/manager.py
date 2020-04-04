@@ -6,24 +6,27 @@ https://flask-script.readthedocs.io/en/latest/
 """
 import sys
 import subprocess
-from .app import app, sio, datastore
+from .app import create_app, datastore, sio
 from flask_script import Manager, Server, Option, Command
-from flask import Flask
-from typing import Optional
+from flask_script.commands import InvalidCommand
+from flask_script.cli import prompt_bool, prompt_choices
+from .models.user import User
 from .models.role import Role
-from
-
-manager = Manager(app)
+from .others.manager_utils import NewUserForm
 
 
-# https://github.com/miguelgrinberg/flack/blob/master/manage.py
-class Start(Server):
+manager = Manager(create_app)
+
+
+class RunServer(Server):
     """
+    source: https://github.com/miguelgrinberg/flack/blob/master/manage.py
+    auther: miguelgrinberg
+    edited by me
     The Start Server Command
     the function get the following parameters:
-    ;host: the host to start the server
-    ;port: the port to start the server
-    ;local: the
+    host: the host to start the server
+    port: the port to start the server
     """
 
     help = description = 'Runs the server'
@@ -33,12 +36,12 @@ class Start(Server):
             Option('-h', '--host',
                    dest='host',
                    default='0.0.0.0',
-                   help=('host url of the server')),
+                   help='host url of the server'),
             Option('-p', '--port',
                    dest='port',
                    type=int,
                    default=8080,
-                   help=('host port of the server')),
+                   help='host port of the server'),
             Option('-d', '--debug',
                    action='store_true',
                    dest='use_debugger',
@@ -64,8 +67,18 @@ class Start(Server):
         )
         return options
 
-    def __call__(self, app, host ,port, use_debugger, use_reloader):
-        # override the default runserver command to start a Socket.IO server
+    def __call__(self, app, host, port, use_debugger, use_reloader):
+        """
+        :param  host: host the ip to run the server
+        :type:  host: int
+        :param  port: port to listen on the ip
+        :type   port: int
+        :param  use_debugger: if to use debbugger while running the application
+        :type   use_debugger: Boolean
+        :param  use_reloader: use
+        :return: nothing
+        override the default runserver command to start a Socket.IO server
+        """
         if use_debugger is None:
             use_debugger = app.debug
             if use_debugger is None:
@@ -81,32 +94,90 @@ class Start(Server):
             **self.server_options
         )
 
-@manager.option('--n', '-name', dest="name", help='name of the new user', required=True)
-@manager.option('--p', '-password', dest="name", help='password of the new user', required=True)
-@manager.option('--e', '-email', dest="name", help='email of the new user', required=True)
-@manager.option('--r', '-role', dest='role', help='Role of the new user, default admin')
-def add_user():
 
-
-@manager.option()
-@manager.command
-def createdb(drop_first=False):
-    if drop_first:
+@manager.option('--D', '-drop', dest='drop-first', help='drop before creating app', default=True)
+def create_db(drop_first=False):
+    if drop_first and prompt_bool('Are you sure you want to drop the table'):
         datastore.drop_all()
     datastore.create_all()
 
 
+@manager.command
+def drop_db():
+    if prompt_bool('Are you sure to drop the database'):
+        datastore.drop_all()
+        print('You should create a new superuser')
+
+
 class CreateUser(Command):
-    help = description = 'create a new user in the database'
+    description = 'create a new user in the system'
+    help = 'creates a new user'
 
-    def add_option(self, option):
+    def get_options(self):
+        return (
+            Option('--n', '-name', '-username',
+                   dest='username',
+                   help='name of the new user',
+                   required=True),
+            Option('--p', '-password', '-pswd',
+                   dest='password',
+                   help='password of the new user',
+                   required=True),
+            Option('--m', '-mail', '-addr',
+                   dest='mail_address',
+                   help='mail address of the new user',
+                   required=True),
+            Option('--r', '-role',
+                   dest='role',
+                   help='Role of the new User'),
+            Option('--a', '-admin', dest='role',
+                   action='store_const', const='admin',
+                   help='the users\'s role is setted to be admin'),
+            Option('--u', '-user',
+                   dest='role', default='user',
+                   help='the user\'s role is a simple user'
+                   ),
+            Option('--s', '-superuser',
+                   dest='role', default='superuser',
+                   help='the user\'s role is a superuser, highest rank')
+        )
 
-    def run(self, name, password, email, role='admin'):
-        # first decide between roles
-        if reNAME
-
-
-
+    def run(self, username, password, mail_address, role):
+        if role is None:
+            role = prompt_choices(
+                'You must pick a role, if not default is superuser',
+                (
+                    ('admin', 'admin'),
+                    ('a', 'admin'),
+                    ('user', 'user'),
+                    ('u', 'user'),
+                    ('superuser', 'superuser'),
+                    ('s', 'superuser')
+                ),
+                'superuser'
+            )
+        role_matched = Role.get_member_or_none(role)
+        if role_matched is None:
+            raise InvalidCommand('Pless enter a valid role, not: {0}'.format(role))
+        # check valid role
+        form, is_valid = NewUserForm.fast_validation(
+            username=username,
+            password=password,
+            mail_address=mail_address
+        )
+        if is_valid:
+            for field in iter(form):
+                for error in field.errors:
+                    raise InvalidCommand('{0}: {1}'.format(field.name, error))
+        user = User(
+            username=username,
+            password=password,
+            email=mail_address,
+            role=role_matched
+        )
+        datastore.session.add(user)
+        datastore.session.commit()
+        print('user created successfully')
 
 
 class CeleryWorker(Command):
@@ -121,4 +192,5 @@ class CeleryWorker(Command):
 
 
 manager.add_command('celery', CeleryWorker)
-manager.add_command("runserver", Start())
+manager.add_command("runserver", RunServer())
+manager.add_command("create-user", CreateUser())
