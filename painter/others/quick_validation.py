@@ -5,10 +5,6 @@ from werkzeug.datastructures import MultiDict
 from wtforms import Form, StringField, validators, IntegerField
 
 
-NamePattern = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
-HashPasswordPattern = re.compile(r'^[a-f0-9]{128}$')  # password hashed so get hash value
-PasswordPattern = re.compile(r'[a-z0-9]{6,16}$')
-
 """
  Form Fields and messages
 """
@@ -23,8 +19,8 @@ USERNAME_MIN_LENGTH = 5
 USERNAME_MAX_LENGTH = 16
 PASSWORD_MIN_LENGTH = 6
 PASSWORD_MAX_LENGTH = 16
-HASH_PASSWORD_MIN_LENGTH = 64
-HASH_PASSWORD_MAX_LENGTH = 64
+HASH_PASSWORD_MIN_LENGTH = 128
+HASH_PASSWORD_MAX_LENGTH = 128
 
 """
     validators

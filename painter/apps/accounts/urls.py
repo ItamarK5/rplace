@@ -12,7 +12,7 @@ from .utils import *
 
 
 @accounts_router.route('/login', methods=('GET', 'POST'))
-@anonymous_required()
+@anonymous_required
 def login() -> Response:
     """
     :return: login page response
@@ -42,7 +42,7 @@ def login() -> Response:
 
 
 @accounts_router.route('/signup', methods=('GET', 'POST'))
-@anonymous_required()
+@anonymous_required
 def signup() -> Response:
     """
     :return: sign-up user response
@@ -74,7 +74,7 @@ def signup() -> Response:
 
 
 @accounts_router.route('/revoke', methods=['GET', 'POST'])
-@anonymous_required()
+@anonymous_required
 def revoke() -> Response:
     """
     :return: revoke password view
@@ -85,7 +85,6 @@ def revoke() -> Response:
         after user validation checks if the user exists
         """
         user = User.query.filter_by(email=form.email.data).first()
-        print(3, user)
         if user is not None:
             # error handling
             send_revoke_password_message(
@@ -130,7 +129,7 @@ def refresh() -> Response:
 
 
 @accounts_router.route('/change-password/<string:token>', methods=['GET', 'POST'])
-@anonymous_required()
+@anonymous_required
 def change_password(token: str) -> Response:
     """
     :param token: token url represent saving url
@@ -144,10 +143,8 @@ def change_password(token: str) -> Response:
             view_name='Revoke Password',
             view_ref='auth.login',
         )
-    token, timestamp = extracted
-    name, pswd = token.pop('username'), token.pop('password')
-    # check timestamp
-    if (time.time() + time.timezone) >= timestamp + current_app.config['MAX_AGE_USER_SIGN_UP_TOKEN']:
+    # timestamp error
+    if isinstance(extracted, str):
         return render_template(
             'transport//base.html',
             view_name='Signup',
@@ -156,6 +153,10 @@ def change_password(token: str) -> Response:
             view_ref='auth.signup',
             message="you registered over time, you are late"
         )
+    print(extracted)
+    # else
+    name, pswd = extracted.pop('username'), extracted.pop('password')
+    # check timestamp
     user = User.query.filter_by(username=name, password=pswd).first()
     if user is None:
         return render_template(
@@ -180,7 +181,7 @@ def logout() -> Response:
 
 
 @accounts_router.route('/confirm/<string:token>', methods=('GET',))
-@anonymous_required()
+@anonymous_required
 def confirm(token: str) -> Response:
     extracted = extract_signature(token,
                                   SignUpTokenForm,

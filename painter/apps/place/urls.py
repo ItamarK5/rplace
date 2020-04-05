@@ -1,9 +1,9 @@
 from flask import render_template, Response, jsonify
 from flask_login import login_required, current_user
 
-from painter.apps.place.util import auto_redirect
+from painter.apps.place.utils import auto_redirect
 from painter.backends.extensions import datastore
-from painter.apps.place.preference_form import PreferencesForm
+from .forms import PreferencesForm
 from . import place_router
 
 

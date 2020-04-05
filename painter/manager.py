@@ -103,7 +103,7 @@ class RunServer(Server):
             if use_debugger is None:
                 use_debugger = True
         if use_reloader is None:
-            use_reloader = not app.debug and app.config.get('WERKZEUG_RUN_MAIN')
+            use_reloader = (not app.debug) or app.config.get('WERKZEUG_RUN_MAIN', None) == 'true'
         print(app.config)
         sio.run(
             app,

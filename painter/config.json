@@ -12,7 +12,7 @@
     "MAIL_USERNAME": "socialpainterdash@gmail.com",
     "MAIL_USE_SSL": true,
     "MAIL_USE_TLS": false,
-    "MAX_AGE_USER_SIGN_UP_TOKEN": 3600,
+    "MAX_AGE_USER_TOKEN": 3600,
     "NON_LOGIN_MESSAGE": "You were redirected from pages that are for non autheneticated users",
     "NON_LOGIN_ROUTE": "place.home",
     "REDIS_URL": "redis://192.168.1.8:6379/0",

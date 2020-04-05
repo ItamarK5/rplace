@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from functools import wraps
-from typing import Any, Optional, Tuple, Dict, Callable, Type
+from typing import Any, Optional, Union, Dict, Callable, Type
 
 from flask import Flask, redirect, url_for, flash
 from flask import current_app
@@ -14,7 +14,7 @@ from .router import accounts_router
 
 class TokenSerializer(object):
     """
-    object holding itsdangerous initilizers, using the flask config
+    object holding itsdangerous initializer, using the flask config
     """
     # https://realpython.com/handling-email-confirmation-in-flask/
     signup: URLSafeTimedSerializer
@@ -29,11 +29,14 @@ class TokenSerializer(object):
         """
         cls.signup = URLSafeTimedSerializer(
             secret_key=app.config['SECRET_KEY'],
-            salt=app.config['TOKEN_SIGNUP_SALT']
+            salt=app.config['TOKEN_SIGNUP_SALT'],
+            serializer_kwargs={'max_age': app.config.get('MAX_AGE_USER_TOKEN', 3600)}
+
         )
         cls.revoke = URLSafeTimedSerializer(
             secret_key=app.config['SECRET_KEY'],
-            salt=app.config['TOKEN_REVOKE_SALT']
+            salt=app.config['TOKEN_REVOKE_SALT'],
+            serializer_kwargs={'max_age': app.config.get('MAX_AGE_USER_TOKEN', 3600)}
         )
 
 
@@ -47,7 +50,7 @@ def init_tokens() -> None:
 
 def extract_signature(token: str,
                       form: Type[QuickForm],
-                      serializer: URLSafeTimedSerializer) -> Optional[Tuple[Any, float]]:
+                      serializer: URLSafeTimedSerializer) -> Optional[Union[Dict[str, Any], str]]:
     """
     :param token: token, a string that was encoded by the server represent a user
     :param form:  form to validate if the token is valid
@@ -57,34 +60,32 @@ def extract_signature(token: str,
     """
     try:
         token, timestamp = serializer.loads(token, return_timestamp=True)
-    except SignatureExpired:
-        return None
     except BadSignature as e:  # error
         print(e)
-        return None
+        return 'timestamp'
     # then
     # check type
     if not isinstance(token, dict):
         return None
     # check are valid
+    print(token)
+    form.fast_validation(**token)[0].error_print()
     if not form.are_valid(**token):
         return None
     # else
-    return token, timestamp.timestamp()
+    return token
 
 
-def anonymous_required() -> Callable[[Callable[[Any], Any]], Any]:
+def anonymous_required(f: Callable) -> Callable[[Any], Any]:
     """
     :return: if the user is logined, redirects the user to another url
     decorator for a url, redirects the user if he is logined to home
     """
-    def wrapped(f: Callable) -> Callable:
-        @wraps(f)
-        def wrapper(*args, **kwargs):
-            if not current_user.is_anonymous:
-                flash(current_app.config.get('NON_LOGIN_MESSAGE'))
-                return redirect(url_for(current_app.config.get('NON_LOGIN_ROUTE')))
-            # else
-            return f(*args, **kwargs)
-        return wrapper
-    return wrapped
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if not current_user.is_anonymous:
+            flash(current_app.config.get('NON_LOGIN_MESSAGE'))
+            return redirect(url_for(current_app.config.get('NON_LOGIN_ROUTE')))
+        # else
+        return f(*args, **kwargs)
+    return wrapper

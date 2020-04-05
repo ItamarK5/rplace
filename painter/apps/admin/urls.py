@@ -15,7 +15,6 @@ from painter.models.notes import Record, Note
 from painter.models.role import Role
 from painter.models.user import User
 from painter.models.user import UsernamePattern
-from painter.others.preference_form import PreferencesForm
 from . import admin_router
 from .forms import RecordForm, NoteForm
 from .utils import only_if_superior, admin_only, superuser_only, json_response, validate_get_notes_param

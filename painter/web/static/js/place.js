@@ -10,7 +10,7 @@ const DRAW_COOLDOWN = 60;
 // progress
 const PROGRESS_COOLDOWN = 50
 //regex to get hash\argument url staff
-const reHashX = /?<=(^#|.+&)x=)\d+(?=&|$)/i;
+const reHashX = /(?<=(^#|.+&)x=)\d+(?=&|$)/i;
 const reHashY = /(?<=(^#|.+&)y=)\d+(?=&|$)/i;
 const reHashScale = /(?<=(^#|.+&)scale=)(\d{1,2}|0\.5)(?=&|$)/i;
 const reArgX = /(?<=(^\?|.+&)x=)\d+(?=&|$)/i;
@@ -51,26 +51,29 @@ const sock = io('/paint', {
     transports: ['websocket'] // or [ 'websocket', 'polling' ], which is the same thing
 });
 // reconnect
-_.throttle
+/**
+ * @summary wrapper function to recconect using io, to only run it 5 seconds after sock.io run it
+ */
+const reconnection = _.throttle(() => sock.reconnection(), 5000, {leading: false, trailing:false})
 const getFirstIfAny = (group) => _.isNull(group) ? null : group[0]
 /**
  * 
- * @param {nubmer} v 
- * @param {number} max 
- * @param {number} min 
- * @returns {number} v if is in the range of min and max, 
+ * @param {Number} v 
+ * @param {Number} max 
+ * @param {Number} min 
+ * @returns {Number} v if is in the range of min and max, 
  * otherwise returns min if the number if lower then min else max (higher then max)
  */
 const clamp = (v, max, min) => Math.max(min, Math.min(v, max));
 /**
  * 
- * @param {scalee} scale 
+ * @param {Number} scale 
  * @returns {boolean} if valid scale
  */
 const isValidScale = scale => MIN_SCALE <= scale && scale <= MAX_SCALE;
 /**
  * 
- * @param {number} v an axis position
+ * @param {Number} v an axis position
  * @returns {Boolean} if the position is valid (x or y)
  */
 const isValidPos = v => 0 <= v && v < CANVAS_SIZE;
@@ -188,23 +191,23 @@ const throw_message = (msg, enter_sec = 1000, show_sec = 100, exit_sec = 1000, c
 }
 
 
-class PalColor {
+class Color {
     /**
      * @param {Number} r 
      * @param {Number} g 
      * @param {Number} b 
      * @param {String} name 
-     * @returns new PalColor object
-     * @summary PalColor object represent a color the user can color the board with
+     * @returns new Color object
+     * @summary Color instance represent a color the user can color the board with
      */
     constructor(r, g, b, name) {
-        /** @param {number=} r red value of rgb*/
+        /** @param {number} r red value of rgb*/
         this.r = r;
-        /** @param {number=} g green value of rgb*/
+        /** @param {number} g green value of rgb*/
         this.g = g;
-        /** @param {number=} b blue value of rgb*/
+        /** @param {number} b blue value of rgb*/
         this.b = b;
-        /** @param {string=} name name of the string */
+        /** @param {string} name name of the string */
         this.name = name;
     }
     /**
@@ -233,7 +236,7 @@ class PalColor {
 class SimpleInterval {
     /**
      * @param {function} work 
-     * @param {number} time 
+     * @param {Number} time 
      */
     constructor(work, time) {
         /** @param {=function} work */
@@ -248,7 +251,8 @@ class SimpleInterval {
      * @returns nothing
      */
     start() {
-        this.work_handler = setInterval(this.work, this.__time);
+        this.
+        work_handler = setInterval(this.work, this.__time);
     }
     /**
      * @name stop
@@ -328,22 +332,22 @@ class CursorState {
  * @summary an object holding the colors and handling interactions them
  */
 const colors = [
-    new PalColor(0xFF, 0xFF, 0xFF, 'White'),
-    new PalColor(0x00, 0x00, 0x00, 'Black'),
-    new PalColor(0x80, 0x80, 0x80, 'Gray'),
-    new PalColor(0xC0, 0xC0, 0xC0, 'Silver'),
-    new PalColor(0xFF, 0x00, 0x00, 'Red'),
-    new PalColor(0xFF, 0xC0, 0xCB, 'Pink'),
-    new PalColor(0x8B, 0x45, 0x13, 'Brown'),
-    new PalColor(0xFF, 0xA5, 0x00, 'Orange'),
-    new PalColor(0x80, 0x80, 0x00, 'Olive'),
-    new PalColor(0xFF, 0xFF, 0x00, 'Yellow'),
-    new PalColor(0x00, 0x80, 0x00, 'Green'),
-    new PalColor(0x00, 0xFF, 0x00, 'Lime'),
-    new PalColor(0x00, 0x00, 0xFF, 'Blue'),
-    new PalColor(0x00, 0xFF, 0xFF, 'Aqua'),
-    new PalColor(0x80, 0x00, 0x80, 'Purple'),
-    new PalColor(0xFF, 0x00, 0xFF, 'Magenta')
+    new Color(0xFF, 0xFF, 0xFF, 'White'),
+    new Color(0x00, 0x00, 0x00, 'Black'),
+    new Color(0x80, 0x80, 0x80, 'Gray'),
+    new Color(0xC0, 0xC0, 0xC0, 'Silver'),
+    new Color(0xFF, 0x00, 0x00, 'Red'),
+    new Color(0xFF, 0xC0, 0xCB, 'Pink'),
+    new Color(0x8B, 0x45, 0x13, 'Brown'),
+    new Color(0xFF, 0xA5, 0x00, 'Orange'),
+    new Color(0x80, 0x80, 0x00, 'Olive'),
+    new Color(0xFF, 0xFF, 0x00, 'Yellow'),
+    new Color(0x00, 0x80, 0x00, 'Green'),
+    new Color(0x00, 0xFF, 0x00, 'Lime'),
+    new Color(0x00, 0x00, 0xFF, 'Blue'),
+    new Color(0x00, 0xFF, 0xFF, 'Aqua'),
+    new Color(0x80, 0x00, 0x80, 'Purple'),
+    new Color(0xFF, 0x00, 0xFF, 'Magenta')
 ]
 
 /*
@@ -367,6 +371,7 @@ const Cursors = {
 
 /**
  * @name progress
+ * @description prorgess object handles all related staff to the progress bar on the screen
  */
 const progress = {
     /** @param {=number} time time of the progress*/
@@ -374,7 +379,7 @@ const progress = {
     /** @param {=number} state the state of the progress */
     state: 0, // state of progress bar
     /** @param {=SimpleInterval} work SimpleInterval for updating auto update the progress bar */
-    work: null, // handler of progress update interval
+    work_: null, // handler of progress update interval
     /** @param {=number} current_min_time_ a value to prevent auto changing DOM and make the app slowly*/
     current_min_time_: null,
     // constructor, starts the object
@@ -386,7 +391,7 @@ const progress = {
     },
     /**
      * @name adjust_progress
-     * @param {number} seconds_left number of seconds before the progerss bar ends
+     * @param {Number} seconds_left number of seconds before the progerss bar ends
      * @returns nothing
      * @summary update the prorgess bar text and state
      */
@@ -422,7 +427,7 @@ const progress = {
             }
         }
         // when stops working
-        else if (!this.work.isWorking) {
+        else if (!this.work_.isWorking) {
             this.current_min_time_ = 300;
             this.work_.start()
             // set cursor to be pen
@@ -500,7 +505,7 @@ const mapArea = {
         return `?${this.__path}`
     },
     /**
-     * @param {number} val 
+     * @param {Number} val 
      * @returns {boolean} if the value can be the next cx value (next value means its different from current)
      */
     __isValidNewX(new_x) {
@@ -508,14 +513,14 @@ const mapArea = {
     },
     /**
      * 
-     * @param {number} new_y 
+     * @param {Number} new_y 
      * @returns {boolean} if the param can be the next cy value (next value means its different from current)
      */
     __isValidNewY(new_y) {
         return (!isNaN(new_y)) && isValidPos(new_y) && new_y != this.cy
     },
     /**
-     * @param {number} new_scale 
+     * @param {Number} new_scale 
      * @returns {boolean} if the param can be the next cy value (next value means its different from current)
      */
     __isValidNewScale(new_scale) {
@@ -604,8 +609,8 @@ const mapArea = {
     },
     /**
      * 
-     * @param {number} x new x positon of the center of the viewport
-     * @param {number} y new y positon of the center of the viewport
+     * @param {Number} x new x positon of the center of the viewport
+     * @param {Number} y new y positon of the center of the viewport
      * @param {boolean} to_update if to update the position, used when using the function with the setScale method
      * @returns {boolean} if anything has changed
      * @summary handles setting the new center, also prevent any changes if the scale level is less then 1 (0.5)
@@ -629,7 +634,7 @@ const mapArea = {
         return flag;
     },
     /**
-     * @param {number} scale 
+     * @param {Number} scale 
      * @param {boolean} to_update if to update the 
      * if the scale level is less then 0.5
      */
@@ -645,7 +650,10 @@ const mapArea = {
             this.setHash()
         }
     },
-    // level 1 interaction of mapArea change
+    /**
+     * @param {Number} to_update
+     * @summary handling changes to the fragments 
+     */
     refreshFragments(to_update) {
         /*  refreshFragments(bool) -> void
          *  refresh the mapArea object by the current hash values if they are valid
@@ -661,8 +669,10 @@ const mapArea = {
             this.setHash();
         }
     },
-    // set the window.loaction.hash to the mapArea hash value
-    // level 3
+    /**
+     * @summary private function handling setHash
+     * another function wraps it to make it only be only x time after the last the function was caleld
+     */
     __setHash() {
         //  update location
         // first tried to update event set
@@ -674,7 +684,10 @@ const mapArea = {
         }
     },
 }
+
+
 const cursor = {
+    /** @param last_cursor_non_forced the last cursor that wasnt forced */
     last_cursor_non_forced: null,
     current_cursor: null,
     force_cursor: null,
@@ -701,7 +714,7 @@ const cursor = {
         }
     },
     setPen() {
-        this.setCursor(progress.work.isWorking || serverStates.locked ? Cursors.Wait : Cursors.Pen)
+        this.setCursor(progress.work_.isWorking || serverStates.locked ? Cursors.Wait : Cursors.Pen)
     },
     grab() {
         this.setCursor(Cursors.grabbing);
@@ -719,11 +732,15 @@ const cursor = {
 }
 
 const pen = {
+    /** @param {Number} x the x axis of the pixel\'s position the mouse is looking at*/
     x: null,
+    /** @param {Number} y the x axis of the pixel\'s position the mouse is looking at*/
     y: null,
+    /** @param {Number} __color index of the color the pen is coloring*/
     __color: null,
+    /** @param {Array<Number>} the last positon the pen looked at (x, y) */
     last_mouse_pos: null,
-    // in keyboard state, the pen should point at the center of the screen
+    /** @param {Boolean} in keyboard state, the pen should point at the center of the screen */
     force_center: true,
     __disable: false,
     cursor_style: 'default',
@@ -822,7 +839,7 @@ const pen = {
         return this.__color;
     },
     /**
-     * @param {number} value
+     * @param {Number} value
      */
     set color(value) {
         if (value >= 0 && value < 16 && this.__color != value) {
@@ -847,15 +864,17 @@ const pen = {
                 confirmButtonText: 'To Waiting'
             })
             // also again check with server if 5 seconds after didnt load
-            sock.reconnect()            
+            sock.reconnect();         
         }
+        // if board isnt ready
         if (!board.is_ready) {
             Swal.fire({
                 title: 'Wait for the board',
                 text: 'Wait for the board to load before doing something'
             });
         }
-        else if (progress.work.isWorking) {
+        // prorgess working -> waits for the next time the player can draw
+        else if (progress.work_.isWorking) {
             Swal.fire({
                 title: 'You have 2 wait',
                 imageUrl: 'https://aadityapurani.files.wordpress.com/2016/07/2.png',
@@ -1188,7 +1207,6 @@ $(document).ready(function() {
         });
     })
     sock.connect()
-    colors.construct();
     mapArea.construct();
     progress.construct();
     board.construct();
