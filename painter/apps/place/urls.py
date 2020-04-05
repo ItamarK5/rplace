@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 
 from painter.apps.place.util import auto_redirect
 from painter.backends.extensions import datastore
-from painter.others.preference_form import PreferencesForm
+from painter.apps.place.preference_form import PreferencesForm
 from . import place_router
 
 
