@@ -38,6 +38,5 @@
     "APP_PORT": 8081
   },
   "CELERY": {
-    // NOTHING
   }
 }
