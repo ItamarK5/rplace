@@ -3,7 +3,7 @@ from wtforms import *
 from wtforms.fields.html5 import EmailField
 
 from painter.models.user import User
-from painter.others.user_valid import (
+from painter.others.quick_validation import (
     ABC_OR_DIGITS_VALIDATOR,
     USERNAME_LENGTH_VALIDATOR,
     PASSWORD_LENGTH_VALIDATOR,

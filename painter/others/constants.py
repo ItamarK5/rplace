@@ -23,3 +23,4 @@ COLORS = (
     "olive", "yellow", "green", "lime",
     "blue", "aqua", "purple", "magenta"
 )
+PAINTER_ENV_NAME = 'PAINTER-SOCIAL-CONFIG-PATHS'

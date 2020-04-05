@@ -13,8 +13,8 @@ from flask_script.commands import InvalidCommand
 from .app import create_app, datastore, sio
 from .models.role import Role
 from .models.user import User
-from .others.manager_utils import NewUserForm, PAINTER_ENV_NAME, add_configure
-
+from .others.utils import NewUserForm, PAINTER_ENV_NAME, PortQuickForm, IPv4QuickForm, get_absolute_if_relative
+from configparser import ConfigParser
 
 
 class RunServer(Server):
@@ -196,7 +196,7 @@ class CeleryWorker(Command):
         )
         sys.exit(ret)
 
-
+"""
 def set_config(file_path, num=None):
     if (not os.path.exists(file_path)) or os.path.isdir(file_path):
         raise InvalidCommand("No file exists at: {0}".format(file_path))
@@ -216,9 +216,70 @@ set_config = Command(set_config)
 set_config.add_option(Option('--p', '-path', dest='file_path'))
 set_config.add_option(Option('--n', '-num', dest='num', default=None))
 manager.add_command('set-config', set_config)
-
+"""
 
 manager.add_command('celery', CeleryWorker)
 manager.add_command("runserver", RunServer())
 manager.add_command("create-user", CreateUser())
 
+
+def add_config(name, host, port):
+    # check file
+    if PAINTER_ENV_NAME not in os.environ:
+        os.environ[PAINTER_ENV_NAME] = 'config.py'
+    # else
+    config_path = get_absolute_if_relative(os.environ[PAINTER_ENV_NAME])
+    if not os.path.exists(config_path):
+        raise InvalidCommand('Path {0} points to nothing'.format(config_path))
+    elif os.path.isdir(config_path):
+        raise InvalidCommand('Path {0} points to a directory'.format(config_path))
+    # validate the port and host
+    parser = ConfigParser()
+    # read file
+    # try
+    configuration = {}
+    if name in configuration:
+        raise InvalidCommand('Configure Option {0} already exists'.format(name))
+    # else get host and port
+    # if passed any arguments => didn't pass both None
+    if host is not None or port is not None:
+        is_host_valid = host is None or IPv4QuickForm.are_valid(address=host)
+        is_port_valid = port is None or PortQuickForm.are_valid(port=port)
+        if not (is_host_valid or is_port_valid):
+            raise InvalidCommand('Invalid Host and Port:{0}:{1}'.format(host, port))
+        elif not is_host_valid:
+            raise InvalidCommand('Invalid Host: {0}'.format(host))
+        elif not is_port_valid:
+            raise InvalidCommand('Invalid Port: {0}'.format(port))
+    # parse if neither is None
+    if host is None:
+        while IPv4QuickForm.are_valid(address=host):
+            # after first parse
+            if host is not None:
+                print('Host IP isn\'t valid:{0}')
+            host = prompt('Pless enter a valid IPv4 Address\n[HOST]:')
+    if port is None:
+        while PortQuickForm.are_valid(port=port):
+            # after first parse
+            if host is not None:
+                print('Host IP isn\'t valid:{0}')
+            port = prompt('Pless enter a valid Port [0-65536]\n[PORT]:')
+    # add the configure
+    configuration[name] = {
+        'Host': host,
+        'Port': port
+    }
+    # save configuration
+    print('Configuration {0} Created'.format(name))
+
+
+def set_config(key=None, name=None):
+    pass
+
+def remove_config(name=None):
+    parser = ConfigParser()
+    with parser.read_file as rfile:
+        pass
+    pass
+
+def get_config(name) -> None:

@@ -12,10 +12,10 @@ from flask import Flask
 
 from painter.backends.extensions import datastore, generate_engine, mailbox, login_manager, cache, csrf, redis
 from painter.backends.skio import sio
+from flask_script.commands import InvalidCommand
 # backends
 from .others.filters import add_filters
 from celery import Celery
-from .others.manager_utils import get_config
 # monkey patching
 eventlet.monkey_patch()
 
@@ -27,7 +27,19 @@ celery = Celery(
 # to register tasks
 
 
-def create_app(config: str = 'config.py', main: bool = True) -> Flask:    # The Flask Application
+def create_app(
+        config_path: str = None,
+        env_path: str = None,
+        name: str = 'app',
+        is_celery: bool = False) -> Flask:
+    # first check if calls celery from none celery run
+    if not (config_path or env_path):
+        # default configure file
+        config_path = 'config.py'
+    if config_path is None and env_path is not None:
+       config_path = env_path
+    conf = get_configuration(config_path)
+    # The Flask Application
     app = Flask(
         __name__,
         static_folder='',

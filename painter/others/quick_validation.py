@@ -2,7 +2,8 @@ import re
 from typing import Tuple
 
 from werkzeug.datastructures import MultiDict
-from wtforms import Form, StringField, validators
+from wtforms import Form, StringField, validators, IntegerField
+
 
 NamePattern = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
 HashPasswordPattern = re.compile(r'^[a-f0-9]{128}$')  # password hashed so get hash value
@@ -138,5 +139,26 @@ class MailAddressFieldMixin(object):
         validators=[
             validators.data_required(),
             validators.Email()
+        ]
+    )
+
+
+class IPv4AddressMixin(object):
+    ip_address = StringField(
+        'address',
+        validators=[
+            validators.required(),
+            # using IPv4
+            validators.IPAddress()
+        ]
+    )
+
+
+class PortMixin(object):
+    port = IntegerField(
+        'port',
+        validators=[
+            validators.data_required(),
+            validators.Length(0, 2**16-1)
         ]
     )
