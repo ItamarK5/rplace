@@ -12,7 +12,8 @@ from .quick_validation import (
 from typing import Optional, Dict, Any
 import os
 from ..models.user import User
-from flask_script.commands import InvalidCommand
+from flask_script.commands import InvalidCommand, Command
+from flask import current_app
 from .constants import PAINTER_ENV_NAME, DEFAULT_TITLE, CONFIG_FILE_PATH_KEY, DEFAULT_PATH
 import base64
 
@@ -47,6 +48,28 @@ class IPv4QuickForm(
     pass
 
 
+class DescriableCommand(Command):
+    """
+    simple command but with options to describe itself
+    """
+    def __init__(self, func=None,
+                 description: Optional[str] = None,
+                 help_text: Optional[str] = None):
+        super().__init__(func)
+        self.__description = description
+        self.__help_text = help_text
+
+    @property
+    def description(self):
+        desc = self.__description if self.__description is not None else ''
+        return desc.strip()
+
+    @property
+    def help(self):
+        help_text = self.__help_text if self.__help_text is not None else self.__description
+        return help_text.strip()
+
+
 def check_isfile(path: str,
                  not_exist_message: Optional[str] = None,
                  isdir_message: Optional[str] = None) -> Optional[str]:
@@ -59,7 +82,7 @@ def check_isfile(path: str,
     return None
 
 
-def try_load_json(path: str) -> Dict[str, Any]:
+def try_load_config(path: str) -> Dict[str, Any]:
     try:
         fp = open(path, 'rt')
         json_parsed = json.load(fp)
@@ -70,9 +93,9 @@ def try_load_json(path: str) -> Dict[str, Any]:
     return json_parsed
 
 
-def try_save_json(obj: Any, path: str) -> Dict[str, Any]:
+def try_save_config(obj: Any) -> Dict[str, Any]:
     try:
-        fp = open(path, 'wt')
+        fp = open(current_app[CONFIG_FILE_PATH_KEY], 'wt')
         json_parsed = json.dump(obj, fp)
         fp.close()
     except Exception as e:
@@ -82,7 +105,7 @@ def try_save_json(obj: Any, path: str) -> Dict[str, Any]:
 
 
 def __load_configuration(config_path: str, title: str) -> Dict[str, Any]:
-    json_parsed = try_load_json(config_path)
+    json_parsed = try_load_config(config_path)
     if DEFAULT_TITLE not in json_parsed:
         raise InvalidCommand('Default Title i\'snt found in json file')
     default_configuration = json_parsed[DEFAULT_TITLE]
@@ -118,6 +141,17 @@ def load_configuration(config_path: str, title: Optional[str] = None) -> Dict[st
     return configuration
 
 
+def get_config_json() -> Dict[str, Any]:
+    config_path = current_app.config[CONFIG_FILE_PATH_KEY]
+    error_text = check_isfile(config_path)
+    if error_text is not None:
+        raise InvalidCommand(error_text)
+    # validate the port and host
+    # read file
+    # try load
+    return try_load_config(config_path)
+
+
 def __get_absolute_if_relative(pth: str) -> str:
     return pth if os.path.isabs(pth) else os.path.abspath(pth)
 
@@ -130,3 +164,15 @@ def get_env_path():
 
 def set_env_path(path: str) -> None:
     os.environ[PAINTER_ENV_NAME] = path
+
+
+def name_utility(name:str, no_default:bool=False) -> str:
+    # first fixes the name
+    real_name = name.upper().replace(' ','_')
+    if real_name != name:
+        print('Changed Name to more appropriate:{0}'.format(name))
+    if no_default and real_name == DEFAULT_TITLE:
+        raise InvalidCommand("You enter the default title, the command cannot be used on the default "
+                             "configuration option")
+    return real_name
+

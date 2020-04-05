@@ -6,7 +6,7 @@ from werkzeug.wrappers import Response
 
 from painter.backends.extensions import datastore
 from painter.models.user import Role, User
-from .forms import LoginForm, SignUpForm, RevokePasswordForm, ChangePasswordForm
+from .forms import LoginForm, SignUpForm, RevokePasswordForm, ChangePasswordForm, SignUpTokenForm, RevokeTokenForm
 from .mail import send_signing_up_message, send_revoke_password_message
 from .utils import *
 
@@ -136,7 +136,7 @@ def change_password(token: str) -> Response:
     :param token: token url represent saving url
     :return: Response
     """
-    extracted = extract_signature(token, is_valid_change_password_token, TokenSerializer.revoke)
+    extracted = extract_signature(token, RevokeTokenForm, TokenSerializer.revoke)
     # validated if any token
     if extracted is None:
         return render_template(
@@ -182,7 +182,9 @@ def logout() -> Response:
 @accounts_router.route('/confirm/<string:token>', methods=('GET',))
 @anonymous_required()
 def confirm(token: str) -> Response:
-    extracted = extract_signature(token, is_valid_signup_token, TokenSerializer.signup)
+    extracted = extract_signature(token,
+                                  SignUpTokenForm,
+                                  TokenSerializer.signup)
     if extracted is None:
         return render_template(
             'transport//base.html',

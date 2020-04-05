@@ -1,1 +1,43 @@
-{"DEFAULT": {"CACHE_TYPE": "simple", "CELERY_BROKER_URL": "pyamqp://guest@localhost//", "DEBUG": true, "MAIL_DEBUG": false, "MAIL_DEFAULT_SENDER": "Social Painter Dash", "MAIL_MAX_EMAILS": 10, "MAIL_PASSWORD": "EFnsDY8>.r^9n~u5FRT/%@n^", "MAIL_PORT": 465, "MAIL_SERVER": "smtp.gmail.com", "MAIL_USERNAME": "socialpainterdash@gmail.com", "MAIL_USE_SSL": true, "MAIL_USE_TLS": false, "MAX_AGE_USER_SIGN_UP_TOKEN": 3600, "NON_LOGIN_MESSAGE": "You were redirected from pages that are for non autheneticated users", "NON_LOGIN_ROUTE": "place.home", "REDIS_URL": "redis://192.168.1.8:6379/0", "REMEMBER_COOKIE_HTTPONLY": false, "REMEMBER_COOKIE_NAME": "SocialPainterDashCookie", "SECRET_KEY": "Twyv6dKbIw/KQqRCp/JmOto1zxA0FkG9\n\r\r\r\r", "SEND_FILE_MAX_AGE_DEFAULT": 1, "SESSION_PROTECTION": "basic", "SQLALCHEMY_DATABASE_URI": "sqlite:///C:\\Cyber\\2020\\rplace\\database.db", "SQLALCHEMY_TRACK_MODIFICATIONS": true, "TOKEN_REVOKE_SALT": "MmxUQ0tPZ2pNUEpMQ1FVdHB4aEF2N3Vyb0lScEZ3d1g=\n\r\r\r\r", "TOKEN_SIGNUP_SALT": "TXNUMEZjVWdTT3phcEppN1JBYkRpNXE1WFdkelMzTkM=\n\r\r\r\r", "USER_PASSWORD_ROUNDS": 4493, "USER_PASSWORD_SALT": "IPgaYjQISIa9pVYJNErFLA==\n\r\r\r\r", "WERKZEUG_RUN_MAIN": true}, "APP": {"APP_HOST": "192.168.1.5", "APP_PORT": 8080}, "APP2": {"APP_HOST": "192.168.1.5", "APP_PORT": 8081}}
+{
+  "DEFAULT": {
+    "CACHE_TYPE": "simple",
+    "CELERY_BROKER_URL": "pyamqp://guest@localhost//",
+    "DEBUG": true,
+    "MAIL_DEBUG": false,
+    "MAIL_DEFAULT_SENDER": "Social Painter Dash",
+    "MAIL_MAX_EMAILS": 10,
+    "MAIL_PASSWORD": "EFnsDY8>.r^9n~u5FRT/%@n^",
+    "MAIL_PORT": 465,
+    "MAIL_SERVER": "smtp.gmail.com",
+    "MAIL_USERNAME": "socialpainterdash@gmail.com",
+    "MAIL_USE_SSL": true,
+    "MAIL_USE_TLS": false,
+    "MAX_AGE_USER_SIGN_UP_TOKEN": 3600,
+    "NON_LOGIN_MESSAGE": "You were redirected from pages that are for non autheneticated users",
+    "NON_LOGIN_ROUTE": "place.home",
+    "REDIS_URL": "redis://192.168.1.8:6379/0",
+    "REMEMBER_COOKIE_HTTPONLY": false,
+    "REMEMBER_COOKIE_NAME": "SocialPainterDashCookie",
+    "SECRET_KEY": "Twyv6dKbIw/KQqRCp/JmOto1zxA0FkG9\n\r\r\r\r",
+    "SEND_FILE_MAX_AGE_DEFAULT": 1,
+    "SESSION_PROTECTION": "basic",
+    "SQLALCHEMY_DATABASE_URI": "sqlite:///C:\\Cyber\\2020\\rplace\\database.db",
+    "SQLALCHEMY_TRACK_MODIFICATIONS": true,
+    "TOKEN_REVOKE_SALT": "MmxUQ0tPZ2pNUEpMQ1FVdHB4aEF2N3Vyb0lScEZ3d1g=\n\r\r\r\r",
+    "TOKEN_SIGNUP_SALT": "TXNUMEZjVWdTT3phcEppN1JBYkRpNXE1WFdkelMzTkM=\n\r\r\r\r",
+    "USER_PASSWORD_ROUNDS": 4493,
+    "USER_PASSWORD_SALT": "IPgaYjQISIa9pVYJNErFLA==\n\r\r\r\r",
+    "WERKZEUG_RUN_MAIN": true
+  },
+  "APP": {
+    "APP_HOST": "192.168.1.5",
+    "APP_PORT": 8080
+  },
+  "APP2": {
+    "APP_HOST": "192.168.1.5",
+    "APP_PORT": 8081
+  },
+  "CELERY": {
+    // NOTHING
+  }
+}

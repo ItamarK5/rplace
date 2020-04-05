@@ -1,7 +1,10 @@
 from __future__ import absolute_import
-from typing import Dict, Any, List
+
 from os import path
+from typing import Dict, Any, List
+
 from flask_mail import Message
+
 from painter.app import celery
 from painter.backends.extensions import mailbox
 

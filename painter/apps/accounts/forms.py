@@ -146,3 +146,11 @@ class SignUpTokenForm(QuickForm,
                       HashPasswordFieldMixin
                       ):
     pass
+
+
+class RevokeTokenForm(
+    QuickForm,
+    UsernameFieldMixin,
+    HashPasswordFieldMixin
+):
+    pass

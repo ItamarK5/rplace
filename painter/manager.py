@@ -4,35 +4,44 @@ the manager module decorates the app by command line parameter
 the module is based of flask_script module
 https://flask-script.readthedocs.io/en/latest/
 """
+from typing import Optional
 import subprocess
 import sys
+
+from flask import current_app
 from flask_script import Manager, Server, Option, Command
 from flask_script.cli import prompt_bool, prompt_choices, prompt
-from flask import current_app
 from flask_script.commands import InvalidCommand
-from .app import create_app, datastore, sio
+
+from typing import Optional
+from .app import create_app, datastore, sio, redis
 from .models.role import Role
 from .models.user import User
-from .others.utils import NewUserForm, check_isfile, PortQuickForm,\
-    IPv4QuickForm, try_save_json, try_load_json, CONFIG_FILE_PATH_KEY, try_save_json
-from configparser import ConfigParser
+from .others.utils import (
+    NewUserForm, PortQuickForm,
+    IPv4QuickForm, get_config_json,
+    CONFIG_FILE_PATH_KEY, try_save_config,
+    DescriableCommand, name_utility
+)
+
+CHECK_SERVICES_RESULT_FORMAT = '{:^8}{:^5}'
 
 
 manager = Manager(create_app)
 manager.add_option('--c', '-config', dest='config_path', required=False)
-manager.add_option('--D', '-default', dest='set_env', action='store_true')
-manager.add_option('--t', '-title', dest='title')
+manager.add_option('--D', '-default', dest='set_env', action='store_true', required=False)
+manager.add_option('--t', '-title', dest='title', required=False)
 
 
 class RunServer(Server):
     """
     source: https://github.com/miguelgrinberg/flack/blob/master/manage.py
     auther: miguelgrinberg
-    edited by me
     The Start Server Command
     the function get the following parameters:
     host: the host to start the server
     port: the port to start the server
+    note: I add a couple of changes to the command
     """
 
     help = description = 'Runs the server'
@@ -82,7 +91,7 @@ class RunServer(Server):
         :param  use_debugger: if to use debbugger while running the application
         :type   use_debugger: bool
         :param  use_reloader: if to use the reloader option of flask
-        :type   user_debugger: bool
+        :type   use_reloader: bool
         :return: nothing
         override the default runserver command to start a Socket.IO server
         """
@@ -196,28 +205,6 @@ manager.add_command('celery', CeleryWorker)
 manager.add_command("runserver", RunServer())
 manager.add_command("create-user", CreateUser())
 
-"""
-def set_config(file_path, num=None):
-    if (not os.path.exists(file_path)) or os.path.isdir(file_path):
-        raise InvalidCommand("No file exists at: {0}".format(file_path))
-    # check environment
-    if PAINTER_ENV_NAME not in os.environ:
-        if num is None:
-            os.environ[PAINTER_ENV_NAME] = file_path
-        else:
-            raise InvalidCommand("Cannot Access specific the painter path, so number dont matther")
-    else:
-        # add second
-        os.environ[PAINTER_ENV_NAME] = add_configure(os.environ.get(PAINTER_ENV_NAME), file_path, num)
-        print('Finished, Added Config File to environment')
-
-
-set_config = Command(set_config)
-set_config.add_option(Option('--p', '-path', dest='file_path'))
-set_config.add_option(Option('--n', '-num', dest='num', default=None))
-manager.add_command('set-config', set_config)
-"""
-
 
 def create_db(drop_first=False):
     if drop_first and prompt_bool('Are you sure you want to drop the table'):
@@ -225,10 +212,10 @@ def create_db(drop_first=False):
     datastore.create_all()
 
 
-create_db_command = Command(
+create_db_command = DescriableCommand(
     create_db,
+    'creates the database'
 )
-#create_db_command.help_args = 'creates the database'
 create_db_command.add_option(
     Option('--d', '-drop', dest='drop-first',
            action='store_true', default=False,
@@ -244,23 +231,15 @@ def drop_db():
         print('You should create a new superuser, see create-user command')
 
 
-drop_databse_command = Command(drop_db)
-# drop_databse_command.help_args = ('drops the database entirely',)
-manager.add_command('drop-db', drop_databse_command)
+drop_database_command = DescriableCommand(drop_db, 'drops the database entirely')
+manager.add_command('drop-db', drop_database_command)
 
 
 def add_config(name=None, host=None, port=None):
     # name in save mode
-    name = name.upper().replace(' ', '_')
+    name = name_utility(name, True)
     # get file
-    config_path = current_app.config[CONFIG_FILE_PATH_KEY]
-    error_text = check_isfile(config_path)
-    if error_text is not None:
-        raise InvalidCommand(error_text)
-    # validate the port and host
-    # read file
-    # try load
-    configuration = try_load_json(config_path)
+    configuration = get_config_json()
     if name in configuration:
         raise InvalidCommand('Configure Option {0} already exists'.format(name))
     # else get host and port
@@ -289,7 +268,7 @@ def add_config(name=None, host=None, port=None):
         is_valid = isinstance(port, str) and port.isdigit() and PortQuickForm.are_valid(port=port)
         while not is_valid:
             # after first parse
-            port = prompt('Pless enter a valid Port [0-65536]\n[PORT]')
+            port = prompt('pless enter a valid Port [0-65536]\n[PORT]')
             if not port.isdigit():
                 print('Port must be a number')
                 # dont validate because it still as before, false
@@ -304,7 +283,7 @@ def add_config(name=None, host=None, port=None):
         'APP_PORT': int(port)
     }
     # save configuration
-    try_save_json(configuration, config_path)
+    try_save_config(configuration, current_app.config.get(CONFIG_FILE_PATH_KEY))
     print('Configuration {0} Created'.format(name))
 
 
@@ -324,15 +303,90 @@ create_config_command.add_option(
 manager.add_command('add-config', create_config_command)
 
 
-def del_config(key=None):
-    pass
+# Delete Configuration
+def del_config(name):
+    name = name_utility(name, True)
+    # get file
+    # the real deal
+    configuration = get_config_json()
+    if name not in configuration:
+        raise InvalidCommand("Error, Config Title")
+    # remove it
+    if prompt_bool('Are you sure you want to remove the {0} name?'.format(name)):
+        configuration.pop(name)
+        try_save_config(configuration)
+    else:
+        print('as your wish, I stop the task')
 
-def remove_config(name=None):
-    parser = ConfigParser()
-    with parser.read_file as rfile:
-        pass
-    pass
+del_config_command = DescriableCommand(
+    del_config,
+    'Delete Configuration (title)'
+)
+del_config_command.add_option(Option(
+    '--n', '-name', dest='name', required=None
+))
 
 
-def get_config(name) -> None:
-    pass
+def set_config(name, varname, only_change = False):
+    name = name_utility(name)
+    configuration = get_config_json()
+    if name not in configuration:
+        raise InvalidCommand('')  # add
+    # else
+    config_keys = configuration[varname]
+    if varname not in config_keys and only_change:
+        raise InvalidCommand('key {0} already exists in {1}'.format(varname, name))
+    config_keys.set(varname, only_change)
+    try_save_config(configuration)
+
+
+def clear_config_key(name, varname):
+    name = name_utility(name)
+    configuration = get_config_json()
+    if name not in configuration:
+        raise InvalidCommand('')  # add
+    if varname not in configuration[name]:
+        raise InvalidCommand('key {0} already exists in {1}'.format(varname, name))
+    configuration[name].pop(varname)
+    try_save_config(configuration)
+    print('Completely clear config')
+
+
+"""
+ Check Service Command
+"""
+def check_services(all_flag=False, redis_flag=None):
+    # if in the future I should add other flagsw
+    # check if all of them are None
+    # if all of them are None, check them all
+    redis_flag = all_flag if redis_flag is None else redis_flag ^ all_flag
+    print('Checks with redis')
+    results = {}
+    if redis_flag:
+        # try with redis
+        try:
+            redis.ping()
+            print('Successfully ping to redis')
+            results['redis'] = True
+        except ConnectionError as e:
+            print('Error:{0}'.format(e))
+            print('Error while connection to redis:')
+    print('Results:')
+    for (key, connected) in results.items():
+        print(CHECK_SERVICES_RESULT_FORMAT.format(key, connected))
+
+
+
+check_services_command = Command(check_services)
+check_services_command.__dict__['description'] = 'check if services the app uses are active,' \
+                                             'there are currently 1: redis'
+check_services_command.add_option(Option(
+    '--r', '-redis', dest='redis_flag', action='store_true', help='to check update with redis'
+))
+check_services_command.add_option(Option(
+    '--R', '-Redis', dest='redis_flag', action='store_false', help='to not check update with redis'
+))
+check_services_command.add_option(Option(
+    '--a', '-all', dest='all_flag', action='store_true', help='to check update with all'
+))
+manager.add_command('check-service', check_services_command)

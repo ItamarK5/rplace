@@ -6,9 +6,13 @@ Handles generating the app
 from __future__ import absolute_import
 
 from os import path
+# backends
+from typing import Dict, Any, Optional
 
 import eventlet
+from celery import Celery
 from flask import Flask
+from flask_script.commands import InvalidCommand
 
 from painter.backends.extensions import (
     datastore, generate_engine,
@@ -16,13 +20,10 @@ from painter.backends.extensions import (
     csrf, redis
 )
 from painter.backends.skio import sio
-from .others.utils import get_env_path, load_configuration, set_env_path
 from .others.constants import CELERY_TITLE
-from flask_script.commands import InvalidCommand
-# backends
-from typing import Dict, Any, Optional
 from .others.filters import add_filters
-from celery import Celery
+from .others.utils import get_env_path, load_configuration, set_env_path
+
 # monkey patching
 eventlet.monkey_patch()
 
@@ -34,7 +35,7 @@ celery = Celery(
 # to register tasks
 
 
-def create_app(config_path: Optional[str],
+def create_app(config_path: Optional[str] = None,
                set_env: bool = False,
                title: Optional[str] = None,
                is_celery: bool = False) -> Flask:
@@ -97,7 +98,7 @@ def _create_app(config: Dict[str, Any],
     app.register_blueprint(admin.admin_router)
     app.register_blueprint(others.other_router)
     """
-    extensions.rds_backend.init_app(app)
+    rds_backend.init_app(app)
     board.init_app(app)
     lock.init_app(app)
     """
