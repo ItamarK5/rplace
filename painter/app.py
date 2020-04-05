@@ -10,10 +10,17 @@ from os import path
 import eventlet
 from flask import Flask
 
-from painter.backends.extensions import datastore, generate_engine, mailbox, login_manager, cache, csrf, redis
+from painter.backends.extensions import (
+    datastore, generate_engine,
+    mailbox, login_manager, cache,
+    csrf, redis
+)
 from painter.backends.skio import sio
+from .others.utils import get_env_path, load_configuration, set_env_path
+from .others.constants import CELERY_TITLE
 from flask_script.commands import InvalidCommand
 # backends
+from typing import Dict, Any, Optional
 from .others.filters import add_filters
 from celery import Celery
 # monkey patching
@@ -27,18 +34,37 @@ celery = Celery(
 # to register tasks
 
 
-def create_app(
-        config_path: str = None,
-        env_path: str = None,
-        name: str = 'app',
-        is_celery: bool = False) -> Flask:
-    # first check if calls celery from none celery run
-    if not (config_path or env_path):
+def create_app(config_path: Optional[str],
+               set_env: bool = False,
+               title: Optional[str] = None,
+               is_celery: bool = False) -> Flask:
+    if not config_path:
         # default configure file
-        config_path = 'config.py'
-    if config_path is None and env_path is not None:
-       config_path = env_path
-    conf = get_configuration(config_path)
+        if set_env:
+            raise EnvironmentError('You cannot set new configuration file path without adding conf file')
+        config_path = get_env_path()
+    elif set_env:
+        set_env_path(config_path)
+    if title == CELERY_TITLE and not is_celery:
+        raise InvalidCommand('Loading Configuration Error: '
+                             'Celery Configuration can only be accessed by celery worker')
+    elif title != CELERY_TITLE and is_celery:
+        raise InvalidCommand('On Loading Configuration: '
+                             'Celery worker can only access celery configuration')
+    if title is None:
+        print('Running with default parameters only')
+    return _create_app(
+        load_configuration(
+            config_path,
+            title.upper() if title else None
+        ),
+        is_celery
+    )
+
+
+def _create_app(config: Dict[str, Any],
+                is_celery: bool = False) -> Flask:
+    # first check if calls celery from none celery run
     # The Flask Application
     app = Flask(
         __name__,
@@ -48,12 +74,10 @@ def create_app(
     )
     # The Application Configuration, import
     # first checks if its from directly
-    if config.isdigit():
-        config = get_config(int(config))
-    app.config.from_pyfile(config)
+    app.config.from_mapping(config)
     # socketio
     sio.init_app(
-        app if main else None,
+        None if is_celery else app,
         message_queue='pyamqp://guest@localhost//'  # testing
     )
     # ext

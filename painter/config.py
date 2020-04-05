@@ -1,4 +1,3 @@
-
 DEBUG = True
 SEND_FILE_MAX_AGE_DEFAULT = 1
 SQLALCHEMY_DATABASE_URI = 'sqlite:///C:\\Cyber\\2020\\rplace\\database.db'

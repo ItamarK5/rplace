@@ -1,5 +1,4 @@
 from datetime import timedelta
-from os import path
 # mime types the application send
 # for some strange reason
 MIME_TYPES = {
@@ -23,4 +22,8 @@ COLORS = (
     "olive", "yellow", "green", "lime",
     "blue", "aqua", "purple", "magenta"
 )
-PAINTER_ENV_NAME = 'PAINTER-SOCIAL-CONFIG-PATHS'
+PAINTER_ENV_NAME = 'SOCIAL-PAINTER-CONFIG-PATH'
+DEFAULT_PATH = 'painter/config.json'
+CELERY_TITLE = 'celery'
+DEFAULT_TITLE = 'DEFAULT'
+CONFIG_FILE_PATH_KEY = '__CONFIG_PATH'

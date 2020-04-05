@@ -6,15 +6,22 @@ https://flask-script.readthedocs.io/en/latest/
 """
 import subprocess
 import sys
-import os
 from flask_script import Manager, Server, Option, Command
 from flask_script.cli import prompt_bool, prompt_choices, prompt
+from flask import current_app
 from flask_script.commands import InvalidCommand
 from .app import create_app, datastore, sio
 from .models.role import Role
 from .models.user import User
-from .others.utils import NewUserForm, PAINTER_ENV_NAME, PortQuickForm, IPv4QuickForm, get_absolute_if_relative
+from .others.utils import NewUserForm, check_isfile, PortQuickForm,\
+    IPv4QuickForm, try_save_json, try_load_json, CONFIG_FILE_PATH_KEY, try_save_json
 from configparser import ConfigParser
+
+
+manager = Manager(create_app)
+manager.add_option('--c', '-config', dest='config_path', required=False)
+manager.add_option('--D', '-default', dest='set_env', action='store_true')
+manager.add_option('--t', '-title', dest='title')
 
 
 class RunServer(Server):
@@ -34,12 +41,12 @@ class RunServer(Server):
         options = (
             Option('-h', '--host',
                    dest='host',
-                   default='0.0.0.0',
+                   default=None,
                    help='host url of the server'),
             Option('-p', '--port',
                    dest='port',
                    type=int,
-                   default=8080,
+                   default=None,
                    help='host port of the server'),
             Option('-d', '--debug',
                    action='store_true',
@@ -73,17 +80,22 @@ class RunServer(Server):
         :param  port: port to listen on the ip
         :type   port: int
         :param  use_debugger: if to use debbugger while running the application
-        :type   use_debugger: Boolean
-        :param  use_reloader: use
+        :type   use_debugger: bool
+        :param  use_reloader: if to use the reloader option of flask
+        :type   user_debugger: bool
         :return: nothing
         override the default runserver command to start a Socket.IO server
         """
+        host = host if host is not None else app.config.get('APP_HOST', '127.0.0.1')
+        port = port if port is not None else app.config.get('APP_PORT', 8080)
+        print(host, port)
         if use_debugger is None:
             use_debugger = app.debug
             if use_debugger is None:
                 use_debugger = True
         if use_reloader is None:
-            use_reloader = app.debug
+            use_reloader = not app.debug and app.config.get('WERKZEUG_RUN_MAIN')
+        print(app.config)
         sio.run(
             app,
             host=host,
@@ -92,24 +104,6 @@ class RunServer(Server):
             use_reloader=use_reloader,
             **self.server_options
         )
-
-
-manager = Manager(create_app)
-manager.add_option('--c', '-config', dest='config', default='config.py', required=False)
-
-
-@manager.option('--d', '-drop', dest='drop-first', help='drop before creating app', default=True)
-def create_db(drop_first=False):
-    if drop_first and prompt_bool('Are you sure you want to drop the table'):
-        datastore.drop_all()
-    datastore.create_all()
-
-
-@manager.command
-def drop_db():
-    if prompt_bool('Are you sure to drop the database'):
-        datastore.drop_all()
-        print('You should create a new superuser')
 
 
 class CreateUser(Command):
@@ -196,6 +190,12 @@ class CeleryWorker(Command):
         )
         sys.exit(ret)
 
+
+# adding command
+manager.add_command('celery', CeleryWorker)
+manager.add_command("runserver", RunServer())
+manager.add_command("create-user", CreateUser())
+
 """
 def set_config(file_path, num=None):
     if (not os.path.exists(file_path)) or os.path.isdir(file_path):
@@ -218,26 +218,49 @@ set_config.add_option(Option('--n', '-num', dest='num', default=None))
 manager.add_command('set-config', set_config)
 """
 
-manager.add_command('celery', CeleryWorker)
-manager.add_command("runserver", RunServer())
-manager.add_command("create-user", CreateUser())
+
+def create_db(drop_first=False):
+    if drop_first and prompt_bool('Are you sure you want to drop the table'):
+        datastore.drop_all()
+    datastore.create_all()
 
 
-def add_config(name, host, port):
-    # check file
-    if PAINTER_ENV_NAME not in os.environ:
-        os.environ[PAINTER_ENV_NAME] = 'config.py'
-    # else
-    config_path = get_absolute_if_relative(os.environ[PAINTER_ENV_NAME])
-    if not os.path.exists(config_path):
-        raise InvalidCommand('Path {0} points to nothing'.format(config_path))
-    elif os.path.isdir(config_path):
-        raise InvalidCommand('Path {0} points to a directory'.format(config_path))
+create_db_command = Command(
+    create_db,
+)
+#create_db_command.help_args = 'creates the database'
+create_db_command.add_option(
+    Option('--d', '-drop', dest='drop-first',
+           action='store_true', default=False,
+           help='Drops the current database before creation')
+)
+manager.add_command('create-db', create_db_command)
+
+
+# drop database
+def drop_db():
+    if prompt_bool('Are you sure to drop the database'):
+        datastore.drop_all()
+        print('You should create a new superuser, see create-user command')
+
+
+drop_databse_command = Command(drop_db)
+# drop_databse_command.help_args = ('drops the database entirely',)
+manager.add_command('drop-db', drop_databse_command)
+
+
+def add_config(name=None, host=None, port=None):
+    # name in save mode
+    name = name.upper().replace(' ', '_')
+    # get file
+    config_path = current_app.config[CONFIG_FILE_PATH_KEY]
+    error_text = check_isfile(config_path)
+    if error_text is not None:
+        raise InvalidCommand(error_text)
     # validate the port and host
-    parser = ConfigParser()
     # read file
-    # try
-    configuration = {}
+    # try load
+    configuration = try_load_json(config_path)
     if name in configuration:
         raise InvalidCommand('Configure Option {0} already exists'.format(name))
     # else get host and port
@@ -253,27 +276,55 @@ def add_config(name, host, port):
             raise InvalidCommand('Invalid Port: {0}'.format(port))
     # parse if neither is None
     if host is None:
-        while IPv4QuickForm.are_valid(address=host):
+        is_valid = IPv4QuickForm.are_valid(address=host)
+        while not is_valid:
             # after first parse
-            if host is not None:
-                print('Host IP isn\'t valid:{0}')
-            host = prompt('Pless enter a valid IPv4 Address\n[HOST]:')
+            host = prompt('Pless enter a valid IPv4 Address\n[HOST]')
+            print(len(host))
+            form, is_valid = IPv4QuickForm.fast_validation(address=host)
+            if not is_valid:
+                form.error_print()
+    # validate port
     if port is None:
-        while PortQuickForm.are_valid(port=port):
+        is_valid = isinstance(port, str) and port.isdigit() and PortQuickForm.are_valid(port=port)
+        while not is_valid:
             # after first parse
-            if host is not None:
-                print('Host IP isn\'t valid:{0}')
-            port = prompt('Pless enter a valid Port [0-65536]\n[PORT]:')
+            port = prompt('Pless enter a valid Port [0-65536]\n[PORT]')
+            if not port.isdigit():
+                print('Port must be a number')
+                # dont validate because it still as before, false
+            else:
+                # check form now it knows that port cannot be a number
+                form, is_valid = PortQuickForm.fast_validation(port=int(port))
+                if not is_valid:
+                    form.error_print()
     # add the configure
     configuration[name] = {
-        'Host': host,
-        'Port': port
+        'APP_HOST': host,
+        'APP_PORT': int(port)
     }
     # save configuration
+    try_save_json(configuration, config_path)
     print('Configuration {0} Created'.format(name))
 
 
-def set_config(key=None, name=None):
+create_config_command = Command(add_config)
+create_config_command.add_option(
+    Option('--h', '-host', dest='host', default=None, required=False,
+           help="Host/The IP Address of the server, default 127.0.0.1 (localhost), if no app configuration exist"),
+)
+create_config_command.add_option(
+    Option('--p', '-port', dest='port', default=None, required=False,
+           help="Port the server listens to default is 8080 if no app configuration is passed")
+)
+create_config_command.add_option(
+    Option('--n', '-name', dest='name',
+           help="Port the server listens to default is 8080 if no app configuration is passed")
+)
+manager.add_command('add-config', create_config_command)
+
+
+def del_config(key=None):
     pass
 
 def remove_config(name=None):
@@ -282,4 +333,6 @@ def remove_config(name=None):
         pass
     pass
 
+
 def get_config(name) -> None:
+    pass

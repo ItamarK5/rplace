@@ -78,6 +78,14 @@ class QuickForm(Form):
         """
         return cls.fast_validation(**kwargs)[1]
 
+    def error_print(self):
+        """
+        :return: nothing
+        prints all errors of the form
+        """
+        for field in iter(self):
+            for error in field.errors:
+                print(error)
 
 class UsernameFieldMixin(object):
     """
@@ -144,10 +152,10 @@ class MailAddressFieldMixin(object):
 
 
 class IPv4AddressMixin(object):
-    ip_address = StringField(
+    address = StringField(
         'address',
         validators=[
-            validators.required(),
+            validators.data_required(),
             # using IPv4
             validators.IPAddress()
         ]
@@ -159,6 +167,6 @@ class PortMixin(object):
         'port',
         validators=[
             validators.data_required(),
-            validators.Length(0, 2**16-1)
+            validators.NumberRange(0, 2**16-1)
         ]
     )
