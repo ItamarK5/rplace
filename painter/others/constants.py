@@ -27,3 +27,18 @@ DEFAULT_PATH = 'painter/config.json'
 CELERY_TITLE = 'celery'
 DEFAULT_TITLE = 'DEFAULT'
 CONFIG_FILE_PATH_KEY = '__CONFIG_PATH'
+
+MANAGER_TYPES_PARSE = {
+    'int': int,
+    'integer': int,
+    'number': int,
+    'float': float,
+    'real': float,
+    'str': str,
+    'string': str,
+    'text': str,
+    'bytes': bytes,
+    'byt': bytes,
+    'bool': bool,
+    'cond': bool,   # shortcut for condition
+}

@@ -7,8 +7,8 @@ const MIN_SCALE = 0.5;
 const MAX_SCALE = 50;
 // default cooldown between drawss
 const DRAW_COOLDOWN = 60;
-// progress
-const PROGRESS_COOLDOWN = 50
+/** @constant {Number} PROGRESS_COOLDWN interval of time between each check to update the progress*/
+const PROGRESS_COOLDOWN = 100;
 //regex to get hash\argument url staff
 const reHashX = /(?<=(^#|.+&)x=)\d+(?=&|$)/i;
 const reHashY = /(?<=(^#|.+&)y=)\d+(?=&|$)/i;
@@ -54,7 +54,7 @@ const sock = io('/paint', {
 /**
  * @summary wrapper function to recconect using io, to only run it 5 seconds after sock.io run it
  */
-const reconnection = _.throttle(() => sock.reconnection(), 5000, {leading: false, trailing:false})
+const try_reconnect = _.throttle(() => sock.try_reconnect(), 5000, {leading: false, trailing:false})
 const getFirstIfAny = (group) => _.isNull(group) ? null : group[0]
 /**
  * 
@@ -751,12 +751,14 @@ const pen = {
         }
         this.setColorButton(color_button);
     },
+    // disable the pen object
     disable() {
         if (!this.__disable) {
             this.__disable = true;
             board.drawBoard();
         }
     },
+    // enable the pen object
     enable() {
         if (this.__disable) {
             this.__disable = false;
@@ -777,6 +779,7 @@ const pen = {
         }
         return this.last_mouse_pos;
     },
+    // updateOffset by the event
     updateOffset(e) {
         /* finds the pen current position
          min pixel on screen + start of page / scale= position of mouse  */
@@ -864,7 +867,7 @@ const pen = {
                 confirmButtonText: 'To Waiting'
             })
             // also again check with server if 5 seconds after didnt load
-            sock.reconnect();         
+            try_reconnect()    
         }
         // if board isnt ready
         if (!board.is_ready) {
@@ -1151,7 +1154,7 @@ const board = {
         }
     },
     drawBoard() {
-        if (board.needs_draw || !board.is_ready) {
+        if (board.needs_draw) {
             return;
         }
         this.needs_draw = true;

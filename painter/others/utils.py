@@ -9,14 +9,18 @@ from .quick_validation import (
     PortMixin,
     QuickForm
 )
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Generic
 import os
 from ..models.user import User
 from flask_script.commands import InvalidCommand, Command
 from flask import current_app
-from .constants import PAINTER_ENV_NAME, DEFAULT_TITLE, CONFIG_FILE_PATH_KEY, DEFAULT_PATH
+from typing import Union, TypeVar
+from flask_script.cli import prompt, prompt_choices, prompt_bool
+from .constants import PAINTER_ENV_NAME, DEFAULT_TITLE, CONFIG_FILE_PATH_KEY, DEFAULT_PATH, MANAGER_TYPES_PARSE
 import base64
 
+
+ConvertType = TypeVar('Convert', str, int, bool, float)
 
 class NewUserForm(
     QuickForm,
@@ -166,13 +170,61 @@ def set_env_path(path: str) -> None:
     os.environ[PAINTER_ENV_NAME] = path
 
 
-def name_utility(name:str, no_default:bool=False) -> str:
+def name_utility(name: str,
+                 callback_for_change: bool = True,
+                 no_default: bool = False) -> str:
     # first fixes the name
     real_name = name.upper().replace(' ','_')
-    if real_name != name:
+    if real_name != name and callback_for_change:
         print('Changed Name to more appropriate:{0}'.format(name))
     if no_default and real_name == DEFAULT_TITLE:
         raise InvalidCommand("You enter the default title, the command cannot be used on the default "
                              "configuration option")
     return real_name
 
+
+"""
+    Parsing Staffs
+"""
+
+
+def parse_boolean() -> Optional[bool]:
+    return prompt_bool('Enter a boolean value\n[VALUE]', default=None)
+
+
+def parse_bytes() -> Optional[str]:
+    val = prompt('Enter a Bytes values')
+    return (base64.encodebytes(val)+'\r\r\r\r').decode() if val else None
+
+
+def parse_type(convert_type:Generic[ConvertType]) -> Optional[ConvertType]:
+    val = prompt('Enter a valid {0} value\n[VALUE]'.format(convert_type.__name__))
+    while val:
+        try:
+            return convert_type(val)
+        except TypeError:
+            pass
+        val = prompt('Enter a valid {0} value\n[VALUE]'.format(convert_type.__name__))
+    return None
+
+
+def parse_string() -> Optional[str]:
+    val = prompt('Enter a string\n[VALUE]')
+    return val if val else None
+
+
+CONVERT_MAP = {
+    bool: parse_boolean,
+    int: lambda: parse_type(int),
+    float: lambda: parse_type(float),
+    bytes: lambda: parse_bytes(),
+    str: parse_string
+}
+
+
+def parse_value() -> Optional[ConvertType]:
+    parsed_type = prompt_choices('Select a type', MANAGER_TYPES_PARSE)
+    if parsed_type is None:
+        return None
+    # else parse
+    return CONVERT_MAP[parsed_type]()

@@ -1,10 +1,9 @@
 """
-Auther: Itamar Kanne
+Author: Itamar Kanne
 the manager module decorates the app by command line parameter
 the module is based of flask_script module
 https://flask-script.readthedocs.io/en/latest/
 """
-from typing import Optional
 import subprocess
 import sys
 
@@ -13,7 +12,6 @@ from flask_script import Manager, Server, Option, Command
 from flask_script.cli import prompt_bool, prompt_choices, prompt
 from flask_script.commands import InvalidCommand
 
-from typing import Optional
 from .app import create_app, datastore, sio, redis
 from .models.role import Role
 from .models.user import User
@@ -21,7 +19,8 @@ from .others.utils import (
     NewUserForm, PortQuickForm,
     IPv4QuickForm, get_config_json,
     CONFIG_FILE_PATH_KEY, try_save_config,
-    DescriableCommand, name_utility
+    DescriableCommand, config_name_utility,
+    parse_value
 )
 
 CHECK_SERVICES_RESULT_FORMAT = '{:^8}{:^5}'
@@ -121,9 +120,9 @@ class CreateUser(Command):
 
     def get_options(self):
         return (
-            Option('--n', '-name', '-username',
-                   dest='username',
-                   help='name of the new user'),
+            Option('--n', '-config_name', '-userconfig_name',
+                   dest='userconfig_name',
+                   help='config_name of the new user'),
             Option('--p', '-password', '-pswd',
                    dest='password',
                    help='password of the new user'),
@@ -142,9 +141,9 @@ class CreateUser(Command):
                    help='the user\'s role is a superuser, highest rank')
         )
 
-    def run(self, username, password, mail_address, role):
-        if username is None:
-            username = prompt('enter a username address of the user\nUsername: ')
+    def run(self, userconfig_name, password, mail_address, role):
+        if userconfig_name is None:
+            userconfig_name = prompt('enter a userconfig_name address of the user\nUserconfig_name: ')
         if password is None:
             password = prompt('you forgeot entering a password, pless enter 1\nPassword: ')
         if mail_address is None:
@@ -167,7 +166,7 @@ class CreateUser(Command):
             raise InvalidCommand('Pless enter a valid role, not: {0}'.format(role))
         # check valid role
         form, is_valid = NewUserForm.fast_validation(
-            username=username,
+            userconfig_name=userconfig_name,
             password=password,
             mail_address=mail_address
         )
@@ -175,11 +174,11 @@ class CreateUser(Command):
             # to get first error
             for field in iter(form):
                 for error in field.errors:
-                    raise InvalidCommand('{0}: {1}'.format(field.name, error))
+                    raise InvalidCommand('{0}: {1}'.format(field.config_name, error))
         # create user
         else:
             user = User(
-                username=username,
+                userconfig_name=userconfig_name,
                 password=password,
                 email=mail_address,
                 role=role_matched
@@ -191,7 +190,7 @@ class CreateUser(Command):
 
 class CeleryWorker(Command):
     """Starts the celery worker."""
-    name = 'celery'
+    config_name = 'celery'
 
     def run(self):
         ret = subprocess.call(
@@ -235,13 +234,13 @@ drop_database_command = DescriableCommand(drop_db, 'drops the database entirely'
 manager.add_command('drop-db', drop_database_command)
 
 
-def add_config(name=None, host=None, port=None):
-    # name in save mode
-    name = name_utility(name, True)
+def add_config(config_name=None, host=None, port=None):
+    # config_name in save mode
+    config_name = config_name_utility(config_name, no_default=True)
     # get file
     configuration = get_config_json()
-    if name in configuration:
-        raise InvalidCommand('Configure Option {0} already exists'.format(name))
+    if config_name in configuration:
+        raise InvalidCommand('Configure Option {0} already exists'.format(config_name))
     # else get host and port
     # if passed any arguments => didn't pass both None
     if host is not None or port is not None:
@@ -278,16 +277,20 @@ def add_config(name=None, host=None, port=None):
                 if not is_valid:
                     form.error_print()
     # add the configure
-    configuration[name] = {
+    configuration[config_name] = {
         'APP_HOST': host,
         'APP_PORT': int(port)
     }
     # save configuration
     try_save_config(configuration, current_app.config.get(CONFIG_FILE_PATH_KEY))
-    print('Configuration {0} Created'.format(name))
+    print('Configuration {0} Created'.format(config_name))
+    print('if you want to add more configuration, use the parse command')
 
 
-create_config_command = Command(add_config)
+create_config_command = DescriableCommand(
+    add_config,
+    'Adds a new configuration option inside the used configuration file (JSON Format)'
+)
 create_config_command.add_option(
     Option('--h', '-host', dest='host', default=None, required=False,
            help="Host/The IP Address of the server, default 127.0.0.1 (localhost), if no app configuration exist"),
@@ -297,64 +300,110 @@ create_config_command.add_option(
            help="Port the server listens to default is 8080 if no app configuration is passed")
 )
 create_config_command.add_option(
-    Option('--n', '-name', dest='name',
+    Option('--n', '-config_name', dest='config_name',
            help="Port the server listens to default is 8080 if no app configuration is passed")
 )
 manager.add_command('add-config', create_config_command)
 
 
 # Delete Configuration
-def del_config(name):
-    name = name_utility(name, True)
+def del_config(config_name):
+    config_name = config_name_utility(config_name, True)
     # get file
     # the real deal
     configuration = get_config_json()
-    if name not in configuration:
+    if config_name not in configuration:
         raise InvalidCommand("Error, Config Title")
     # remove it
-    if prompt_bool('Are you sure you want to remove the {0} name?'.format(name)):
-        configuration.pop(name)
+    if prompt_bool('Are you sure you want to remove the {0} config_name?'.format(config_name)):
+        configuration.pop(config_name)
         try_save_config(configuration)
     else:
         print('as your wish, I stop the task')
+
 
 del_config_command = DescriableCommand(
     del_config,
     'Delete Configuration (title)'
 )
 del_config_command.add_option(Option(
-    '--n', '-name', dest='name', required=None
+    '--n', '-config_name', dest='config_name', required=None
 ))
 
 
-def set_config(name, varname, only_change = False):
-    name = name_utility(name)
-    configuration = get_config_json()
-    if name not in configuration:
-        raise InvalidCommand('')  # add
-    # else
-    config_keys = configuration[varname]
-    if varname not in config_keys and only_change:
-        raise InvalidCommand('key {0} already exists in {1}'.format(varname, name))
-    config_keys.set(varname, only_change)
-    try_save_config(configuration)
+def parse_config(config_name, only_create):
+    only_create = only_create if only_create is not None else False
+    config_name = config_name_utility(config_name)
+    all_configuration = get_config_json()
+    if config_name not in all_configuration:
+        raise InvalidCommand('Title {0} not found'.format(config_name))
+    config = all_configuration[config_name]
+    key = prompt('Parsing changes to configuration')
+    while key is not None:
+        key = config_name_utility(key)
+        if key in config and only_create:
+            print('Key {0} already registered in the configuration {1}'.format(config_name, key))
+        else:
+            pass
+            # get type
+    pass
 
 
-def clear_config_key(name, varname):
-    name = name_utility(name)
+command_parse_config = DescriableCommand(
+    parse_config,
+    description='option to parse keys to a configuration title',
+    help_text='option to parse keys to the configuration title'
+)
+command_parse_config.add_option(
+    Option('--n', '-config_name', dest='config_name', help='config_name of the configuration to parse the changes to')
+)
+command_parse_config.add_option(
+    Option('--o', '-only-create', dest='only_create', action='store_true',
+           help='prevent any changes to current values, only create new staff',
+           required=False, default=None)
+)
+manager.add_command('parse', command_parse_config)
+
+
+def clear_config_key(config_name, var_config_name, parse):
+    config_name = config_name_utility(config_name)
     configuration = get_config_json()
-    if name not in configuration:
-        raise InvalidCommand('')  # add
-    if varname not in configuration[name]:
-        raise InvalidCommand('key {0} already exists in {1}'.format(varname, name))
-    configuration[name].pop(varname)
+    if config_name not in configuration:
+        raise InvalidCommand('Title {0} not found'
+                             .format(config_name))
+    if parse is None:
+        if var_config_name not in configuration[config_name]:
+            raise InvalidCommand('key {0} already exists in {1}'
+                                 .format(var_config_name, config_name))
+        configuration[config_name].pop(var_config_name)
+    else:
+        var_config_name = config_name_utility(
+            prompt(
+                'Enter a key in configuration to delete',
+                default=''),
+            False
+        )
+        while var_config_name:
+            if var_config_name not in configuration:
+                print('Error: key {0} not in configuration'.format(var_config_name))
+            configuration[config_name].pop(var_config_name)
     try_save_config(configuration)
     print('Completely clear config')
+
+
+clear_config_key = DescriableCommand
+clear_config_command = DescriableCommand(
+    clear_config_key,
+    description='clear keys in configuration option'
+)
+manager.add_command('clear', clear_config_command)
 
 
 """
  Check Service Command
 """
+
+
 def check_services(all_flag=False, redis_flag=None):
     # if in the future I should add other flagsw
     # check if all of them are None
@@ -374,7 +423,6 @@ def check_services(all_flag=False, redis_flag=None):
     print('Results:')
     for (key, connected) in results.items():
         print(CHECK_SERVICES_RESULT_FORMAT.format(key, connected))
-
 
 
 check_services_command = Command(check_services)
