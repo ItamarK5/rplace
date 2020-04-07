@@ -1,9 +1,11 @@
+from __future__ import absolute_import
 import time
 
 from flask import render_template, request
 from flask_login import logout_user, login_user
 from werkzeug.wrappers import Response
 
+from painter.models.simpleModels import SignupUsernameRecord, SignupMailRecord
 from painter.backends.extensions import datastore
 from painter.models.user import Role, User
 from .forms import LoginForm, SignUpForm, RevokePasswordForm, ChangePasswordForm, SignUpTokenForm, RevokeTokenForm
@@ -238,42 +240,3 @@ def confirm(token: str) -> Response:
         message='Congrats, you completed registering to the social painter community,\n'
                 'to continue, pless login via the login that you be redirected by pressing the button down'
     )
-
-
-@accounts_router.route('/create')
-def create_user() -> Response:
-    """
-    :return: create user for debugging
-    """
-    # user = User.query.filter_by(username='socialpainter5').first()
-    # if user:
-    #   db.session.delete(user)
-    #  db.session.commit()
-    user = User(
-        username=request.args['name'],
-        hash_password=request.args.get('password', None) or request.args.get('pswd', None),
-        email=request.args['name'] + '@gmail.com'
-    )
-    datastore.session.add(user)
-    datastore.session.commit()
-    return redirect(url_for('.login'))
-
-
-@accounts_router.route('/create-admin')
-def create_admin() -> Response:
-    """
-    :return: create user for debugging
-    """
-    # user = User.query.filter_by(username='socialpainter5').first()
-    # if user:
-    #   db.session.delete(user)
-    #   db.session.commit()
-    user = User(
-        username='socialpainter9',
-        hash_password='QWEASDZXC123',
-        email='socialpainterdash@gmail.com',
-        role=Role.superuser
-    )
-    datastore.session.add(user)
-    datastore.session.commit()
-    return redirect(url_for('.login'))

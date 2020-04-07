@@ -135,7 +135,7 @@ class User(datastore.Model, UserMixin):
         it uses the method __get_last_record for caching the result to handle less requirements
         """
         identifier = self.__get_last_record()
-        return None if identifier == 'none' else Record.query.get(identifier)
+        return None if isinstance(identifier, str) else Record.query.get(identifier)
 
     @property
     def is_active(self) -> bool:

@@ -27,7 +27,8 @@
     "TOKEN_SIGNUP_SALT": "TXNUMEZjVWdTT3phcEppN1JBYkRpNXE1WFdkelMzTkM=\n\r\r\r\r",
     "USER_PASSWORD_ROUNDS": 4493,
     "USER_PASSWORD_SALT": "IPgaYjQISIa9pVYJNErFLA==\n\r\r\r\r",
-    "WERKZEUG_RUN_MAIN": true
+    "WERKZEUG_RUN_MAIN": true,
+    "CACHE_TYPE": "SIMPLE"
   },
   "APP": {
     "APP_HOST": "192.168.1.5",

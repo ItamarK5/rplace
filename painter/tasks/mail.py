@@ -15,7 +15,7 @@ def send_mail(subject: str,
               body: str,
               html: str,
               attachments: List[Dict[str, Any]]) -> None:
-    from .celery_worker import app
+    from painter.tasks.mail_worker import app
     with app.app_context():
         message = Message(
             subject,
@@ -25,7 +25,7 @@ def send_mail(subject: str,
         )
         for attach in attachments:
             print(app.root_path)
-            with app.open_resource(path.join('web', attach['path']), attach['read_mode']) as resource:
+            with app.open_resource(path.join('../web', attach['path']), attach['read_mode']) as resource:
                 message.attach(
                     content_type=attach['content_type'],
                     data=resource.read(),
