@@ -7,6 +7,6 @@
 {{edit_title('Preferences')}}
 {{row_view('name', user.username)}}
 {{row_view('mail', user.email)}}
-{{row_view('created at', user.creation_date)}}
+{{row_view('created at', user.creation_date|date)}}
 {{row_view('last draw', user|draw_time)}}
 {{row_view('status', user.role.title)}}

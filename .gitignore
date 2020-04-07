@@ -18,3 +18,5 @@ config.ini
 parser.py
 config.ini
 *.tmp
+מסמך/מסמך אפיון.docx
+*.docx
