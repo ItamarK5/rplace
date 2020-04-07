@@ -11,8 +11,7 @@ from painter.backends.skio import (
     PAINT_NAMESPACE, EDIT_PROFILE_NAMESPACE,
     socket_io_role_required_connection, socket_io_role_required_event,
 )
-from painter.models.role import Role
-from painter.models.user import User
+from painter.models import Role, User
 
 
 def socket_io_require_user_room(f: Callable) -> Callable:

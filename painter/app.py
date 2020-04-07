@@ -23,7 +23,6 @@ from painter.backends.skio import sio
 from .others.constants import CELERY_TITLE
 from .others.filters import add_filters
 from .others.utils import get_env_path, load_configuration, set_env_path
-
 # monkey patching
 eventlet.monkey_patch()
 

@@ -4,7 +4,7 @@ from typing import Any, Callable, Optional, Iterable
 from flask_login import current_user
 from flask_socketio import SocketIO, disconnect, ConnectionRefusedError
 
-from painter.models.role import Role
+from painter.models import Role
 
 
 def socket_io_authenticated_only_connection(f: Callable[[Any], Any]) -> Callable[[Any], Any]:

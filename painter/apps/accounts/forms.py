@@ -12,6 +12,7 @@ from painter.others.quick_validation import (
     HashPasswordFieldMixin,
     QuickForm,
 )
+from painter.models import SignupUsernameRecord, SignupMailRecord
 
 """
 FlaskForms Mixin
@@ -128,8 +129,16 @@ class SignUpForm(FlaskForm,
         """
         if not super().validate():
             return False
-        is_dup_name = User.query.filter_by(username=self.username.data).first() is not None
-        is_dup_email = User.query.filter_by(email=self.email.data).first() is not None
+        is_dup_name = (
+                              User.query.filter_by(username=self.username.data).first() is not None
+                              and
+                              SignupUsernameRecord.exists(self.username.data)
+        )
+        is_dup_email = (
+                User.query.filter_by(email=self.email.data).first() is not None
+                and
+                not SignupMailRecord.exists(self.email.data)
+        )
         if is_dup_name or is_dup_name:
             if is_dup_name:
                 self.username.errors.append('Name already exists')

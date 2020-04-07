@@ -227,7 +227,7 @@ create_db_command = DescriableCommand(
     'creates the database'
 )
 create_db_command.add_option(
-    Option('--d', '-drop', dest='drop-first',
+    Option('--d', '-drop', dest='drop_first',
            action='store_true', default=False,
            help='Drops the current database before creation')
 )

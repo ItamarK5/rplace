@@ -5,7 +5,8 @@ from werkzeug.datastructures import MultiDict
 from wtforms import Form, StringField, validators, IntegerField
 
 
-UsernamePattern = re.compile('(?:\w|\d){5,16}', re.I)
+UsernamePattern = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
+HashPasswordPattern = re.compile(r'^[a-f0-9]{128}$')  # password hashed so get hash value
 
 
 """

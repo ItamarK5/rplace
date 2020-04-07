@@ -7,7 +7,7 @@ from werkzeug.wrappers import Response
 
 from painter.models.simpleModels import SignupUsernameRecord, SignupMailRecord
 from painter.backends.extensions import datastore
-from painter.models.user import Role, User
+from painter.models import User
 from .forms import LoginForm, SignUpForm, RevokePasswordForm, ChangePasswordForm, SignUpTokenForm, RevokeTokenForm
 from .mail import send_signing_up_message, send_revoke_password_message
 from .utils import *
@@ -47,14 +47,18 @@ def login() -> Response:
 @anonymous_required
 def signup() -> Response:
     """
-    :return: sign-up user response
+    :return: a response related to the registration of the user
+    first requesting input
     """
     form = SignUpForm()
     if form.validate_on_submit():
         name, pswd, email = form.username.data, \
                             form.password.data, \
                             form.email.data
+        pswd = User.encrypt_password(pswd, name)
         # sending the mail
+        SignupUsernameRecord.force_add(name)
+        SignupMailRecord.force_add(email)
         send_signing_up_message(
             name,
             email,
@@ -63,7 +67,7 @@ def signup() -> Response:
                     'email': email,
                     'username': name,
                     # to hex to prevent any chance of decode the key and then changing it to SQL function
-                    'password': User.encrypt_password(pswd, name)
+                    'password': pswd
                 }
             ))
         return render_template(
@@ -102,7 +106,7 @@ def revoke() -> Response:
             """render_template('transport/revoke-unknown-user.html')"""
     return render_template('forms/revoke.html', form=form)
 
-"""
+
 @accounts_router.route('/refresh', methods=['GET', 'POST'])
 def refresh() -> Response:
     if current_user.is_authenticated:
@@ -127,7 +131,6 @@ def refresh() -> Response:
                            form=form,
                            entire_form_errors=entire_form_error,
                            extra_error=extra_error)
-"""
 
 
 @accounts_router.route('/change-password/<string:token>', methods=['GET', 'POST'])

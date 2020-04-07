@@ -14,9 +14,6 @@ from .enumint import SmallEnum
 from .notes import Record, Note
 from .role import Role
 
-UsernamePattern = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
-HashPasswordPattern = re.compile(r'^[a-f0-9]{128}$')  # password hashed so get hash value
-
 
 """
     only defiend for the current model to user
@@ -149,13 +146,6 @@ class User(datastore.Model, UserMixin):
         if last_record.affect_from is None:  # record has no expire date
             return last_record.active
         if last_record.affect_from < datetime.now():
-            datastore.session.add(Record(user=self,
-                                         result=not last_record.active,
-                                         declared=datetime.now(),
-                                         reason='Timed passed',
-                                         description=f"The record was set to expire at {last_record.affect_from}"
-                                                     f"and the user tried to log in"
-                                         ))
             self.forget_last_record()
             return not last_record.active  # replace the active
         # else

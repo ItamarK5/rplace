@@ -14,13 +14,14 @@ import os
 from ..models.user import User
 from flask_script.commands import InvalidCommand, Command
 from flask import current_app
-from typing import Union, TypeVar
+from typing import TypeVar
 from flask_script.cli import prompt, prompt_choices, prompt_bool
 from .constants import PAINTER_ENV_NAME, DEFAULT_TITLE, CONFIG_FILE_PATH_KEY, DEFAULT_PATH, MANAGER_TYPES_PARSE
 import base64
 
 
-ConvertType = TypeVar('Convert', str, int, bool, float)
+ConvertType = TypeVar('ConvertType', str, int, bool, float)
+
 
 class NewUserForm(
     QuickForm,

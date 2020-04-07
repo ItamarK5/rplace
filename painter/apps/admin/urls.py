@@ -12,9 +12,8 @@ from painter.backends import lock
 from painter.backends.extensions import datastore
 from painter.backends.skio import ADMIN_NAMESPACE, PAINT_NAMESPACE, sio
 from painter.models.notes import Record, Note
-from painter.models.role import Role
-from painter.models.user import User
-from painter.models.user import UsernamePattern
+from painter.models import Role, User
+from painter.others.quick_validation import UsernamePattern
 from . import admin_router
 from .forms import RecordForm, NoteForm
 from .utils import only_if_superior, admin_only, superuser_only, json_response, validate_get_notes_param
