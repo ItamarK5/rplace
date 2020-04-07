@@ -18,7 +18,7 @@
         <div class="modal-content">
             {{modal_header(modal_name, input.label)}}
             <div class="modal-body">
-                <form action="{{action}}" class="setting-form" method="POST" id="{{modal_name}}-form">
+                <form action="url_for('place.profile_ajax')" class="setting-form" method="POST" id="{{modal_name}}-form">
                     <div class="text-center justify-content-center form-row" class="row-describer">
                         <span class="font-weight-bold font-size-15 justify-content-center"
                               class="setting-describer" field-related='#{{input.id}}'>{{value}}</span><br>
@@ -35,9 +35,9 @@
     </div>
 </div>
 {% endmacro %}
-{{simple_preference_modal(1, 'modal-change-x', url_for('place.profile_ajax'), form.x(class="form-control-range", value=user.x, min=0, max=1000, type="range"), form.x, user.x)}}
-{{simple_preference_modal(2, 'modal-change-y', url_for('place.profile_ajax'), form.y(class="form-control-range", value=user.y, min=0, max=1000, type="range"), form.y, user.y)}}
-{{simple_preference_modal(3, 'modal-change-scale', url_for('place.profile_ajax'), form.scale(class="form-control-range", value=user.scale, min=1, max=50, type="range"), form.scale, user.scale)}}
+{{simple_preference_modal(1, 'modal-change-x', form.x(class="form-control-range", value=user.x, min=0, max=1000, type="range"), form.x, user.x)}}
+{{simple_preference_modal(2, 'modal-change-y', form.y(class="form-control-range", value=user.y, min=0, max=1000, type="range"), form.y, user.y)}}
+{{simple_preference_modal(3, 'modal-change-scale', form.scale(class="form-control-range", value=user.scale, min=1, max=50, type="range"), form.scale, user.scale)}}
 {# color #}
 <div aria-hidden="true" aria-labelledby="#modal-change-color-title" class="modal" id="modal-change-color" role="dialog" tabindex="-4">
     <div class="modal-dialog" role="document">

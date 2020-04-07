@@ -5,6 +5,9 @@ from werkzeug.datastructures import MultiDict
 from wtforms import Form, StringField, validators, IntegerField
 
 
+UsernamePattern = re.compile('(?:\w|\d){5,16}', re.I)
+
+
 """
  Form Fields and messages
 """

@@ -170,9 +170,9 @@ def set_env_path(path: str) -> None:
     os.environ[PAINTER_ENV_NAME] = path
 
 
-def name_utility(name: str,
-                 callback_for_change: bool = True,
-                 no_default: bool = False) -> str:
+def config_name_utility(name: str,
+                        callback_for_change: bool = True,
+                        no_default: bool = False) -> str:
     # first fixes the name
     real_name = name.upper().replace(' ','_')
     if real_name != name and callback_for_change:

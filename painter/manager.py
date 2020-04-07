@@ -6,8 +6,9 @@ https://flask-script.readthedocs.io/en/latest/
 """
 import subprocess
 import sys
-
+import click
 from flask import current_app
+from flask.cli import FlaskGroup
 from flask_script import Manager, Server, Option, Command
 from flask_script.cli import prompt_bool, prompt_choices, prompt
 from flask_script.commands import InvalidCommand
@@ -26,7 +27,15 @@ from .others.utils import (
 CHECK_SERVICES_RESULT_FORMAT = '{:^8}{:^5}'
 
 
-manager = Manager(create_app)
+@click.group(cls=FlaskGroup, create_app=create_app)
+def cli():
+    print(5)
+
+manager = Manager(
+    create_app,
+    description='Social Painter CMD Starter,'
+                'Its helps throught'
+)
 manager.add_option('--c', '-config', dest='config_path', required=False)
 manager.add_option('--D', '-default', dest='set_env', action='store_true', required=False)
 manager.add_option('--t', '-title', dest='title', required=False)
@@ -120,9 +129,9 @@ class CreateUser(Command):
 
     def get_options(self):
         return (
-            Option('--n', '-config_name', '-userconfig_name',
-                   dest='userconfig_name',
-                   help='config_name of the new user'),
+            Option('--n', '-name', '-username',
+                   dest='username',
+                   help='username of the new user'),
             Option('--p', '-password', '-pswd',
                    dest='password',
                    help='password of the new user'),
@@ -141,24 +150,26 @@ class CreateUser(Command):
                    help='the user\'s role is a superuser, highest rank')
         )
 
-    def run(self, userconfig_name, password, mail_address, role):
-        if userconfig_name is None:
-            userconfig_name = prompt('enter a userconfig_name address of the user\nUserconfig_name: ')
+    def run(self, username, password, mail_address, role):
+        if username is None:
+            username = prompt('enter a username address of the user\n[username]')
         if password is None:
             password = prompt('you forgeot entering a password, pless enter 1\nPassword: ')
         if mail_address is None:
             mail_address = prompt('enter a mail address of the user\nMail:')
         if role is None:
             role = prompt_choices(
-                'You must pick a role, if not default is superuser',
-                (
+                'You must pick a role, if not default is superuser\n',
+                [
                     ('admin', 'admin'),
                     ('a', 'admin'),
-                    ('user', 'user'),
-                    ('u', 'user'),
+                    ('user', 'common'),
+                    ('u', 'common'),
+                    ('c', 'common'),
+                    ('common', 'common'),
                     ('superuser', 'superuser'),
                     ('s', 'superuser')
-                ),
+                ],
                 'superuser'
             )
         role_matched = Role.get_member_or_none(role)
@@ -166,7 +177,7 @@ class CreateUser(Command):
             raise InvalidCommand('Pless enter a valid role, not: {0}'.format(role))
         # check valid role
         form, is_valid = NewUserForm.fast_validation(
-            userconfig_name=userconfig_name,
+            username=username,
             password=password,
             mail_address=mail_address
         )
@@ -174,11 +185,11 @@ class CreateUser(Command):
             # to get first error
             for field in iter(form):
                 for error in field.errors:
-                    raise InvalidCommand('{0}: {1}'.format(field.config_name, error))
+                    raise InvalidCommand('{0}: {1}'.format(field.name, error))
         # create user
         else:
             user = User(
-                userconfig_name=userconfig_name,
+                username=username,
                 password=password,
                 email=mail_address,
                 role=role_matched
@@ -190,7 +201,7 @@ class CreateUser(Command):
 
 class CeleryWorker(Command):
     """Starts the celery worker."""
-    config_name = 'celery'
+    name = 'celery'
 
     def run(self):
         ret = subprocess.call(
@@ -307,11 +318,17 @@ manager.add_command('add-config', create_config_command)
 
 
 # Delete Configuration
-def del_config(config_name):
+def del_config(config_name=None):
     config_name = config_name_utility(config_name, True)
     # get file
     # the real deal
     configuration = get_config_json()
+    if config_name is None:
+        while config_name not in configuration:
+            config_name = config_name_utility(
+                prompt('Enter a configure name'),
+                False
+            )
     if config_name not in configuration:
         raise InvalidCommand("Error, Config Title")
     # remove it
@@ -324,14 +341,15 @@ def del_config(config_name):
 
 del_config_command = DescriableCommand(
     del_config,
-    'Delete Configuration (title)'
+    'Delete entire Configuration (title)'
 )
 del_config_command.add_option(Option(
     '--n', '-config_name', dest='config_name', required=None
 ))
+manager.add_command('del-config', del_config_command)
 
 
-def parse_config(config_name, only_create):
+def parse_config(config_name, only_create=None):
     only_create = only_create if only_create is not None else False
     config_name = config_name_utility(config_name)
     all_configuration = get_config_json()
@@ -355,27 +373,28 @@ command_parse_config = DescriableCommand(
     help_text='option to parse keys to the configuration title'
 )
 command_parse_config.add_option(
-    Option('--n', '-config_name', dest='config_name', help='config_name of the configuration to parse the changes to')
+    Option('--n', '-name',
+           dest='config_name',
+           help='config_name of the configuration to parse the changes to',
+           required=True)
 )
 command_parse_config.add_option(
-    Option('--o', '-only-create', dest='only_create', action='store_true',
-           help='prevent any changes to current values, only create new staff',
-           required=False, default=None)
+    Option(
+        '--o', '-only-create',
+        dest='only_create', action='store_true',
+        help='prevent any changes to current values, only create new staff',
+        required=False, default=None
+    )
 )
 manager.add_command('parse', command_parse_config)
 
 
-def clear_config_key(config_name, var_config_name, parse):
+def clear_config_key(config_name):
     config_name = config_name_utility(config_name)
     configuration = get_config_json()
     if config_name not in configuration:
         raise InvalidCommand('Title {0} not found'
                              .format(config_name))
-    if parse is None:
-        if var_config_name not in configuration[config_name]:
-            raise InvalidCommand('key {0} already exists in {1}'
-                                 .format(var_config_name, config_name))
-        configuration[config_name].pop(var_config_name)
     else:
         var_config_name = config_name_utility(
             prompt(
@@ -391,10 +410,12 @@ def clear_config_key(config_name, var_config_name, parse):
     print('Completely clear config')
 
 
-clear_config_key = DescriableCommand
 clear_config_command = DescriableCommand(
     clear_config_key,
     description='clear keys in configuration option'
+)
+clear_config_command.add_option(
+    Option('--n', '-name', dest='config_name', help='name of configuration to change')
 )
 manager.add_command('clear', clear_config_command)
 

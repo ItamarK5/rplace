@@ -22,8 +22,8 @@ class Role(IntEnum):
 
     @classmethod
     def get_member_or_none(cls, name: str) -> Optional['Role']:
+        print(cls._member_map_, name)
         return cls._member_map_[name] if cls.has_member(name) else None
-
 
 
 ROLE_ICON = {

@@ -714,7 +714,7 @@ const cursor = {
         }
     },
     setPen() {
-        this.setCursor(progress.work_.isWorking || serverStates.locked ? Cursors.Wait : Cursors.Pen)
+        this.setCursor(progress.work_.isWorking || lockedStates.locked ? Cursors.Wait : Cursors.Pen)
     },
     grab() {
         this.setCursor(Cursors.grabbing);
@@ -886,7 +886,7 @@ const pen = {
                 text: 'Wait for your cooldown to end'
             });
         }
-        else if (serverStates.locked) {
+        else if (lockedStates.locked) {
             Swal.fire({
                 title: 'Canvas is closed',
                 imageUrl: 'https://img.memecdn.com/door-lock_o_2688511.jpg',
@@ -915,7 +915,7 @@ const pen = {
                 // else it must be json
                 data = JSON.parse(value);
                 if (data.code == 'lock' && data.value == 'true') {
-                    serverStates.lock()
+                    lockedStates.lock()
                 } else if (data.code == 'set-time') {
                     progress.setTime(data.value)
                 }
@@ -1055,36 +1055,11 @@ const board = {
         this.pixelQueue = null;
         this.drawBoard();
     },
-    /*
-        findPos: function() {
-          var curleft = 0, curtop = 0; obj = this.canvas;
-          if (obj.offsetParent) {
-            do {
-                curleft += obj.offsetLeft;
-                curtop += obj.offsetTop;
-            } while (obj = obj.offsetParent);
-            rect = this.canvas.getBoundingClientRect();
-            return { x: curleft, y: curtop };
-        }
-        return undefined;
-        },*/
-    /*getCoords: function (e) {
-        return {
-            x: Math.floor((e.pageX - this.mover[0].getClientRects()[0].left) / board.scale),
-            y: Math.floor((e.pageY - this.mover[0].getClientRects()[0].top) / board.scale)-1 // because reasons, during debugging it come to this;
-        };
-    },*/
-    get windowBounding() {
-        return CANVAS_SIZE * this.scale / 2;
-    },
-    // sets the board position
     // level 3
     centerPos() {
         // center axis - (window_axis_size / 2 / mapArea.scale)
-        this.x = Math.floor(mapArea.cx - board.canvas[0].width / 2 / mapArea
-            .scale) //( mapArea.cx - innerWidth/2)/mapArea.scale;
-        this.y = Math.floor(mapArea.cy - board.canvas[0].height / 2 / mapArea
-            .scale) // (mapArea.cy - innerHeight/2)/mapArea.scale;
+        this.x = Math.floor(mapArea.cx - board.canvas[0].width / 2 / mapArea.scale)
+        this.y = Math.floor(mapArea.cy - board.canvas[0].height / 2 / mapArea.scale)
         pen.updateOffset()
         board.drawBoard();
     },
@@ -1184,18 +1159,30 @@ const board = {
 };
 
 
-const serverStates = {
+const lockedStates = {
     __locked: false,
     get locked() {
         return this.__locked;
     },
-    lock() {
+    lock(alert=false) {
         this.__locked = true;
         $('#lock-colors').attr('lock', 1);
+        if(alert){
+            Swal.fire({
+                icon:'info',
+                title:'Board is locked'
+            })
+        }
     },
-    unlock() {
+    unlock(alert) {
         this.__locked = false;
         $('#lock-colors').attr('lock', 0);
+        if(alert){
+            Swal.fire({
+                icon:'info',
+                title:'Board is unlocked'
+            })
+        }
     },
 }
 
@@ -1205,7 +1192,7 @@ $(document).ready(function() {
             progress.setTime(data.time)
             board.buildBoard(new Uint8Array(data.board));
             if (data.lock) {
-                serverStates.lock();
+                lockedStates.lock();
             }
         });
     })
@@ -1219,15 +1206,13 @@ $(document).ready(function() {
     // Lost connection
     // Connection on
     sock.on('change-lock-state', (new_state) => {
-		// if new state is active == true
-		console.log(new_state)
-		console.log(new_state)
+		// if new state is active that means true
         if (new_state) {
-			// pause code
-			serverStates.unlock();
+			// unlock board
+			lockedStates.unlock();
         } else {
-            // pause code
-            serverStates.lock();
+            // lock board
+            lockedStates.lock();
         }
     });
     sock.on('reconnect', () => {

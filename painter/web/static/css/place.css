@@ -251,6 +251,9 @@ body, html {
 #lock-colors[lock="0"] {
     display:none;
 }
+#lock-colors[lock="1"]{
+    cursor:not-allowed;
+}
 
 #coordinates:hover {
     background-color:rgba(0, 0, 0, .7);
@@ -317,6 +320,9 @@ body, html {
     --aura-color: #FFFF30;
     --area-color: #FFFF30;
     --text-color: #080808;/*#F0F030;*/
+}
+#time-prog:not(*[state="0"]){
+    cursor:wait;
 }
 
 

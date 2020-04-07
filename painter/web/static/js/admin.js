@@ -23,7 +23,7 @@ const sock = io('/admin')
  * @name refreshButtonState
  * @returns checks again the button state
  */
-refreshButtonState => {
+refreshButtonState = () => {
 	$.ajax({
 		url:'/get-active-state',
 		method:'GET',

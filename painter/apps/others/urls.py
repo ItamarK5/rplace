@@ -1,4 +1,4 @@
-
+import re
 import random
 from os import path, listdir
 from typing import Union
@@ -15,16 +15,17 @@ from . import other_router
 from .utils import get_file_type, has_matched_image, is_ajax_request, render_error_page
 
 
+
 @other_router.route('/meme/<string:error>')
 def meme_image(error: str) -> Response:
-    if str(error) not in listdir(path.join(other_router.static_folder, 'memes')):
+    if str(error) not in listdir(path.join(current_app.root_path, 'web', 'memes')):
         # funny
         abort(404)
     """
         else
         select random image
     """
-    error_path = path.join(other_router.static_folder, 'memes', error)
+    error_path = path.join(current_app.root_path, 'web', 'memes', error)
     random_meme = random.choice(listdir(error_path))
     return send_from_directory(
         error_path, random_meme,
@@ -85,3 +86,4 @@ def serve_icon() -> Response:
         'favicon.ico',
         mimetype=MIME_TYPES['ico']
     )
+

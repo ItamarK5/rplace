@@ -135,7 +135,7 @@ class User(datastore.Model, UserMixin):
         it uses the method __get_last_record for caching the result to handle less requirements
         """
         identifier = self.__get_last_record()
-        return None if identifier else Record.query.get(identifier)
+        return None if identifier == 'none' else Record.query.get(identifier)
 
     @property
     def is_active(self) -> bool:
@@ -143,6 +143,7 @@ class User(datastore.Model, UserMixin):
         :return: user if the user active -> can login
         """
         last_record = self.get_last_record()
+        print(last_record)
         if last_record is None:  # user has not record
             return True
         if last_record.affect_from is None:  # record has no expire date
@@ -198,6 +199,7 @@ def load_user(user_token: str) -> Optional[User]:
     user = User.query.get(int(user_id))
     # check for the validation of the identifier and keys
     # also prevent user if he isnt active -> banned
-    if (not user) or user.password != password:
+    print(user.is_active)
+    if (not user) or user.password != password and not user.is_active:
         return None
     return user

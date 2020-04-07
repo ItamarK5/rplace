@@ -18,6 +18,7 @@ from painter.models.user import UsernamePattern
 from . import admin_router
 from .forms import RecordForm, NoteForm
 from .utils import only_if_superior, admin_only, superuser_only, json_response, validate_get_notes_param
+from painter.others.quick_validation import UsernamePattern
 
 
 @admin_router.after_request
@@ -166,6 +167,32 @@ def set_admin_button():
     sio.emit('change-lock-state', new_state, namespace=PAINT_NAMESPACE)
     sio.emit('set-lock-state', new_state, namespace=ADMIN_NAMESPACE)
     return json_response(True, new_state)
+
+
+@admin_router.route('/edit/<string:name>', methods=('GET',))
+@admin_only
+def edit_user(name: str) -> Response:
+    """
+    :param: name of user
+    :returns: the web-page to edit the matched user (to the name) data
+    """
+    if UsernamePattern.match(name) is None:
+        abort(exceptions.BadRequest.code, 'Name isn\'t good')
+    user = User.query.filter_by(username=name).first_or_404()
+    if user == current_user:
+        return redirect(url_for('place.profile'))
+    if not current_user.is_superior_to(user):
+        # forbidden error
+        abort(exceptions.Forbidden.code, f"You are not allowed to edit the user {user.username}")
+    ban_form = RecordForm(set_banned=user.is_active)
+    note_form = NoteForm()
+    return render_template(
+        'accounts/edit.html',
+        user=user,
+        ban_form=ban_form,
+        note_form=note_form,
+        Role=Role
+    )
 
 
 @admin_router.route('/get-active-state', methods=('GET',))
