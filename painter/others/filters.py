@@ -9,7 +9,7 @@ from painter.others.constants import MINUTES_COOLDOWN
 
 def draw_time(user: User) -> str:
     # https://stackoverflow.com/a/35643540
-    if user.next_time == user.creation:
+    if user.next_time == user.creation_date:
         return 'never'
     # else
     return (user.next_time - MINUTES_COOLDOWN).strftime(

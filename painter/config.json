@@ -27,16 +27,15 @@
     "TOKEN_SIGNUP_SALT": "TXNUMEZjVWdTT3phcEppN1JBYkRpNXE1WFdkelMzTkM=\n\r\r\r\r",
     "USER_PASSWORD_ROUNDS": 4493,
     "USER_PASSWORD_SALT": "IPgaYjQISIa9pVYJNErFLA==\n\r\r\r\r",
-    "WERKZEUG_RUN_MAIN": true,
-    "CACHE_TYPE": "SIMPLE"
+    "WERKZEUG_RUN_MAIN": true
+  },
+  "DEBUG": {
+    "APP_HOST": "127.0.0.1",
+    "APP_PORT": 8080
   },
   "APP": {
     "APP_HOST": "192.168.1.5",
     "APP_PORT": 8080
-  },
-  "APP2": {
-    "APP_HOST": "192.168.1.5",
-    "APP_PORT": 8081
   },
   "CELERY": {
   }

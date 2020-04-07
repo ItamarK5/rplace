@@ -1,4 +1,3 @@
-import re
 from datetime import datetime
 from hashlib import pbkdf2_hmac
 from typing import Optional, TypeVar
@@ -31,7 +30,7 @@ class User(datastore.Model, UserMixin):
     email = Column(String(254), unique=True, nullable=False)
     next_time = Column(DATETIME(), default=datetime.utcnow, nullable=False)
     # when the user created
-    creation = Column(DATETIME(), default=datetime.utcnow, nullable=False)
+    creation_date = Column(DATETIME(), default=datetime.utcnow, nullable=False)
     role = Column(SmallEnum(Role), default=Role.common, nullable=False)
     x = Column(SMALLINT(), default=500, nullable=False)
     # start y default
@@ -188,3 +187,4 @@ def load_user(user_token: str) -> Optional[User]:
     if (not user) or user.password != password or not user.is_active:
         return None
     return user
+

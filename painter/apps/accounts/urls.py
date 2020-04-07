@@ -5,7 +5,7 @@ from flask import render_template, request
 from flask_login import logout_user, login_user
 from werkzeug.wrappers import Response
 
-from painter.models.simpleModels import SignupUsernameRecord, SignupMailRecord
+from painter.models.storage import SignupUsernameRecord, SignupMailRecord
 from painter.backends.extensions import datastore
 from painter.models import User
 from .forms import LoginForm, SignUpForm, RevokePasswordForm, ChangePasswordForm, SignUpTokenForm, RevokeTokenForm

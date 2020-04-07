@@ -20,20 +20,6 @@ from .utils import only_if_superior, admin_only, superuser_only, json_response, 
 from painter.others.quick_validation import UsernamePattern
 
 
-@admin_router.after_request
-def add_header(response: Response) -> Response:
-    # https://stackoverflow.com/a/34067710
-    """
-    Add headers to both force latest IE rendering engine or Chrome Frame,
-    and also to cache the rendered page for 10 minutes.
-    """
-    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-    response.headers["Pragma"] = "no-store"
-    response.headers["Expires"] = "0"
-    response.headers['Cache-Control'] = 'public, max-age=0'
-    return response
-
-
 @admin_router.route('/admin', methods=('GET',))
 @admin_only
 def admin() -> str:
@@ -241,13 +227,13 @@ def get_user_notes(user: User):
 def remove_user_note():
     # in case of fail aborts json error
     try:
-        note_idx = request.get_json()
-        if not isinstance(note_idx, int):
+        note_index = request.get_json()
+        if not isinstance(note_index, int):
             raise TypeError()
     except (exceptions.BadRequest, ValueError, TypeError, KeyError):
         abort(exceptions.BadRequest.code, 'Not valid data')
     # else
-    note = Note.query.get_or_404(note_idx, description="Note Was Removed")
+    note = Note.query.get_or_404(note_index, description="Note Was Removed")
     # clears the key
     user_last_record = note.user_subject.get_last_record()
     if user_last_record is None or user_last_record.equals(note):
