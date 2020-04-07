@@ -42,10 +42,20 @@ def color(color_idx: int) -> str:
 
 
 def date(tm: datetime) -> str:
+    """
+    @param tm: datetime object, represent a time
+    @return the datetime in format first day of the week, date
+    https://www.programiz.com/python-programming/datetime/strftime
+    """
     return tm.strftime('%a, %x')
 
 
 def add_filters(flask_app: Flask) -> None:
+    """
+    @param flask_app: the application
+    @return nothing
+    adds all filters to the app
+    """
     flask_app.add_template_filter(draw_time, 'draw_time')
     flask_app.add_template_filter(is_admin, 'is_admin')
     flask_app.add_template_filter(class_ftr, 'class_ftr')
