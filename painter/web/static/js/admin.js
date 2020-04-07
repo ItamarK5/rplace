@@ -71,9 +71,8 @@ $(document).ready(() => {
 			cancelButtonColor: '#d33',
 		}).then((result) => {
 			if (result.value) {
-				$.ajax({
+				$.post({
 					url:'/change-lock-state',
-					method:'POST',
 					contentType:'application/json;charset=UTF-8',
 					data:board_state,
 					success:function(message){
@@ -83,13 +82,13 @@ $(document).ready(() => {
 							text: message.success ? 'You lock/unlock board for all users' : message.text
 						});
 					},
-					error:(error) => {
-						console.log(error)
-						Swal.fire({
-							icon:'error',
-							title:error.statusText ? '' : 'Error',
-							html:error.responseText
-					})}
+				}).catch((error) => {
+					console.log(error)
+					Swal.fire({
+						icon:'error',
+						title:error.statusText ? '' : 'Error',
+						html:error.responseText
+					})
 				})
 			}
 		})

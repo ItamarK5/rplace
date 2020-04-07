@@ -30,14 +30,16 @@ class TokenSerializer(object):
         cls.signup = URLSafeTimedSerializer(
             secret_key=app.config['SECRET_KEY'],
             salt=app.config['TOKEN_SIGNUP_SALT'],
-            serializer_kwargs={'max_age': app.config.get('MAX_AGE_USER_TOKEN', 3600)}
 
         )
         cls.revoke = URLSafeTimedSerializer(
             secret_key=app.config['SECRET_KEY'],
             salt=app.config['TOKEN_REVOKE_SALT'],
-            serializer_kwargs={'max_age': app.config.get('MAX_AGE_USER_TOKEN', 3600)}
         )
+
+    @classmethod
+    def get_max_age(self):
+        return current_app.config.get('MAX_AGE_USER_TOKEN', 3600)
 
 
 @accounts_router.before_app_first_request
@@ -49,6 +51,7 @@ def init_tokens() -> None:
 
 
 def extract_signature(token: str,
+                      max_age: int,
                       form: Type[QuickForm],
                       serializer: URLSafeTimedSerializer) -> Optional[Union[Dict[str, Any], str]]:
     """
@@ -59,7 +62,11 @@ def extract_signature(token: str,
     else returns the timestamp of the token
     """
     try:
-        token, timestamp = serializer.loads(token, return_timestamp=True)
+        token, timestamp = serializer.loads(
+            token,
+            return_timestamp=True,
+            max_age=max_age
+        )
     except BadSignature as e:  # error
         print(e)
         return 'timestamp'

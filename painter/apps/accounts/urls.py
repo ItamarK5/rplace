@@ -55,6 +55,7 @@ def signup() -> Response:
         name, pswd, email = form.username.data, \
                             form.password.data, \
                             form.email.data
+        # to hex to prevent any chance of decode the key and then changing it to SQL function
         pswd = User.encrypt_password(pswd, name)
         # sending the mail
         SignupUsernameRecord.force_add(name)
@@ -66,7 +67,6 @@ def signup() -> Response:
                 {
                     'email': email,
                     'username': name,
-                    # to hex to prevent any chance of decode the key and then changing it to SQL function
                     'password': pswd
                 }
             ))
@@ -102,6 +102,7 @@ def revoke() -> Response:
                 })
             )
             # return template ok
+            pass
         else:
             """render_template('transport/revoke-unknown-user.html')"""
     return render_template('forms/revoke.html', form=form)
@@ -140,7 +141,11 @@ def change_password(token: str) -> Response:
     :param token: token url represent saving url
     :return: Response
     """
-    extracted = extract_signature(token, RevokeTokenForm, TokenSerializer.revoke)
+    extracted = extract_signature(token,
+                                  TokenSerializer.get_max_age(),
+                                  RevokeTokenForm,
+                                  TokenSerializer.revoke,
+                                  )
     # validated if any token
     if extracted is None:
         return render_template(
@@ -156,7 +161,6 @@ def change_password(token: str) -> Response:
             page_title='Over Time',
             title='Over Time',
             view_ref='auth.signup',
-            message="you registered over time, you are late"
         )
     print(extracted)
     # else
@@ -189,6 +193,7 @@ def logout() -> Response:
 @anonymous_required
 def confirm(token: str) -> Response:
     extracted = extract_signature(token,
+                                  TokenSerializer.get_max_age(),
                                   SignUpTokenForm,
                                   TokenSerializer.signup)
     if extracted is None:
