@@ -14,7 +14,6 @@ from .enumint import SmallEnum
 from .notes import Record, Note
 from .role import Role
 
-
 """
     only defiend for the current model to user
     #_CachedRecordID, types for the options that the caching can cache
@@ -95,7 +94,7 @@ class User(datastore.Model, UserMixin):
         :param role: Enum represting the users current rule
         :return: if the user is the level of the rule or above
         """
-        return self.role >= role    # role is IntEnum
+        return self.role >= role  # role is IntEnum
 
     def is_superior_to(self, other: 'User') -> bool:
         """
@@ -123,7 +122,7 @@ class User(datastore.Model, UserMixin):
         """
         record = self.related_notes.first()
         if record is None:
-            return 'none'
+            return _NO_RECORD
         return record.id
 
     def get_last_record(self) -> Optional[Record]:
@@ -132,6 +131,7 @@ class User(datastore.Model, UserMixin):
         it uses the method __get_last_record for caching the result to handle less requirements
         """
         identifier = self.__get_last_record()
+        print(identifier)
         return None if isinstance(identifier, str) else Record.query.get(identifier)
 
     @property
@@ -140,13 +140,10 @@ class User(datastore.Model, UserMixin):
         :return: user if the user active -> can login
         """
         last_record = self.get_last_record()
-        print(last_record)
-        if last_record is None:  # user has not record
+        if last_record is None:  # user has not record, he is free
             return True
-        if last_record.affect_from is None:  # record has no expire date
-            return last_record.active
-        if last_record.affect_from < datetime.now():
-            self.forget_last_record()
+        if last_record.affect_from is not None and last_record.affect_from < datetime.utcnow():
+            # if started to take effect
             return not last_record.active  # replace the active
         # else
         return last_record.active  # isnt expired, so must has the other status
@@ -176,7 +173,6 @@ def load_user(user_token: str) -> Optional[User]:
     token is in the form of: id&password
     flask encrypts it so I dont worry
     """
-    print(user_token)
     # first get the id
     identity_keys = user_token.split('&')  # password hash, email, user_id
     # validate for user
@@ -188,8 +184,7 @@ def load_user(user_token: str) -> Optional[User]:
         return None
     user = User.query.get(int(user_id))
     # check for the validation of the identifier and keys
-    # also prevent user if he isnt active -> banned
-    print(user.is_active)
-    if (not user) or user.password != password and not user.is_active:
+    # also prevent user if he isn't active -> banned
+    if (not user) or user.password != password or not user.is_active:
         return None
     return user

@@ -1,6 +1,5 @@
 {% from 'accounts/_macros.html' import edit_title, pre_input_text, settingModal %}
 {% if not user %}{%- set user=current_user %}{% endif %}
-{% if not preferences_form %}{%- set preferences_form=form %}{% endif %}
 {% if not current_page %}{%- set current_page='profile' %}{% endif %}
 <html>
 <head>
@@ -67,7 +66,9 @@
 </div>
 {% endblock %}
 {% block modals %}
+{% with user=current_user %}
 {% include "accounts/abstract/preferencesModal.html" %}
+{% endwith %}
 {% endblock %}
 {% block javascriptCDN %}
 <!-- jquery-->

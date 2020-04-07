@@ -36,10 +36,8 @@ class RecordForm(FlaskForm):
     def validate_affect_from(self, field: DateTimeField) -> None:
         # get field data
         if field.data is not None:
-            now = datetime.now()
-            print(now, field.data)
-            if now > field.data + timedelta(minutes=1):
-                raise ValidationError("You must select a day in the future, now now")
+            if datetime.now() > field.data + timedelta(minutes=1):
+                raise ValidationError("You must select a day in the future, not now")
 
 
 class NoteForm(FlaskForm):

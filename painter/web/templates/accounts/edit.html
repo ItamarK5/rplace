@@ -33,31 +33,31 @@
             {{button_model('Add Note', 'noteModal', 'far fa-sticky-note', 'Note', classes="btn-secondary")}}
             {{button_model('History', 'historyModal', 'fas fa-history', 'History', classes="btn-secondary")}}
             {% if current_user.has_required_status(Role.superuser) %}
-            {% if user.role == Role.common %}
-            <span>
-                <button class="btn btn-secondary" enum-name="{{Role.admin.name|title}}" id="rank-button" title="change rank"
-                        type="button">
-                    <i class="fas {{Role.admin.icon}}"></i>
-                </button>
-            </span>
-            {% else %}
-            <span>
-                <button class="btn btn-secondary" enum-name="{{Role.common.name|title}}" id="rank-button" title="change rank"
-                        type="button">
-                    <i class="fas {{Role.common.icon}}"></i>
-                </button>
-            </span>
-            {% endif %}
+                {% if user.role == Role.common %}
+                    <span>
+                        <button class="btn btn-secondary" enum-name="{{Role.admin.name|title}}" id="rank-button" title="change rank"
+                                type="button">
+                            <i class="fas {{Role.admin.icon}}"></i>
+                        </button>
+                    </span>
+                    {% else %}
+                    <span>
+                        <button class="btn btn-secondary" enum-name="{{Role.common.name|title}}" id="rank-button" title="change rank"
+                                type="button">
+                            <i class="fas {{Role.common.icon}}"></i>
+                        </button>
+                    </span>
+                {% endif %}
             {% endif %}
         </div>
     </div>
 </div>
 {% endblock %}
-{% block modals %}
-{% include 'accounts/abstract/banModal.html' %}
-{% include 'accounts/abstract/noteModal.html' %}
-{% include 'accounts/abstract/historyModal.html' %}
-{% endblock %}
+    {% block modals %}
+        {% include 'accounts/abstract/banModal.html' %}
+        {% include 'accounts/abstract/noteModal.html' %}
+        {% include 'accounts/abstract/historyModal.html' %}
+    {% endblock %}
 {% block javascript %}
-<script src="{{url_for('other.serve_static', key='edit.js')}}"></script>
+    <script src="{{url_for('other.serve_static', key='edit.js')}}"></script>
 {% endblock %}
