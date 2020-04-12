@@ -175,7 +175,7 @@ def config_name_utility(name: str,
                         callback_for_change: bool = True,
                         no_default: bool = False) -> str:
     # first fixes the name
-    real_name = name.upper().replace(' ','_')
+    real_name = name.upper().replace(' ', '_')
     if real_name != name and callback_for_change:
         print('Changed Name to more appropriate:{0}'.format(name))
     if no_default and real_name == DEFAULT_TITLE:

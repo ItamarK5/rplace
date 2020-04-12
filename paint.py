@@ -13,4 +13,3 @@ if __name__ == '__main__':
         # prints
         print(err, file=sys.stderr)
         sys.exit(1)
-#  celery -A proj worker -P eventlet -c 1000

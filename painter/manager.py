@@ -139,14 +139,15 @@ class CreateUser(Command):
                    help='mail address of the new user'),
             Option('--r', '-role', dest='role',
                    help='Role of the new User'),
-            Option('--a', '-admin', dest='role',
+            Option('--a', '-admin',
+                   dest='role', action='store_const', const='common',
                    help='the users\'s role is setted to be admin'),
             Option('--u', '-user',
-                   dest='role', default='user',
+                   dest='role', action='store_const', const='common',
                    help='the user\'s role is a simple user'
                    ),
             Option('--s', '-superuser',
-                   dest='role', default='superuser',
+                   dest='role', action='store_const', const='common',
                    help='the user\'s role is a superuser, highest rank')
         )
 
@@ -356,15 +357,18 @@ def parse_config(config_name, only_create=None):
     if config_name not in all_configuration:
         raise InvalidCommand('Title {0} not found'.format(config_name))
     config = all_configuration[config_name]
-    key = prompt('Parsing changes to configuration')
-    while key is not None:
+    key = prompt('Parsing changes to configuration, to exit enter nothing\n[KEY]:', default='EXIT')
+    while key.upper() != 'EXIT':
         key = config_name_utility(key)
         if key in config and only_create:
             print('Key {0} already registered in the configuration {1}'.format(config_name, key))
         else:
-            pass
-            # get type
-    pass
+            config_val = parse_value()
+            if config_val is not None:
+                config[key] = config_val
+            # else
+            key = prompt('Parsing changes to configuration, to exit enter nothing\n[KEY]:', default='EXIT')
+    try_save_config(config)
 
 
 command_parse_config = DescriableCommand(

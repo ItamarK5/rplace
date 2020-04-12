@@ -1,6 +1,6 @@
 """
 Name: app.py
-Auther Itamaer
+Auther: Itamar Kanne
 Handles generating the app
 """
 from __future__ import absolute_import

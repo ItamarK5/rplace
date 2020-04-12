@@ -116,7 +116,6 @@ class SignupUsernameRecord(datastore.Model, ExpiredTextBase):
     identity_max_length = 15
 
 
-
 __all__ = [
     'SignupMailRecord',
     'SignupUsernameRecord',
