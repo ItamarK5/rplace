@@ -3,7 +3,6 @@ from datetime import datetime
 from typing import Any
 
 from flask_login import current_user
-from flask_socketio import join_room
 
 from painter.backends import lock, board
 from painter.backends.extensions import datastore
@@ -11,7 +10,6 @@ from painter.backends.skio import (
     sio, PAINT_NAMESPACE,
     socket_io_authenticated_only_connection,
     socket_io_authenticated_only_event,
-    PROFILE_NAMESPACE
 )
 
 
@@ -95,9 +93,3 @@ def set_board(params: Any) -> str:
 """
     Preference Namespace
 """
-
-
-@sio.on('connect', PROFILE_NAMESPACE)
-@socket_io_authenticated_only_event
-def connect():
-    join_room('room-'+current_user.username)

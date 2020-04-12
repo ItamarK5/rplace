@@ -2,7 +2,6 @@
   "DEFAULT": {
     "CACHE_TYPE": "simple",
     "CELERY_BROKER_URL": "pyamqp://guest@localhost//",
-    "DEBUG": true,
     "MAIL_DEBUG": false,
     "MAIL_DEFAULT_SENDER": "Social Painter Dash",
     "MAIL_MAX_EMAILS": 10,
@@ -31,11 +30,16 @@
   },
   "DEBUG": {
     "APP_HOST": "127.0.0.1",
-    "APP_PORT": 8080
+    "APP_PORT": 8080,
+    "DEBUG": true
   },
   "APP": {
-    "APP_HOST": "192.168.1.5",
+    "APP_HOST": "192.168.1.24",
     "APP_PORT": 8080
+  },
+  "APP2": {
+    "APP_HOST": "192.168.1.24",
+    "APP_PORT": 8081
   },
   "CELERY": {
 

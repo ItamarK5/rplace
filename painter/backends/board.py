@@ -1,9 +1,7 @@
 from threading import Lock
-
 from flask import Flask
 
-from .extensions import redis
-
+from .extensions import redis, cache
 """ A backend to work with the board on redis """
 
 
@@ -40,7 +38,6 @@ def set_at(x: int, y: int, color: int) -> None:
     :return: nothing
     set a pixel on the board copy in the redis server
     """
-
     bitfield = redis.bitfield(_BOARD_REDIS_KEY)
     # need to count for little endian
     x_endian = x + (-1)**(x % 2)
@@ -48,12 +45,13 @@ def set_at(x: int, y: int, color: int) -> None:
     bitfield.execute()
 
 
+@cache.cached(timeout=1)
 def get_board() -> bytes:
     """
     :return: returns a copy of the board in bytes format
     """
-    # return rds_backend.get(_BOADR_REDIS_KEY)
-    return board_temp
+    b = redis.get(_BOARD_REDIS_KEY)
+    return b
 
 
 def debug_board() -> None:

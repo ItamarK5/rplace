@@ -10,6 +10,8 @@ from os import path
 from typing import Dict, Any, Optional
 
 import eventlet
+eventlet.monkey_patch()
+
 from celery import Celery
 from flask import Flask
 from flask_script.commands import InvalidCommand
@@ -25,12 +27,12 @@ from .others.constants import CELERY_TITLE
 from .others.filters import add_filters
 from .others.utils import get_env_path, load_configuration, set_env_path
 # monkey patching
-eventlet.monkey_patch()
 
 # a must set
 celery = Celery(
     __name__,
-    backend='amqp://guest@localhost//'
+    backend='amqp://guest@localhost//',
+    result='db+sqlite:///results.db'
 )
 # to register tasks
 

@@ -471,11 +471,11 @@ const progress = {
  */
 const mapArea = {
     /** @param {=number} cx the x position of the pixel at the center of the screen */
-    cx: DEFAULT_START_AXIS,
+    cx: null,
     /** @param {=number} cy the y position of the pixel at the center of the screen */
-    cy: DEFAULT_START_AXIS,
+    cy: null,
     /** @param {=number} scale the amount of zoom on the screen*/
-    scale: DEFAULT_SCALE_MULTIPLAYER,
+    scale: null,
     // construct the mapArea object
     construct() {
         // set window hash to be valid
@@ -543,6 +543,9 @@ const mapArea = {
         if ((!isNaN(x)) && isValidPos(x)) {
             return x;
         }
+        if(!_.isNull(this.cx)){
+            return this.cx;
+        }
         // else search for value in body
         x = parseInt($('body').attr('x'))
         if ((!isNaN(x)) && isValidPos(x)) {
@@ -568,6 +571,9 @@ const mapArea = {
             return y;
         }
         // else search for value in body
+        if(!_.isNull(this.cy)){
+            return this.cy;
+        }
         y = parseInt($('body').attr('y'))
         if ((!isNaN(y)) && isValidPos(y)) {
             return y;
@@ -589,6 +595,9 @@ const mapArea = {
         scale = parseFloat(getFirstIfAny(scale))
         if ((!isNaN(scale)) && isValidScale(scale)) {
             return scale;
+        }
+        if(!_.isNull(this.scale)){
+            return this.scale;
         }
         // else search for value in body
         scale = parseFloat($('body').attr('scale'))
@@ -645,6 +654,7 @@ const mapArea = {
                 this.setCenter(CANVAS_SIZE / 2, CANVAS_SIZE / 2, false);
             }
             if (to_update) {
+                // update board
                 board.updateZoom();
             }
             this.setHash()
@@ -654,20 +664,21 @@ const mapArea = {
      * @param {Number} to_update
      * @summary handling changes to the fragments 
      */
-    refreshFragments(to_update) {
+    refreshFragments() {
         /*  refreshFragments(bool) -> void
          *  refresh the mapArea object by the current hash values if they are valid
          */
         let frags = this.__determineFragments();
-        this.setCenter(this.x, this.y, to_update);
-        if (this.__isValidNewScale(frags.scale)) {
-            this.scale = frags.scale;
-            if (to_update) {
+        console.log(frags, this.cx, this.cx, this.scale)
+        if(frags.x != this.cx || frags.y != this.cy || frags.scale != this.scale){
+            this.setCenter(frags.x, frags.y, to_update);
+            if (this.__isValidNewScale(frags.scale)) {
+                this.scale = frags.scale;
                 board.updateZoom();
             }
-        } else {
-            this.setHash();
+            this.setHash()
         }
+        
     },
     /**
      * @summary private function handling setHash
@@ -942,9 +953,11 @@ const board = {
     move_vector: [0, 0],
     key_move_interval: null,
     ctx: null,
-    pixelQueue: null,
+    pixelQueue: [],
     buildBoard: null,
+    is_ready:false,
     construct() {
+        this.buildBoard = _.once(this.__buildBoard);
         this.canvas = $('#board');
         this.ctx = this.canvas[0].getContext('2d');
         this.canvas.attr('alpha', 0);
@@ -952,22 +965,15 @@ const board = {
         this.imgCanvas.width = CANVAS_SIZE;
         this.imgCanvas.height = CANVAS_SIZE;
         this.ctx_image = this.imgCanvas.getContext('2d');
-        this.reset_board_build()
         this.updateZoom(); // also centers
 
     },
-    get is_ready() {
-        /**
-         * checked if the board is ready
-         */
-        return _.isNull(this.pixelQueue);
-    },
-    reset_board_build() {
+    resetBoardBuild() {
         /**
          * reset values for board build
          */
         this.buildBoard = _.once(this.__buildBoard);
-        this.pixelQueue = [];
+        board.is_ready = false
     },
     // level 1
     // interaction of key press
@@ -1049,10 +1055,16 @@ const board = {
     // empty the pixel queen
     beforeFirstDraw() {
         while (this.pixelQueue.length != 0) {
-            let obj = this.pixelQueue.shift(); // remove
-            this.__setAt(obj.x, obj.y, obj.color);
+            let top_pixel = this.pixelQueue.shift(); // remove
+            this.__setAt(top_pixel.x, top_pixel.y, top_pixel.color);
         }
-        this.pixelQueue = null;
+        this.is_ready = true;
+        // case of set during setting board is_ready, (tiny chanse of colliding but its very little)
+        if(this.pixelQueue.length != 0){
+            let obj = this.pixelQueue.shift(); // remove
+            this.__setAt(top_pixel.x, top_pixel.y, top_pixel.color);
+        }
+        // draw board
         this.drawBoard();
     },
     // level 3
@@ -1122,14 +1134,14 @@ const board = {
             $('#coordinateY').text('');
         }
         else if (!board.drag.active) {
-            $('#coordinate-slicer').text(pen.isAtBoard() ? ',' :
-                'None');
+            $('#coordinate-slicer').text(pen.isAtBoard() ? ',' : 'None');
             $('#coordinateX').text(pen.isAtBoard() ? pen.x : '');
             $('#coordinateY').text(pen.isAtBoard() ? pen.y : '');
         }
     },
     drawBoard() {
-        if (board.needs_draw) {
+        // if board isnt ready or dont need to draw
+        if (board.needs_draw || !board.is_ready) {
             return;
         }
         this.needs_draw = true;
@@ -1155,7 +1167,7 @@ const board = {
                 this.ctx.restore(); // return to default position
                 //performance_arr.push(performance.now()-t)
             });
-    }
+    },
 };
 
 
@@ -1223,7 +1235,7 @@ $(document).ready(function() {
         })
     });
     sock.on('reconnect_error', () => {
-        board.reset_board_build();
+        board.resetBoardBuild();
         //staff
         Swal.fire({
             icon: 'error',

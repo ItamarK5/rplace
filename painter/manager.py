@@ -6,12 +6,12 @@ https://flask-script.readthedocs.io/en/latest/
 """
 import subprocess
 import sys
-import click
+
 from flask import current_app
-from flask.cli import FlaskGroup
 from flask_script import Manager, Server, Option, Command
 from flask_script.cli import prompt_bool, prompt_choices, prompt
 from flask_script.commands import InvalidCommand
+from redis import exceptions as redis_exception
 
 from .app import create_app, datastore, sio, redis
 from .models.role import Role
@@ -24,12 +24,7 @@ from .others.utils import (
     parse_value
 )
 
-CHECK_SERVICES_RESULT_FORMAT = '{:^8}{:^5}'
-
-
-@click.group(cls=FlaskGroup, create_app=create_app)
-def cli():
-    print(5)
+CHECK_SERVICES_RESULT_FORMAT = '{:^12}|{:^12}'
 
 manager = Manager(
     create_app,
@@ -394,6 +389,11 @@ manager.add_command('parse', command_parse_config)
 
 
 def clear_config_key(config_name):
+    """
+    :param config_name: configuretion options name
+    :return: nothing
+    deletes the configuration options
+    """
     config_name = config_name_utility(config_name)
     configuration = get_config_json()
     if config_name not in configuration:
@@ -426,28 +426,37 @@ manager.add_command('clear', clear_config_command)
 
 """
  Check Service Command
+ Command to check if services required for the app are working
 """
 
 
 def check_services(all_flag=False, redis_flag=None):
-    # if in the future I should add other flagsw
+    # if in the future I should add other flags
     # check if all of them are None
     # if all of them are None, check them all
     redis_flag = all_flag if redis_flag is None else redis_flag ^ all_flag
-    print('Checks with redis')
     results = {}
+    # redis check
     if redis_flag:
+        print('Checks with redis')
         # try with redis
+        results['redis'] = False
         try:
             redis.ping()
             print('Successfully ping to redis')
             results['redis'] = True
-        except ConnectionError as e:
-            print('Error:{0}'.format(e))
-            print('Error while connection to redis:')
-    print('Results:')
+        except redis_exception.AuthenticationWrongNumberOfArgsError:
+            print('Cannot Auth to redis, check your password again')
+        except redis_exception.TimeoutError:
+            print('redis timeout, cannot connect to redis server')
+        except redis_exception.ConnectionError:
+            print('Connection closed by server, it must be because')
+        except Exception as e:
+            print(repr(e))
+    # print all
+    print(CHECK_SERVICES_RESULT_FORMAT.format('SERVICE', 'STATUS'))
     for (key, connected) in results.items():
-        print(CHECK_SERVICES_RESULT_FORMAT.format(key, connected))
+        print(CHECK_SERVICES_RESULT_FORMAT.format(key, 'CONNECTED' if connected else 'ERROR'))
 
 
 check_services_command = Command(check_services)
@@ -462,4 +471,4 @@ check_services_command.add_option(Option(
 check_services_command.add_option(Option(
     '--a', '-all', dest='all_flag', action='store_true', help='to check update with all'
 ))
-manager.add_command('check-service', check_services_command)
+manager.add_command('check-services', check_services_command)

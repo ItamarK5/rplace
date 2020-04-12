@@ -72,6 +72,4 @@ def emit_namespaces(namespaces: Iterable[str], *args, **kwargs) -> None:
 # declaring socketio namespace names
 PAINT_NAMESPACE = '/paint'
 ADMIN_NAMESPACE = '/admin'
-PROFILE_NAMESPACE = '/profile'
-EDIT_PROFILE_NAMESPACE = '/edit-profile'
 sio = SocketIO(logger=True)

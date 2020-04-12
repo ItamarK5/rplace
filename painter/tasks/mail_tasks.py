@@ -15,7 +15,8 @@ def send_mail(subject: str,
               body: str,
               html: str,
               attachments: List[Dict[str, Any]]) -> None:
-    from painter.tasks.mail_worker import app
+    # import app of mail
+    from .mail_worker import app
     with app.app_context():
         message = Message(
             subject,
