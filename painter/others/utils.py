@@ -1,8 +1,14 @@
+"""
+Name: utils.py
+Auther: Itamar Kanne
+utilies for mostly the manager.py
+"""
 from __future__ import absolute_import
 
 import base64
 import json
 import os
+from abc import ABC
 from typing import Optional, Dict, Any, Generic, TypeVar, List, Union, FrozenSet
 
 from flask import current_app
@@ -57,13 +63,14 @@ class IPv4QuickForm(
     pass
 
 
-class DescriableCommand(Command):
+class DescriableCommand(Command, ABC):
     """
         simple command but with options to describe itself,
     """
     # class help and class_description are utility for commands
     class_help: Optional[str] = None
     class_description: Optional[str] = None
+    option_list = True
 
     def __init__(self, func=None,
                  description: Optional[str] = None,
@@ -72,7 +79,8 @@ class DescriableCommand(Command):
         self.__description = description if description is not None else self.class_description
         self.__help_text = help_text if help_text is not None else self.class_help
         self.__help_text = help_text
-
+        # prevent function defined option list
+        self.option_list = []
 
     @property
     def description(self):
@@ -87,13 +95,13 @@ class DescriableCommand(Command):
 
 def check_isfile(path: str,
                  not_exist_message: Optional[str] = None,
-                 isdir_message: Optional[str] = None) -> Optional[str]:
+                 is_dir_message: Optional[str] = None) -> Optional[str]:
     not_exist_message = not_exist_message if not_exist_message else 'Path {0} don\'t exists'
-    isdir_message = isdir_message if isdir_message else 'Path {0} points to a directory'
+    is_dir_message = is_dir_message if is_dir_message else 'Path {0} points to a directory'
     if not os.path.exists(path):
         return not_exist_message.format(path)
     elif os.path.isdir(path):
-        return isdir_message.format(path)
+        return is_dir_message.format(path)
     return None
 
 
@@ -263,4 +271,3 @@ def parse_service_options(flags: Union[bool, List[str]]) -> FrozenSet[str]:
 
 def check_service_flag(service_flag: Optional[bool], all_flag: bool) -> bool:
     return all_flag if service_flag is None else service_flag ^ all_flag
-

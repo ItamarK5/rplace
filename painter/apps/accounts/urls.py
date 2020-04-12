@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import time
 
-from flask import render_template, request
+from flask import render_template
 from flask_login import logout_user, login_user
 from werkzeug.wrappers import Response
 

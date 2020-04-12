@@ -13,8 +13,7 @@ from flask_script.commands import InvalidCommand
 from redis import exceptions as redis_exception
 from typing import Iterable, Any, Dict, FrozenSet
 from .app import create_app, datastore, sio, redis
-from .models.role import Role
-from .models.user import User
+from .models import Role, User, ExpireModels
 from .others.utils import (
     NewUserForm, PortQuickForm, IPv4QuickForm, get_config_json,
     CONFIG_FILE_PATH_KEY, try_save_config, DescriableCommand, config_name_utility,
@@ -212,6 +211,8 @@ class CeleryWorker(DescriableCommand):
 manager.add_command('celery-mail', CeleryWorker)
 manager.add_command("runserver", RunServer())
 manager.add_command("create-user", CreateUser())
+
+
 
 
 def create_db(drop_first=False):
@@ -603,3 +604,14 @@ redis_database_command.add_option(Option(
 ))
 
 manager.add_command('redis', redis_database_command)
+
+def clear_cache():
+    """
+        clears all unused cache of storage models
+    """
+    for model_class in ExpireModels:
+        model_class.clear_cache(False)
+    datastore.session.commit()
+    print('Clear Cache Complete')
+
+manager.add_command('clear-cache', Command(clear_cache))

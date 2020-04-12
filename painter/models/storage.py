@@ -7,9 +7,11 @@ from sqlalchemy.dialects.sqlite import DATETIME
 from sqlalchemy import String, Column
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm.exc import NoResultFound
-from datetime import datetime
+from datetime import datetime, timedelta
 from painter.backends.extensions import datastore
 from flask_sqlalchemy import BaseQuery
+
+ExpireModels = []
 
 
 class ExpiredTextMixin(object):
@@ -25,7 +27,10 @@ class ExpiredTextMixin(object):
     query: BaseQuery
     creation_date = Column(DATETIME(), default=datetime.utcnow)  # now
 
+    def __init_subclass__(cls, **kwargs):
+        ExpireModels.append(cls)
     # its a class method
+
     @declared_attr
     def identity_column(cls) -> Column:
         return Column(
@@ -121,6 +126,14 @@ class ExpiredTextMixin(object):
     def has_expired(self) -> bool:
         return (datetime.utcnow() - self.creation_date).seconds > self.max_expires_seconds
 
+    @classmethod
+    def clear_cache(cls, save_session: bool):
+        cache_expires = datetime.utcnow() + timedelta(seconds=cls.max_expires_seconds)
+        for row in cls.query.filter(cls.creation_date < cache_expires).all():
+            datastore.session.delete(row)
+        if save_session:
+            datastore.session.commit()
+
 
 class SignupMailRecord(datastore.Model, ExpiredTextMixin):
     """
@@ -154,5 +167,6 @@ class RevokeMailRecord(datastore.Model, ExpiredTextMixin):
 __all__ = [
     'SignupMailRecord',
     'SignupUsernameRecord',
-    'RevokeMailRecord'
+    'RevokeMailRecord',
+    'ExpireModels'
 ]
