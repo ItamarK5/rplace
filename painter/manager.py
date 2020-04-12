@@ -6,25 +6,26 @@ https://flask-script.readthedocs.io/en/latest/
 """
 import subprocess
 import sys
-
+from typing import Optional, Union, List
 from flask import current_app
 from flask_script import Manager, Server, Option, Command
 from flask_script.cli import prompt_bool, prompt_choices, prompt
 from flask_script.commands import InvalidCommand
 from redis import exceptions as redis_exception
-
+from typing import Iterable, Any, Dict, FrozenSet
 from .app import create_app, datastore, sio, redis
 from .models.role import Role
 from .models.user import User
 from .others.utils import (
-    NewUserForm, PortQuickForm,
-    IPv4QuickForm, get_config_json,
-    CONFIG_FILE_PATH_KEY, try_save_config,
-    DescriableCommand, config_name_utility,
-    parse_value
+    NewUserForm, PortQuickForm, IPv4QuickForm, get_config_json,
+    CONFIG_FILE_PATH_KEY, try_save_config, DescriableCommand, config_name_utility,
+    parse_value, parse_service_options, check_service_flag
 )
+from .others.constants import DURATION_OPTION_FLAG, PRINT_OPTION_FLAG, SERVICE_RESULTS_FORMAT
+import time
 
-CHECK_SERVICES_RESULT_FORMAT = '{:^12}|{:^12}'
+
+CHECK_SERVICES_RESULT_FORMAT = '{:^12}|{:^12}|{:^24}'
 
 manager = Manager(
     create_app,
@@ -100,14 +101,12 @@ class RunServer(Server):
         """
         host = host if host is not None else app.config.get('APP_HOST', '127.0.0.1')
         port = port if port is not None else app.config.get('APP_PORT', 8080)
-        print(host, port)
         if use_debugger is None:
             use_debugger = app.debug
             if use_debugger is None:
                 use_debugger = True
         if use_reloader is None:
             use_reloader = (not app.debug) or app.config.get('WERKZEUG_RUN_MAIN', None) == 'true'
-        print(app.config)
         sio.run(
             app,
             host=host,
@@ -430,33 +429,68 @@ manager.add_command('clear', clear_config_command)
 """
 
 
-def check_services(all_flag=False, redis_flag=None):
+def check_redis_service(option_flags: FrozenSet[str]) -> Dict[str, Any]:
+    result = False
+    duration = 'None'
+    try:
+        if DURATION_OPTION_FLAG in option_flags:
+            current_time = time.time()
+        redis.ping()
+        if DURATION_OPTION_FLAG in option_flags:
+            duration = time.time() - current_time
+        if PRINT_OPTION_FLAG in option_flags:
+            print('Successfully ping to redis')
+        result = True
+    except redis_exception.AuthenticationWrongNumberOfArgsError:
+        if PRINT_OPTION_FLAG in option_flags:
+            print('Cannot Auth to redis, check your password again')
+    except redis_exception.TimeoutError:
+        if PRINT_OPTION_FLAG in option_flags:
+            print('redis timeout, cannot connect to redis server')
+    except redis_exception.ConnectionError:
+        if PRINT_OPTION_FLAG in option_flags:
+            print('Connection closed by server, it must be because')
+    except Exception as e:
+        print(repr(e))
+    finally:
+        return {
+            'service_name': 'redis',
+            'result': 'Connected' if result else 'Error',
+            'duration': duration if DURATION_OPTION_FLAG else 'None'
+        }
+
+
+def check_services(all_flag=False, redis_flag=None, option_flags=None):
+    """
+    :param all_flag: boolean flag to check if get all services or none
+    (if a flag is set and this is set there dont check service)
+    :param redis_flag: flag if to check the redis service
+    :param option_flags: option flags, include print and check time of response
+    :return: if services are active
+    """
     # if in the future I should add other flags
     # check if all of them are None
+    option_flags = parse_service_options(option_flags)
     # if all of them are None, check them all
-    redis_flag = all_flag if redis_flag is None else redis_flag ^ all_flag
-    results = {}
+    redis_flag = check_service_flag(redis_flag, all_flag)
+    results = []
     # redis check
     if redis_flag:
-        print('Checks with redis')
+        # time check
+        print('checks if can connect to redis')
         # try with redis
-        results['redis'] = False
-        try:
-            redis.ping()
-            print('Successfully ping to redis')
-            results['redis'] = True
-        except redis_exception.AuthenticationWrongNumberOfArgsError:
-            print('Cannot Auth to redis, check your password again')
-        except redis_exception.TimeoutError:
-            print('redis timeout, cannot connect to redis server')
-        except redis_exception.ConnectionError:
-            print('Connection closed by server, it must be because')
-        except Exception as e:
-            print(repr(e))
+        results.append(check_redis_service(option_flags))
     # print all
-    print(CHECK_SERVICES_RESULT_FORMAT.format('SERVICE', 'STATUS'))
-    for (key, connected) in results.items():
-        print(CHECK_SERVICES_RESULT_FORMAT.format(key, 'CONNECTED' if connected else 'ERROR'))
+    print(option_flags)
+    enabled_contexts = tuple(filter(
+        lambda option_context: option_context.is_option_enabled(option_flags),
+        SERVICE_RESULTS_FORMAT
+    ))
+    print(enabled_contexts)
+    result_format = '|'.join(context.string_format for context in enabled_contexts)
+    print(result_format.format(*[context.title for context in enabled_contexts]))
+    for result in results:
+        print(CHECK_SERVICES_RESULT_FORMAT.format(*[str(result[context.key]) for context in enabled_contexts]))
 
 
 check_services_command = Command(check_services)
@@ -470,5 +504,11 @@ check_services_command.add_option(Option(
 ))
 check_services_command.add_option(Option(
     '--a', '-all', dest='all_flag', action='store_true', help='to check update with all'
+))
+check_services_command.add_option(Option(
+    '--o', '-options', nargs='*', dest='option_flags',
+    help=(
+        'special options for the command'
+    )
 ))
 manager.add_command('check-services', check_services_command)

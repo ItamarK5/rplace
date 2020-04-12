@@ -1,9 +1,13 @@
 /* level of functions 1) the interaction 2) setting the mapArea 3) a function that affect the board as result of change in mapArea*/
 /** @const BACKGROUND_COLOR */
 const BACKGROUND_COLOR = '#777777'
+/**  @const CANVAS_SIZE size of the canvas */
 const CANVAS_SIZE = 1000;
+/** @const MIN_STEP_SIZE minimum change in size */
 const MIN_STEP_SIZE = 1;
+/** @const MIN_SCALE minimum scale power limit */
 const MIN_SCALE = 0.5;
+/** @const MAX_SCALE minimum scale power limit */
 const MAX_SCALE = 50;
 // default cooldown between drawss
 const DRAW_COOLDOWN = 60;
@@ -243,7 +247,7 @@ class SimpleInterval {
         this.work = work;
         /** @param {=function} time */
         this.__time = time;
-        this.work_handler = null;
+        this.__workhandler = null;
     }
     /**
      * @name start
@@ -252,7 +256,7 @@ class SimpleInterval {
      */
     start() {
         this.
-        work_handler = setInterval(this.work, this.__time);
+        __workhandler = setInterval(this.work, this.__time);
     }
     /**
      * @name stop
@@ -260,8 +264,8 @@ class SimpleInterval {
      * @returns nothing
      */
     stop() {
-        clearInterval(this.work_handler)
-        this.work_handler = null
+        clearInterval(this.__workhandler)
+        this.__workhandler = null
     }
     /**
      * @name safeStart
@@ -293,7 +297,7 @@ class SimpleInterval {
      * @summary checks if the worker is working at all using the handler
      */
     get isWorking() {
-        return !_.isNull(this.work_handler);
+        return !_.isNull(this.__workhandler);
     }
 }
 
@@ -379,16 +383,19 @@ const progress = {
     /** @param {=number} state the state of the progress */
     state: 0, // state of progress bar
     /** @param {=SimpleInterval} work SimpleInterval for updating auto update the progress bar */
-    work_: null, // handler of progress update interval
-    /** @param {=number} current_min_time_ a value to prevent auto changing DOM and make the app slowly*/
-    current_min_time_: null,
+    __work: null, // handler of progress update interval
+    /** @param {=number} __current_min_time a value to prevent auto changing DOM and make the app slowly*/
+    __current_min_time: null,
     // constructor, starts the object
     construct() {
         let self = this;
-        this.work_ = new SimpleInterval(function() {
+        this.__work = new SimpleInterval(function() {
             self.updateTimer()
         }, PROGRESS_COOLDOWN)
     },
+    get isWaiting(){
+        return this.__work.isWaiting
+    }
     /**
      * @name adjust_progress
      * @param {Number} seconds_left number of seconds before the progerss bar ends
@@ -422,14 +429,14 @@ const progress = {
             $('prog-text').text('0:00'); // set text 0
             $('#prog-fill').attr('state', 1); // prog-fill state is 9
             $('#time-prog').attr('state', 0); // time progress set to 1
-            if (this.work_.isWorking) { // stop work in case
-                this.work_.stop();
+            if (this.isWorking) { // stop work in case
+                this.__work.stop();
             }
         }
         // when stops working
-        else if (!this.work_.isWorking) {
-            this.current_min_time_ = 300;
-            this.work_.start()
+        else if (!this.isWorking) {
+            this.__current_min_time = 300;
+            this.__work.start()
             // set cursor to be pen
             cursor.setPen();
         }
@@ -444,10 +451,10 @@ const progress = {
         let seconds_left = Math.ceil(Math.max(this.time - getUTCTimestamp(),
             0) / 1000);
         // adjust progress
-        if (this.current_min_time_ != seconds_left) {
+        if (this.__current_min_time != seconds_left) {
             this.adjust_progress(seconds_left);
             // update current time
-            this.current_min_time_ = seconds_left;
+            this.__current_min_time = seconds_left;
         }
         // close for cooldown 0
         if (seconds_left <= 0) {
@@ -483,8 +490,8 @@ const mapArea = {
         this.cx = fragments.x;
         this.cy = fragments.y;
         this.scale = fragments.scale;
-        // update it just 0.5 seconds after stops changing
-        this.setHash = _.debounce(this.__setHash, 500)
+        // update every 1 second
+        this.setHash = _.throttle(this.__setHash, 1000)
     },
     /**
      * @private
@@ -661,7 +668,7 @@ const mapArea = {
         }
     },
     /**
-     * @param {Number} to_update
+     * @returns if any changes to the view
      * @summary handling changes to the fragments 
      */
     refreshFragments() {
@@ -669,15 +676,16 @@ const mapArea = {
          *  refresh the mapArea object by the current hash values if they are valid
          */
         let frags = this.__determineFragments();
-        console.log(frags, this.cx, this.cx, this.scale)
-        if(frags.x != this.cx || frags.y != this.cy || frags.scale != this.scale){
-            this.setCenter(frags.x, frags.y, to_update);
+        let any_changes = frags.x != this.cx || frags.y != this.cy || frags.scale != this.scale;
+        if(any_changes){
+            this.setCenter(frags.x, frags.y, this.__isValidNewScale(frags.scale));
             if (this.__isValidNewScale(frags.scale)) {
                 this.scale = frags.scale;
                 board.updateZoom();
             }
             this.setHash()
         }
+        return any_changes;
         
     },
     /**
@@ -696,14 +704,17 @@ const mapArea = {
     },
 }
 
-
+/** @const cursor  */
 const cursor = {
     /** @param last_cursor_non_forced the last cursor that wasnt forced */
     last_cursor_non_forced: null,
+    /** @param {CursorState} current_cursor  current cursor object represent the cursor state*/
     current_cursor: null,
+    /** @param {CursorState} force_cursor option to force the current cursor to specific object */
     force_cursor: null,
     /**
      * @param {CursorState} other_cursor 
+     * @summary sets the new cursor
      */
     setCursor(other_cursor) {
         // update last cursor
@@ -712,20 +723,32 @@ const cursor = {
         }
         let cursor = this.force_cursor || this.last_cursor_non_forced;
         if (_.isNull(this.current_cursor) || !this.current_cursor.equals(cursor)) {
-            if ((!this.current_cursor) || cursor.cursor != this.current_cursor.cursor) {
-                board.canvas.css('cursor', cursor.cursor);
-            }
-            if (cursor.hide_pen) {
-                pen.disable();
-            }
-            else {
-                pen.enable();
-            }
-            this.current_cursor = cursor;
+            this.updateCursor(cursor)
         }
     },
+    /**
+     * 
+     * @param {CursorState} cursor 
+     * @returns nothing
+     * @summary updates the cursor state
+     */
+    updateCursor(cursor){
+        if ((!this.current_cursor) || cursor.cursor != this.current_cursor.cursor) {
+            board.canvas.css('cursor', cursor.cursor);
+        }
+        if (cursor.hide_pen) {
+            pen.disable();
+        }
+        else {
+            pen.enable();
+        }
+        this.current_cursor = cursor;
+    },
+    /**
+     * @summary sets the cursor to pen or wait state, depending if the progress is
+     */
     setPen() {
-        this.setCursor(progress.work_.isWorking || lockedStates.locked ? Cursors.Wait : Cursors.Pen)
+        this.setCursor(progress.isWorking || lockedStates.locked ? Cursors.Wait : Cursors.Pen)
     },
     grab() {
         this.setCursor(Cursors.grabbing);
@@ -888,7 +911,7 @@ const pen = {
             });
         }
         // prorgess working -> waits for the next time the player can draw
-        else if (progress.work_.isWorking) {
+        else if (progress.isWorking) {
             Swal.fire({
                 title: 'You have 2 wait',
                 imageUrl: 'https://aadityapurani.files.wordpress.com/2016/07/2.png',
@@ -1390,15 +1413,14 @@ $(document).ready(function() {
     });
     // hash change
     $(window).bind('hashchange', function(e) {
-        if (window.location.hash != mapArea.hash) {
-            mapArea.refreshFragments();
+        if(mapArea.refreshFragments()){
+            board.drawBoard();
         }
     });
     // copy coords - https://stackoverflow.com/a/37449115
     let clipboard = new ClipboardJS('#coordinates', {
         text: function() {
-            return window.location.origin + window.location
-                .pathname + mapArea.arguments();
+            return window.location.origin + window.location.pathname + mapArea.arguments();
         }
     });
     clipboard.on('success', function() {

@@ -1,3 +1,4 @@
+from typing import Optional, FrozenSet
 from datetime import timedelta
 # mime types the application send
 # for some strange reason
@@ -40,5 +41,34 @@ MANAGER_TYPES_PARSE = {
     'bytes': bytes,
     'byt': bytes,
     'bool': bool,
-    'cond': bool,   # shortcut for condition
+    'cond': bool,  # shortcut for condition
 }
+
+PRINT_OPTION_FLAG = 'print'
+DURATION_OPTION_FLAG = 'timeout'
+FLAG_SERVICES_OPTINOS = {
+    PRINT_OPTION_FLAG: ('p', 'print'),  # if to print debug staff
+    DURATION_OPTION_FLAG: ('timeout', 't'),  # if display timeout
+}
+
+
+class ServiceResultsPrint:
+    """
+    object used to save options for check-service command
+    """
+    def __init__(self, string_format: str, title: str, key: str, option_flag: Optional[str] = None):
+        self.string_format = string_format
+        self.title = title
+        self.key = key
+        self.option_flag = option_flag
+
+    def is_option_enabled(self, flags: FrozenSet[str]) -> bool:
+        print(self.title, self.option_flag is None or self.option_flag in flags)
+        return self.option_flag is None or self.option_flag in flags
+
+
+SERVICE_RESULTS_FORMAT = (
+    ServiceResultsPrint('{:^12}', 'SERVICE', 'service_name'),
+    ServiceResultsPrint('{:^12}', 'STATUS', 'result'),
+    ServiceResultsPrint('{:^15}', 'TASK DURATION', 'duration', DURATION_OPTION_FLAG),
+)

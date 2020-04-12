@@ -1,6 +1,19 @@
 from __future__ import absolute_import
+
+import base64
 import json
+import os
+from typing import Optional, Dict, Any, Generic, TypeVar, List, Union, FrozenSet
+
+from flask import current_app
+from flask_script.cli import prompt, prompt_choices, prompt_bool
+from flask_script.commands import InvalidCommand, Command
 from wtforms.validators import ValidationError
+
+from .constants import (
+    PAINTER_ENV_NAME, DEFAULT_TITLE, CONFIG_FILE_PATH_KEY,
+    DEFAULT_PATH, MANAGER_TYPES_PARSE, FLAG_SERVICES_OPTINOS
+)
 from .quick_validation import (
     UsernameFieldMixin,
     PasswordFieldMixin,
@@ -9,16 +22,7 @@ from .quick_validation import (
     PortMixin,
     QuickForm
 )
-from typing import Optional, Dict, Any, Generic
-import os
 from ..models.user import User
-from flask_script.commands import InvalidCommand, Command
-from flask import current_app
-from typing import TypeVar
-from flask_script.cli import prompt, prompt_choices, prompt_bool
-from .constants import PAINTER_ENV_NAME, DEFAULT_TITLE, CONFIG_FILE_PATH_KEY, DEFAULT_PATH, MANAGER_TYPES_PARSE
-import base64
-
 
 ConvertType = TypeVar('ConvertType', str, int, bool, float)
 
@@ -229,3 +233,28 @@ def parse_value() -> Optional[ConvertType]:
         return None
     # else parse
     return CONVERT_MAP[parsed_type]()
+
+
+def has_service_option(flags: Optional[List[str]], *options) -> bool:
+    if not isinstance(flags, list):
+        return False
+    # other option flag is empty
+    elif not flags:
+        return True
+    for option in options:
+        if option in flags:
+            return True
+    return False
+
+
+def parse_service_options(flags: Union[bool, List[str]]) -> FrozenSet[str]:
+    return frozenset(
+        option
+        for option in FLAG_SERVICES_OPTINOS
+        if has_service_option(flags, FLAG_SERVICES_OPTINOS[option])
+    )
+
+
+def check_service_flag(service_flag: Optional[bool], all_flag: bool) -> bool:
+    return all_flag if service_flag is None else service_flag ^ all_flag
+
