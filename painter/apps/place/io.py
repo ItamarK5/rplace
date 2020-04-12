@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any
 
 from flask_login import current_user
-
+from painter.others.constants import COLOR_COOLDOWN
 from painter.backends import lock, board
 from painter.backends.extensions import datastore
 from painter.backends.skio import (
@@ -39,10 +39,11 @@ def connect():
 @sio.on('get-starter', PAINT_NAMESPACE)
 @socket_io_authenticated_only_event
 def get_start_data():
+    print(lock.is_open())
     return {
         'board': board.get_board(),
         'time': str(current_user.next_time),
-        'lock': not lock.is_enabled()
+        'lock': not lock.is_open()
     }
 
 
@@ -59,7 +60,7 @@ def set_board(params: Any) -> str:
         current_time = datetime.utcnow()
         if current_user.next_time > current_time:
             return json.dumps({'code': 'time', 'status': str(current_user.next_time)})
-        if not lock.is_enabled():
+        if not lock.is_open():
             return json.dumps({'code': 'lock', 'status': 'true'})
         # validating parameter
         if 'x' not in params or (not isinstance(params['x'], int)) or not (0 <= params['x'] < 1000):
@@ -68,7 +69,7 @@ def set_board(params: Any) -> str:
             return 'undefined'
         if 'color' not in params or (not isinstance(params['color'], int)) or not (0 <= params['color'] < 16):
             return 'undefined'
-        next_time = current_time
+        next_time = current_time + COLOR_COOLDOWN
         current_user.next_time = next_time
         datastore.session.add(current_user)
         datastore.session.commit()

@@ -55,6 +55,7 @@ def extract_signature(token: str,
                       form: Type[QuickForm],
                       serializer: URLSafeTimedSerializer) -> Optional[Union[Dict[str, Any], str]]:
     """
+    :param max_age: the maximum number of seconds that pass before the token expires
     :param token: token, a string that was encoded by the server represent a user
     :param form:  form to validate if the token is valid
     :param serializer: URLSafeTimedSerializer object that encoded the file before

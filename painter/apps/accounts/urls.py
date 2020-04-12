@@ -179,6 +179,8 @@ def change_password(token: str) -> Response:
     else:
         new_password = form.password.data
         user.set_password(new_password)
+        # then forget
+        RevokeMailRecord.force_forget(mail_address)
     return render_template('transport/complete-signup.html')
 
 

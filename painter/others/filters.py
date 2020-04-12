@@ -4,7 +4,7 @@ from flask import Flask
 
 from painter.models.user import User, Role
 from painter.others.constants import COLORS
-from painter.others.constants import MINUTES_COOLDOWN
+from painter.others.constants import COLOR_COOLDOWN
 from datetime import datetime
 
 
@@ -13,7 +13,7 @@ def draw_time(user: User) -> str:
     if user.next_time == user.creation_date:
         return 'never'
     # else
-    return (user.next_time - MINUTES_COOLDOWN).strftime(
+    return (user.next_time - COLOR_COOLDOWN).strftime(
         '%y-%m-%d %a %H:%M:%S'
     )
 

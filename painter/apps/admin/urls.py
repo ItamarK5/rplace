@@ -38,7 +38,7 @@ def admin() -> str:
     page = int(page)
     if not (1 <= page <= pagination.pages):
         return redirect(url_for('/admin', args={'page': '1'}))
-    return render_template('accounts/admin.html', pagination=pagination, lock=lock.is_enabled())
+    return render_template('accounts/admin.html', pagination=pagination, lock=lock.is_open())
 
 
 @admin_router.route('/ban-user/<string:name>', methods=('POST',))
@@ -182,7 +182,7 @@ def edit_user(name: str) -> Response:
 
 @admin_router.route('/get-active-state', methods=('GET',))
 def get_active_state():
-    return jsonify(lock.is_enabled())
+    return jsonify(lock.is_open())
 
 
 @admin_router.route('/set-user-role/<string:name>', methods=('POST',))

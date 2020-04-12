@@ -394,15 +394,15 @@ const progress = {
         }, PROGRESS_COOLDOWN)
     },
     get isWaiting(){
-        return this.__work.isWaiting
-    }
+        return this.__work.isWorking
+    },
     /**
-     * @name adjust_progress
+     * @name adjustProgress
      * @param {Number} seconds_left number of seconds before the progerss bar ends
      * @returns nothing
      * @summary update the prorgess bar text and state
      */
-    adjust_progress(seconds_left) {
+    adjustProgress(seconds_left) {
         // adjust the progress bar and time display by the number of seconds left
         $('#prog-text').text([
             (Math.floor(seconds_left / 60)).toString(),
@@ -418,8 +418,8 @@ const progress = {
     },
     /**
      * @name setTime
-     * @param {=number} time when the date finishes 
-     * @summary set the time for the prograss and start workign
+     * @param {String} time when the date finishes 
+     * @summary set the time for the progress and start working
      */
     setTime(time) {
         // handles starting the timer waiting
@@ -429,12 +429,12 @@ const progress = {
             $('prog-text').text('0:00'); // set text 0
             $('#prog-fill').attr('state', 1); // prog-fill state is 9
             $('#time-prog').attr('state', 0); // time progress set to 1
-            if (this.isWorking) { // stop work in case
+            if (this.isWaiting) { // stop work in case
                 this.__work.stop();
             }
         }
         // when stops working
-        else if (!this.isWorking) {
+        else if (!this.isWaiting) {
             this.__current_min_time = 300;
             this.__work.start()
             // set cursor to be pen
@@ -452,7 +452,7 @@ const progress = {
             0) / 1000);
         // adjust progress
         if (this.__current_min_time != seconds_left) {
-            this.adjust_progress(seconds_left);
+            this.adjustProgress(seconds_left);
             // update current time
             this.__current_min_time = seconds_left;
         }
@@ -467,7 +467,7 @@ const progress = {
      * @summary stops the progress bar
      */
     stopProgress() {
-        this.work.stop();
+        this.__work.stop();
         cursor.setPen();
     }
 }
@@ -911,7 +911,7 @@ const pen = {
             });
         }
         // prorgess working -> waits for the next time the player can draw
-        else if (progress.isWorking) {
+        else if (progress.isWaiting) {
             Swal.fire({
                 title: 'You have 2 wait',
                 imageUrl: 'https://aadityapurani.files.wordpress.com/2016/07/2.png',
@@ -948,9 +948,11 @@ const pen = {
                 }
                 // else it must be json
                 data = JSON.parse(value);
+                console.log(data)
                 if (data.code == 'lock' && data.value == 'true') {
                     lockedStates.lock()
-                } else if (data.code == 'set-time') {
+                } else if (data.code == 'time') {
+                    console.log(data.value)
                     progress.setTime(data.value)
                 }
             });

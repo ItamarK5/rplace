@@ -14,7 +14,7 @@ MIME_TYPES = {
     'jpeg': 'image/jpeg'
 }
 # time between each draw for user
-MINUTES_COOLDOWN = timedelta(minutes=1)
+COLOR_COOLDOWN = timedelta(minutes=1)
 
 # Colors of pixels in order
 COLORS = (
