@@ -5,6 +5,6 @@ from .storage import *
 
 __all__ = [
     'Note', 'Record', 'Role', 'User',
-    'SignupUsernameRecord', 'SignupMailRecord',
+    'SignupUsernameRecord', 'SignupMailRecord', 'RevokeMailRecord',
     'Record'
 ]

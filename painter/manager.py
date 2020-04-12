@@ -24,13 +24,13 @@ from .backends import board, lock
 from .others.constants import DURATION_OPTION_FLAG, PRINT_OPTION_FLAG, SERVICE_RESULTS_FORMAT
 import time
 
-
-CHECK_SERVICES_RESULT_FORMAT = '{:^12}|{:^12}|{:^24}'
-
 manager = Manager(
     create_app,
-    description='Social Painter CMD Starter,'
-                'Its helps throught'
+    description='Social Painter CMD Service',
+    help='Social Painter CMD Service\n'
+         'if you want to start the server, follow the following steps:\n'
+         'second use check-services --a to check if all services are avialable (services means outside support)'
+         'third use start-redis --a to create all redis support',
 )
 manager.add_option('--c', '-config', dest='config_path', required=False, help='Configuration file to use')
 manager.add_option('--D', '-default', dest='set_env', action='store_true', required=False,
@@ -199,13 +199,13 @@ class CeleryWorker(DescriableCommand):
     """Starts the celery worker."""
     capture_all_args = True
     help = 'Start mail celery worker'
+
     def run(self, argv):
         ret = subprocess.call(
             ['venv/scripts/celery.exe', 'worker',
              '-A', 'painter.tasks.mail_worker.celery', '-P', 'eventlet'] + argv
         )
         sys.exit(ret)
-
 
 
 # adding command
@@ -217,7 +217,9 @@ manager.add_command("create-user", CreateUser())
 def create_db(drop_first=False):
     if drop_first and prompt_bool('Are you sure you want to drop the table'):
         datastore.drop_all()
+        print('database droped')
     datastore.create_all()
+    print('databse created successfully')
 
 
 create_db_command = DescriableCommand(
@@ -425,7 +427,6 @@ clear_config_command.add_option(
 )
 manager.add_command('clear', clear_config_command)
 
-
 """
  Check Service Command
  Command to check if services required for the app are working
@@ -466,6 +467,7 @@ def check_redis_service(option_flags: FrozenSet[str]) -> Dict[str, Any]:
 def check_services(all_flag=False, redis_flag=None, option_flags=None):
     """
     :param all_flag: boolean flag to check if get all services or none
+    :type  all_flag: bool
     (if a flag is set and this is set there dont check service)
     :param redis_flag: flag if to check the redis service
     :param option_flags: option flags, include print and check time of response
@@ -484,21 +486,20 @@ def check_services(all_flag=False, redis_flag=None, option_flags=None):
         # try with redis
         results.append(check_redis_service(option_flags))
     # print all
-    print(option_flags)
     enabled_contexts = tuple(filter(
         lambda option_context: option_context.is_option_enabled(option_flags),
         SERVICE_RESULTS_FORMAT
     ))
-    print(enabled_contexts)
+    # get result format for contexts
     result_format = '|'.join(context.string_format for context in enabled_contexts)
     print(result_format.format(*[context.title for context in enabled_contexts]))
     for result in results:
-        print(CHECK_SERVICES_RESULT_FORMAT.format(*[str(result[context.key]) for context in enabled_contexts]))
+        print(result_format.format(*[str(result[context.key]) for context in enabled_contexts]))
 
 
 check_services_command = Command(check_services)
 check_services_command.__dict__['description'] = 'check if services the app uses are active,' \
-                                             'there are currently 1: redis'
+                                                 'there are currently 1: redis'
 check_services_command.add_option(Option(
     '--r', '-redis', dest='redis_flag', action='store_true', help='to check update with redis'
 ))
@@ -516,55 +517,89 @@ check_services_command.add_option(Option(
 ))
 manager.add_command('check-services', check_services_command)
 
-# work on this
-def start_redis(check_board=False, check_lock=False, drop_board=False, drop_lock=False):
-    """
-    :param check_board: if to check if board exists
-    :type check_board: bool
-    :param check_lock: if to check if lock exists
-    :type check_lock
-    :return: nothing
 
+# work on this
+def redis_database(board_operator=None, lock_operator=None, apply_all=None):
     """
-    if check_board and check_lock:
-        check_board = True
-        check_lock = True
+    :param board_operator: operation with the board object
+    :param lock_operator: operation with the lock object
+    :return:
+    """
     # check redis
+    board_operator = board_operator if board_operator is not None else apply_all
+    lock_operator = lock_operator if lock_operator is not None else apply_all
+    if board_operator is None and lock_operator is None:
+        raise InvalidCommand('You must enter any value')
     try:
         redis.ping()
         print('Redis Works')
     except Exception as e:
-        print('While Checking Redis')
-        print(repr(e))
-        return
-    if check_board or drop_board:
+        print('While Checking Redis encouter error')
+        print(str(e))
         # try
+    if board_operator is not None:
         try:
-            if drop_board:
-
+            if board_operator == 'reset' and prompt_bool('Are you sure you want to reset the board?'):
+                board.drop_board()
                 board.make_board()
-            print('Board build successfully')
+                print('Board reset successfully')
+            elif board_operator == 'create':
+                if not board.make_board():
+                    print('board already created, use reset or drop to clear board')
+                else:
+                    print('Board created successfully')
+            elif board_operator == 'drop':
+                if not board.drop_board():
+                    print('Error while dropping board')
+                else:
+                    print('Board dropped successfully')
         except Exception as e:
             print(repr(e))
-    if check_lock:
+    if lock_operator is not None:
         try:
-            lock.create_var()
-            print('Board build successfully')
+            if lock_operator == 'reset':
+                if not lock.drop_lock():
+                    print('Lock doesnt exists, create it using create command')
+                else:
+                    lock.create_lock()
+                    print('Lock reset successfully')
+            elif lock_operator == 'create':
+                if not lock.create_lock():
+                    print('Lock already created, use reset or drop to clear board')
+                else:
+                    print('Lock deleted successfully')
+            elif lock_operator == 'drop':
+                if not lock.drop_lock():
+                    # error print
+                    print('Lock doesnt exists')
+                else:
+                    # success
+                    print('Lock deleted successfully')
         except Exception as e:
             print(repr(e))
-    print('Command ended created board and lock')
+    print('command finishes')
 
 
-start_redis_command = Command(start_redis)
-check_services_command.add_option(Option(
-    '--B', '-Board', dest='board_flag', action='store_false', help='to not check board on redis'
+redis_database_command = DescriableCommand(
+    redis_database,
+    description='function to work with the redis objects\n'
+                'args options:\n'
+                '\treset:\t\tresets the value and recreated is'
+                '\tdrop:\t\tdrops the key and remove it from the database'
+                '\tcreate:\t\tcreated the key in the database'
+)
+redis_database_command.add_option(Option(
+    '--b', '-board', dest='board_operator',
+    help='options with lock',
+    choices=['reset', 'drop', 'create']
 ))
-check_services_command.add_option(Option(
-    '--b', '-board', dest='board_flag', action='store_true', help='to check board on redis'
+redis_database_command.add_option(Option(
+    '--l', '-lock', dest='lock_operator', help='options with lock',
+    choices=['reset', 'drop', 'create'], default='reset'
 ))
-check_services_command.add_option(Option(
-    '--B', '-Lock', dest='lock_flag', action='store_false', help='to recreate lock on redis'
+redis_database_command.add_option(Option(
+    '--a', '-all', dest='apply_all', help='options with all variables',
+    choices=['reset', 'drop', 'create'], default='create'
 ))
-check_services_command.add_option(Option(
-    '--b', '-lock', dest='lock_flag', action='store_true', help='to not recreate lock on redis'
-))
+
+manager.add_command('redis', redis_database_command)

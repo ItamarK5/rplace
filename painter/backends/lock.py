@@ -1,48 +1,57 @@
-from flask import Flask
-
+"""
+repsents working with lock object with the redis database
+"""
 from .extensions import redis
 
-"""
-    represnting an ability of the admin to prevent users from setting pixels
-"""
 _DISABLE = 0  # False
 _ENABLE = 1  # True
 _ENABLE_EDIT_BOARD_KEY = 'enable-edit-board'
-_enable_edit_board = _ENABLE  # determine if can shutdown the server
 _flag_lock = False
 
 
-def create_var():
+def create_lock() -> bool:
     if not redis.exists(_ENABLE_EDIT_BOARD_KEY):
-        redis.set(_ENABLE_EDIT_BOARD_KEY, _ENABLE)  # default allow
+        return bool(redis.set(_ENABLE_EDIT_BOARD_KEY, _ENABLE))  # default allow
+    return False
+
+
+def drop_lock() -> bool:
+    if redis.exists(_ENABLE_EDIT_BOARD_KEY):
+        return bool(redis.delete(_ENABLE_EDIT_BOARD_KEY, _ENABLE))  # default allow
+    return False
 
 
 def is_enabled() -> bool:
-    return _enable_edit_board == _ENABLE  # but in reallity bool(rds_backend.get(_ENABLE_EDIT_BOARD_KEY)
+    return redis.get(_ENABLE_EDIT_BOARD_KEY) == _ENABLE
 
 
 def enable() -> bool:
-    global _enable_edit_board, _flag_lock
-    if _enable_edit_board != _ENABLE:
-        _enable_edit_board = _ENABLE
-    # return rds_backend.set(_ENABLE_EDIT_BOARD, _ENABLE)
-    return True
+    """
+    enable setting pixel on board
+    :return: if changed the redis value
+    """
+    return bool(redis.set(_ENABLE_EDIT_BOARD_KEY, _ENABLE))
 
 
 def disable() -> bool:
-    global _enable_edit_board
-    if _enable_edit_board != _DISABLE:
-        _enable_edit_board = _DISABLE
-    # return bool(rds_backend.set(_ENABLE_EDIT_BOARD, _DISALBE))
-    # rds_backend.set(1)
-    return True
+    """
+    disable setting pixel on board
+    :return: if changed the redis value
+    """
+    return bool(redis.set(_ENABLE_EDIT_BOARD_KEY, _DISABLE))
 
 
 def set_switch(set_active: bool) -> bool:
+    """
+    utility function to set lock via boolean value, enable chaging pixels by true otherwise disable
+    :param set_active: if to set_the lock active
+    :type  set_active: bool
+    :return: if changed any value
+    """
     if set_active:
         return enable()
     # else
     return disable()
 
 
-__all__ = ['init_app', 'enable', 'disable', 'is_enabled', 'set_switch']
+__all__ = ['enable', 'disable', 'is_enabled', 'set_switch', 'create_lock']

@@ -43,6 +43,14 @@ def create_app(config_path: Optional[str] = None,
                set_env: bool = False,
                title: Optional[str] = None,
                is_celery: bool = False) -> Flask:
+    """
+    the command to create default app, with configuration
+    :param config_path: path to JSON configuration file, if None load from environment variable
+    :param set_env: if to set default enviroment
+    :param title: title of the configuration option
+    :param is_celery: is celery task
+    :return: application
+    """
     if not config_path:
         # default configure file
         if set_env:
@@ -50,6 +58,7 @@ def create_app(config_path: Optional[str] = None,
         config_path = get_env_path()
     elif set_env:
         set_env_path(config_path)
+    # check celery trying
     if title == CELERY_TITLE and not is_celery:
         raise InvalidCommand('Loading Configuration Error: '
                              'Celery Configuration can only be accessed by celery worker')
@@ -85,7 +94,7 @@ def _create_app(config: Dict[str, Any],
         None if is_celery else app,
         message_queue='pyamqp://guest@localhost//'  # testing
     )
-    # ext
+    # init Extensions
     datastore.init_app(app)
     generate_engine(app)
     mailbox.init_app(app)
@@ -95,14 +104,10 @@ def _create_app(config: Dict[str, Any],
     redis.init_app(app)
     celery.conf.update(app.config)
     add_filters(app)
-    # insert other staff
+    # insert blueprints
     from .apps import others, place, accounts, admin
     app.register_blueprint(place.place_router)
     app.register_blueprint(accounts.accounts_router)
     app.register_blueprint(admin.admin_router)
     app.register_blueprint(others.other_router)
-    # some backends register
-    redis.init_app(app)
-    board.init_app(app)
-    lock.init_app(app)
     return app

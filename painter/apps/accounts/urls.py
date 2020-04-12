@@ -5,7 +5,7 @@ from flask import render_template, request
 from flask_login import logout_user, login_user
 from werkzeug.wrappers import Response
 
-from painter.models.storage import SignupUsernameRecord, SignupMailRecord
+from painter.models.storage import SignupUsernameRecord, SignupMailRecord, RevokeMailRecord
 from painter.backends.extensions import datastore
 from painter.models import User
 from .forms import LoginForm, SignUpForm, RevokePasswordForm, ChangePasswordForm, SignUpTokenForm, RevokeTokenForm
@@ -65,7 +65,7 @@ def signup() -> Response:
             email,
             TokenSerializer.signup.dumps(
                 {
-                    'email': email,
+                    'mail_address': email,
                     'username': name,
                     'password': pswd
                 }
@@ -91,14 +91,15 @@ def revoke() -> Response:
         after user validation checks if the user exists
         """
         user = User.query.filter_by(email=form.email.data).first()
+        RevokeMailRecord.create_new(form.email.data)
         if user is not None:
             # error handling
             send_revoke_password_message(
                 user.username,
                 form.email.data,
                 TokenSerializer.revoke.dumps({
-                    'username': user.username,
-                    'password': user.password
+                    'password': user.password,
+                    'mail_address': user.email
                 })
             )
             render_template('transport/complete-revoke-form.html')
@@ -140,11 +141,12 @@ def change_password(token: str) -> Response:
     :param token: token url represent saving url
     :return: Response
     """
-    extracted = extract_signature(token,
-                                  TokenSerializer.get_max_age(),
-                                  RevokeTokenForm,
-                                  TokenSerializer.revoke,
-                                  )
+    extracted = extract_signature(
+        token,
+        TokenSerializer.get_max_age(),
+        RevokeTokenForm,
+        TokenSerializer.revoke,
+    )
     # validated if any token
     if extracted is None:
         return render_template(
@@ -162,10 +164,10 @@ def change_password(token: str) -> Response:
             view_ref='auth.signup',
         )
     # else
-    name, pswd = extracted.pop('username'), extracted.pop('password')
+    mail_address, pswd = extracted.pop('mail_address'), extracted.pop('password')
     # check timestamp
-    user = User.query.filter_by(username=name, password=pswd).first()
-    if user is None:
+    user = User.query.filter_by(email=mail_address, password=pswd).first()
+    if user is None or not RevokeMailRecord.exists(mail_address):
         return render_template(
             'transport//revoke-error-token.html',
             view_name='Revoke Password',

@@ -73,6 +73,7 @@ class DescriableCommand(Command):
         self.__help_text = help_text if help_text is not None else self.class_help
         self.__help_text = help_text
 
+
     @property
     def description(self):
         desc = self.__description if self.__description is not None else ''

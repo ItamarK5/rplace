@@ -6,7 +6,6 @@ from threading import Lock
 from .extensions import redis, cache
 
 
-board_lock = Lock()
 _BOARD_REDIS_KEY = 'board'
 board_temp = b'\x00' * 500 * 1000
 
@@ -20,6 +19,7 @@ def make_board() -> bool:
     if not redis.exists(_BOARD_REDIS_KEY):
         return bool(redis.set(_BOARD_REDIS_KEY, '\00' * 1000 * 500))
     return True
+
 
 def set_at(x: int, y: int, color: int) -> None:
     """
@@ -41,24 +41,34 @@ def get_board() -> bytes:
     """
     :return: returns a copy of the board in bytes format
     """
-    b = redis.get(_BOARD_REDIS_KEY)
-    return b
+    return redis.get(_BOARD_REDIS_KEY)
 
 
+def drop_board() -> bool:
+    """
+    deletes the board
+    :return: if board was deleated
+    :rtype: bool
+    """
+    if not redis.exists(_BOARD_REDIS_KEY):
+        return False
+    return bool(redis.delete(_BOARD_REDIS_KEY))
+
+
+"""
 def debug_board() -> None:
-    """
-    :return: prints the board, for debug purpose
-    """
+    #:return: prints the board, for debug purpose
+    
     brd = get_board()
     for i in range(1000):
         print(brd[i * 500:(i + 1) * 500])
-
+"""
 
 __all__ = [
     'make_board',
     'set_at',
-    'init_app',
     'board_lock',
+    'drop_board'
     'get_board',
-    'debug_board'
+    # 'debug_board'
 ]
