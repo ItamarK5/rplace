@@ -59,13 +59,18 @@ class IPv4QuickForm(
 
 class DescriableCommand(Command):
     """
-    simple command but with options to describe itself
+        simple command but with options to describe itself,
     """
+    # class help and class_description are utility for commands
+    class_help: Optional[str] = None
+    class_description: Optional[str] = None
+
     def __init__(self, func=None,
                  description: Optional[str] = None,
                  help_text: Optional[str] = None):
         super().__init__(func)
-        self.__description = description
+        self.__description = description if description is not None else self.class_description
+        self.__help_text = help_text if help_text is not None else self.class_help
         self.__help_text = help_text
 
     @property

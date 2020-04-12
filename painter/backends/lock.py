@@ -12,13 +12,9 @@ _enable_edit_board = _ENABLE  # determine if can shutdown the server
 _flag_lock = False
 
 
-def create_object():
+def create_var():
     if not redis.exists(_ENABLE_EDIT_BOARD_KEY):
         redis.set(_ENABLE_EDIT_BOARD_KEY, _ENABLE)  # default allow
-
-
-def init_app(app: Flask) -> None:
-    app.before_first_request(create_object)
 
 
 def is_enabled() -> bool:

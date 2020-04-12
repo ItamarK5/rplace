@@ -1,8 +1,9 @@
+"""
+ A backend to work with the board on redis
+"""
 from threading import Lock
-from flask import Flask
 
 from .extensions import redis, cache
-""" A backend to work with the board on redis """
 
 
 board_lock = Lock()
@@ -10,25 +11,15 @@ _BOARD_REDIS_KEY = 'board'
 board_temp = b'\x00' * 500 * 1000
 
 
-def make_board() -> None:
+def make_board() -> bool:
     """
-    :return: nothing
+    :return: if there is a board
     check if there is a board object in redis
     if not creates new one
     """
     if not redis.exists(_BOARD_REDIS_KEY):
-        redis.set(_BOARD_REDIS_KEY, '\00' * 1000 * 500)
-
-
-def init_app(app: Flask) -> None:
-    """
-    :param app: a flask appilcation
-    :return: nothing
-    runs functions on the app before sarting the application
-    -- creates the board
-    """
-    app.before_first_request(make_board)
-
+        return bool(redis.set(_BOARD_REDIS_KEY, '\00' * 1000 * 500))
+    return True
 
 def set_at(x: int, y: int, color: int) -> None:
     """

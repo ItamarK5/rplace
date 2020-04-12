@@ -16,6 +16,7 @@ def send_mail(subject: str,
               html: str,
               attachments: List[Dict[str, Any]]) -> None:
     # import app of mail
+    print('mail')
     from .mail_worker import app
     with app.app_context():
         message = Message(
@@ -25,7 +26,6 @@ def send_mail(subject: str,
             html=html
         )
         for attach in attachments:
-            print(app.root_path)
             with app.open_resource(path.join('web', attach['path']), attach['read_mode']) as resource:
                 message.attach(
                     content_type=attach['content_type'],
@@ -33,6 +33,5 @@ def send_mail(subject: str,
                     disposition=attach['disposition'],
                     headers=attach['headers']
                 )
-        print(app.config)
         mailbox.send(message)
 

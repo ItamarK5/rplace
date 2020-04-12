@@ -1,16 +1,19 @@
 """
 Name: app.py
-Auther: Itamar Kanne
+Author: Itamar Kanne
 Handles generating the app
 """
 from __future__ import absolute_import
 
+# must monkey patch
+import eventlet
+
+eventlet.monkey_patch()
+
+
 from os import path
 # backends
 from typing import Dict, Any, Optional
-
-import eventlet
-eventlet.monkey_patch()
 
 from celery import Celery
 from flask import Flask
@@ -32,7 +35,6 @@ from .others.utils import get_env_path, load_configuration, set_env_path
 celery = Celery(
     __name__,
     backend='amqp://guest@localhost//',
-    result='db+sqlite:///results.db'
 )
 # to register tasks
 
@@ -99,6 +101,7 @@ def _create_app(config: Dict[str, Any],
     app.register_blueprint(accounts.accounts_router)
     app.register_blueprint(admin.admin_router)
     app.register_blueprint(others.other_router)
+    # some backends register
     redis.init_app(app)
     board.init_app(app)
     lock.init_app(app)

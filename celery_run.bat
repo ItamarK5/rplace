@@ -1,1 +1,0 @@
-start venv\Scripts\celery.exe -A celery worker -P eventlet -c 1000 -h %hi

@@ -1,12 +1,11 @@
 """
-Author: Itamar Kanne
-the manager module decorates the app by command line parameter
-the module is based of flask_script module
-https://flask-script.readthedocs.io/en/latest/
+    Author: Itamar Kanne
+    the manager module decorates the app by command line parameter
+    the module is based of flask_script module
+    https://flask-script.readthedocs.io/en/latest/
 """
 import subprocess
 import sys
-from typing import Optional, Union, List
 from flask import current_app
 from flask_script import Manager, Server, Option, Command
 from flask_script.cli import prompt_bool, prompt_choices, prompt
@@ -21,6 +20,7 @@ from .others.utils import (
     CONFIG_FILE_PATH_KEY, try_save_config, DescriableCommand, config_name_utility,
     parse_value, parse_service_options, check_service_flag
 )
+from .backends import board, lock
 from .others.constants import DURATION_OPTION_FLAG, PRINT_OPTION_FLAG, SERVICE_RESULTS_FORMAT
 import time
 
@@ -32,8 +32,9 @@ manager = Manager(
     description='Social Painter CMD Starter,'
                 'Its helps throught'
 )
-manager.add_option('--c', '-config', dest='config_path', required=False)
-manager.add_option('--D', '-default', dest='set_env', action='store_true', required=False)
+manager.add_option('--c', '-config', dest='config_path', required=False, help='Configuration file to use')
+manager.add_option('--D', '-default', dest='set_env', action='store_true', required=False,
+                   help='If to set the configuration option that passed as default')
 manager.add_option('--t', '-title', dest='title', required=False)
 
 
@@ -194,19 +195,21 @@ class CreateUser(Command):
             print('user created successfully')
 
 
-class CeleryWorker(Command):
+class CeleryWorker(DescriableCommand):
     """Starts the celery worker."""
-    name = 'celery'
-
-    def run(self):
+    capture_all_args = True
+    help = 'Start mail celery worker'
+    def run(self, argv):
         ret = subprocess.call(
-            ['venv/scripts/celery.exe', 'worker', '-A', 'painter.tasks.mail_worker.celery', '-P', 'eventlet']
+            ['venv/scripts/celery.exe', 'worker',
+             '-A', 'painter.tasks.mail_worker.celery', '-P', 'eventlet'] + argv
         )
         sys.exit(ret)
 
 
+
 # adding command
-manager.add_command('celery', CeleryWorker)
+manager.add_command('celery-mail', CeleryWorker)
 manager.add_command("runserver", RunServer())
 manager.add_command("create-user", CreateUser())
 
@@ -512,3 +515,56 @@ check_services_command.add_option(Option(
     )
 ))
 manager.add_command('check-services', check_services_command)
+
+# work on this
+def start_redis(check_board=False, check_lock=False, drop_board=False, drop_lock=False):
+    """
+    :param check_board: if to check if board exists
+    :type check_board: bool
+    :param check_lock: if to check if lock exists
+    :type check_lock
+    :return: nothing
+
+    """
+    if check_board and check_lock:
+        check_board = True
+        check_lock = True
+    # check redis
+    try:
+        redis.ping()
+        print('Redis Works')
+    except Exception as e:
+        print('While Checking Redis')
+        print(repr(e))
+        return
+    if check_board or drop_board:
+        # try
+        try:
+            if drop_board:
+
+                board.make_board()
+            print('Board build successfully')
+        except Exception as e:
+            print(repr(e))
+    if check_lock:
+        try:
+            lock.create_var()
+            print('Board build successfully')
+        except Exception as e:
+            print(repr(e))
+    print('Command ended created board and lock')
+
+
+start_redis_command = Command(start_redis)
+check_services_command.add_option(Option(
+    '--B', '-Board', dest='board_flag', action='store_false', help='to not check board on redis'
+))
+check_services_command.add_option(Option(
+    '--b', '-board', dest='board_flag', action='store_true', help='to check board on redis'
+))
+check_services_command.add_option(Option(
+    '--B', '-Lock', dest='lock_flag', action='store_false', help='to recreate lock on redis'
+))
+check_services_command.add_option(Option(
+    '--b', '-lock', dest='lock_flag', action='store_true', help='to not recreate lock on redis'
+))
