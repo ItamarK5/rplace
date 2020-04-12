@@ -19,6 +19,7 @@ from painter.backends.extensions import (
     mailbox, login_manager, cache,
     csrf, redis
 )
+from painter.backends import board, lock
 from painter.backends.skio import sio
 from .others.constants import CELERY_TITLE
 from .others.filters import add_filters
@@ -96,9 +97,7 @@ def _create_app(config: Dict[str, Any],
     app.register_blueprint(accounts.accounts_router)
     app.register_blueprint(admin.admin_router)
     app.register_blueprint(others.other_router)
-    """
-    rds_backend.init_app(app)
+    redis.init_app(app)
     board.init_app(app)
     lock.init_app(app)
-    """
     return app

@@ -37,8 +37,8 @@ class TokenSerializer(object):
             salt=app.config['TOKEN_REVOKE_SALT'],
         )
 
-    @classmethod
-    def get_max_age(self):
+    @staticmethod
+    def get_max_age():
         return current_app.config.get('MAX_AGE_USER_TOKEN', 3600)
 
 

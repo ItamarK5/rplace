@@ -101,8 +101,7 @@ def revoke() -> Response:
                     'password': user.password
                 })
             )
-            # return template ok
-            pass
+            render_template('transport/complete-revoke-form.html')
         else:
             """render_template('transport/revoke-unknown-user.html')"""
     return render_template('forms/revoke.html', form=form)
@@ -156,13 +155,12 @@ def change_password(token: str) -> Response:
     # timestamp error
     if isinstance(extracted, str):
         return render_template(
-            'transport//base.html',
+            'transport//signup-token-expires.html',
             view_name='Signup',
             page_title='Over Time',
             title='Over Time',
             view_ref='auth.signup',
         )
-    print(extracted)
     # else
     name, pswd = extracted.pop('username'), extracted.pop('password')
     # check timestamp
@@ -175,7 +173,7 @@ def change_password(token: str) -> Response:
         )
     form = ChangePasswordForm()
     if not form.validate_on_submit():
-        return render_template('forms/revoke2.html', form=form)
+        return render_template('forms/revoke-token-expires.html', form=form)
     else:
         new_password = form.password.data
         user.set_password(new_password)
@@ -201,10 +199,6 @@ def confirm(token: str) -> Response:
             'transport//base.html',
             view_name='Sign Up',
             view_ref='auth.signup',
-            title='You Made a Mess',
-            page_title='non valid Token',
-            message='The token you entered is not valid, did you messed with him?'
-                    ' if you can\'t access the original mail pless sign-up again'
         )
     # else get values
     token, timestamp = extracted
