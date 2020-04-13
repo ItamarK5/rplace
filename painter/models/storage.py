@@ -10,11 +10,25 @@ from sqlalchemy.orm.exc import NoResultFound
 from datetime import datetime, timedelta
 from painter.backends.extensions import datastore
 from flask_sqlalchemy import BaseQuery
+import re
+from flask import Flask
+from painter.others.constants import DEFAULT_MAX_AGE_USER_TOKEN
+
+catch_pattern = re.compile(r'((?:^[a-z]|[A-Z])(?:[a-z]+)?)')
+
+
+def to_small_case(string: str) -> str:
+    """
+    :param string: string in format of upper case
+    :return: translates it into
+    """
+    return '_'.join(word.lower() for word in catch_pattern.findall(string))
+
 
 ExpireModels = []
 
 
-class ExpiredTextMixin(object):
+class CacheTextMixin(object):
     """
      An base for classes that inherit the flask_sqlalchemy model class
      that classes is a simple table cache, stores values for a limited amount of time
@@ -31,6 +45,7 @@ class ExpiredTextMixin(object):
         ExpireModels.append(cls)
     # its a class method
 
+
     @declared_attr
     def identity_column(cls) -> Column:
         return Column(
@@ -40,8 +55,12 @@ class ExpiredTextMixin(object):
             nullable=False
         )
 
+    @declared_attr
+    def __tablename__(cls):
+        return to_small_case(cls.__name__)
+
     @classmethod
-    def get_identified(cls, identity_string: str) -> 'ExpiredTextMixin':
+    def get_identified(cls, identity_string: str) -> 'CacheTextMixin':
         return cls.query.filter(cls.identity_column == identity_string).first()
 
     @classmethod
@@ -135,38 +154,39 @@ class ExpiredTextMixin(object):
             datastore.session.commit()
 
 
-class SignupMailRecord(datastore.Model, ExpiredTextMixin):
+class SignupMailRecord(datastore.Model, CacheTextMixin):
     """
         Used to cache a name of a new user.
         to prevent other users from using it
     """
-    __tablename__ = 'sign_up_mail_record'
-    max_expires_seconds = 900
     identity_column_name = 'mail_address'
     identity_max_length = 254
 
 
-class SignupUsernameRecord(datastore.Model, ExpiredTextMixin):
+class SignupNameRecord(datastore.Model, CacheTextMixin):
     """
         Used to cache a mail of a new user
         to prevent reuse of it and re-mailing over and over again
     """
-    __tablename__ = 'sign_up_username_record'
-    max_expires_seconds = 3600
     identity_column_name = 'username'
     identity_max_length = 15
 
 
-class RevokeMailRecord(datastore.Model, ExpiredTextMixin):
-    __tablename__ = 'revoke_mail_address_record'
-    max_expires_seconds = 3600
+class RevokeMailAttempt(datastore.Model, CacheTextMixin):
     identity_column_name = 'address'
     identity_max_length = 254
 
 
+def init_storage_models(app: Flask) -> None:
+    RevokeMailAttempt.max_expires_seconds = app.config.get('MAX_AGE_USER_TOKEN', DEFAULT_MAX_AGE_USER_TOKEN)
+    SignupNameRecord.max_expires_seconds = app.config.get('MAX_AGE_USER_TOKEN', DEFAULT_MAX_AGE_USER_TOKEN)
+    SignupMailRecord.max_expires_seconds = app.config.get('MAX_AGE_USER_TOKEN', DEFAULT_MAX_AGE_USER_TOKEN)
+
+
 __all__ = [
     'SignupMailRecord',
-    'SignupUsernameRecord',
-    'RevokeMailRecord',
-    'ExpireModels'
+    'SignupNameRecord',
+    'RevokeMailAttempt',
+    'ExpireModels',
+    'init_storage_models'
 ]

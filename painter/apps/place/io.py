@@ -85,7 +85,7 @@ def set_board(params: Any) -> str:
             board[y, x // 2] |= clr << 4
         """
         #        board.set_at(x, y, color)
-        return json.dumps({'code': 'time', 'value': str(next_time)})
+        return json.dumps({'code': 'time', 'status': str(next_time)})
     except Exception as e:
         print(e, e.args)
         return 'undefined'

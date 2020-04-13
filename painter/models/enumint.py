@@ -1,3 +1,7 @@
+"""
+Name: enumint
+Contains the enumint class support, a utility to save small integer enums (with 64 or less args) in sql
+"""
 from enum import IntEnum
 from typing import Type, Any
 

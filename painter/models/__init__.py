@@ -5,6 +5,6 @@ from .storage import *
 
 __all__ = [
     'Note', 'Record', 'Role', 'User',
-    'SignupUsernameRecord', 'SignupMailRecord', 'RevokeMailRecord',
-    'Record', 'ExpireModels'
+    'SignupNameRecord', 'SignupMailRecord', 'RevokeMailAttempt',
+    'Record', 'ExpireModels', 'init_storage_models'
 ]

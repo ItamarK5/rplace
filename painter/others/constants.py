@@ -51,6 +51,7 @@ FLAG_SERVICES_OPTINOS = {
     DURATION_OPTION_FLAG: ('timeout', 't'),  # if display timeout
 }
 
+DEFAULT_MAX_AGE_USER_TOKEN = 3600
 
 class ServiceResultsPrint:
     """

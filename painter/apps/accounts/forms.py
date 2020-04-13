@@ -12,7 +12,7 @@ from painter.others.quick_validation import (
     HashPasswordFieldMixin,
     QuickForm
 )
-from painter.models import SignupUsernameRecord, SignupMailRecord, RevokeMailRecord
+from painter.models import SignupNameRecord, SignupMailRecord, RevokeMailAttempt
 
 """
 FlaskForms Mixin
@@ -107,7 +107,7 @@ class RevokePasswordForm(FlaskForm,
     title = 'Chnage Your Password'
 
     def validate_email(self, field) -> None:
-        if RevokeMailRecord.exists(field.data):
+        if RevokeMailAttempt.exists(field.data):
             raise ValidationError('You need to wait 15 minutes before you can use revoke mail again')
 
 
@@ -136,7 +136,7 @@ class SignUpForm(FlaskForm,
         is_dup_name = (
                 User.query.filter_by(username=self.username.data).first() is not None
                 and
-                SignupUsernameRecord.exists(self.username.data)
+                SignupNameRecord.exists(self.username.data)
         )
         is_dup_email = (
                 User.query.filter_by(email=self.email.data).first() is not None

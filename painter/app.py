@@ -24,7 +24,7 @@ from painter.backends.extensions import (
     mailbox, login_manager, cache,
     csrf, redis
 )
-from painter.backends import board, lock
+from painter.models import init_storage_models
 from painter.backends.skio import sio
 from .others.constants import CELERY_TITLE
 from .others.filters import add_filters
@@ -104,6 +104,8 @@ def _create_app(config: Dict[str, Any],
     redis.init_app(app)
     celery.conf.update(app.config)
     add_filters(app)
+    # init storage models
+    init_storage_models(app)
     # insert blueprints
     from .apps import others, place, accounts, admin
     app.register_blueprint(place.place_router)

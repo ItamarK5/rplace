@@ -5,7 +5,7 @@ from flask import render_template
 from flask_login import logout_user, login_user
 from werkzeug.wrappers import Response
 
-from painter.models.storage import SignupUsernameRecord, SignupMailRecord, RevokeMailRecord
+from painter.models.storage import SignupNameRecord, SignupMailRecord, RevokeMailAttempt
 from painter.backends.extensions import datastore
 from painter.models import User
 from .forms import LoginForm, SignUpForm, RevokePasswordForm, ChangePasswordForm, SignUpTokenForm, RevokeTokenForm
@@ -58,7 +58,7 @@ def signup() -> Response:
         # to hex to prevent any chance of decode the key and then changing it to SQL function
         pswd = User.encrypt_password(pswd, name)
         # sending the mail
-        SignupUsernameRecord.force_add(name)
+        SignupNameRecord.force_add(name)
         SignupMailRecord.force_add(email)
         send_signing_up_message(
             name,
@@ -91,7 +91,7 @@ def revoke() -> Response:
         after user validation checks if the user exists
         """
         user = User.query.filter_by(email=form.email.data).first()
-        RevokeMailRecord.create_new(form.email.data)
+        RevokeMailAttempt.create_new(form.email.data)
         if user is not None:
             # error handling
             send_revoke_password_message(
@@ -167,7 +167,7 @@ def change_password(token: str) -> Response:
     mail_address, pswd = extracted.pop('mail_address'), extracted.pop('password')
     # check timestamp
     user = User.query.filter_by(email=mail_address, password=pswd).first()
-    if user is None or not RevokeMailRecord.exists(mail_address):
+    if user is None or not RevokeMailAttempt.exists(mail_address):
         return render_template(
             'transport//revoke-error-token.html',
             view_name='Revoke Password',
@@ -180,7 +180,7 @@ def change_password(token: str) -> Response:
         new_password = form.password.data
         user.set_password(new_password)
         # then forget
-        RevokeMailRecord.force_forget(mail_address)
+        RevokeMailAttempt.force_forget(mail_address)
     return render_template('transport/complete-signup.html')
 
 

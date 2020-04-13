@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import re
 import random
 from os import path, listdir
@@ -9,7 +10,7 @@ from flask import (
 )
 from flask_wtf.csrf import CSRFError  # ignore all
 from werkzeug.exceptions import HTTPException
-
+from painter.others.utils import auto_redirect
 from painter.others.constants import MIME_TYPES
 from . import other_router
 from .utils import get_file_type, has_matched_image, is_ajax_request, render_error_page
@@ -81,9 +82,5 @@ def serve_static(key: str) -> Response:
 
 @other_router.route('/favicon.ico', methods=('GET',))
 def serve_icon() -> Response:
-    return send_from_directory(
-        path.join(current_app.root_path, 'web', 'static', 'ico'),
-        'favicon.ico',
-        mimetype=MIME_TYPES['ico']
-    )
+    return serve_static('favicon.ico')
 

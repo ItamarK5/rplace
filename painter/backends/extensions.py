@@ -6,6 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect
 from sqlalchemy import create_engine
 
+
 mailbox = Mail()
 redis = FlaskRedis()
 datastore = SQLAlchemy()

@@ -357,17 +357,18 @@ def parse_config(config_name, only_create=None):
     if config_name not in all_configuration:
         raise InvalidCommand('Title {0} not found'.format(config_name))
     config = all_configuration[config_name]
-    key = prompt('Parsing changes to configuration, to exit enter nothing\n[KEY]:', default='EXIT')
-    while key.upper() != 'EXIT':
-        key = config_name_utility(key)
-        if key in config and only_create:
-            print('Key {0} already registered in the configuration {1}'.format(config_name, key))
-        else:
-            config_val = parse_value()
-            if config_val is not None:
-                config[key] = config_val
-            # else
-            key = prompt('Parsing changes to configuration, to exit enter nothing\n[KEY]:', default='EXIT')
+    key = prompt('Parsing changes to configuration, to exit enter __EXIT__\n[KEY]:', default='')
+    while key.upper() != '__EXIT__':
+        if key:
+            key = config_name_utility(key)
+            if key in config and only_create:
+                print('Key {0} already registered in the configuration {1}'.format(config_name, key))
+            else:
+                config_val = parse_value()
+                if config_val is not None:
+                    config[key] = config_val
+                # else
+        key = prompt('Parsing changes to configuration, to exit enter __EXIT__\n[KEY]:', default='')
     try_save_config(config)
 
 
@@ -536,7 +537,8 @@ def redis_database(board_operator=None, lock_operator=None, apply_all=None):
         print('Redis Works')
     except Exception as e:
         print('While Checking Redis encouter error')
-        print(str(e))
+        print(repr(e))
+        return
         # try
     if board_operator is not None:
         try:
@@ -604,6 +606,7 @@ redis_database_command.add_option(Option(
 ))
 
 manager.add_command('redis', redis_database_command)
+
 
 def clear_cache():
     """

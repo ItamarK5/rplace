@@ -949,11 +949,10 @@ const pen = {
                 // else it must be json
                 data = JSON.parse(value);
                 console.log(data)
-                if (data.code == 'lock' && data.value == 'true') {
+                if (data.code == 'lock' && data.status == 'true') {
                     lockedStates.lock()
                 } else if (data.code == 'time') {
-                    console.log(data.value)
-                    progress.setTime(data.value)
+                    progress.setTime(data.status)
                 }
             });
         }
@@ -1347,6 +1346,9 @@ $(document).ready(function() {
                     pen.setCenterPos()
                 }
                 break;
+            }
+            case 'KeyT': {
+                nonSweetClick('#zoom-button')
             }
             case 'KeyG': {
                 cursor.lockCursor(Cursors.FindMouse);

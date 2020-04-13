@@ -7,8 +7,8 @@ from flask import Flask, redirect, url_for, flash
 from flask import current_app
 from flask_login import current_user
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
-
-from ...others.quick_validation import QuickForm
+from painter.others.constants import DEFAULT_MAX_AGE_USER_TOKEN
+from painter.others.quick_validation import QuickForm
 from .router import accounts_router
 
 
@@ -39,7 +39,7 @@ class TokenSerializer(object):
 
     @staticmethod
     def get_max_age():
-        return current_app.config.get('MAX_AGE_USER_TOKEN', 3600)
+        return current_app.config.get('MAX_AGE_USER_TOKEN', DEFAULT_MAX_AGE_USER_TOKEN)
 
 
 @accounts_router.before_app_first_request

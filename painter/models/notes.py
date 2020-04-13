@@ -71,6 +71,7 @@ class Note(datastore.Model):
         """
         return self.post_date == self.post_date
 
+
 class Record(Note):
     id = Column(Integer(), ForeignKey('note.id'), primary_key=True)
     active = Column(BOOLEAN(), nullable=False)
