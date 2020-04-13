@@ -31,12 +31,12 @@ const MakeNoteRow = (note) => {
 
 
 /**
- * @name isNotFoundResponse
- * @param {XMLHttpResponse} xhr 
+ * @name hasNotFoundResponse
+ * @param {XMLHttpRequest} xhr 
  * @return {Boolean} if its a 404 response (not found)
  * @summary checks if the context isnt found
  */
-const isNotFoundResponse = (xhr) => _.has(xhr, 'status') && xhr.status == 404;
+const hasNotFoundResponse = (xhr) => _.has(xhr, 'status') && xhr.status == 404;
 
 // create page button from page data
 function makePageButton(num, text=null){
@@ -44,7 +44,7 @@ function makePageButton(num, text=null){
         text = _.isNull(num) ? 'none' : num.toString() 
     }
     // then
-    is_disabled =  _.isNull(num) || isNaN(num);
+    let is_disabled =  _.isNull(num) || isNaN(num);
     let button = $('<button></button>').attr({
         type:'button',
         href: is_disabled ? 'none' : num.toString()
@@ -52,7 +52,6 @@ function makePageButton(num, text=null){
     if(is_disabled){
         button.addClass('disabled')
     }
-    console.log(button)
     return button
 }
 
@@ -137,8 +136,8 @@ const notes = {
     },
     makeHistory(){
         history_table.children('tr').remove();
-        this.query.forEach((value, idx) => {
-            history_table.append(MakeNoteRow(value, idx))
+        this.query.forEach((value) => {
+            history_table.append(MakeNoteRow(value))
         });
         // events
         $('.note-history-row').hover(
@@ -193,10 +192,14 @@ const notes = {
             } else if($(this).hasClass('active')){
                 e.preventDefault()
             } else {
-                ajaxGetPage(this.getAttribute('href'))
+                let href = parseInt(this.getAttribute('href'));
+                ajaxGetPage(isNaN(href) ? 0 : href)
             }
         });
     },
+    /**
+     * @param {number} remove_note_id 
+     */
     removeNote(remove_note_id){
         this.notes = _.filter(this.notes, (note) => note.id != remove_note_id)
         $(`.note-history-row[data-item="${remove_note_id}"]`).remove();
@@ -222,12 +225,12 @@ function ajaxErrorAlert(error, result_func) {
 
 // get page by ajax request
 /**
- * @param {Number} page 
+ * @param {Number} page page to get
  */
 function ajaxGetPage(page=1){
     return $.get({
         url:'/get-notes',
-        data: {name:GetUserName(), page:parseInt(page)},       
+        data: {name:GetUserName(), page:page}, 
         contentType: 'application/json;charset=UTF-8',
         success: (data) => {
             notes.pages=data.pages;
@@ -244,9 +247,17 @@ function ajaxGetPage(page=1){
 }
 
 // serialize form
+// add serializeForm
+/**
+ * @method serializeForm
+ * serialize a form, returns dictionary of all fields fromserialize array
+ * 
+ */
+//@ts-ignore
 $.fn.serializeForm = function() {
     var output = { csrf_token : csrf_token };
     var fields_array = this.serializeArray();
+    // check each object in the array
     $.each(fields_array, function() {
         if (output[this.name]) {
             if (!output[this.name].push) {
@@ -259,6 +270,11 @@ $.fn.serializeForm = function() {
     });
     return output;
 };
+
+/**
+ * @name ready
+ * event apply when DOM can be changed via javascript safely
+ */
 
 // run when ready, when its safe to edit html elements 
 $(document).ready(() => {
@@ -283,6 +299,7 @@ $(document).ready(() => {
         $('.error-list').children().remove();
         e.preventDefault();
         let args = $(this).serializeForm();
+        // post request
         $.post({
             url:$(this).attr('action'),
             method:'POST',
@@ -314,6 +331,7 @@ $(document).ready(() => {
         if (!success_message.hasAttribute('hidden')) {
             success_message.toggleAttribute('hidden');
         }
+        //@ts-ignore
         let args = $(this).serializeForm();
         $('#note-form .error-list').children().remove();
         e.preventDefault();
@@ -419,9 +437,9 @@ $(document).ready(() => {
                     notes.removeNote(note_idx)
                 },
             }).catch((error) => {
-                if(isNotFoundResponse(error)){
+                if(hasNotFoundResponse(error)){
                     // then the note isnt found so it must have been deleted
-                    display.remove_note(note_id)
+                    notes.removeNote(note_id)
                 }
                 ajaxErrorAlert(error)
             })
@@ -453,7 +471,7 @@ $(document).ready(() => {
                 }
             }).catch(error => {
                 //throw ajax alert
-                if(isNotFoundResponse(error)){
+                if(hasNotFoundResponse(error)){
                     notes.removeNote(note_id)
                 }
                 ajaxErrorAlert(error);

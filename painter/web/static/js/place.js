@@ -1,4 +1,3 @@
-/* level of functions 1) the interaction 2) setting the mapArea 3) a function that affect the board as result of change in mapArea*/
 /** @const BACKGROUND_COLOR */
 const BACKGROUND_COLOR = '#777777'
 /**  @const CANVAS_SIZE size of the canvas */
@@ -11,16 +10,44 @@ const MIN_SCALE = 0.5;
 const MAX_SCALE = 50;
 // default cooldown between drawss
 const DRAW_COOLDOWN = 60;
-/** @constant {Number} PROGRESS_COOLDWN interval of time between each check to update the progress*/
+/** @constant {number} PROGRESS_COOLDWN interval of time between each check to update the progress*/
 const PROGRESS_COOLDOWN = 100;
+
 //regex to get hash\argument url staff
+/** @const {RegExp} reHashX  Hash x regex, used to find the x arg in the hash argument of the url*/
 const reHashX = /(?<=(^#|.+&)x=)\d+(?=&|$)/i;
+
+/** @const {RegExp} reHashY  Hash y regex, used to find the y arg in the hash argument of the url*/
 const reHashY = /(?<=(^#|.+&)y=)\d+(?=&|$)/i;
+
+/** @const {RegExp} reHashScale  Hash scale regex, used to find the scale arg in the hash argument of the url */
 const reHashScale = /(?<=(^#|.+&)scale=)(\d{1,2}|0\.5)(?=&|$)/i;
+
+/** @const {RegExp} reHashX  Hash x regex, used to find the x arg in the hash argument of the url*/
 const reArgX = /(?<=(^\?|.+&)x=)\d+(?=&|$)/i;
+
+/** @const {RegExp} reHashY  Arg y regex, used to find the y arg in the arguments of the url*/
 const reArgY = /(?<=(^\?|.+&)x=)\d+(?=&|$)/i;
+
+/** @const {RegExp} reHashScale  Arg scale regex, used to find the scale arg in the arguments of the url */
 const reArgScale = /(?<=(^\?|.+&)scale=)(\d{1,2}|0\.5)(?=&|$)/i;
-// Direction map for moving with keys
+
+// @ts-ignore
+const io = window.io;
+const Swal = window.Swal;
+//@ts-ignore
+const jQuery = window.jQuery;
+const _ = window._;
+//@ts-ignore
+const ClipboardJS = window.ClipboardJS;
+/**
+ * @const {Array.<{key:string, dir:number[], set:boolean}>} DIRECTION_MAP 
+ * @description
+ * map to use for the moving keys.
+ *  key: the specific pressed to respond
+ *  dir: direction moving
+ *  set: if is set 
+*/
 const DIRECTION_MAP = [
     {
         key: 'ArrowLeft',
@@ -43,13 +70,14 @@ const DIRECTION_MAP = [
         set: false
     } // down
 ];
-// The default big zoom level
+/** @const {number} SIMPLE_ZOOM_LEVEL the default big zoom level */
 const SIMPLE_ZOOM_LEVEL = 40;
 // the default small zoom level
+/** @const {number} SIMPLE_UNZOOM_LEVEL the default small zoom level */
 const SIMPLE_UNZOOM_LEVEL = 4;
+/** @const {number} DEFAULT_START_AXIS the center of the board 500, where starting if no other arguments are found {@linkcode mapFrags} */
 const DEFAULT_START_AXIS = 500;
-const DEFAULT_SCALE_MULTIPLAYER = SIMPLE_ZOOM_LEVEL;
-// io
+/** @const {io.SocketIO} the scoketio object to talk with the server */
 const sock = io('/paint', {
     autoConnect: false,
     transports: ['websocket'] // or [ 'websocket', 'polling' ], which is the same thing
@@ -59,40 +87,50 @@ const sock = io('/paint', {
  * @summary wrapper function to recconect using io, to only run it 5 seconds after sock.io run it
  */
 const try_reconnect = _.throttle(() => sock.try_reconnect(), 5000, {leading: false, trailing:false})
-const getFirstIfAny = (group) => _.isNull(group) ? null : group[0]
 /**
- * 
- * @param {Number} v 
- * @param {Number} max 
- * @param {Number} min 
- * @returns {Number} v if is in the range of min and max, 
+ * @function
+ * @typedef {*} local_type local type generic
+ * @param {?Array.<local_type>} group group of objects
+ * @returns {?local_type} first item or null
+ * returns returns first item in group, if cant returns null
+ */
+const getFirstIfAny = (group) => !group ? null : group[0]
+/**
+ * @function
+ * @param {number} v value
+ * @param {number} max maximum value
+ * @param {number} min minimum value
+ * @returns {number} v if is in the range of min and max, 
  * otherwise returns min if the number if lower then min else max (higher then max)
  */
 const clamp = (v, max, min) => Math.max(min, Math.min(v, max));
 /**
  * 
- * @param {Number} scale 
+ * @param {number} scale 
  * @returns {boolean} if valid scale
  */
 const isValidScale = scale => MIN_SCALE <= scale && scale <= MAX_SCALE;
 /**
  * 
- * @param {Number} v an axis position
- * @returns {Boolean} if the position is valid (x or y)
+ * @param {number} v an axis position
+ * @returns {boolean} if the position is valid (x or y)
+ * @summary max CANVAS_SIZE, min limit 0
  */
 const isValidPos = v => 0 <= v && v < CANVAS_SIZE;
 /**
  * 
- * @param {Any} num a numebr suppose to be index of a Palette color (look down)
- * @returns {Boolean} if its a number
+ * @param {*} num value suppose to be index of a Palette color (look down)
+ * @returns {boolean} if its a valid color index
+ * @summary between(0, 16) include and in number
  */
-const isValidColor = num => Number.isInteger(num) && num >= 0 && num < 16
+const isValidColor = num => typeof num == 'number' && num >= 0 && num < 16
 /**
- * @returns {Boolean} if there any sweet alerts messages open
+ * @returns {boolean} if there any sweet alerts messages open
  */
 const isSwalClose = () => _.isUndefined($('.swal2-container')[0])
 /**
- * @returns {Date} time in UTC
+ * @returns {number} time in UTC
+ * @summary get current UTC time
  */
 const getUTCTimestamp = () => {
     let tm = new Date();
@@ -103,8 +141,29 @@ const getUTCTimestamp = () => {
         tm.getUTCHours(),
         tm.getUTCMinutes(),
         tm.getUTCSeconds(),
-        tm.getUTCMilliseconds())
+        tm.getUTCMilliseconds()
+    )
 }
+
+/**
+ * @function
+ * @returns {?number} map frag val or null
+ * @summary get a map pos value from regex check
+ */
+const getMapPos = _.compose(
+    parseInt, 
+    getFirstIfAny
+)
+
+/**
+ * @function
+ * @returns {?number} map frag val or null
+ * @summary get a map scale value from regex check
+ */
+const getMapScale = _.compose(
+    parseFloat, getFirstIfAny
+)
+
 
 /* View in fullscreen */
 /**
@@ -116,43 +175,55 @@ function openFullscreen() {
     if (elem.requestFullscreen) {
         elem.requestFullscreen();
     }
+    //@ts-ignore
     else if (elem.mozRequestFullScreen) {
         /* Firefox */
+        //@ts-ignore
         elem.mozRequestFullScreen();
     }
+    //@ts-ignore
     else if (elem.webkitRequestFullscreen) {
         /* Chrome, Safari and Opera */
+        //@ts-ignore
         elem.webkitRequestFullscreen();
     }
+    //@ts-ignore
     else if (elem.msRequestFullscreen) {
         /* IE/Edge */
+        //@ts-ignore
         elem.msRequestFullscreen();
     }
 }
 /**
- * @summary close full screen
+ * @summary close full screen (use also for non support)
  * https://www.w3schools.com/howto/howto_js_fullscreen.asp
  */
-function closeFullscreen() {
+ function closeFullscreen() {
     if (document.exitFullscreen) {
         document.exitFullscreen();
     }
+    //@ts-ignore
     else if (document.mozCancelFullScreen) {
         /* Firefox */
+        //@ts-ignore
         document.mozCancelFullScreen();
     }
+    //@ts-ignore
     else if (document.webkitExitFullscreen) {
         /* Chrome, Safari and Opera */
+        //@ts-ignore
         document.webkitExitFullscreen();
     }
+    //@ts-ignore
     else if (document.msExitFullscreen) {
         /* IE/Edge */
-        document.msExitFullscreen();
+        //@ts-ignore
+       document.msExitFullscreen();
     }
 }
+
 /**
- * @name nonSweetClick
- * @param {jQuerySelector} selector 
+ * @param {string} selector jQuery(selector) matched string, specific the id of the clicked object
  * @returns null
  * @summary if there are no alerts by the sweetalert extension open, the command executes clicking on a selector
  * is used for key events
@@ -163,11 +234,11 @@ function nonSweetClick(selector) {
     }
 }
 /**
- * @param {Optional[String]} msg 
- * @param {int} enter_sec 
- * @param {int} show_sec 
- * @param {Optional[int]} exit_sec 
- * @param {String} cls 
+ * @param {string} msg message to display
+ * @param {number} enter_sec the number of seconds take until starts to disappear from the moment fully appears 
+ * @param {number} show_sec the number of seconds until fully shows
+ * @param {?number} exit_sec the number of seconds before disappear
+ * @param {string} cls the classes the message is member of
  * @returns throws a message to the user that doesn't blocks input
  */
 const throw_message = (msg, enter_sec = 1000, show_sec = 100, exit_sec = 1000, cls = null) => {
@@ -183,7 +254,8 @@ const throw_message = (msg, enter_sec = 1000, show_sec = 100, exit_sec = 1000, c
                         },
                         exit_sec,
                         function() {
-                            $(this).remove(self);
+                            // remove self
+                            $(this).remove();
                         });
                 } else {
                     $(popup).remove();
@@ -195,36 +267,35 @@ const throw_message = (msg, enter_sec = 1000, show_sec = 100, exit_sec = 1000, c
 }
 
 
+/**
+ * @class
+ */
 class Color {
     /**
-     * @param {Number} r 
-     * @param {Number} g 
-     * @param {Number} b 
-     * @param {String} name 
+     * @param {number} r red value of the color in rgb
+     * @param {number} g green value of the color in rgb
+     * @param {number} b blue value of the color in rgb
+     * @param {string} name name of the color
      * @returns new Color object
      * @summary Color instance represent a color the user can color the board with
      */
     constructor(r, g, b, name) {
-        /** @param {number} r red value of rgb*/
         this.r = r;
-        /** @param {number} g green value of rgb*/
         this.g = g;
-        /** @param {number} b blue value of rgb*/
         this.b = b;
-        /** @param {string} name name of the string */
         this.name = name;
     }
     /**
-     * @name abgr
-     * @returns the 32-bit size int represent the reversed rgba of the color
+     * @returns {number} abgr values
+     * @summary calculates abgr value
+     * caluclates abgr value of color, opposite order to rgba because bit position
      */
     get abgr() {
         return (0xFF000000 | this.r | this.g << 8 | this.b << 16) << 0;
     }
     /**
-     * @name css_format
-     * @param {Number} alpha 
-     * @hideconstructor
+     * @param {number} alpha alpha value in real number percent ratio 
+     * @returns {string} text equals to rgba function of css of the color with the passed alpha value
      */
     css_format(alpha = 1) {
         return `rgba(${this.r}, ${this.g}, ${this.b}, ${alpha})`;
@@ -240,37 +311,34 @@ class Color {
 class SimpleInterval {
     /**
      * @param {function} work 
-     * @param {Number} time 
+     * @param {number} time 
      */
     constructor(work, time) {
-        /** @param {=function} work */
+        /** @param {function} work */
         this.work = work;
-        /** @param {=function} time */
+        /** @param {function} time */
         this.__time = time;
-        this.__workhandler = null;
+        /** @param {function} __work_handler */
+        this.__work_handler = null;
     }
     /**
-     * @name start
      * @summary start the worker
      * @returns nothing
      */
     start() {
         this.
-        __workhandler = setInterval(this.work, this.__time);
+        __work_handler = setInterval(this.work, this.__time);
     }
     /**
-     * @name stop
      * @summary stops the worker
-     * @returns nothing
      */
     stop() {
-        clearInterval(this.__workhandler)
-        this.__workhandler = null
+        clearInterval(this.__work_handler)
+        this.__work_handler = null
     }
     /**
-     * @name safeStart
-     * @summary safely starts the worker, only if the worker isn't already working
      * @returns if the worker starts to work (and hasnt already worked)
+     * safely starts the worker, only if the worker isn't already working
      */
     safeStart() {
         if (this.isWorking) {
@@ -280,45 +348,42 @@ class SimpleInterval {
         return false;
     }
     /**
-     * @name safeStart
-     * @summery stops starts the worker, only if the worker isn't already working
-     * @returns if the worker stoped
-     * @type {Boolean}
+     * @returns {boolean} if the worker stopped
+     * stops starts the worker, only if the worker isn't already working
      */
     safeStop() {
         if (!this.isWorking) {
-            return False
+            return false
         } //else 
         this.stop();
         return true;
     }
     /**
-     * @name isWorking
      * @summary checks if the worker is working at all using the handler
      */
     get isWorking() {
-        return !_.isNull(this.__workhandler);
+        return !_.isNull(this.__work_handler);
     }
 }
 
 /**
  * @class CursorState
- * @classdesc State of cursor by css
+ * @classdesc represents state of cursor, if to show the colored pixel that is how the pen is made or not 
+ * and the values
  */
 class CursorState {
     /**
-     * @param {String} cursor the cursor text to set the css cursor attribute
-     * @param {String} hide_pen if to hide the pen color on the board
+     * @param {string} cursor the cursor text to set the css cursor attribute
+     * @param {boolean} hide_pen if to hide the pen color on the board
      */
     constructor(cursor, hide_pen) {
         this.cursor = cursor;
         this.hide_pen = hide_pen;
     }
     /**
-     * @name equals
      * @param {Object} other_cursor 
-     * @returns Boolean -> if the 2 cursors states are the same
-     * @summary checks if the curser equals to the other object
+     * @returns boolean -> if the 2 cursors states are the same
+     * checks if the curser equals to the other object
      */
     equals(other_cursor) {
         //https://stackoverflow.com/a/1249554
@@ -332,8 +397,7 @@ class CursorState {
     }
 }
 /**
- * @constant colors
- * @summary an object holding the colors and handling interactions them
+ * @const {Array.Color} colors an object holding the colors and handling interactions with them
  */
 const colors = [
     new Color(0xFF, 0xFF, 0xFF, 'White'),
@@ -354,17 +418,10 @@ const colors = [
     new Color(0xFF, 0x00, 0xFF, 'Magenta')
 ]
 
-/*
-function arrayBufferToBase64(buffer) {
-    var binary = '';
-    var bytes = [].slice.call(new Uint8Array(buffer));
-    bytes.forEach((b) => binary += String.fromCharCode(b));
-    return window.btoa(binary);
-};
-*/
 /**
  * @constant Cursors
  * @summary contains the possible cursors
+ * @enum {CursorState}
  */
 const Cursors = {
     Pen: new CursorState('crosshair', false),
@@ -374,33 +431,36 @@ const Cursors = {
 }
 
 /**
- * @name progress
- * @description prorgess object handles all related staff to the progress bar on the screen
+ * @namespace progress
+ * @description progress object handles all related staff to the progress bar on the screen
+ * @property {number} time time of the progress
+ * @property {number} state the state of the progress
+ * @property {SimpleInterval} __work SimpleInterval for updating auto update the progress bar.  handler of progress update interval
+ * @property {string} name SimpleInterval for updating auto update the progress bar
+ * @property {boolean} isWaiting if waits for progress bar to end
  */
 const progress = {
-    /** @param {=number} time time of the progress*/
     time: 0, // time when cooldown ends
-    /** @param {=number} state the state of the progress */
     state: 0, // state of progress bar
-    /** @param {=SimpleInterval} work SimpleInterval for updating auto update the progress bar */
     __work: null, // handler of progress update interval
-    /** @param {=number} __current_min_time a value to prevent auto changing DOM and make the app slowly*/
     __current_min_time: null,
-    // constructor, starts the object
+    /**
+     * constructor, the object initialization
+     * sets his work
+     */
     construct() {
         let self = this;
         this.__work = new SimpleInterval(function() {
             self.updateTimer()
         }, PROGRESS_COOLDOWN)
     },
+    /** @returns {boolean} if progress still works*/
     get isWaiting(){
         return this.__work.isWorking
     },
     /**
-     * @name adjustProgress
-     * @param {Number} seconds_left number of seconds before the progerss bar ends
-     * @returns nothing
-     * @summary update the prorgess bar text and state
+     * @param {number} seconds_left number of seconds before the progress bar ends
+     * @summary update the progress bar text and state
      */
     adjustProgress(seconds_left) {
         // adjust the progress bar and time display by the number of seconds left
@@ -417,8 +477,7 @@ const progress = {
         $('#time-prog').attr('state', this.state);
     },
     /**
-     * @name setTime
-     * @param {String} time when the date finishes 
+     * @param {string} time when the date finishes 
      * @summary set the time for the progress and start working
      */
     setTime(time) {
@@ -442,8 +501,9 @@ const progress = {
         }
     },
     /**
-     * the function the worker runs
-     * @summary Updates the progess bar and timer each interval
+     *  @summary the function the worker runs, to update every x milliseconds the progress bar dom object
+     *  @description
+     *  Updates the progess bar and timer each interval
      *  Math.max the time until cooldown ends in ms, compare if positive (the time has not passed),
         ceil to round up, I want to prevent the progress showing time up to that
      */
@@ -463,7 +523,6 @@ const progress = {
         }
     },
     /**
-     * @name stopProgress
      * @summary stops the progress bar
      */
     stopProgress() {
@@ -473,20 +532,23 @@ const progress = {
 }
 
 /**
- * @name mapArea
+ * @namespace mapFrags
+ * @property {?number} cx the x position of the pixel at the center of the screen 
+ * @property {?number} cy the y position of the pixel at the center of the screen
+ * @property {?number} scale the amount of zoom on the screen
+ * @method setHash sets the hash of the object
  * @description handles working with the url and movement of the board
  */
-const mapArea = {
-    /** @param {=number} cx the x position of the pixel at the center of the screen */
-    cx: null,
-    /** @param {=number} cy the y position of the pixel at the center of the screen */
-    cy: null,
-    /** @param {=number} scale the amount of zoom on the screen*/
-    scale: null,
-    // construct the mapArea object
+const mapFrags = {
+    // construct the mapFrags object
+    /**
+     * @method
+     * sets the hash with the throttle wrapper, setting a 1000 ms (a second) cooldown before update hash again
+     */
+    setHash:null,
     construct() {
         // set window hash to be valid
-        fragments = this.__determineFragments();
+        let fragments = this.__determineFragments();
         this.cx = fragments.x;
         this.cy = fragments.y;
         this.scale = fragments.scale;
@@ -495,40 +557,44 @@ const mapArea = {
     },
     /**
      * @private
-     * @returns how the function 
+     * @returns {string} the raw path for the map
      */
     get __path() {
         return `x=${this.cx}&y=${this.cy}&scale=${this.scale}`
     },
     /**
-     * @returns hash params of the url with the same map position
+     * @returns {string} hash params of the url with the same map position
      */    hash() {
         return `#${this.__path}`
     },
     /**
-     * @returns arguments param of the url with the same map position
+     * @returns {string} arguments param of the url with the same map position
+     * the value for location's hash field to set mapFrags as current
      */
     arguments() {
         return `?${this.__path}`
     },
     /**
-     * @param {Number} val 
+     * @param {number} val 
      * @returns {boolean} if the value can be the next cx value (next value means its different from current)
+     * if value is valid 'new' center x
      */
     __isValidNewX(new_x) {
         return (!isNaN(new_x)) && isValidPos(new_x) && new_x != this.cx
     },
     /**
      * 
-     * @param {Number} new_y 
+     * @param {number} new_y 
      * @returns {boolean} if the param can be the next cy value (next value means its different from current)
+     * if value is valid 'new' center y
      */
     __isValidNewY(new_y) {
         return (!isNaN(new_y)) && isValidPos(new_y) && new_y != this.cy
     },
     /**
-     * @param {Number} new_scale 
+     * @param {number} new_scale 
      * @returns {boolean} if the param can be the next cy value (next value means its different from current)
+     * if value is valid 'new' scale
      */
     __isValidNewScale(new_scale) {
         return (!isNaN(new_scale)) && isValidScale(new_scale) && new_scale != this.scale
@@ -536,21 +602,25 @@ const mapArea = {
     /**
      * @returns the x position the board suppose to be on the screen.
      * @summary the function first check by the arguments, then by the hash and finally by the favorable position
+     * determine x locaiton by checking fields
+     * first check the arguments
+     * then checks the hash
+     * after the current center x
+     * then checks for default
+     * and in the end, returnd default DEFAULT_CENTER_AXIS (500)
      */
     __determineX() {
         // first get from arguments
-        let x = window.location.search.match(reArgX);
-        x = parseInt(getFirstIfAny(x))
+        let x = getMapPos(window.location.search.match(reArgX));
         if ((!isNaN(x)) && isValidPos(x)) {
             return x;
         }
         // second get from hash
-        x = window.location.hash.match(reHashX);
-        x = parseInt(getFirstIfAny(x))
+        x = getMapPos(window.location.hash.match(reHashX));
         if ((!isNaN(x)) && isValidPos(x)) {
             return x;
         }
-        if(!_.isNull(this.cx)){
+        if(_.isNumber(this.cx)){
             return this.cx;
         }
         // else search for value in body
@@ -563,47 +633,48 @@ const mapArea = {
     /**
      * @returns the y position the board suppose to be on the screen.
      * @summary the function first check by the arguments, then by the hash and finally by the favorable position
-     */
+     * determine scale value by checking fields
+     * first the arguments
+     * then checks the hash
+     * after the current scale (this.scale)
+     * then checks for default
+     * and in the end, returnd default zoom level (4)     */
     __determineY() {
         // first get from arguments
-        let y = window.location.search.match(reArgY);
-        y = parseInt(getFirstIfAny(y))
+        let y = getMapPos(window.location.search.match(reArgY));
         if ((!isNaN(y)) && isValidPos(y)) {
             return y;
         }
         // second get from hash
-        y = window.location.hash.match(reHashY);
-        y = parseInt(getFirstIfAny(y))
+        y = getMapPos(window.location.hash.match(reHashY));
         if ((!isNaN(y)) && isValidPos(y)) {
             return y;
         }
         // else search for value in body
-        if(!_.isNull(this.cy)){
+        if(_.isNumber(this.cy)){
             return this.cy;
         }
         y = parseInt($('body').attr('y'))
         if ((!isNaN(y)) && isValidPos(y)) {
             return y;
         }
-        return DEFAULT_START_AXIS;
+        return SIMPLE_UNZOOM_LEVEL;
     },
     /**
      * @returns the y position the board suppose to be on the screen.
      * @summary the function first check by the arguments, then by the hash and finally by the favorable position
      */
     __determineScale() {
-        let scale = window.location.search.match(reArgScale);
-        scale = parseFloat(getFirstIfAny(scale))
+        let scale = getMapScale(window.location.search.match(reArgScale));
         if ((!isNaN(scale)) && isValidScale(scale)) {
             return scale;
         }
         // second get from hash
-        scale = window.location.hash.match(reHashScale);
-        scale = parseFloat(getFirstIfAny(scale))
+        scale = getMapScale(window.location.hash.match(reHashScale))
         if ((!isNaN(scale)) && isValidScale(scale)) {
             return scale;
         }
-        if(!_.isNull(this.scale)){
+        if(_.isNumber(this.scale)){
             return this.scale;
         }
         // else search for value in body
@@ -615,6 +686,7 @@ const mapArea = {
     },
     /**
      * @returns the fields of the object
+     * determine the current fragments and update board
      */
     __determineFragments() {
         return {
@@ -624,9 +696,8 @@ const mapArea = {
         };
     },
     /**
-     * 
-     * @param {Number} x new x positon of the center of the viewport
-     * @param {Number} y new y positon of the center of the viewport
+     * @param {number} x new x positon of the center of the viewport
+     * @param {number} y new y positon of the center of the viewport
      * @param {boolean} to_update if to update the position, used when using the function with the setScale method
      * @returns {boolean} if anything has changed
      * @summary handles setting the new center, also prevent any changes if the scale level is less then 1 (0.5)
@@ -650,7 +721,7 @@ const mapArea = {
         return flag;
     },
     /**
-     * @param {Number} scale 
+     * @param {number} scale 
      * @param {boolean} to_update if to update the 
      * if the scale level is less then 0.5
      */
@@ -673,7 +744,7 @@ const mapArea = {
      */
     refreshFragments() {
         /*  refreshFragments(bool) -> void
-         *  refresh the mapArea object by the current hash values if they are valid
+         *  refresh the mapFrags object by the current hash values if they are valid
          */
         let frags = this.__determineFragments();
         let any_changes = frags.x != this.cx || frags.y != this.cy || frags.scale != this.scale;
@@ -704,80 +775,105 @@ const mapArea = {
     },
 }
 
-/** @const cursor  */
+/** @namespace cursor  
+ * @property {?CursorState} current_cursor  current cursor object represent the cursor state
+ * @property {?CursorState} force_cursor option to force the current cursor to specific object
+ * @property {?CursorState} last_cursor_non_forced the last cursor that wasnt forced
+*/
 const cursor = {
-    /** @param last_cursor_non_forced the last cursor that wasnt forced */
     last_cursor_non_forced: null,
-    /** @param {CursorState} current_cursor  current cursor object represent the cursor state*/
     current_cursor: null,
-    /** @param {CursorState} force_cursor option to force the current cursor to specific object */
     force_cursor: null,
     /**
-     * @param {CursorState} other_cursor 
+     * @param {?CursorState} other_cursor cursor set (if cursor isnt forced)
      * @summary sets the new cursor
      */
-    setCursor(other_cursor) {
+    updateCursor(other_cursor=null) {
         // update last cursor
+        // check if setting any cursor
         if (other_cursor instanceof CursorState) {
             this.last_cursor_non_forced = other_cursor;
         }
+        // if has any forced cursor pick him, else pick the last non forced cursor
         let cursor = this.force_cursor || this.last_cursor_non_forced;
+        //  if new current_cursor is different
         if (_.isNull(this.current_cursor) || !this.current_cursor.equals(cursor)) {
-            this.updateCursor(cursor)
+            this.refreshCursor(cursor)
         }
     },
     /**
      * 
-     * @param {CursorState} cursor 
-     * @returns nothing
+     * @param {CursorState} cursor_state new cursor state
      * @summary updates the cursor state
      */
-    updateCursor(cursor){
-        if ((!this.current_cursor) || cursor.cursor != this.current_cursor.cursor) {
-            board.canvas.css('cursor', cursor.cursor);
+    refreshCursor(cursor_state){
+        // sets
+        if ((!this.current_cursor) || cursor_state.cursor != this.current_cursor.cursor) {
+            board.canvas.css('cursor', cursor_state.cursor);
         }
-        if (cursor.hide_pen) {
+        if (cursor_state.hide_pen) {
             pen.disable();
         }
         else {
             pen.enable();
         }
-        this.current_cursor = cursor;
+        this.current_cursor = cursor_state;
     },
     /**
-     * @summary sets the cursor to pen or wait state, depending if the progress is
+     * sets the cursor to pen or wait state, depending if the progress bar is waiting
      */
     setPen() {
-        this.setCursor(progress.isWorking || lockedStates.locked ? Cursors.Wait : Cursors.Pen)
+        this.updateCursor(progress.isWorking || lockedStates.locked ? Cursors.Wait : Cursors.Pen)
     },
+    /**
+     * sets the cursor state to grab state
+     */
     grab() {
-        this.setCursor(Cursors.grabbing);
+        this.updateCursor(Cursors.grabbing);
     },
-    lockCursor(cursor) {
-        this.force_cursor = cursor;
-        this.setCursor();
+    /**
+     * @param {CursorState} cursor_state the cursor state to lock the pen
+     * locks a specific cursor state on pen
+     */
+    lockCursor(cursor_state) {
+        this.force_cursor = cursor_state;
+        this.updateCursor();
     },
+    /**
+     * @param {CursorState} cursor_state the cursor_state the if the pen is forced to it,is freed from it
+     * releases the cursor and updates cursor if the cursor_state is the current one that is locked
+     */
     releaseCursor(cursor_state) {
         if (cursor_state.equals(this.force_cursor)) {
             this.force_cursor = null;
-            this.setCursor()
+            this.updateCursor()
         }
     }
 }
 
+/**@namespace pen 
+ * @property {number} x the x position the mouse points to (on the board else null)
+ * @property {number} y the y position the mouse points to (on the board else null)
+ * @property {?number} __color the color of the pen
+ * @property {Array.<number>} last_mouse_pos the (x,y) position the mouse moved to (if its on the board)
+ * @property {boolean} is_in_center_mode if the pen is in center mode == key movement mode
+ * @property {__diable} __disable if the pen is in disabled mode, invincible
+ * @property {string} cursor_style  the cursor style to put the mouse on
+*/
 const pen = {
-    /** @param {Number} x the x axis of the pixel\'s position the mouse is looking at*/
-    x: null,
-    /** @param {Number} y the x axis of the pixel\'s position the mouse is looking at*/
-    y: null,
-    /** @param {Number} __color index of the color the pen is coloring*/
+    x: -1,
+    y: -1,
+    /** @param {number} __color index of the color the pen is coloring*/
     __color: null,
-    /** @param {Array<Number>} the last positon the pen looked at (x, y) */
+    /** @param {Array<number>} the last positon the pen looked at (x, y) */
     last_mouse_pos: null,
-    /** @param {Boolean} in keyboard state, the pen should point at the center of the screen */
-    force_center: true,
+    /** @param {boolean} in keyboard state, the pen should ponumber at the center of the screen */
+    is_in_center_mode: true,
     __disable: false,
     cursor_style: 'default',
+    /**
+     * constructs the pen object (just setting the color buttons, and set one of them to active)
+     */
     construct() {
         let color_button = $('.colorButton[picked="1"]').first()
         if (!color_button[0]) {
@@ -785,43 +881,49 @@ const pen = {
         }
         this.setColorButton(color_button);
     },
-    // disable the pen object
+    /**
+     * clears the canvas pen and updates the board
+     */
     disable() {
         if (!this.__disable) {
             this.__disable = true;
             board.drawBoard();
         }
     },
-    // enable the pen object
+    /**
+     * resets the canvas pen and updates the board
+     */
     enable() {
         if (this.__disable) {
             this.__disable = false;
             board.drawBoard();
         }
     },
+    /**
+     * 
+     * @param {MouseEvent} e mouse event
+     * @summary the mouse position (if there is not event,resets then to last)
+     */
     getMouseOffset(e) {
-        /*
-            if(pen.force_center){
-                return [
-                    innerWidth/(2*mapArea.scale),
-                    innerHeight/(2*mapArea.scale)
-                ];
-        */
         if (e) {
             // set last_mouse_pos
             this.last_mouse_pos = [e.pageX, e.pageY]
         }
         return this.last_mouse_pos;
     },
-    // updateOffset by the event
-    updateOffset(e) {
+    /**
+     * 
+     * @param {?MouseEvent} e mouse event or null (if its in keyboard mode)
+     * @returns {Array.<number>} position (x, y) 
+     */
+    updateOffset(e=null) {
         /* finds the pen current position
          min pixel on screen + start of page / scale= position of mouse  */
         let pos = null;
-        if (this.force_center) {
+        if (this.is_in_center_mode) {
             pos = {
-                x: Math.floor(board.x + board.canvas[0].width / 2 / mapArea.scale),
-                y: Math.floor(board.y + board.canvas[0].height / 2 / mapArea.scale)
+                x: Math.floor(board.x + board.canvas[0].width / 2 / mapFrags.scale),
+                y: Math.floor(board.y + board.canvas[0].height / 2 / mapFrags.scale)
             } // center
         }
         else {
@@ -831,8 +933,8 @@ const pen = {
                 return;
             }
             pos = {
-                x: Math.floor(board.x + mouse_offset[0] / mapArea.scale),
-                y: Math.floor(board.y + mouse_offset[1] / mapArea.scale)
+                x: Math.floor(board.x + mouse_offset[0] / mapFrags.scale),
+                y: Math.floor(board.y + mouse_offset[1] / mapFrags.scale)
             }
         }
         if (_.isNull(pos) || (!isValidPos(pos.x)) || (!isValidPos(pos.y))) {
@@ -846,37 +948,54 @@ const pen = {
             board.updateCoords();
         }
     },
+    /**
+     * clears the position the pen and set the board to update in next refreshAnimation loop
+     */
     clearPos() {
         // when out of board
         this.x = this.y = -1;
         board.updateCoords();
         board.drawBoard();
     },
+    /**
+     * 
+     * @param {MouseEvent} e mouse event
+     * updates the offset and stop the keyboard mode 
+     */
     setPenPos(e) {
         // update position and end use of keyboard state center
-        this.force_center = false;
+        this.is_in_center_mode = false;
         this.updateOffset(e);
     },
+    /**
+     * set pen to center
+     */
     setCenterPos() {
         cursor.setPen();
-        this.force_center = true;
+        this.is_in_center_mode = true;
         this.updateOffset();
     },
+    /**
+     * 
+     * @param {jQuery} button 
+     * sets the color of the button as the pens color also set the button to focused (means thats the color of the pen)
+     */
     setColorButton(button) {
 		console.log(button)
 		this.color = parseInt(button.attr('value'));
         $('.colorButton[picked="1"]').attr('picked', '0');
         button.attr('picked', '1');
     },
+    /**@returns {boolean} if has color */
     get hasColor() {
         return isValidColor(this.__color);
     },
-    // color getter ans setter
+    /**@returns {number} index of pen color */
     get color() {
         return this.__color;
     },
     /**
-     * @param {Number} value
+     * @param {number} value
      */
     set color(value) {
         if (value >= 0 && value < 16 && this.__color != value) {
@@ -884,33 +1003,48 @@ const pen = {
             board.drawBoard()
         }
     },
-    isAtBoard() {
+    /**
+     * @returns {boolean} if mouse points to the board
+     */
+    get isAtBoard() {
         return this.x != -1 || this.y != -1
     },
+    /**
+     * @returns {boolean} if can draw pen
+     * can se pixel if pen isnt disabled, has color and is at board
+     */
     canDrawPen() {
-        return (!this.__disable) && this.hasColor && this.isAtBoard()
+        return (!this.__disable) && this.hasColor && this.isAtBoard
     },
+    /**
+     * <p>set a pixel on board (emits to server)</p>
+     * <p>raises error if socket io isn't connected, board isn't loaded, cooldown hasn't ended</p>
+     * <p>pen has no color, or some admin lock the users from changing the canvas</p>
+     * <p>the server returns a response in form {code:string, status:string}, </p>
+     * <p>if cooldown hasn't ended or reset gets code 'time' when the status stores when the cooldown ends</p>
+     * <p>if board is locked returns code:'lock' with status 'true''</p>
+     */
     setPixel() {
         if(!sock.connected) {
             Swal.fire({
                 title: 'Server Not Found',
                 imageHeight: 300,
                 imageUrl:'https://i.chzbgr.com/full/570936064/hF75ECDD4/error-404-server-not-found',
-                imageAlt:'Server Not Found and Also this image, maybe you out of internet',
+                imageAlt:'Server Not Found and Also this image, maybe you out of numberernet',
                 text:'The Server Cannot be Found, if you wait a little it might be found',
                 confirmButtonText: 'To Waiting'
             })
-            // also again check with server if 5 seconds after didnt load
+            // also again check with server if 5 seconds after didn't load
             try_reconnect()    
         }
-        // if board isnt ready
+        // if board isn't ready
         if (!board.is_ready) {
             Swal.fire({
                 title: 'Wait for the board',
                 text: 'Wait for the board to load before doing something'
             });
         }
-        // prorgess working -> waits for the next time the player can draw
+        // progress working -> waits for the next time the player can draw
         else if (progress.isWaiting) {
             Swal.fire({
                 title: 'You have 2 wait',
@@ -920,12 +1054,13 @@ const pen = {
                 text: 'Wait for your cooldown to end'
             });
         }
+        // if locked
         else if (lockedStates.locked) {
             Swal.fire({
                 title: 'Canvas is closed',
                 imageUrl: 'https://img.memecdn.com/door-lock_o_2688511.jpg',
                 imageHeight: 250,
-                imageAlt: 'SocialPainterDash canvas is currently closed',
+                imageAlt: 'Social Painter Dash canvas is currently locked',
                 text: 'Wait an admin will open it up',
                 confirmButtonText: 'To Waiting'
             });
@@ -934,7 +1069,7 @@ const pen = {
             Swal.fire({
                 icon: 'warning',
                 title: 'Select Color',
-                text: 'Pless select color from the table',
+                text: 'pless select color from the table',
             });
         }
         else {
@@ -942,12 +1077,12 @@ const pen = {
                 'color': this.__color,
                 'x': this.x,
                 'y': this.y,
-            }, callback = (value) => {
+            }, (value) => {
                 if (_.isUndefined(value) || value == 'undefined') {
                     return;
                 }
                 // else it must be json
-                data = JSON.parse(value);
+                let data = JSON.parse(value);
                 console.log(data)
                 if (data.code == 'lock' && data.status == 'true') {
                     lockedStates.lock()
@@ -1000,7 +1135,7 @@ const board = {
         board.is_ready = false
     },
     // level 1
-    // interaction of key press
+    // interval reaction of key press
     startKeyMoveLoop() {
         board.moveBoard(this.move_vector[0], this.move_vector[1])
         if (_.isNull(this.key_move_interval)) {
@@ -1039,8 +1174,8 @@ const board = {
             // first version of putting data, looping over the image buffer array and not of buffer of message
             //var bit = buffer[Math.floor(index/2)];
             //self.buffer[index] = reverseRGBA(COLORS[index % 2 == 0 ? bit % 16 : bit >> 4]);
-            image_buffer[index * 2] = colors[val % 16].abgr; // small int
-            image_buffer[index * 2 + 1] = colors[Math.floor(val / 16)].abgr; // big int
+            image_buffer[index * 2] = colors[val % 16].abgr; // small number
+            image_buffer[index * 2 + 1] = colors[Math.floor(val / 16)].abgr; // big number
         });
         this.ctx_image.putImageData(image_data, 0, 0);
         this.beforeFirstDraw();
@@ -1052,18 +1187,17 @@ const board = {
     },
     setAt(x, y, color_idx) {
         // set a pixel at a position
-        // x: int (0 < x < 1000)
-        // y: int (0 < x < 1000)
-        
-        if ((!color_idx instanceof Number) || color_idx < 0 || color_idx > 15) {
+        // x: number (0 < x < 1000)
+        // y: number (0 < x < 1000)
+        if (!isValidColor(color_idx)) {
             // swal event
             throw_message('the server/you (if you trying) are trying to set a non valid color')
         }
         else if (!(isValidPos(x) && isValidPos(y))) {
-            throw_message('given position of point isnt valid')
+            throw_message('given position of point i\'snt valid')
         }
         else {
-            color = colors[color_idx].css_format();
+            let color = colors[color_idx].css_format();
             if (this.is_ready) {
                 this.__setAt(x, y, color)
             }
@@ -1085,7 +1219,7 @@ const board = {
         this.is_ready = true;
         // case of set during setting board is_ready, (tiny chanse of colliding but its very little)
         if(this.pixelQueue.length != 0){
-            let obj = this.pixelQueue.shift(); // remove
+            let top_pixel = this.pixelQueue.shift(); // remove
             this.__setAt(top_pixel.x, top_pixel.y, top_pixel.color);
         }
         // draw board
@@ -1093,9 +1227,9 @@ const board = {
     },
     // level 3
     centerPos() {
-        // center axis - (window_axis_size / 2 / mapArea.scale)
-        this.x = Math.floor(mapArea.cx - board.canvas[0].width / 2 / mapArea.scale)
-        this.y = Math.floor(mapArea.cy - board.canvas[0].height / 2 / mapArea.scale)
+        // center axis - (window_axis_size / 2 / mapFrags.scale)
+        this.x = Math.floor(mapFrags.cx - board.canvas[0].width / 2 / mapFrags.scale)
+        this.y = Math.floor(mapFrags.cy - board.canvas[0].height / 2 / mapFrags.scale)
         pen.updateOffset()
         board.drawBoard();
     },
@@ -1119,7 +1253,7 @@ const board = {
     },
     setZoomStyle() {
         let zoom_button = $('#zoom-button')
-        if (mapArea.scale >= 25) {
+        if (mapFrags.scale >= 25) {
             zoom_button.children('span').addClass('fa-search-minus').removeClass('fa-search-plus');
             zoom_button.css('cursor', 'zoom-out');
         }
@@ -1130,7 +1264,7 @@ const board = {
     },
     get step() {
         // the scale is inproportion to the step size
-        return MIN_STEP_SIZE * MAX_SCALE / mapArea.scale;
+        return MIN_STEP_SIZE * MAX_SCALE / mapFrags.scale;
     },
     // level 1
     moveBoard(dx, dy) {
@@ -1138,16 +1272,16 @@ const board = {
               let y = this.keep_inside_border(this.real_y, dir[DIR_INDEX_YNORMAL]*this.step*this.scale, rect.top, rect.bottom)/this.scale;
               console.log(x, y);
         */
-        mapArea.setCenter(
-            clamp(mapArea.cx + dx * this.step, CANVAS_SIZE, 0),
-            clamp(mapArea.cy + dy * this.step, CANVAS_SIZE, 0)
+        mapFrags.setCenter(
+            clamp(mapFrags.cx + dx * this.step, CANVAS_SIZE, 0),
+            clamp(mapFrags.cy + dy * this.step, CANVAS_SIZE, 0)
         );
     },
     // level 1
     centerOn(x, y) {
-        x = isNaN(x) ? mapArea.cx : clamp(x, CANVAS_SIZE, 0);
-        y = isNaN(y) ? mapArea.cy : clamp(y, CANVAS_SIZE, 0);
-        mapArea.setCenter(x, y);
+        x = isNaN(x) ? mapFrags.cx : clamp(x, CANVAS_SIZE, 0);
+        y = isNaN(y) ? mapFrags.cy : clamp(y, CANVAS_SIZE, 0);
+        mapFrags.setCenter(x, y);
     },
     // level 3 in half
     updateCoords() {
@@ -1158,9 +1292,9 @@ const board = {
             $('#coordinateY').text('');
         }
         else if (!board.drag.active) {
-            $('#coordinate-slicer').text(pen.isAtBoard() ? ',' : 'None');
-            $('#coordinateX').text(pen.isAtBoard() ? pen.x : '');
-            $('#coordinateY').text(pen.isAtBoard() ? pen.y : '');
+            $('#coordinate-slicer').text(pen.isAtBoard ? ',' : 'None');
+            $('#coordinateX').text(pen.isAtBoard ? pen.x : '');
+            $('#coordinateY').text(pen.isAtBoard ? pen.y : '');
         }
     },
     drawBoard() {
@@ -1180,7 +1314,7 @@ const board = {
                     this.canvas[0].width, this.canvas[0].height);
                 this.ctx.save()
                 this.ctx.imageSmoothingEnabled = false;
-                this.ctx.scale(mapArea.scale, mapArea.scale)
+                this.ctx.scale(mapFrags.scale, mapFrags.scale)
                 this.ctx.translate(-this.x, -this.y);
                 this.ctx.drawImage(this.imgCanvas, 0, 0);
                 if (pen.canDrawPen()) {
@@ -1233,11 +1367,11 @@ $(document).ready(function() {
         });
     })
     sock.connect()
-    mapArea.construct();
+    mapFrags.construct();
     progress.construct();
     board.construct();
     pen.construct();
-    mapArea.setHash();
+    mapFrags.setHash();
     sock.on('set-board', (x, y, color_idx) => board.setAt(x, y, color_idx));
     // Lost connection
     // Connection on
@@ -1277,12 +1411,12 @@ $(document).ready(function() {
         pen.setPenPos(event);
     }).mouseleave(() => pen.clearPos()).bind('mousewheel', (e) => {
         e.preventDefault();
-        mapArea.setScale(clamp(mapArea.scale + Math.sign(e
+        mapFrags.setScale(clamp(mapFrags.scale + Math.sign(e
                 .originalEvent.wheelDelta) * 1,
             MAX_SCALE, MIN_SCALE));
     })[0].addEventListener('dblclick', (
         event) => { // for not breaking the 
-        // jmapArea dblclick dont work on some machines but addEventListner does 
+        // jmapFrags dblclick dont work on some machines but addEventListner does 
         // source: https://github.com/Leaflet/Leaflet/issues/4127
         /*Get XY https://codepo8.github.io/canvas-images-and-pixels/#display-colour*/
         pen.setPenPos(event);
@@ -1292,8 +1426,8 @@ $(document).ready(function() {
     board.canvas.mousedown(function(e) {
         board.drag.dragX = e.pageX;
         board.drag.dragY = e.pageY;
-        board.drag.startX = mapArea.cx;
-        board.drag.startY = mapArea.cy;
+        board.drag.startX = mapFrags.cx;
+        board.drag.startY = mapFrags.cy;
         board.drag.active = true;
         // change cursor 100 seconds if don't move
     }).mouseenter(function(e) {
@@ -1304,8 +1438,8 @@ $(document).ready(function() {
             // center board
             cursor.grab();
             board.centerOn(
-                Math.floor(board.drag.startX + (board.drag.dragX - e.pageX) / mapArea.scale),
-                Math.floor(board.drag.startY + (board.drag.dragY - e.pageY) / mapArea.scale)
+                Math.floor(board.drag.startX + (board.drag.dragX - e.pageX) / mapFrags.scale),
+                Math.floor(board.drag.startY + (board.drag.dragY - e.pageY) / mapFrags.scale)
             );
         }
     }).mouseup(() => {
@@ -1324,7 +1458,7 @@ $(document).ready(function() {
                 let button = $(".colorButton[picked='1']").first();
                 // if any of the is undefiend - reset
                 if (_.isUndefined(button[0]) || _.isUndefined(button.next()[0])) {
-                    let button = $(".colorButton").first()
+                    button = $(".colorButton").first()
                 }
                 pen.setColorButton(button.next())
                 break;
@@ -1339,10 +1473,10 @@ $(document).ready(function() {
             }
             case 'KeyP': {
                 // force keyboard if not in keyboard mode, else color a pixel
-                if (pen.force_center && isSwalClose()) {
+                if (pen.is_in_center_mode && isSwalClose()) {
                     pen.setPixel();
                 }
-                else if (!pen.force_center) {
+                else if (!pen.is_in_center_mode) {
                     pen.setCenterPos()
                 }
                 break;
@@ -1366,16 +1500,17 @@ $(document).ready(function() {
             if (e.originalEvent.key == '+') // key for plus
             {
                 // option 0.5
-                console.log(mapArea.scale >= 1, mapArea.scale)
-                mapArea.setScale(mapArea.scale >= 1 ? mapArea.scale + 1 : 1);
+                console.log(mapFrags.scale >= 1, mapFrags.scale)
+                mapFrags.setScale(mapFrags.scale >= 1 ? mapFrags.scale + 1 : 1);
             }
             else if (e.originalEvent.key == '_') { // key for minus
                 // option 0.5
-                mapArea.setScale(mapArea.scale > 1 ? mapArea.scale - 1 : MIN_SCALE);
+                mapFrags.setScale(mapFrags.scale > 1 ? mapFrags.scale - 1 : MIN_SCALE);
             }
         }
     }).keydown((e) => {
-        key = (e || window.event).key;
+        // stack overflow
+        let key = (e || window.event).key;
         let dir = _.findWhere(DIRECTION_MAP, {
             key: key
         })
@@ -1405,26 +1540,26 @@ $(document).ready(function() {
         e.preventDefault();
         let toolbox = $('#toolbox')[0];
         // fade icons and move the toolbox down by setting its hide attribute to 1
-        if (toolbox.getAttribute('hide') == 0) {
+        if (toolbox.getAttribute('hide') == '1') {
             $('.icon-button').fadeOut(500)
-            toolbox.setAttribute('hide', 1)
+            toolbox.setAttribute('hide', '1')
         }
         else {
             // reveal icons
             $('.icon-button').fadeIn(500)
-            toolbox.setAttribute('hide', 0)
+            toolbox.setAttribute('hide', '0')
         }
     });
     // hash change
     $(window).bind('hashchange', function(e) {
-        if(mapArea.refreshFragments()){
+        if(mapFrags.refreshFragments()){
             board.drawBoard();
         }
     });
     // copy coords - https://stackoverflow.com/a/37449115
     let clipboard = new ClipboardJS('#coordinates', {
         text: function() {
-            return window.location.origin + window.location.pathname + mapArea.arguments();
+            return window.location.origin + window.location.pathname + mapFrags.arguments();
         }
     });
     clipboard.on('success', function() {
@@ -1435,7 +1570,7 @@ $(document).ready(function() {
     })
     // change zoom level
     $('#zoom-button').click(function() {
-        mapArea.setScale($(this).children().hasClass('fa-search-minus') ? SIMPLE_UNZOOM_LEVEL : SIMPLE_ZOOM_LEVEL)
+        mapFrags.setScale($(this).children().hasClass('fa-search-minus') ? SIMPLE_UNZOOM_LEVEL : SIMPLE_ZOOM_LEVEL)
     });
     //logout
     $('#logout-button').click((e) => {

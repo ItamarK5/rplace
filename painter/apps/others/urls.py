@@ -16,7 +16,6 @@ from . import other_router
 from .utils import get_file_type, has_matched_image, is_ajax_request, render_error_page
 
 
-
 @other_router.route('/meme/<string:error>')
 def meme_image(error: str) -> Response:
     if str(error) not in listdir(path.join(current_app.root_path, 'web', 'memes')):
@@ -45,7 +44,7 @@ def handle_csrf_error(e: CSRFError) -> Response:
         return render_error_page(
             e,
             'csrf',
-            'unvalid csrf token',
+            'invalid csrf token',
             'Cross-Site-Forgery-Key Error'
         )
     return e
@@ -62,9 +61,9 @@ def painter_error_handler(e: HTTPException) -> Union[str, HTTPException]:
 def serve_static(key: str) -> Response:
     file_format = get_file_type(key)
     if not file_format:  # include no item scenerio
-        abort(404, 'Forgot placeing file type')
+        abort(404, 'Forgot placing file type')
     if file_format not in listdir(path.join(current_app.root_path, 'web', 'static')):
-        abort(404, 'unvalid file format')
+        abort(404, 'invalid file format')
     # meme type check
     mime_type = MIME_TYPES.get(file_format, None)
     if mime_type is None:

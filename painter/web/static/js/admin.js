@@ -1,29 +1,24 @@
 /**
- * @name ToInt
  * @returns integer form
  */
 Boolean.prototype.toInt = function() { return this.valueOf() ? 1 : 0; }
 
 /**
- * @name ChangeLockButton
  * @param {Number} new_state 
  * @summary updates the place_button for its new state
  */
 function ChangeLockButton(new_state) {
 	let lock_button = $('#place-button')
-  	text = `The place is ${new_state ? 'unpause' : 'pause'}`;
   	lock_button.attr('state', new_state.toInt().toString());
   	lock_button.children('h6').text(new_state ? 'Turn Place Off' : 'Turn Place On')
 }
 
-// creates the io object
-const sock = io('/admin')
 
 /**
- * @name refreshButtonState
  * @returns checks again the button state
+ * sends ajax request to check if the lock state
  */
-refreshButtonState = () => {
+const refreshButtonState = () => {
 	$.ajax({
 		url:'/get-active-state',
 		method:'GET',
@@ -33,33 +28,49 @@ refreshButtonState = () => {
 		}
 	})
 }
-
-// refresh the button on connection
+// creates the io object
+/**
+ * @const {SocketIO}
+ */
+const sock = io('/admin');
+/**
+ * @memberof module:io
+ * @name socket_connect
+ * @summary refresh button state when connects to server
+ */
 sock.on('connect', () => {
 	refreshButtonState();
 });
-// 
+/**
+ * @memberof module:io
+ * @name set-lock-state
+ * @summary sets the lock state of the board
+ */
 sock.on('set-lock-state', (callback) => {
 	ChangeLockButton(callback)
 });
+
 sock.on('reconnect', () => 	refreshButtonState());
 sock.on('reconnect_error', () =>{
 	Swal.fire({
 		icon:'error',
 		title:'Server Not Found',
-
 	})
 })
 
 $(document).ready(() => {
 	sock.connect()
+	//@ts-ignore
 	$('[data-toggle="tooltip"]').tooltip();
+
+	// click row
 	$('tr').click(function() {
 		let name = $(this).children('.name-col').text();
 		if(name){
 			window.location.href = `/edit/${$(this).children('.name-col').text()}`
 		};
 	});
+	// click place
 	$('#place-button').click(function(){
 		let board_state = $(this).attr('state');
 		Swal.fire({
