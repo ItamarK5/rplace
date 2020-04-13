@@ -754,7 +754,7 @@ const mapFrags = {
                 this.scale = frags.scale;
                 board.updateZoom();
             }
-            this.setHash()
+            this.setHash();
         }
         return any_changes;
         
@@ -767,12 +767,14 @@ const mapFrags = {
         //  update location
         // first tried to update event set
         // now lets try using setTimeout
+        console.log(5)
         if (location.hash != this.hash()) {
             // change hash without triggering events
             // https://stackoverflow.com/a/5414951
-            history.replaceState(null, null, document.location.pathname + this.hash());
+            location.replace(document.location.pathname + this.hash());
         }
     },
+    forcedSetHash: this.__setHash
 }
 
 /** @namespace cursor  
@@ -1552,6 +1554,7 @@ $(document).ready(function() {
     });
     // hash change
     $(window).bind('hashchange', function(e) {
+        e.preventDefault();
         if(mapFrags.refreshFragments()){
             board.drawBoard();
         }
