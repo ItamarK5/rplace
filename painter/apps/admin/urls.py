@@ -41,43 +41,6 @@ def admin() -> str:
     return render_template('accounts/admin.html', pagination=pagination, lock=lock.is_open())
 
 
-@admin_router.route('/ban-user/<string:name>', methods=('POST',))
-@only_if_superior
-def change_ban_status(user: User) -> Response:
-    """
-    :param user: the user that I add the record
-    :return: nothing
-    adds a ban record for the user
-    """
-    form = RecordForm()
-    # check a moment for time
-    if form.validate_on_submit():
-        record = Record(
-            user_subject_id=user.id,
-            description=form.note_description.data,
-            post_date=datetime.now(),
-            user_writer_id=current_user.id,
-            active=not form.set_banned.data,
-            affect_from=form.affect_from.data,
-            reason=form.reason.data
-        )
-        datastore.session.add(record)
-        datastore.session.commit()
-        user.forget_last_record()
-        return jsonify({'valid': True})
-    # else
-    elif form.csrf_token.errors:
-        abort(CSRFError)
-    else:
-        # csrf token has its own action
-        return jsonify({
-            'valid': False,
-            'errors': dict(
-                [(field.name, field.errors) for field in iter(form) if field.id != 'csrf_token']
-            )
-        })
-
-
 @admin_router.route('/add-record', methods=('POST',))
 @only_if_superior
 def add_record(user: User, message: Dict[str, str]):
@@ -181,7 +144,11 @@ def edit_user(name: str) -> Response:
 
 
 @admin_router.route('/get-active-state', methods=('GET',))
+@admin_only
 def get_active_state():
+    """
+    :return: get active state of the board, only for admins
+    """
     return jsonify(lock.is_open())
 
 

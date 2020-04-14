@@ -11,15 +11,21 @@ mailbox = Mail()
 redis = FlaskRedis()
 datastore = SQLAlchemy()
 csrf = CSRFProtect()
-cache = Cache(config={'CACHE_TYPE': 'simple'})
+cache = Cache()
 login_manager = LoginManager()
 
 
-def generate_engine(app):
-    create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+def generate_engine(app) -> None:
+    try:
+        create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+    except IndexError:
+        print('Configuration doesnt have SQLALCHEMY_DATABASE_URI value')
 
 
-# setting values for flask-login
+
+"""
+    setting values for flask-login
+"""
 login_manager.login_view = 'auth.login'
 login_manager.refresh_view = 'auth.refresh'
 login_manager.needs_refresh_message = 'you need to re-login to access the information'

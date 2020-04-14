@@ -32,4 +32,4 @@ class SmallEnum(TypeDecorator):
         try:
             return self._enum_type(value)
         except ValueError:
-            raise ValueError('user privilage value isnt valid: %s' % value)
+            raise ValueError('enum value isnt valid: %s' % value)

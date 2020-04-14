@@ -29,7 +29,7 @@
 <div class="row justify-content-center">
     <div aria-label="Toolbar with button groups" class="btn-toolbar" role="toolbar">
         <div class="btn-group mr-2" role="group">
-            {{button_model('Add Record', 'banModal', 'fas fa-ban', 'Ban', classes="btn-secondary")}}
+            {{button_model('Add Record', 'recordModal', 'fas fa-ban', 'Ban', classes="btn-secondary")}}
             {{button_model('Add Note', 'noteModal', 'far fa-sticky-note', 'Note', classes="btn-secondary")}}
             {{button_model('History', 'historyModal', 'fas fa-history', 'History', classes="btn-secondary")}}
             {% if current_user.has_required_status(Role.superuser) %}
@@ -54,7 +54,7 @@
 </div>
 {% endblock %}
     {% block modals %}
-        {% include 'accounts/abstract/banModal.html' %}
+        {% include 'accounts/abstract/recordModal.html' %}
         {% include 'accounts/abstract/noteModal.html' %}
         {% include 'accounts/abstract/historyModal.html' %}
     {% endblock %}

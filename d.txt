@@ -1,0 +1,14 @@
+Running with default parameters only
+[<Rule '/change-note-description' (POST, OPTIONS) -> admin.change_note_description>, {'POST', 'OPTIONS'}]
+[<Rule '/preferences-submit' (POST, OPTIONS) -> place.profile_ajax>, {'POST', 'OPTIONS'}]
+[<Rule '/change-lock-state' (POST, OPTIONS) -> admin.wrapped>, {'POST', 'OPTIONS'}]
+[<Rule '/delete-note' (POST, OPTIONS) -> admin.remove_user_note>, {'POST', 'OPTIONS'}]
+[<Rule '/add-record' (POST, OPTIONS) -> admin.add_record>, {'POST', 'OPTIONS'}]
+[<Rule '/refresh' (GET, OPTIONS, HEAD, POST) -> auth.refresh>, {'GET', 'OPTIONS', 'HEAD', 'POST'}]
+[<Rule '/signup' (GET, OPTIONS, HEAD, POST) -> auth.signup>, {'GET', 'OPTIONS', 'HEAD', 'POST'}]
+[<Rule '/revoke' (GET, OPTIONS, HEAD, POST) -> auth.revoke>, {'GET', 'OPTIONS', 'HEAD', 'POST'}]
+[<Rule '/login' (GET, OPTIONS, HEAD, POST) -> auth.login>, {'GET', 'OPTIONS', 'HEAD', 'POST'}]
+[<Rule '/change-password/<token>' (GET, OPTIONS, HEAD, POST) -> auth.change_password>, {'GET', 'OPTIONS', 'HEAD', 'POST'}]
+[<Rule '/set-user-role/<name>' (POST, OPTIONS) -> admin.set_role>, {'POST', 'OPTIONS'}]
+[<Rule '/ban-user/<name>' (POST, OPTIONS) -> admin.change_ban_status>, {'POST', 'OPTIONS'}]
+[<Rule '/add-note/<name>' (POST, OPTIONS) -> admin.add_note>, {'POST', 'OPTIONS'}]

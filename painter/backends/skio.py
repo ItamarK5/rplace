@@ -64,11 +64,6 @@ def socket_io_role_required_event(role: Role, desc: Optional[str] = None) -> Cal
     return wrapped
 
 
-def emit_namespaces(namespaces: Iterable[str], *args, **kwargs) -> None:
-    for ns in namespaces:
-        sio.emit(*args, namespaces=ns, **kwargs)
-
-
 # declaring socketio namespace names
 PAINT_NAMESPACE = '/paint'
 ADMIN_NAMESPACE = '/admin'

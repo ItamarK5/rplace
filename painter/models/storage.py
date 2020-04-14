@@ -28,7 +28,7 @@ def to_small_case(string: str) -> str:
 ExpireModels = []
 
 
-class CacheTextMixin(object):
+class CacheTextMixin:
     """
      An base for classes that inherit the flask_sqlalchemy model class
      that classes is a simple table cache, stores values for a limited amount of time
@@ -44,7 +44,6 @@ class CacheTextMixin(object):
     def __init_subclass__(cls, **kwargs):
         ExpireModels.append(cls)
     # its a class method
-
 
     @declared_attr
     def identity_column(cls) -> Column:
@@ -178,9 +177,13 @@ class RevokeMailAttempt(datastore.Model, CacheTextMixin):
 
 
 def init_storage_models(app: Flask) -> None:
-    RevokeMailAttempt.max_expires_seconds = app.config.get('MAX_AGE_USER_TOKEN', DEFAULT_MAX_AGE_USER_TOKEN)
-    SignupNameRecord.max_expires_seconds = app.config.get('MAX_AGE_USER_TOKEN', DEFAULT_MAX_AGE_USER_TOKEN)
-    SignupMailRecord.max_expires_seconds = app.config.get('MAX_AGE_USER_TOKEN', DEFAULT_MAX_AGE_USER_TOKEN)
+    """
+    :param app:
+    :return:
+    """
+    RevokeMailAttempt.max_expires_seconds = app.config.get('APP_MAX_AGE_USER_TOKEN', DEFAULT_MAX_AGE_USER_TOKEN)
+    SignupNameRecord.max_expires_seconds = app.config.get('APP_MAX_AGE_USER_TOKEN', DEFAULT_MAX_AGE_USER_TOKEN)
+    SignupMailRecord.max_expires_seconds = app.config.get('APP_MAX_AGE_USER_TOKEN', DEFAULT_MAX_AGE_USER_TOKEN)
 
 
 __all__ = [

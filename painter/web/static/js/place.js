@@ -754,7 +754,6 @@ const mapFrags = {
                 this.scale = frags.scale;
                 board.updateZoom();
             }
-            this.setHash();
         }
         return any_changes;
         
@@ -767,14 +766,17 @@ const mapFrags = {
         //  update location
         // first tried to update event set
         // now lets try using setTimeout
-        console.log(5)
         if (location.hash != this.hash()) {
             // change hash without triggering events
             // https://stackoverflow.com/a/5414951
-            location.replace(document.location.pathname + this.hash());
+            history.replaceState(null, null, document.location.pathname + this.hash());
         }
     },
-    forcedSetHash: this.__setHash
+    forcedUpdateHash(){
+        if (location.hash != this.hash()) {
+            history.replaceState(null, null, document.location.pathname + this.hash());
+        }
+    }
 }
 
 /** @namespace cursor  
@@ -1096,18 +1098,28 @@ const pen = {
     }
 }
 
+/** 
+ * @namespace board 
+ * @property {?CanvasRenderingContext2D} img_canvas canvas to save the image of the board
+ * @property {?CanvasRenderingContext2D} ctx_image canvas to draw to
+ * @property {Uint8Array} buffer
+ * @property {number} x space between head of the board to the x start of the page
+ * @property {number} y space between head of the board to the x start of the page
+ * @property {{active:boolean, startX:number, startY:number}}
+ * 
+ * */
 const board = {
-    imgCanvas: null,
+    img_canvas: null,
     ctx_image: null,
     buffer: null,
     x: 0,
     y: 0,
     drag: {
         active: false,
-        startX: 0,
-        startY: 0,
-        dragX: 0,
-        dragY: 0
+        start_x: 0,
+        start_y: 0,
+        drag_x: 0,
+        drag_y: 0
     },
     canvas: null,
     needs_draw: false,
@@ -1122,10 +1134,10 @@ const board = {
         this.canvas = $('#board');
         this.ctx = this.canvas[0].getContext('2d');
         this.canvas.attr('alpha', 0);
-        this.imgCanvas = document.createElement('canvas');
-        this.imgCanvas.width = CANVAS_SIZE;
-        this.imgCanvas.height = CANVAS_SIZE;
-        this.ctx_image = this.imgCanvas.getContext('2d');
+        this.img_canvas = document.createElement('canvas');
+        this.img_canvas.width = CANVAS_SIZE;
+        this.img_canvas.height = CANVAS_SIZE;
+        this.ctx_image = this.img_canvas.getContext('2d');
         this.updateZoom(); // also centers
 
     },
@@ -1318,7 +1330,7 @@ const board = {
                 this.ctx.imageSmoothingEnabled = false;
                 this.ctx.scale(mapFrags.scale, mapFrags.scale)
                 this.ctx.translate(-this.x, -this.y);
-                this.ctx.drawImage(this.imgCanvas, 0, 0);
+                this.ctx.drawImage(this.img_canvas, 0, 0);
                 if (pen.canDrawPen()) {
                     this.ctx.fillStyle = colors[pen.color]
                         .css_format(0.6);
@@ -1426,10 +1438,10 @@ $(document).ready(function() {
         pen.setPixel();
     });
     board.canvas.mousedown(function(e) {
-        board.drag.dragX = e.pageX;
-        board.drag.dragY = e.pageY;
-        board.drag.startX = mapFrags.cx;
-        board.drag.startY = mapFrags.cy;
+        board.drag.drag_x = e.pageX;
+        board.drag.drag_y = e.pageY;
+        board.drag.start_x = mapFrags.cx;
+        board.drag.start_y = mapFrags.cy;
         board.drag.active = true;
         // change cursor 100 seconds if don't move
     }).mouseenter(function(e) {
@@ -1440,8 +1452,8 @@ $(document).ready(function() {
             // center board
             cursor.grab();
             board.centerOn(
-                Math.floor(board.drag.startX + (board.drag.dragX - e.pageX) / mapFrags.scale),
-                Math.floor(board.drag.startY + (board.drag.dragY - e.pageY) / mapFrags.scale)
+                Math.floor(board.drag.start_x + (board.drag.drag_x - e.pageX) / mapFrags.scale),
+                Math.floor(board.drag.start_y + (board.drag.drag_y - e.pageY) / mapFrags.scale)
             );
         }
     }).mouseup(() => {
@@ -1553,12 +1565,17 @@ $(document).ready(function() {
         }
     });
     // hash change
-    $(window).bind('hashchange', function(e) {
-        e.preventDefault();
+    window.addEventListener('hashchange', function(e) {
+        console.log(5)
         if(mapFrags.refreshFragments()){
+            mapFrags.forcedUpdateHash()
             board.drawBoard();
+            e.preventDefault()
+        } else if(mapFrags.hash() != window.location.hash) {
+            mapFrags.forcedUpdateHash()
         }
-    });
+        e.preventDefault()
+    }, false);
     // copy coords - https://stackoverflow.com/a/37449115
     let clipboard = new ClipboardJS('#coordinates', {
         text: function() {

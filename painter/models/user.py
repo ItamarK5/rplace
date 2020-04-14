@@ -82,7 +82,7 @@ class User(datastore.Model, UserMixin):
             'sha512',
             password.encode(),
             username.encode(),
-            current_app.config.get('USER_PASSWORD_ROUNDS'),
+            current_app.config.get('APP_USER_PASSWORD_ROUNDS'),
         ).hex()
 
     def __repr__(self) -> str:

@@ -15,6 +15,7 @@ function ChangeLockButton(new_state) {
 
 
 /**
+ * @function
  * @returns checks again the button state
  * sends ajax request to check if the lock state
  */
@@ -30,32 +31,45 @@ const refreshButtonState = () => {
 }
 // creates the io object
 /**
- * @const {SocketIO}
+ * @const {SocketIO} sock
+ * socket
  */
 const sock = io('/admin');
 /**
- * @memberof module:io
- * @name socket_connect
+ * @name connect
  * @summary refresh button state when connects to server
  */
 sock.on('connect', () => {
 	refreshButtonState();
 });
 /**
- * @memberof module:io
  * @name set-lock-state
  * @summary sets the lock state of the board
  */
 sock.on('set-lock-state', (callback) => {
 	ChangeLockButton(callback)
 });
-
+/**
+ * @name reconnect
+ * @summary sets the lock state of the board
+ */
 sock.on('reconnect', () => 	refreshButtonState());
-sock.on('reconnect_error', () =>{
+
+const messageConnectionError = () => {
 	Swal.fire({
 		icon:'error',
 		title:'Server Not Found',
 	})
+}
+
+const forceReconnection = _.throttle()
+
+/**
+ * @name reconnect_error
+ * @summary sets the lock state of the board
+ */
+sock.on('reconnect_error', () =>{
+	//on reconnection error
 })
 
 $(document).ready(() => {

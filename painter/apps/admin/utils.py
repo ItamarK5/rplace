@@ -24,8 +24,8 @@ def admin_only(f: Callable) -> Callable:
             return fresh_login_required(f)(*args, **kwargs)
         # else
         else:
+            # not found error
             abort(404)
-
     return wrapped
 
 

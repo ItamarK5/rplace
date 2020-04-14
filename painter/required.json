@@ -1,0 +1,48 @@
+{
+  "DEFAULT": {
+    "CACHE_TYPE": "simple",
+    "CELERY_BROKER_URL": null,
+    "MAIL_DEBUG": false,
+    "MAIL_DEFAULT_SENDER": null,
+    "MAIL_MAX_EMAILS": 1,
+    "MAIL_PASSWORD": null,
+    "MAIL_PORT": 465,
+    "MAIL_SERVER": null,
+    "MAIL_USERNAME": null,
+    "MAIL_USE_SSL": false,
+    "MAIL_USE_TLS": false,
+    "MAX_AGE_USER_TOKEN": 3600,
+
+    "REDIS_URL": null,
+    "REMEMBER_COOKIE_HTTPONLY": false,
+    "REMEMBER_COOKIE_NAME": null,
+    "SECRET_KEY": null,
+    "SEND_FILE_MAX_AGE_DEFAULT": 1,
+    "SESSION_PROTECTION": "basic",
+    "SQLALCHEMY_DATABASE_URI": null,
+    "SQLALCHEMY_TRACK_MODIFICATIONS": false,
+    "APP_TOKEN_REVOKE_SALT": null,
+    "APP_TOKEN_SIGNUP_SALT": null,
+    "APP_USER_PASSWORD_ROUNDS": 1,
+    "APP_USER_PASSWORD_SALT": null,
+    "APP_NON_LOGIN_MESSAGE": "You were redirected from pages that are for non autheneticated users",
+    "APP_NON_LOGIN_ROUTE": "place.home",
+    "WERKZEUG_RUN_MAIN": true
+  },
+  "DEBUG": {
+    "APP_HOST": "127.0.0.1",
+    "APP_PORT": 8080,
+    "DEBUG": true
+  },
+  "APP": {
+    "APP_HOST": "192.168.1.24",
+    "APP_PORT": 8080
+  },
+  "APP2": {
+    "APP_HOST": "192.168.1.24",
+    "APP_PORT": 8081
+  },
+  "CELERY": {
+
+  }
+}

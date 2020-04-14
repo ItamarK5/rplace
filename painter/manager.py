@@ -4,6 +4,8 @@
     the module is based of flask_script module
     https://flask-script.readthedocs.io/en/latest/
 """
+
+
 import subprocess
 import sys
 from flask import current_app
@@ -616,5 +618,6 @@ def clear_cache():
         model_class.clear_cache(False)
     datastore.session.commit()
     print('Clear Cache Complete')
+
 
 manager.add_command('clear-cache', Command(clear_cache))

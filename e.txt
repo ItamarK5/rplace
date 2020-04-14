@@ -1,0 +1,29 @@
+Running with default parameters only
+[<Rule '/get-active-state' (HEAD, OPTIONS, GET) -> admin.get_active_state>, {'HEAD', 'OPTIONS', 'GET'}]
+[<Rule '/favicon.ico' (HEAD, OPTIONS, GET) -> other.serve_icon>, {'HEAD', 'OPTIONS', 'GET'}]
+[<Rule '/get-notes' (HEAD, OPTIONS, GET) -> admin.get_user_notes>, {'HEAD', 'OPTIONS', 'GET'}]
+[<Rule '/profile' (HEAD, OPTIONS, GET) -> place.profile>, {'HEAD', 'OPTIONS', 'GET'}]
+[<Rule '/refresh' (HEAD, OPTIONS, POST, GET) -> auth.refresh>, {'HEAD', 'OPTIONS', 'POST', 'GET'}]
+[<Rule '/signup' (HEAD, OPTIONS, POST, GET) -> auth.signup>, {'HEAD', 'OPTIONS', 'POST', 'GET'}]
+[<Rule '/revoke' (HEAD, OPTIONS, POST, GET) -> auth.revoke>, {'HEAD', 'OPTIONS', 'POST', 'GET'}]
+[<Rule '/logout' (HEAD, OPTIONS, GET) -> auth.logout>, {'HEAD', 'OPTIONS', 'GET'}]
+[<Rule '/place' (HEAD, OPTIONS, GET) -> place.place>, {'HEAD', 'OPTIONS', 'GET'}]
+[<Rule '/login' (HEAD, OPTIONS, POST, GET) -> auth.login>, {'HEAD', 'OPTIONS', 'POST', 'GET'}]
+[<Rule '/admin' (HEAD, OPTIONS, GET) -> admin.admin>, {'HEAD', 'OPTIONS', 'GET'}]
+[<Rule '/home' (HEAD, OPTIONS, GET) -> place.home>, {'HEAD', 'OPTIONS', 'GET'}]
+[<Rule '/' (HEAD, OPTIONS, GET) -> place.home-redirect>, {'HEAD', 'OPTIONS', 'GET'}]
+[<Rule '/change-password/<token>' (HEAD, OPTIONS, POST, GET) -> auth.change_password>, {'HEAD', 'OPTIONS', 'POST', 'GET'}]
+
+[<Rule '/confirm/<token>' (HEAD, OPTIONS, GET) -> auth.confirm>, {'HEAD', 'OPTIONS', 'GET'}]
+
+[<Rule '/static/<filename>' (HEAD, OPTIONS, GET) -> place.static>, {'HEAD', 'OPTIONS', 'GET'}]
+
+[<Rule '/files/<key>' (HEAD, OPTIONS, GET) -> other.serve_static>, {'HEAD', 'OPTIONS', 'GET'}]
+
+[<Rule '/edit/<name>' (HEAD, OPTIONS, GET) -> admin.edit_user>, {'HEAD', 'OPTIONS', 'GET'}]
+
+[<Rule '/meme/<error>' (HEAD, OPTIONS, GET) -> other.meme_image>, {'HEAD', 'OPTIONS', 'GET'}]
+
+[<Rule '/web/<filename>' (HEAD, OPTIONS, GET) -> other.static>, {'HEAD', 'OPTIONS', 'GET'}]
+
+[<Rule '/<filename>' (HEAD, OPTIONS, GET) -> static>, {'HEAD', 'OPTIONS', 'GET'}]

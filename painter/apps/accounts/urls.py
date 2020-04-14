@@ -109,9 +109,8 @@ def revoke() -> Response:
 
 
 @accounts_router.route('/refresh', methods=['GET', 'POST'])
+@anonymous_required
 def refresh() -> Response:
-    if current_user.is_authenticated:
-        redirect('place.home')
     form = LoginForm()
     entire_form_error = []
     extra_error = None
@@ -184,7 +183,7 @@ def change_password(token: str) -> Response:
     return render_template('transport/complete-signup.html')
 
 
-@accounts_router.route('/logout', methods=('GET', 'POST'))
+@accounts_router.route('/logout', methods=('GET',))
 def logout() -> Response:
     if not current_user.is_anonymous:
         logout_user()
@@ -200,6 +199,21 @@ def confirm(token: str) -> Response:
                                   TokenSerializer.signup)
     if extracted is None:
         return render_template(
+            'transport//revoke-error-token.html',
+            view_name='Revoke Password',
+            view_ref='auth.login',
+        )
+    # timestamp error
+    if isinstance(extracted, str):
+        return render_template(
+            'transport//revoke-token-expires.html',
+            view_name='Signup',
+            page_title='Over Time',
+            title='Over Time',
+            view_ref='auth.signup',
+        )
+    if extracted is None:
+        return render_template(
             'transport//base.html',
             view_name='Sign Up',
             view_ref='auth.signup',
@@ -207,14 +221,6 @@ def confirm(token: str) -> Response:
     # else get values
     token, timestamp = extracted
     # time.timezone is the different between local time to gm-time d=(gm-local) => d+local = gm
-    if (time.time() + time.timezone) >= timestamp + current_app.config['MAX_AGE_USER_SIGN_UP_TOKEN']:
-        return render_template(
-            'transport//base.html',
-            view_name='Signup',
-            title='Over Time',
-            view_ref='auth.signup',
-            message="you registered over time, you are late"
-        )
     name, pswd, email = token.pop('username'), token.pop('password'), token.pop('email')
     # check if user exists
     # https://stackoverflow.com/a/57925308
