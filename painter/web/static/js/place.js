@@ -412,9 +412,8 @@ class CursorState {
  */
 const Cursors = {
     pen: new CursorState('crosshair', false),
-    wait: new CursorState('not-allowed', false),
+    wait: new CursorState('wait', false),
     grabbing: new CursorState('grabbing', true),
-    find_mouse: new CursorState('wait', true)
 }
 
 /**
@@ -1355,7 +1354,7 @@ const board = {
         this.canvas[0].height = height;
         console.lo
         // scale canvas
-        this.ctx.scale(devicePixelRatio, devicePixelRatio)
+        this.ctx.scale(ratio, ratio)
         this.centerPos();
         this.drawBoard()
     },
@@ -1402,7 +1401,7 @@ const board = {
                 console.log(this.x, this.y)
                 this.needs_draw = false;
                 this.ctx.fillStyle = BACKGROUND_COLOR
-                this.ctx.fillRect(0, 0,innerWidth, innerHeight);
+                this.ctx.fillRect(0, 0, innerWidth, innerHeight);
                 this.ctx.save()
                 this.ctx.imageSmoothingEnabled = false;
                 this.ctx.scale(mapFrags.scale, mapFrags.scale)
@@ -1485,17 +1484,18 @@ function DocumentKeyPress(key_event){
             break;
         }
         case 'KeyT': {
+            // press the zoom button
             nonSweetClick('#zoom-button')
-        }
-        case 'KeyG': {
-            cursor.lockCursor(Cursors.find_mouse);
             break;
         }
+
         case 'KeyF': {
+            // press the F button
             nonSweetClick('#screen-button')
             break;
         }
         default: {
+            // do nothing
             break;
         }
     }
@@ -1546,6 +1546,7 @@ $(document).ready(function() {
             lockedStates.lock();
         }
     });
+    // reconnection message
     sock.on('reconnect', () => {
         Swal.fire({
             icon: 'success',
@@ -1553,6 +1554,7 @@ $(document).ready(function() {
             text: 'Server Connection returned',
         })
     });
+    // shows fail connection message
     sock.on('reconnect_error', () => {
         board.resetBoardBuild();
         //staff
@@ -1562,6 +1564,7 @@ $(document).ready(function() {
             text: 'Lost Connection with the server',
         })
     })
+    // update board
     $('#coordinates').hover(function() {
         board.updateCoords();
     }, function() {
@@ -1580,19 +1583,21 @@ $(document).ready(function() {
                 MIN_SCALE
             )
         );
-    })[0].addEventListener('dblclick', (dobule_click_event) => { // for not breaking the 
-        // jmapFrags dblclick dont work on some machines but addEventListner does 
-        // source: https://github.com/Leaflet/Leaflet/issues/4127
-        /*Get XY https://codepo8.github.io/canvas-images-and-pixels/#display-colour*/
-        pen.setPenPos(dobule_click_event);
+    })[0].addEventListener('dblclick', (double_click_event) => {
+        // @see {@link https://github.com/Leaflet/Leaflet/issues/4127}
+        // @see {@link https://codepo8.github.io/canvas-images-and-pixels/#display-colour*/}
+        pen.setPenPos(double_click_event)
         cursor.setPen();
         pen.setPixel();
     });
+    // mouse down, start drag
     board.canvas.mousedown(function(mouse_down_event) {
         board.drag_data = new DragData(mapFrags.cx, mapFrags.cy, mouse_down_event.pageX, mouse_down_event.pageY)
+    // set pen when locking at board
     }).mouseenter(function() {
         cursor.setPen();
     })
+    // move dragger
     $(document).mousemove(function(mouse_event) {
         if (board.isDragged()) {
             mapFrags.centerOn(board.drag_data.getDraggedPos(
@@ -1620,7 +1625,8 @@ $(document).ready(function() {
             }
         }
     }).keyup((key_up_event) => {
-        let key_name = (key_up_event || window.event).key;
+        let key_name = key_up_event.key;
+        // find form direction map
         if(_.has(DirectionMap, key_name)){
             let movement_direction = DirectionMap[key_name];
             if ((movement_direction instanceof KeyDirection) && movement_direction.clearIfSet()) {
@@ -1629,18 +1635,17 @@ $(document).ready(function() {
                 return;
             }
         }
-        // if home is unpressed, go home
+        // go home page
         else if (key_name == 'Home') {
             nonSweetClick('#home-button');
         }
-        else if (key_name == 'g') { // if g is pressed, release cursor state
-            cursor.releaseCursor(Cursors.find_mouse)
-        } else if (key_name == 'Escape') { // Escape Option
+        // ESC => exit
+        else if (key_name == 'Escape') { // Escape Option
             // prevent event collision with swal ESCAPE
             nonSweetClick('#logout-button');
         }
     });
-    // change toggle button
+    // toggle toolbox
     $('#toggle-toolbox-button').click(function(e) {
         e.preventDefault();
         let toolbox = $('#toolbox')[0];
@@ -1656,10 +1661,11 @@ $(document).ready(function() {
         }
     });
     // hash change
+    // if isnt refreshed change otherwise 
     window.addEventListener('hashchange', function(e) {
         if(mapFrags.refreshFragments()){
             board.drawBoard();
-            e.preventDefault()
+            mapFrags.fixHash()
         } else if(!mapFrags.doesHashMatch()) {
             mapFrags.fixHash()
         }
@@ -1739,13 +1745,6 @@ $(document).ready(function() {
         let not_state = $('#screen-button').attr('state') == '1' ? '0' : '1'
         $('#screen-button').attr('state', not_state);
     }
-    let mqString = `(resolution: ${window.devicePixelRatio}dppx)`;
-
-    const updatePixelRatio = () => {
-        board.setCanvasZoom();
-    }
-
-    updatePixelRatio();
     // set color button
     $(window).resize((e) => {
         board.setCanvasZoom();

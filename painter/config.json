@@ -12,8 +12,8 @@
     "MAIL_USE_SSL": true,
     "MAIL_USE_TLS": false,
     "MAX_AGE_USER_TOKEN": 3600,
-    "NON_LOGIN_MESSAGE": "You were redirected from pages that are for non autheneticated users",
-    "NON_LOGIN_ROUTE": "place.home",
+    "APP_NON_LOGIN_MESSAGE": "You were redirected from pages that are for non autheneticated users",
+    "APP_NON_LOGIN_ROUTE": "place.home",
     "REDIS_URL": "redis://:UmPWoMqjGXVY7MI15rTHVKmTNRIroxcEPMVN@192.168.1.31:6379/0",
     "REMEMBER_COOKIE_HTTPONLY": false,
     "REMEMBER_COOKIE_NAME": "SocialPainterDashCookie",
@@ -22,11 +22,12 @@
     "SESSION_PROTECTION": "basic",
     "SQLALCHEMY_DATABASE_URI": "sqlite:///C:\\Cyber\\2020\\rplace\\database.db",
     "SQLALCHEMY_TRACK_MODIFICATIONS": true,
-    "TOKEN_REVOKE_SALT": "MmxUQ0tPZ2pNUEpMQ1FVdHB4aEF2N3Vyb0lScEZ3d1g=\n\r\r\r\r",
-    "TOKEN_SIGNUP_SALT": "TXNUMEZjVWdTT3phcEppN1JBYkRpNXE1WFdkelMzTkM=\n\r\r\r\r",
-    "USER_PASSWORD_ROUNDS": 4493,
-    "USER_PASSWORD_SALT": "IPgaYjQISIa9pVYJNErFLA==\n\r\r\r\r",
-    "WERKZEUG_RUN_MAIN": true
+    "APP_TOKEN_REVOKE_SALT": "MmxUQ0tPZ2pNUEpMQ1FVdHB4aEF2N3Vyb0lScEZ3d1g=\n\r\r\r\r",
+    "APP_TOKEN_SIGNUP_SALT": "TXNUMEZjVWdTT3phcEppN1JBYkRpNXE1WFdkelMzTkM=\n\r\r\r\r",
+    "APP_USER_PASSWORD_ROUNDS": 4493,
+    "APP_USER_PASSWORD_SALT": "IPgaYjQISIa9pVYJNErFLA==\n\r\r\r\r",
+    "WERKZEUG_RUN_MAIN": true,
+    "SESSION_COOKIE_SAMESITE":"Lax"
   },
   "DEBUG": {
     "APP_HOST": "127.0.0.1",

@@ -31,12 +31,12 @@ class TokenSerializer(object):
         """
         cls.signup = URLSafeTimedSerializer(
             secret_key=app.config['SECRET_KEY'],
-            salt=app.config['TOKEN_SIGNUP_SALT'],
+            salt=app.config['APP_TOKEN_SIGNUP_SALT'],
 
         )
         cls.revoke = URLSafeTimedSerializer(
             secret_key=app.config['SECRET_KEY'],
-            salt=app.config['TOKEN_REVOKE_SALT'],
+            salt=app.config['APP_TOKEN_REVOKE_SALT'],
         )
 
     @staticmethod
