@@ -28,6 +28,7 @@
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@9/dist/sweetalert2.min.js"></script>
     <script src="{{url_for('other.serve_static', key='place.js')}}"></script>
 </head>
+<!-- favor location as html parameters-->
 <body scale={{current_user.scale}} x={{current_user.x}} y={{current_user.y}}>
 <canvas class='pixelate' height='1000' id="board" width='1000'>Wait, Loading...</canvas>
 <div class="select-none" hide='0' id="toolbox">
@@ -43,6 +44,7 @@
             </div>
         </div>
     </div>
+    <!-- Links to other pages -->
     <div id="icon-container">
         {{render_link('zoom-button', 'search-plus')}}
         <div class="icon-button" id="screen-button" state="0">
@@ -61,6 +63,7 @@
         <div class="center" id="prog-text">0:00</div>
     </div>
 </div>
+<!-- Coordinates display -->
 <div class="center-x select-none" id="coordinates">
     <span class="coordinateSpan" id="coordinateX">none</span>
     <span class="coordinateText" id="coordinate-slicer">,</span>
