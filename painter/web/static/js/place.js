@@ -1,17 +1,9 @@
-// Type defections
-/**
- * @typedef {Vector2D|number[]} Vector2DType type for function that require 2d vector object @see {@link:Vector2D}
- */
+
 /** @const BACKGROUND_COLOR */
-
-
 const BACKGROUND_COLOR = '#777777'
 
 /**  @const CANVAS_SIZE size of the canvas */
 const CANVAS_SIZE = 1000;
-
-/** @const MIN_STEP_SIZE minimum change in size */
-const MIN_STEP_SIZE = 1;
 
 /** @const MIN_SCALE minimum scale power limit */
 const MIN_SCALE = 0.5;
@@ -47,14 +39,12 @@ const reArgScale = /(?<=(^\?|.+&)scale=)(\d{1,2}|0\.5)(?=&|$)/i;
  *  modules used in app
  *  @param {SocketIO} io io module, for talking with server
  *  @param {SweetAlert} Swal alert 
- *  @param {jQuery} jQuery easy tools to work with javascript and dom
  *  @param {Underscore} _ module contains utilities functions
  *  @param {ClipboardJS} ClipboardJS module to work clipboard, copying and pasting data (url)
  * 
  */
 const io = window.io;
 const Swal = window.Swal;
-const jQuery = window.jQuery;
 const _ = window._;
 const ClipboardJS = window.ClipboardJS;
 
@@ -124,7 +114,7 @@ const isValidColor = num => typeof num == 'number' && num >= 0 && num < 16
 /**
  * @returns {boolean} if there any sweet alerts messages open
  */
-const isSwalClose = () => _.isUndefined(jQuery('.swal2-container')[0])
+const isSwalClose = () => _.isUndefined($('.swal2-container')[0])
 
 /**
  * @returns {number} time in UTC
@@ -221,7 +211,7 @@ function openFullscreen() {
 }
 
 /**
- * @param {string} selector jQuery(selector) matched string, specific the id of the clicked object
+ * @param {string} selector $(selector) matched string, specific the id of the clicked object
  * @returns null
  * @summary if there are no alerts by the sweetalert extension open, the command executes clicking on a selector
  * is used for key events
@@ -264,193 +254,42 @@ const throw_message = (msg, enter_sec = 1000, show_sec = 100, exit_sec = 1000, c
     });
 }
 
+
 /**
- * @param {Vector2DType} other the other object in the addition operator 
- * @returns {Vector2D} a 2d vector represent the sum of the 2 objects
-* @see {@link https://www.keithcirkel.co.uk/proposal-operator-overloading/} for how to use the overloading expressions * this + other = return
+ * @memberof Vector2D
+ * @param {*} caller 
+ * @param {function} call 
+ * wraps a single parameter method of vector simple function of operation with scalars
+ * for the use of the XY functions
  */
-function addVector(other){
-    if(other instanceof Vector2D){
-        return new Vector2D(this.x+other.x, this.y+other.y)
-    } else if(other instanceof Array){
-        // only works with 2 size array, because it has the same amount of dimensions
-        if(other.length != 2){
-            throw new Error("other list must be length of 2")
-        }
-        else {
-            return new Vector2D(other[0]+this.x, other[1]+this.y)
-        }
-    }
-    // else
-    throw new TypeError("other must be List or Vector2D")
-}
+
 
 /**
- * @param {Vector2DType} other the other object in the subtraction operator 
- * @returns {Vector2D} a 2d vector represent the subtraction of (this) vector by the other param
- * @see {@link https://www.keithcirkel.co.uk/proposal-operator-overloading/} for how to use the overloading expressions
- * this - other = return
- */
-function subVector(other){
-    if(other instanceof Vector2D){
-        return new Vector2D(this.x-other.x, this.y-other.y)
-    } else if(other instanceof Array){
-        if(other.length != 2){
-            throw new Error("other list must be length of 2")
-        }
-        else {
-            return new Vector2D(this.x-other[0], this.y-other[1])
-        }
-    }
-    // else
-    throw new TypeError("other must be List or ")
-}
-
-/**
- * @param {number} other the other object in the subtraction operator 
- * @returns {Vector2D} a 2d vector represent a vector that holds each scalar of the this vector multiplied by the other param
- * @see {@link https://www.keithcirkel.co.uk/proposal-operator-overloading/} for how to use the overloading expressions
- * (this.x*other, this.y*other) = return
- */
-function MulVector(other){
-    if (other instanceof number) {
-        return new Vector2D(this.x * other, this.y * other)
-    }
-    // else
-    throw new TypeError(`can only be multiple by a number, not:${typeof(other)}`)
-}
-/**
- * @param {number} other the other object in the subtraction operator 
- * @returns {Vector2D} a 2d vector represent a vector that holds each scalar of the this vector divided by the other param
- * @see {@link https://www.keithcirkel.co.uk/proposal-operator-overloading/} for how to use the overloading expressions
- * (this.x/other, this.y/other) = return
- */
-function DivVector(other){
-    if (other instanceof number) {
-        return new Vector2D(this.x * other, this.y * other)
-    }
-    // else
-    throw new TypeError(`can only be multiple by a number, not:${typeof(other)}`)
-}
-
-
-
-class Vector2D{
-    /**
-     * @param {number} x - x value
-     * @param {numBer} y - y value
-     */
-    constructor(x, y){
-        this.__x = x;
-        this.__y = y;
-    }
-    /**
-     * gets the x value of the instance
-     */
-    get x(){
-        return this.__x;
-    }
-    /**
-     * gets the y value of the instance
-     */
-    get y(){
-        return this.__y;
-    }
-    /**
-     * @returns {string} a string representing of the instance
-     */
-    toString(){
-        return `Vector2D[${x},${y}]`;
-    }
-    /**
-     * @param {Vector2DType} other other object
-     * @returns {boolean} if equals to current vector
-     * the first checks if other is valid vector (if so returns null) otherwise uses array comparison to check if they are equal 
-     */
-    equals(other){
-        // evaluate the objects as arrays
-        let eval_this = this.array();
-        let eval_other = Vector2D. __evalVector(other);
-        if(_.isNull(eval_other)){
-            return false;
-        }
-        // else
-        return eval_other == eval_this
-    }
-    
-    // get description from addVector method
-    get [Symbol.operator('+')]() {
-        return addVector
-    }
-    // get description from subVector method
-    get [Symbol.operator('-')]() {
-         return subVector
-    }
-    // get description from mulVector method
-    get [Symbol.operator('*')]() {
-        return addVector
-    }
-    // get description from divVector method
-    get [Symbol.operator('/')]() {
-            return subVector
-    }
-    /**
-     * @returns array representation of the 2d vector
-     * just returns the vector as array
-     */
-    array() {
-        return [this.x, this.y]
-    }
-    /**
-     * @returns {boolean} if vector is zero
-     * vector zero means empty value, used in statements
-     */
-    isZero(){
-        return !this.equals(Vector2D.zero());
-    }
-    /**
-     * @returns {Vector2D} returns zero vector, Vector(0,0);
-     */
-    static zero(){
-        return new Vector2D(0, 0);
-    }
-    /**
-     * @returns {Vector2DType} 2d vector type
-     * evaluates the object as array the can be compared as 2d vector, else returns null
-     * utility function for @see{@link Vector2D}
-     */
-    static __evalVector(v){
-        if(v instanceof Vector2D){
-            return v.array()
-        } else if(v instanceof Array && v.length == 2){
-            return v;
-        }
-        // else
-        return null;
-    }
-}
-
-/**
- * @class
+ * @constructor
  * @classdesc class to use with direction map
  * @see {@link:DirectionMap}
  * @property {Vector2D} direction a vector represeting a direction to move
- * @property {__is_set}
+ * @property @private {boolean} if key is pressed
  */
 function KeyDirection(direction) {
     this.direction = direction;
     this.__is_set = false;
     /**
-     * clears the boolean set
+     * clears the __is_set property, if the property was set
+     * @returns {boolean} if this.__is_set value was true before the function
      */
-    function clear(){
+    this.clearIfSet = function(){
         if(this.__is_set){
             this.__is_set = false;
             return true;
         }
-        return true;
+        return false;
     }
-    function set(){
+    /**
+     * sets the __is_set property, if the property was cleared
+     * @returns {boolean} if this.__is_set value was false before the function
+     */
+    this.setIfCleared = function(){
         if(!this.__is_set){
             this.__is_set = true;
             return true;
@@ -467,11 +306,10 @@ function KeyDirection(direction) {
  * @see {@link board.Movement}
 */
 const DirectionMap = {
-    ArrowLeft: KeyDirection(new Vector2D(-1, 0)),
-    ArrowRight: KeyDirection(new Vector2D(1, 0)),
-    ArrowUp: KeyDirection(new Vector2D(0, -1)),
-    ArrowDown: KeyDirection(new Vector2D(0, 1))
-    
+    ArrowLeft: new KeyDirection(new Vector2D(-1, 0)),
+    ArrowRight: new KeyDirection(new Vector2D(1, 0)),
+    ArrowUp: new KeyDirection(new Vector2D(0, -1)),
+    ArrowDown: new KeyDirection(new Vector2D(0, 1))
 }
 
 
@@ -499,8 +337,7 @@ class SimpleInterval {
      * @returns nothing
      */
     start() {
-        this.
-        __work_handler = setInterval(this.work, this.__time);
+        this.__work_handler = setInterval(this.work, this.__time);
     }
     /**
      * @summary stops the worker
@@ -515,10 +352,10 @@ class SimpleInterval {
      */
     safeStart() {
         if (this.isWorking) {
-            this.start()
-            return true;
+            return false;
         }
-        return false;
+        this.start()
+        return true;
     }
     /**
      * @returns {boolean} if the worker stopped
@@ -563,10 +400,7 @@ class CursorState {
         if (!(other_cursor instanceof CursorState)) {
             return false;
         }
-        return (
-            this.cursor == other_cursor.cursor &&
-            this.hide_pen == other_cursor.hide_pen
-        )
+        return this.cursor == other_cursor.cursor && this.hide_pen == other_cursor.hide_pen
     }
 }
 
@@ -666,7 +500,7 @@ const progress = {
      * constructor, the object initialization
      * sets his work
      */
-    construct() {
+    preRun() {
         let self = this;
         this.__work = new SimpleInterval(function() {
             self.updateTimer()
@@ -741,7 +575,7 @@ const progress = {
         }
     },
     /**
-     * @summary stops the progress bar
+     * stops the progress bar
      */
     stopProgress() {
         this.__work.stop();
@@ -754,27 +588,41 @@ const progress = {
  * @property {?number} cx the x position of the pixel at the center of the screen 
  * @property {?number} cy the y position of the pixel at the center of the screen
  * @property {?number} scale the amount of zoom on the screen
- * @method setHash sets the hash of the object
+ * @method fixHash sets the hash of the object
  * @description handles working with the url and movement of the board
  */
 const mapFrags = {
-    setHash:null,
     /**
      * @method
-     * @
+     * wraps __fixHash function with _.throttle function
+     * throttle executes the function once every x time, and if the function was called during the waited time,
+     * it executes it when the time ends.
+     * @see {@link https://underscorejs.org/#throttle}
      */
-    construct() {
+    fixHash: null,
+    /**
+     * initialize the object, all related document function, runs when document is ready
+     */
+    preRun() {
         // set window hash to be valid
+        this.fixHash = _.throttle(this.__fixHash, 1000);
         let fragments = this.__determineFragments();
         this.cx = fragments.x;
         this.cy = fragments.y;
         this.scale = fragments.scale;
-        // update every 1 second
-        this.setHash = _.throttle(this.__setHash, 1000)
     },
-    isLocationMatched(){
+
+    doesHashMatch(){
         return mapFrags.hash() != window.location.hash;
     },
+    /**
+     * @returns calculates size of step (amount of window pixels that fit 1 board pixel) in pixels
+     * calculates size of step, used for other functions
+     */
+    get step() {
+        return MAX_SCALE / mapFrags.scale;
+    },
+
     /**
      * @private
      * @returns {string} the raw path for the map
@@ -793,6 +641,14 @@ const mapFrags = {
      */
     arguments() {
         return `?${this.__path}`
+    },
+    /**
+     * @param {Vector2D} vector represent the new center
+     */
+    centerOn(vector){
+        x = isNaN(vector.x) ? mapFrags.cx : clamp(vector.x, CANVAS_SIZE, 0);
+        y = isNaN(vector.y) ? mapFrags.cy : clamp(vector.y, CANVAS_SIZE, 0);
+        this.setCenter(vector.x, vector.y);
     },
     /**
      * @param {number} val 
@@ -904,6 +760,12 @@ const mapFrags = {
         }
         return SIMPLE_UNZOOM_LEVEL;
     },
+    moveBoard(dx, dy) {
+        mapFrags.setCenter(
+            clamp(mapFrags.cx + dx * this.step, CANVAS_SIZE, 0),
+            clamp(mapFrags.cy + dy * this.step, CANVAS_SIZE, 0)
+        );
+    },
     /**
      * @returns the fields of the object
      * determine the current fragments and update board
@@ -919,11 +781,12 @@ const mapFrags = {
      * @param {number} x new x positon of the center of the viewport
      * @param {number} y new y positon of the center of the viewport
      * @param {boolean} to_update if to update the position, used when using the function with the setScale method
-     * @returns {boolean} if anything has changed
+     * @returns {boolean} if the cx or cy fragments have been changed
      * @summary handles setting the new center, also prevent any changes if the scale level is less then 1 (0.5)
      */
     setCenter(x = undefined, y = undefined, to_update = true) {
         let flag = false;
+        // if any undefined it returns NaN
         x = this.scale >= 1 ? Math.round(x) : CANVAS_SIZE / 2;
         y = this.scale >= 1 ? Math.round(y) : CANVAS_SIZE / 2;
         if (this.__isValidNewX(x)) {
@@ -936,7 +799,7 @@ const mapFrags = {
         }
         if (to_update && flag) {
             board.centerPos();
-            this.setHash();
+            this.fixHash();
         }
         return flag;
     },
@@ -955,7 +818,7 @@ const mapFrags = {
                 // update board
                 board.updateZoom();
             }
-            this.setHash()
+            this.fixHash()
         }
     },
     /**
@@ -979,22 +842,25 @@ const mapFrags = {
         
     },
     /**
-     * @summary private function handling setHash
-     * another function wraps it to make it only be only x time after the last the function was caleld
+     * @summary private function handling fixing the hash displayed
+     * another function wraps it to make it only be only x time after the last the function was called
      */
-    __setHash() {
+    __fixHash() {
         //  update location
         // first tried to update event set
         // now lets try using setTimeout
-        if (this.isLocationMatched()) {
+        if (this.doesHashMatch()) {
             // change hash without triggering events
             // https://stackoverflow.com/a/5414951
             location.replace(this.hash())
-            window.title = this.hash()
         }
     },
-    firstSetHash(){
-        if (this.isLocationMatched()) {
+    /**
+     * sets the hash on first time
+     * includes the arguments function (if it has)
+     */
+    fixLocation(){
+        if (this.doesHashMatch()) {
             history.replaceState(null, null, document.location.pathname + this.hash());
         }
     }
@@ -1094,10 +960,11 @@ const pen = {
     __disable: false,
     cursor_style: 'default',
     /**
-     * constructs the pen object (just setting the color buttons, and set one of them to active),
-     * this only initialize the color buttons 
+     * pre runs the pen object (just setting the color buttons, and set one of them to active),
+     * initilize the color
+     * this applys when the document is ready for javascript editing
      */
-    construct() {
+    preRun() {
         let color_button = $('.colorButton[picked="1"]').first()
         if (!color_button[0]) {
             color_button = $('.colorButton').first(); // black button
@@ -1125,7 +992,7 @@ const pen = {
     },
     /**
      * 
-     * @param {?MouseEvent} e mouse event, if not restores from saved one
+     * @param {?jQuert.Event} e $ event that wraps a mouse event, if not restores from last one used
      * @summary the mouse position (if there is not event,resets then to last)
      */
     getMouseOffset(e) {
@@ -1183,7 +1050,7 @@ const pen = {
     },
     /**
      * 
-     * @param {MouseEvent} e mouse event
+     * @param {jQuery.Event} e mouse event
      * updates the offset and stop the keyboard mode 
      */
     setPenPos(e) {
@@ -1205,7 +1072,6 @@ const pen = {
      * sets the color of the button as the pens color also set the button to focused (means thats the color of the pen)
      */
     setColorButton(button) {
-		console.log(button)
 		this.color = parseInt(button.attr('value'));
         $('.colorButton[picked="1"]').attr('picked', '0');
         button.attr('picked', '1');
@@ -1307,7 +1173,6 @@ const pen = {
                 }
                 // else it must be json
                 let data = JSON.parse(value);
-                console.log(data)
                 if (data.code == 'lock' && data.status == 'true') {
                     lockedStates.lock()
                 } else if (data.code == 'time') {
@@ -1320,36 +1185,42 @@ const pen = {
 
 
 /** @constructor
- * DragData constructor
+ * 
+ * @param {number} start_x where started to drag (in x axis, measure by board pixels)
+ * @param {number} start_y where started to drag (in y axis, measure by board pixels)
+ * @param {number} drag_x  where the mouse press (in x axis, measure by screen pixels)
+ * @param {number} drag_Y  where the mouse press (in y axis, measure by screen pixels)
+ * DragData constructor, object representing the information the board being dragged
  */
 function DragData(start_x, start_y, drag_x, drag_y) {
-    this.start_x = start_x;
-    this.start_y = start_y;
-    this.drag_x = drag_x;
-    this.drag_y = drag_y;
+    this.start_vector = new Vector2D(start_x, start_y);
+    this.drag_vector = new Vector2D(drag_x, drag_y)
     /**
      * @method
-     * @param {Vector2D} new_pos mouse event to check for new position
+     * @param {Vector2D} new_pos mouse event to check the new position of the mouse
      * @param {number} scale scale multiplayer
-     * @returns Vector2D
+     * @returns {Vector2D} vector2d represent the position an object is dragged to
      */
-    this.getDragVector = function(new_pos, scale){
-        return new Vector2D(
-            Math.floor(this.start_x + (this.drag_x - new_pos.x) / scale),
-            Math.floor(this.start_y + (this.drag_y - new_pos.y) / scale)
-        )
+    this.getDraggedPos = function(new_pos, scale){
+        let dragged_position = this.drag_vector.clone().subVector(new_pos).divXY(scale);
+        let v=new Vector2D(
+            Math.floor(dragged_position.x) + this.start_vector.x,
+            Math.floor(dragged_position.y) + this.start_vector.y
+        )     
+        return v;
+
     }
 }
 
 
 /** 
  * @namespace board 
- * @property {?CanvasRenderingContext2D} img_canvas canvas to save the image of the board
+ * @property $} img_canvas canvas to save the image of the board
  * @property {Uint8Array} buffer
  * @property {number} x space between head of the board to the x start of the page
  * @property {number} y space between head of the board to the x start of the page
  * @property {?DragData} drag drag information when dragging the board
- * @property {?Canvas}
+ * @property {}
  * */
 const board = {
     img_canvas: null,
@@ -1361,26 +1232,30 @@ const board = {
     canvas: null,
     needs_draw: false,
     move_vector: Vector2D.zero(),
-    key_move_interval: null,
+    key_move_work: null,
     ctx: null,
     pixelQueue: [],
     buildBoard: null,
     is_ready:false,
-    construct() {
+    preRun() {
         this.buildBoard = _.once(this.__buildBoard);
         this.canvas = $('#board');
-        canvas_context = this.canvas[0].getContext('2d');
-        this.canvas.attr('alpha', 0);
         this.img_canvas = document.createElement('canvas');
         this.img_canvas.width = CANVAS_SIZE;
         this.img_canvas.height = CANVAS_SIZE;
+        this.ctx_image = this.img_canvas.getContext('2d');
+        this.ctx = this.canvas[0].getContext('2d');
+        let bind_move_board = _.bind(
+             () => mapFrags.moveBoard(
+                 this.move_vector.x,
+                 this.move_vector.y
+                ),
+             this
+        )
+        this.key_move_work = new SimpleInterval(
+            bind_move_board, 100
+        )
         this.updateZoom(); // also centers
-    },
-    get getImageContext(){
-        return this.img_canvas.getContext('2d');
-    },
-    get getCanvasContext(){
-        return this.canvas.getContext('2d');
     },
     isDragged(){
         return !_.isNull(this.drag_data)
@@ -1392,31 +1267,16 @@ const board = {
         this.buildBoard = _.once(this.__buildBoard);
         board.is_ready = false
     },
-    // interval reaction of key press
-    startKeyMoveLoop() {
-        board.moveBoard(this.move_vector[0], this.move_vector[1])
-        if (_.isNull(this.key_move_interval)) {
-            this.key_move_interval = setInterval(() => {
-                board.moveBoard(
-                    this.move_vector[0],
-                    this.move_vector[1]
-                    );
-            }, 100);
-        }
-    },
+
     addMovement(dir) {
-        dir.set = true;
-        this.move_vector[0] += dir.dir[0]
-        this.move_vector[1] += dir.dir[1];
-        this.startKeyMoveLoop();
+        this.move_vector.addVector(dir);
+        mapFrags.moveBoard(dir.x, dir.y)
+        this.key_move_work.safeStart();
     },
     subMovement(dir) {
-        dir.set = false
-        this.move_vector[0] -= dir.dir[0];
-        this.move_vector[1] -= dir.dir[1];
-        if (this.move_vector[0] == 0 && this.move_vector[1] == 0) {
-            clearInterval(this.key_move_interval)
-            this.key_move_interval = null;
+        this.move_vector.subVector(dir);
+        if (this.move_vector.isZero()) {
+            this.key_move_work.safeStop();
         }
     },
     //buffer on chrome takes ~1552 ms -- even less
@@ -1430,13 +1290,12 @@ const board = {
             image_buffer[index * 2] = colors[val % 16].abgr; // small number
             image_buffer[index * 2 + 1] = colors[Math.floor(val / 16)].abgr; // big number
         });
-        this.getImageContext().putImageData(image_data, 0, 0);
+        this.ctx_image.putImageData(image_data, 0, 0);
         this.beforeFirstDraw();
     },
     __setAt(x, y, color) {
-        let image_context = this.getImageContext()
-        image_context.fillStyle = color;
-        image_context.fillRect(x, y, 1, 1);
+        this.ctx_image.fillStyle = color;
+        this.ctx_image.fillRect(x, y, 1, 1);
         this.drawBoard();
     },
     setAt(x, y, color_idx) {
@@ -1481,26 +1340,29 @@ const board = {
     },
     centerPos() {
         // center axis - (window_axis_size / 2 / mapFrags.scale)
-        this.x = Math.floor(mapFrags.cx - board.canvas[0].width / 2 / mapFrags.scale)
-        this.y = Math.floor(mapFrags.cy - board.canvas[0].height / 2 / mapFrags.scale)
+        let divisor = 2 * mapFrags.scale
+        this.x = Math.floor(mapFrags.cx - this.canvas[0].width / divisor)
+        this.y = Math.floor(mapFrags.cy - this.canvas[0].height / divisor)
         pen.updateOffset()
         board.drawBoard();
     },
     setCanvasZoom() {
         //https://www.html5rocks.com/en/tutorials/canvas/hidpi/
-        let width = innerWidth * devicePixelRatio;
-        let height = innerHeight * devicePixelRatio;
+        let ratio = devicePixelRatio
+        let width = innerWidth * ratio;
+        let height = innerHeight * ratio;
         this.canvas[0].width = width;
         this.canvas[0].height = height;
+        console.lo
         // scale canvas
-        this.getCanvasContext().scale(window.devicePixelRatio, window.devicePixelRatio);
+        this.ctx.scale(devicePixelRatio, devicePixelRatio)
         this.centerPos();
-        this.drawBoard();
+        this.drawBoard()
     },
     updateZoom() {
-        this.setZoomStyle()
         this.setCanvasZoom();
         pen.updateOffset();
+        this.setZoomStyle();
     },
     setZoomStyle() {
         let zoom_button = $('#zoom-button')
@@ -1513,25 +1375,7 @@ const board = {
             zoom_button.css('cursor', 'zoom-in');
         }
     },
-    get step() {
-        // the scale is inproportion to the step size
-        return MIN_STEP_SIZE * MAX_SCALE / mapFrags.scale;
-    },
-    moveBoard(dx, dy) {
-        /*      let x = this.keep_inside_border(this.real_x, dir[DIR_INDEX_XNORMAL]*this.step*this.scale, rect.left, rect.right)/this.scale;
-              let y = this.keep_inside_border(this.real_y, dir[DIR_INDEX_YNORMAL]*this.step*this.scale, rect.top, rect.bottom)/this.scale;
-              console.log(x, y);
-        */
-        mapFrags.setCenter(
-            clamp(mapFrags.cx + dx * this.step, CANVAS_SIZE, 0),
-            clamp(mapFrags.cy + dy * this.step, CANVAS_SIZE, 0)
-        );
-    },
-    centerOn(x, y) {
-        x = isNaN(x) ? mapFrags.cx : clamp(x, CANVAS_SIZE, 0);
-        y = isNaN(y) ? mapFrags.cy : clamp(y, CANVAS_SIZE, 0);
-        mapFrags.setCenter(x, y);
-    },
+
     updateCoords() {
         // not (A or B) == (not A) and (not B)
         if ($('#coordinates').is(':hover')) {
@@ -1539,7 +1383,7 @@ const board = {
             $('#coordinateX').text('');
             $('#coordinateY').text('');
         }
-        else if (board.isDragged()) {
+        else if (!board.isDragged()) {
             $('#coordinate-slicer').text(pen.isAtBoard ? ',' : 'None');
             $('#coordinateX').text(pen.isAtBoard ? pen.x : '');
             $('#coordinateY').text(pen.isAtBoard ? pen.y : '');
@@ -1555,23 +1399,20 @@ const board = {
             () => { // 1-5 millisecond call, for all animation
                 // it seems the average time of 5 operations is 0.23404487173814767 milliseconds
                 //t = performance.now();
+                console.log(this.x, this.y)
                 this.needs_draw = false;
-                let canvas_context = this.getCanvasContext();
-                canvas_context.fillStyle = BACKGROUND_COLOR
-                canvas_context.fillRect(0, 0,
-                    // for the scale == 0.5 scenerio
-                    this.canvas[0].width, this.canvas[0].height);
-                canvas_context.save()
-                canvas_context.imageSmoothingEnabled = false;
-                canvas_context.scale(mapFrags.scale, mapFrags.scale)
-                canvas_context.translate(-this.x, -this.y);
-                canvas_context.drawImage(this.img_canvas, 0, 0);
+                this.ctx.fillStyle = BACKGROUND_COLOR
+                this.ctx.fillRect(0, 0,innerWidth, innerHeight);
+                this.ctx.save()
+                this.ctx.imageSmoothingEnabled = false;
+                this.ctx.scale(mapFrags.scale, mapFrags.scale)
+                this.ctx.translate(-this.x, -this.y);
+                this.ctx.drawImage(this.img_canvas, 0, 0);
                 if (pen.canDrawPen()) {
-                    canvas_context.fillStyle = colors[pen.color]
-                        .css_format(0.6);
-                    canvas_context.fillRect(pen.x, pen.y, 1, 1);
+                    this.ctx.fillStyle = colors[pen.color].css_format(0.6);
+                    this.ctx.fillRect(pen.x, pen.y, 1, 1);
                 }
-                canvas_context.restore(); // return to default position
+                this.ctx.restore(); // return to default position
                 //performance_arr.push(performance.now()-t)
             });
     },
@@ -1658,14 +1499,14 @@ function DocumentKeyPress(key_event){
             break;
         }
     }
-    if (e.originalEvent.shiftKey) {
-        if (e.originalEvent.key == '+') // key for plus
+    if (key_event.originalEvent.shiftKey) {
+        if (key_event.originalEvent.key == '+') // key for plus
         {
             // option 0.5
             console.log(mapFrags.scale >= 1, mapFrags.scale)
             mapFrags.setScale(mapFrags.scale >= 1 ? mapFrags.scale + 1 : 1);
         }
-        else if (e.originalEvent.key == '_') { // key for minus
+        else if (key_event.originalEvent.key == '_') { // key for minus
             // option 0.5
             mapFrags.setScale(mapFrags.scale > 1 ? mapFrags.scale - 1 : MIN_SCALE);
         }
@@ -1677,10 +1518,10 @@ function DocumentKeyPress(key_event){
  */
 $(document).ready(function() {
     // init all buildBoard releated objects
-    mapFrags.construct();
-    progress.construct();
-    board.construct();
-    pen.construct();
+    mapFrags.preRun();
+    progress.preRun();
+    board.preRun();
+    pen.preRun();
     sock.on('connect', function() {
         sock.emit('get-starter', (data) => {
             progress.setTime(data.time)
@@ -1691,7 +1532,7 @@ $(document).ready(function() {
         });
     })
     sock.connect()
-    mapFrags.firstSetHash();
+    mapFrags.fixLocation();
     sock.on('set-board', (x, y, color_idx) => board.setAt(x, y, color_idx));
     // Lost connection
     // Connection on
@@ -1727,66 +1568,75 @@ $(document).ready(function() {
         board.updateCoords();
     });
     // set color
-    board.canvas.mousemove((event) => {
-        pen.setPenPos(event);
-    }).mouseleave(() => pen.clearPos()).bind('mousewheel', (e) => {
-        e.preventDefault();
-        mapFrags.setScale(clamp(mapFrags.scale + Math.sign(e
-                .originalEvent.wheelDelta) * 1,
-            MAX_SCALE, MIN_SCALE));
-    })[0].addEventListener('dblclick', (
-        event) => { // for not breaking the 
+    board.canvas.mousemove((mouse_move_event) => {
+        pen.setPenPos(mouse_move_event);
+    }).mouseleave(() => pen.clearPos()).bind('mousewheel', (wheel_event) => {
+        // mousewheel event for moving
+        wheel_event.preventDefault();
+        mapFrags.setScale(
+            clamp(
+                mapFrags.scale + Math.sign(e.originalEvent.wheelDelta) * 1,
+                MAX_SCALE,
+                MIN_SCALE
+            )
+        );
+    })[0].addEventListener('dblclick', (dobule_click_event) => { // for not breaking the 
         // jmapFrags dblclick dont work on some machines but addEventListner does 
         // source: https://github.com/Leaflet/Leaflet/issues/4127
         /*Get XY https://codepo8.github.io/canvas-images-and-pixels/#display-colour*/
-        pen.setPenPos(event);
+        pen.setPenPos(dobule_click_event);
         cursor.setPen();
         pen.setPixel();
     });
-    board.canvas.mousedown(function(e) {
-        board.drag = DragData(mapFrags.cx, mapFrags.cy, e.pageX, e.pageY)
-    }).mouseenter(function(e) {
+    board.canvas.mousedown(function(mouse_down_event) {
+        board.drag_data = new DragData(mapFrags.cx, mapFrags.cy, mouse_down_event.pageX, mouse_down_event.pageY)
+    }).mouseenter(function() {
         cursor.setPen();
     })
-    $(document).mousemove(function(e) {
+    $(document).mousemove(function(mouse_event) {
         if (board.isDragged()) {
+            mapFrags.centerOn(board.drag_data.getDraggedPos(
+                [mouse_event.pageX, mouse_event.pageY],
+                mapFrags.scale
+            ));
             // center board
             cursor.grab();
-            board.centerOn(
-                
-            );
         }
     }).mouseup(() => {
         // clear drag data
-        board.drag = null;
+        board.drag_data = null;
         cursor.setPen();
     })
+    $(document)
     /** @see DocumentKeyPress */
-    $(document).keypress(DocumentKeyPress)
-    .keydown((e) => {
+    .keypress(DocumentKeyPress)
+    .keydown((key_down_event) => {
         // stack overflow
-        let key = (e || window.event).key;
-        let dir = _.findWhere(DirectionMap, {
-            key: key
-        })
-        if ((!_.isUndefined(dir)) && !dir.set) {
-            board.addMovement(dir);
+        let key_name = (key_down_event || window.event).key;
+        if(_.has(DirectionMap, key_name)){
+            let movement_direction = DirectionMap[key_name];
+            if ((movement_direction instanceof KeyDirection) && movement_direction.setIfCleared()) {
+                board.addMovement(movement_direction.direction);
+            }
         }
-    }).keyup((e) => {
-        let key = (e || window.event).key;
-        let dir = _.findWhere(DirectionMap, {
-            key: key
-        })
-        if ((!_.isUndefined(dir)) && dir.set) {
-            board.subMovement(dir);
+    }).keyup((key_up_event) => {
+        let key_name = (key_up_event || window.event).key;
+        if(_.has(DirectionMap, key_name)){
+            let movement_direction = DirectionMap[key_name];
+            if ((movement_direction instanceof KeyDirection) && movement_direction.clearIfSet()) {
+                board.subMovement(movement_direction.direction);
+            } else {
+                return;
+            }
         }
-        else if (key == 'Home') {
+        // if home is unpressed, go home
+        else if (key_name == 'Home') {
             nonSweetClick('#home-button');
         }
-        else if (key == 'g') {
+        else if (key_name == 'g') { // if g is pressed, release cursor state
             cursor.releaseCursor(Cursors.find_mouse)
-        } else if (key == 'Escape') {
-            // prevent collison with swal ESCAPE
+        } else if (key_name == 'Escape') { // Escape Option
+            // prevent event collision with swal ESCAPE
             nonSweetClick('#logout-button');
         }
     });
@@ -1810,16 +1660,14 @@ $(document).ready(function() {
         if(mapFrags.refreshFragments()){
             board.drawBoard();
             e.preventDefault()
-        } else if(!mapFrags.isValidLocation()) {
-            mapFrags.firstSetHash()
+        } else if(!mapFrags.doesHashMatch()) {
+            mapFrags.fixHash()
         }
         e.preventDefault()
     }, false);
     // copy coords - https://stackoverflow.com/a/37449115
     let clipboard = new ClipboardJS('#coordinates', {
-        text: function() {
-            return window.location.origin + window.location.pathname + mapFrags.arguments();
-        }
+        text: function() { return window.location.origin + window.location.pathname + mapFrags.arguments(); }
     });
     clipboard.on('success', function() {
         throw_message('Copy Success');
@@ -1891,6 +1739,13 @@ $(document).ready(function() {
         let not_state = $('#screen-button').attr('state') == '1' ? '0' : '1'
         $('#screen-button').attr('state', not_state);
     }
+    let mqString = `(resolution: ${window.devicePixelRatio}dppx)`;
+
+    const updatePixelRatio = () => {
+        board.setCanvasZoom();
+    }
+
+    updatePixelRatio();
     // set color button
     $(window).resize((e) => {
         board.setCanvasZoom();
