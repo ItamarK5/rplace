@@ -12,8 +12,6 @@ from painter.others.quick_validation import QuickForm
 from .router import accounts_router
 
 
-
-
 class TokenSerializer(object):
     """
     object holding itsdangerous initializer, using the flask config
@@ -41,6 +39,10 @@ class TokenSerializer(object):
 
     @staticmethod
     def get_max_age():
+        """
+        :return: the max age token
+        if has max age token in configuration returns it, otherwise, returns the default one
+        """
         return current_app.config.get('APP_MAX_AGE_USER_TOKEN', DEFAULT_MAX_AGE_USER_TOKEN)
 
 
@@ -94,8 +96,10 @@ def anonymous_required(f: Callable) -> Callable[[Any], Any]:
     @wraps(f)
     def wrapper(*args, **kwargs):
         if not current_user.is_anonymous:
-            flash(current_app.config.get('APP_NON_LOGIN_MESSAGE'))
-            return redirect(url_for(current_app.config.get('APP_NON_LOGIN_ROUTE')))
-        # else
+            # get from configuration
+            flash(current_app.config.get('APP_NON_LOGIN_MESSAGE', 'You have to logout to access this page'))
+            # redirect to home page
+            return redirect(url_for(current_app.config.get('APP_NON_LOGIN_ROUTE', 'auth.login')))
+        # else, run function
         return f(*args, **kwargs)
     return wrapper

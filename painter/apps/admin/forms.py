@@ -5,6 +5,9 @@ from wtforms import TextAreaField, validators, BooleanField, DateTimeField, Vali
 
 
 class RecordForm(FlaskForm):
+    """
+    Form to vaildate a new record object
+    """
     set_banned = BooleanField('active')
     affect_from: DateTimeField = DateTimeField(
         'affect from',
@@ -41,6 +44,9 @@ class RecordForm(FlaskForm):
 
 
 class NoteForm(FlaskForm):
+    """
+    Form to vaildate a new note model
+    """
     description = TextAreaField(
         'description',
         [

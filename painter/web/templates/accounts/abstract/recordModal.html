@@ -1,4 +1,11 @@
-{% macro row(field, icon_class, label, id) %}
+<!-- a row -->
+{# 
+    field: html field string
+    label: label text for the row
+    id: id of the input
+    render row in form-row
+#}
+{% macro form_row(field, icon_class, label, id) %}
 <div class="form-row mb-1 mt-1">
     <div class="input-group">
         <div class="input-group-prepend">
@@ -13,17 +20,17 @@
     <li class="error-list list-group" error-for="{{id}}"></li>
 </div>
 {% endmacro %}
-<section aria-hidden="true" aria-labelledby="#ban-title" class="modal fade" id="banModal" role="dialog" tabindex="-2">
+<div aria-hidden="true" aria-labelledby="#record-title" class="modal fade" id="recordModal" role="dialog" tabindex="-2">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="ban-title">Ban Options</h5>
+                <h5 class="modal-title" id="record-title">Record Options</h5>
                 <button aria-label="Close" class="close" data-dismiss="modal" type="button">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <form action="{{url_for('admin.change_ban_status', name=user.username)}}" id="ban-form" method="POST">
+                <form action="{{url_for('admin.add_record', name=user.username)}}" id="record-form" method="POST">
                     <div class="form-row">
                         <div class="alert alert-success success-message" hidden>
                             You Added a record to the user
@@ -33,22 +40,22 @@
                         Currently:<b>{% if user.is_active %}Active{% else %}Banned{% endif %}</b>
                     </div>
                     <div class="form-row mb-1">
-                        <div class="form-check form-check-inline"> {# no ban - default #}
-                            {{ban_form.set_banned(class="custom-check-input form-inline")}}
-                            <label class="custom-check-label" for="{{ban_form.set_banned.id}}">To Ban The User</label>
+                        <div class="form-check form-check-inline"> {# no record - default #}
+                            {{record_form.set_banned(class_="custom-check-input form-inline")}}
+                            <label class="custom-check-label" for="{{record_form.set_banned.id}}">To Record The User</label>
                         </div>
                     </div>
                     <div class="form-row">
-                        <li class="error-list list-group" error-for="{{ban_form.set_banned.id}}"></li>
+                        <li class="error-list list-group" error-for="{{record_form.set_banned.id}}"></li>
                     </div>
                     <div class="form-row mb-1 mt-1">
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text">
-                                    <i class="far fa-calendar mr-1"></i>{{ban_form.affect_from.label.text|title}}
+                                    <i class="far fa-calendar mr-1"></i>{{record_form.affect_from.label.text|title}}
                                 </span>
                             </div>
-                            {{ban_form.affect_from(type='text', class='form-control datetimepicker-input', disabled=true)}}
+                            {{record_form.affect_from(type='text', class='form-control datetimepicker-input', disabled=true)}}
                             <div class="input-group-append">
                                 <div class="input-group-text">
                                     <input aria-label="add time" id="set-affect-from" type="checkbox">
@@ -57,10 +64,10 @@
                         </div>
                     </div>
                     <div class="form-row">
-                        <li class="error-list list-group" error-for="{{ban_form.affect_from.id}}"></li>
+                        <li class="error-list list-group" error-for="{{record_form.affect_from.id}}"></li>
                     </div>
-                    {{row(ban_form.reason(type="text", class="form-control mw-100 mh-100"), 'far fa-clipboard', ban_form.reason.label, ban_form.reason.id)}}
-                    {{row(ban_form.note_description(type="text", class="form-control mw-100 mh-100"), 'fas fa-sticky-note', ban_form.note_description.label, ban_form.note_description.id)}}
+                    {{form_row(record_form.reason(type="text", class="form-control mw-100 mh-100"), 'far fa-clipboard', record_form.reason.label, record_form.reason.id)}}
+                    {{form_row(record_form.note_description(type="text", class="form-control mw-100 mh-100"), 'fas fa-sticky-note', record_form.note_description.label, record_form.note_description.id)}}
                     <div class="form-row">
                         <li class="list-group" id="any-error-list">
 
@@ -70,8 +77,8 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-dismiss="modal" type="button">Close</button>
-                <button class="btn btn-primary" id="submit-ban-form" type="button">Save changes</button>
+                <button class="btn btn-primary" id="submit-record-form" type="button">Save changes</button>
             </div>
         </div>
     </div>
-</section>
+</div>

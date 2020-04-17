@@ -8,15 +8,17 @@
     <input type="text" class="form-control" id="{{key}}-field" disabled>
 </div>
 {% endmacro %}
-{% macro big_note_description(key, title) %}
+{% macro big_note_description(key, title, addon_class) %}
 <div class="input-group" id="{{ket}}-box" data-toggle="tooltip" data-placement="top" title="{{title}}">
     <div class="input-group-prepend">
-        <span class='input-group-text' for='{{key}}-field'></span>
+        <span class='input-group-text' for='{{key}}-field'>
+            <i class="{{addon_class}}"></i>
+        </span>
     </div>
     <textarea class="form-control" id="{{key}}-field" disabled></textarea>
 </div>
 {% endmacro %}
-<section aria-hidden="true" aria-labelledby="#history-title" class="modal fade" id="historyModal" role="dialog" tabindex="-3">
+<div aria-hidden="true" aria-labelledby="#history-title" class="modal fade" id="historyModal" role="dialog" tabindex="-3">
     <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -56,10 +58,10 @@
                             <div class="col-5">{{note_description('active', 'Status', 'fas fa-cogs')}}</div>
                         </div>
                         <div class="row justify-content-around m-1 record-row">
-                            {{big_note_description('reason', 'Reason')}}
+                            {{big_note_description('reason', 'Reason', 'fas fa-comment')}}
                         </div>
                         <div class="row justify-content-around m-1">
-                            {{big_note_description('description', 'Description')}}
+                            {{big_note_description('description', 'Description', 'fas fa-paragraph')}}
                         </div>
                         <div id="edit-note-tools" class="row justify-content-around d-none">
                             <button type="button" id="remove-note-button" class="btn btn-danger">Remove</button>
@@ -73,4 +75,4 @@
         </div>
         {# https://getbootstrap.com/docs/4.0/components/modal/ #}
     </div>
-</section>
+</div>

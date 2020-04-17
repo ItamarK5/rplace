@@ -46,24 +46,6 @@ def socket_io_authenticated_only_event(f: Callable[[Any], Any]) -> Callable[[Any
     return wrapped
 
 
-def socket_io_role_required_event(role: Role, desc: Optional[str] = None) -> Callable[[Any], Any]:
-    """
-    :param desc: additional description of the error
-    :param role: the required role to pass
-    :return: the socket.io view, but now only allows if the user is authenticated
-    """
-
-    def wrapped(f: Callable[[Any], Any]) -> Callable[[Any], Any]:
-        @wraps(f)
-        def wrapper(*args, **kwargs) -> Any:
-            if not current_user.has_required_status(role):
-                raise ConnectionRefusedError(desc) if desc else ConnectionRefusedError()
-            else:
-                return f(*args, **kwargs)
-        return socket_io_authenticated_only_connection(wrapper)
-    return wrapped
-
-
 # declaring socketio namespace names
 PAINT_NAMESPACE = '/paint'
 ADMIN_NAMESPACE = '/admin'

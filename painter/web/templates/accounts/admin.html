@@ -14,6 +14,7 @@
           integrity="sha256-wMES50JHO82E/LjWWLWeCXXQahHeA0oemqGIfMkD5BI=" rel="stylesheet"/>
     <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css"
           integrity="sha256-UZFVAO0Fn854ajzdWnJ2Oze6k1X4LNqE2RJPW3MBfq8=" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore.js"></script>
     <link href="{{url_for('other.serve_static', key='admin.css')}}" rel="stylesheet">
     <link href="{{url_for('other.serve_static', key='nav.css')}}" rel="stylesheet">
     <link href="//cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@3/dark.css" rel="stylesheet">
@@ -64,6 +65,7 @@
     <div class="row justify-content-center">
         <div class="list-group list-group-horizontal" id="page-list">
             <a {% if not pagination.has_prev %}class='list-group-item list-group-item-action{% else %} disabled{% endif %}'{% if pagination.has_prev %}href='{{url_for("admin.admin", page=pagination.prev_num)}}'{% endif %}>Prev</a>
+            <!-- if has next or prev, means any pages -->
             {% if pagination.has_prev or pagination.has_next %}
             {% for page in pagination.iter_pages() %}
             {% if page %}
@@ -77,6 +79,7 @@
             <a {% if not pagination.has_next %}class='list-group-item list-group-item-action{% else %} disabled{% endif %}'{% if pagination.has_next %}href='{{url_for("admin.admin", page=pagination.prev_num)}}'{% endif %}>Prev</a>
         </div>
     </div>
+    <!-- CSRF Protection -->
     <script type="text/javascript">
         let csrf_token = "{{ csrf_token() }}";
         $.ajaxSetup({
@@ -86,7 +89,6 @@
                 }
             }
         });
-
     </script>
     <script crossorigin="anonymous"
             integrity="sha256-NLINqBk3iRBQfTFKCFqlWEXfKlk7GfR45ZuSp6nJ/yw=" src="https://cdn.jsdelivr.net/npm/sweetalert2@9.10.1/dist/sweetalert2.all.min.js"></script>

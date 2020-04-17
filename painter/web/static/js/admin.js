@@ -62,7 +62,12 @@ const messageConnectionError = () => {
 	})
 }
 
-const forceReconnection = _.throttle()
+let force_connection_message = false;
+
+const throttleIOMessageTimeout = 5000;	// ms
+
+const throttleMessageConnection = _.throttle(messageConnectionError, {leading:false})
+
 
 /**
  * @name reconnect_error
@@ -70,6 +75,7 @@ const forceReconnection = _.throttle()
  */
 sock.on('reconnect_error', () =>{
 	//on reconnection error
+
 })
 
 $(document).ready(() => {
@@ -87,6 +93,7 @@ $(document).ready(() => {
 	// click place
 	$('#place-button').click(function(){
 		let board_state = $(this).attr('state');
+		// swal message to check if user is sure
 		Swal.fire({
 			title: 'Are you sure?',
 			text: `You want to ${board_state == "1" ? "pause" : "unpause"} the place`,
@@ -108,7 +115,6 @@ $(document).ready(() => {
 						});
 					},
 				}).catch((error) => {
-					console.log(error)
 					Swal.fire({
 						icon:'error',
 						title:error.statusText ? '' : 'Error',

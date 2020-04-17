@@ -3,6 +3,12 @@
  * @typedef {Vector2D|number[]|Object{string:number}} Vector2DType type for function that require 2d vector object @see {@link:Vector2D}
  */
 
+/** 
+ * @param {*} caller of the function
+ * @param {function} call function to that gets 1 arguments and returns nothing
+ * @param {*} val value passed as parameter
+ * executes the function only  
+*/
 const __vector2ArgsOperationWrapper = (caller, call, val) => {
     if(!_.isUndefined(val)){
         call.apply(caller, [val]);
@@ -13,11 +19,12 @@ const __vector2ArgsOperationWrapper = (caller, call, val) => {
  * @class Vector2D
  * @classdesc class representing a 2d vector
  * a class with simple operations between vectors
+ * the class suppose massive operations, using 1 code line chained function to return 1 object.
  */
 class Vector2D {
     /**
-     * @returns {Vector2D} returns zero vector, Vector(0,0);
-     * 
+     * @returns {Vector2D} returns zero vector, Vector(0,0)
+     * the zero of vector
      */
     static zero(){
         return new Vector2D(0, 0);
@@ -30,8 +37,10 @@ class Vector2D {
     static evalVector(v){
         if(v instanceof Vector2D){
             return v;
+        // if array
         } else if(v instanceof Array && v.length == 2){
             return new Vector2D(v[0], v[1]);
+        // if object
         } else if(v instanceof Object && _.keys(v) == ["x", "y"]){
             return new Vector2D(v.x, v.y)
         }
@@ -48,12 +57,14 @@ class Vector2D {
     }
     /**
      * gets the x value of the instance
+     * @returns {number} x
      */
     get x(){
         return this.__x;
     }
     /**
      * gets the y value of the instance
+     * @returns {number} y
      */
     get y(){
         return this.__y;
@@ -136,31 +147,86 @@ class Vector2D {
         this.setYIfValid(y);
         return this;
     }
+    /**
+     * 
+     * @param {*} x object, hoping to be a number
+     * adds the value to the x property (if isn't a number sets to NaN)
+     */
     addX(x){ 
         this.__x += Vector2D._evalSafe(x); 
         return this; 
     }
+    /**
+     * 
+     * @param {*} y object, hoping to be a number
+     * adds the value to the x property (if isn't a number sets to NaN)
+     */
     addY(y){ 
         this.__y +=  Vector2D._evalSafe(y);
         return this; 
     }
+    /**
+     * 
+     * @param {*} x object, hoping to be a number
+     * @param {*} y object, hoping to be a number
+     * adds the value to the x, y properties (if they aren't each number sets to NaN)
+     * also if they undefined don't try to set
+     */
     addXY(x, y) {
         __vector2ArgsOperationWrapper(this, this.addX, x);
         __vector2ArgsOperationWrapper(this, this.addY, y);
         return this;
     }
+    /**
+     * 
+     * @param {Vector2DType} other another vector object
+     * adds the object in unsafe mode, if the other object cant be evaled as vector, x and y become NaN
+     */
     addVector(other) {
         let other_vector = Vector2D.evalVector(other);
+        if(!other_vector){
+            this.x = NaN;
+            this.y = NaN;
+        }
         this.addXY(other_vector.x, other_vector.y);
         return this;
     }
-    addXIfValid(x){ this.setXIfValid(Vector2D._evalSafe(x) + this.__x); return this; }
-    addYIfValid(y){ this.setYIfValid(Vector2D._evalSafe(y) + this.__y); return this; }
+    /**
+     * 
+     * @param {*} x a value, hoping a number
+     * @returns {Vector2D} itself for mass operation
+     * adds the x if the value is valid (a number => not NaN) otherwise don't add
+     */
+    addXIfValid(x){ 
+        this.setXIfValid(Vector2D._evalSafe(x) + this.__x);
+        return this; 
+    }
+    /**
+     * 
+     * @param {*} y a value, hoping a number
+     * @returns {Vector2D} itself for mass operation
+     * adds the y if the value is valid (a number => not NaN) otherwise don't add
+     */
+    addYIfValid(y){ 
+        this.setYIfValid(Vector2D._evalSafe(y) + this.__y);
+        return this; 
+    }
+    /**
+     * 
+     * @param {*} x added x value 
+     * @param {*} y added y value
+     * added the values of x and y if there are valid, because the called methods dont
+     * set for undefined its dont need to cal it
+     */
     addXYIfValid(x, y){ 
         this.addXIfValid(x);
         this.addYIfValid(y);
         return this;
     }
+    /**
+     * 
+     * @param {Vector2DType} other vector object
+     */
     addVectorIfValid(other){
         let other_vector = Vector2D.evalVector(other);
         if(!_.isNull(other_vector)){

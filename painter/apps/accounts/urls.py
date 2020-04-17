@@ -1,14 +1,17 @@
+"""
+Accounts urls
+urls of the accounts blueprint
+"""
 from __future__ import absolute_import
-import time
 
 from flask import render_template
-from flask_login import logout_user, login_user
+from flask_login import logout_user, login_user, login_required
 from werkzeug.wrappers import Response
 
 from painter.models.storage import SignupNameRecord, SignupMailRecord, RevokeMailAttempt
 from painter.backends.extensions import datastore
 from painter.models import User
-from .forms import LoginForm, SignUpForm, RevokePasswordForm, ChangePasswordForm, SignUpTokenForm, RevokeTokenForm
+from .forms import LoginForm, SignUpForm, RevokePasswordForm, ChangePasswordForm, SignupTokenForm, RevokeTokenForm
 from .mail import send_signing_up_message, send_revoke_password_message
 from .utils import *
 
@@ -19,8 +22,7 @@ def login() -> Response:
     """
     :return: login page response
     """
-    if current_user.is_authenticated:
-        redirect('place.home')
+    # extract data
     form = LoginForm()
     entire_form_error = []
     extra_error = None
@@ -57,9 +59,10 @@ def signup() -> Response:
                             form.email.data
         # to hex to prevent any chance of decode the key and then changing it to SQL function
         pswd = User.encrypt_password(pswd, name)
-        # sending the mail
+        # adding records of the name and mail addresses
         SignupNameRecord.force_add(name)
         SignupMailRecord.force_add(email)
+        # sending the mail
         send_signing_up_message(
             name,
             email,
@@ -83,13 +86,11 @@ def signup() -> Response:
 @anonymous_required
 def revoke() -> Response:
     """
-    :return: revoke password view
+    :return: revoke password page
     """
     form = RevokePasswordForm()
     if form.validate_on_submit():
-        """
-        after user validation checks if the user exists
-        """
+        # after user validation checks if the user exists
         user = User.query.filter_by(email=form.email.data).first()
         RevokeMailAttempt.create_new(form.email.data)
         if user is not None:
@@ -109,14 +110,22 @@ def revoke() -> Response:
 
 
 @accounts_router.route('/refresh', methods=['GET', 'POST'])
-@anonymous_required
 def refresh() -> Response:
+    """
+    :return: refresh view
+    the refresh view is for users that have there session as not fresh can be by 2 options
+    --they close the browser and re-open it while saving
+    --some changes the url, secure hash or user agent (while using session protection basic):
+    link: https://flask-login.readthedocs.io/en/latest/#session-protection
+    """
     form = LoginForm()
     entire_form_error = []
     extra_error = None
+    # check if submitted and validate the values
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()  # usernames are unique
-        if user is None and User.encrypt_password(form.username.data, form.password.data):
+        user = User.query.filter_by(username=form.username.data).first()  # user names are unique
+        # compares username and password
+        if user is None and User.encrypt_password(form.username.data, form.password.data) != user.password:
             form.password.errors.append('username and password don\'t match')
             form.username.errors.append('username and password don\'t match')
         # the only other reason it can be is that if the user is banned
@@ -125,7 +134,7 @@ def refresh() -> Response:
             form.non_field_errors.append(user.get_last_record().messsage(user.username))
         else:
             return redirect(url_for('place.home'))
-    # clear password
+    # clear password data
     form.password.data = ''
     return render_template('forms/refresh.html',
                            form=form,
@@ -178,13 +187,17 @@ def change_password(token: str) -> Response:
     else:
         new_password = form.password.data
         user.set_password(new_password)
-        # then forget
+        # then forget he mail address that was passed
         RevokeMailAttempt.force_forget(mail_address)
     return render_template('transport/complete-signup.html')
 
 
 @accounts_router.route('/logout', methods=('GET',))
+@login_required
 def logout() -> Response:
+    """
+    logout response
+    """
     if not current_user.is_anonymous:
         logout_user()
     return redirect(url_for('auth.login'))
@@ -193,9 +206,13 @@ def logout() -> Response:
 @accounts_router.route('/confirm/<string:token>', methods=('GET',))
 @anonymous_required
 def confirm(token: str) -> Response:
+    """
+    :param token: a token that holds user information (username, mail and password)
+    :return: response view, if use registered or not
+    """
     extracted = extract_signature(token,
                                   TokenSerializer.get_max_age(),
-                                  SignUpTokenForm,
+                                  SignupTokenForm,
                                   TokenSerializer.signup)
     if extracted is None:
         return render_template(
@@ -212,6 +229,7 @@ def confirm(token: str) -> Response:
             title='Over Time',
             view_ref='auth.signup',
         )
+    # if got error while extracting that isn't timeout
     if extracted is None:
         return render_template(
             'transport//base.html',
@@ -236,14 +254,16 @@ def confirm(token: str) -> Response:
             message="you already confirmed your account, if you didn\'t "
                     "maybe someone catch it before you completed, in this situation It should be recommended"
         )
-    # else
+    # else create user
     user = User(
         username=name,
         password=pswd,
         email=email
     )
+    # save user
     datastore.session.add(user)
     datastore.session.commit()
+    # return message
     return render_template(
         'transport//base.html',
         title='Congrats',

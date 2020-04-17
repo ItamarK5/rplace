@@ -1,5 +1,7 @@
+/**  @const LOADING_HTML_TEXT spinner of html text, while sending a request*/
 const LOADING_HTML_TEXT = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Loading...'
 
+// ready function
 $(document).ready(function(){
   $('[data-toggle="tooltip"]').tooltip();
   $('#submit-button').click(function(e) {

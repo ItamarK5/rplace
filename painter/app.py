@@ -34,7 +34,6 @@ from .others.utils import get_env_path, load_configuration, set_env_path
 # a must set
 celery = Celery(
     __name__,
-    backend='amqp://guest@localhost//',
 )
 # to register tasks
 

@@ -1,13 +1,13 @@
-from . import other_router
 from os import path, listdir
 from typing import Optional
 from flask import render_template, Response
 from werkzeug import Request
 from werkzeug import exceptions
-from werkzeug.exceptions import BadRequest, Forbidden, NotFound, HTTPException
+from werkzeug.exceptions import BadRequest, Forbidden, NotFound, HTTPException, InternalServerError
 from flask import current_app
 
-MEME_PAGE_ERROR_CODES = {BadRequest.code, Forbidden.code, NotFound.code}
+# a set
+MEME_PAGE_ERROR_CODES = {BadRequest.code, Forbidden.code, NotFound.code, InternalServerError.code}
 
 
 def has_matched_image(e: HTTPException) -> bool:

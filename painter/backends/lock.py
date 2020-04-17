@@ -34,6 +34,7 @@ def is_open() -> bool:
     """
     :return: is lock open
     """
+    return True
     return redis.get(_ENABLE_EDIT_BOARD_KEY) == _ENABLE
 
 

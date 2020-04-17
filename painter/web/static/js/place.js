@@ -797,7 +797,7 @@ const mapFrags = {
             this.cy = y;
         }
         if (to_update && flag) {
-            board.centerPos();
+            board.centerPos(this.cx, this.cy);
             this.fixHash();
         }
         return flag;
@@ -862,10 +862,22 @@ const mapFrags = {
         if (this.doesHashMatch()) {
             history.replaceState(null, null, document.location.pathname + this.hash());
         }
-    }
+    },
+    refreshZoomStyle() {
+        let zoom_button = $('#zoom-button')
+        if (mapFrags.scale >= 25) {
+            zoom_button.children('span').addClass('fa-search-minus').removeClass('fa-search-plus');
+            zoom_button.css('cursor', 'zoom-out');
+        }
+        else {
+            zoom_button.children('span').addClass('fa-search-plus').removeClass('fa-search-minus');
+            zoom_button.css('cursor', 'zoom-in');
+        }
+    },
 }
 
-/** @namespace cursor  
+/** 
+ * @namespace cursor  
  * @property {?CursorState} current_cursor  current cursor object represent the cursor state
  * @property {?CursorState} force_cursor option to force the current cursor to specific object
  * @property {?CursorState} last_cursor_non_forced the last cursor that wasnt forced
@@ -1214,13 +1226,22 @@ function DragData(start_x, start_y, drag_x, drag_y) {
 
 /** 
  * @namespace board 
- * @property $} img_canvas canvas to save the image of the board
+ * @property {CanvasRenderingContext2D} img_canvas canvas to save the entire image of the canvas
+ * @property {CanvasRenderingContext2D} ctx_image context of the img_canvas
  * @property {Uint8Array} buffer
  * @property {number} x space between head of the board to the x start of the page
  * @property {number} y space between head of the board to the x start of the page
  * @property {?DragData} drag drag information when dragging the board
- * @property {}
- * */
+ * @property {?jQuery} canvas the canvas displayed to the user in jquery
+ * @property {boolean} needs_draw if hasn't called for the draw method
+ * @property {Vector2D} move_vector vector to use for the key_move_work
+ * @property {CanvasRenderingContext2D} ctx context of the canvas displayed to the user
+ * @property {?SimpleInterval} key_move_work the work runned to move the board by keys
+ * @property {boolean} is_ready if ready to the display board
+ * @property {boolean}
+ * @property {Object.<string, number>[]} pixelQueue queue of pixel to draw
+ * @property {function} buildBoard wraps the buildBoard to only do it once, when get the data, to prevent 2 recalls
+ */
 const board = {
     img_canvas: null,
     ctx_image: null,
@@ -1236,6 +1257,13 @@ const board = {
     pixelQueue: [],
     buildBoard: null,
     is_ready:false,
+    /**
+     * preRun operation
+     * adds HTML elements
+     * created the move board work
+     * sets the build board function
+     * also uses the updateZoom method to set the position
+     */
     preRun() {
         this.buildBoard = _.once(this.__buildBoard);
         this.canvas = $('#board');
@@ -1256,9 +1284,17 @@ const board = {
         )
         this.updateZoom(); // also centers
     },
+    /**
+     * @name isDragged
+     * @returns {boolean} if the board is being dragged
+     * checks if the board is being dragged (has no drag data)
+     */
     isDragged(){
         return !_.isNull(this.drag_data)
     },
+    /**
+     * resets board build by setting the buildBoard method is_ready to false
+     */
     resetBoardBuild() {
         /**
          * reset values for board build
@@ -1266,12 +1302,21 @@ const board = {
         this.buildBoard = _.once(this.__buildBoard);
         board.is_ready = false
     },
-
+    /**
+     * 
+     * @param {Vector2D} dir direction to move the board
+     * adds the vector to the move vector property
+     * also starts moving the board if didnt work
+     */
     addMovement(dir) {
         this.move_vector.addVector(dir);
         mapFrags.moveBoard(dir.x, dir.y)
         this.key_move_work.safeStart();
     },
+    /**
+     * @param {Vector2D} dir direction vector to subtract from the subMovement method
+     * subtracts from the movement vectors
+     */
     subMovement(dir) {
         this.move_vector.subVector(dir);
         if (this.move_vector.isZero()) {
@@ -1279,8 +1324,15 @@ const board = {
         }
     },
     //buffer on chrome takes ~1552 ms -- even less
+    /**
+     * 
+     * @param {string} buffer buffer of bytes represent the board
+     * builds the board
+     */
     __buildBoard(buffer) {
+        // creates new image to display
         let image_data = new ImageData(CANVAS_SIZE, CANVAS_SIZE);
+        // loads the buffers of the image data
         let image_buffer = new Uint32Array(image_data.data.buffer);
         buffer.forEach(function(val, index) {
             // first version of putting data, looping over the image buffer array and not of buffer of message
@@ -1292,11 +1344,26 @@ const board = {
         this.ctx_image.putImageData(image_data, 0, 0);
         this.beforeFirstDraw();
     },
+    /**
+     * 
+     * @param {number} x x position of pixel 
+     * @param {number} y position of pixel
+     * @param {string} color color to draw the pixel
+     */
     __setAt(x, y, color) {
+        // fill color
         this.ctx_image.fillStyle = color;
+        // fills
         this.ctx_image.fillRect(x, y, 1, 1);
         this.drawBoard();
     },
+    /**
+     * 
+     * @param {*} x position of the pixel 
+     * @param {*} y position of the pixel
+     * @param {*} color_idx index of the color
+     * validates a values
+     */
     setAt(x, y, color_idx) {
         // set a pixel at a position
         // x: number (0 < x < 1000)
@@ -1310,9 +1377,11 @@ const board = {
         }
         else {
             let color = colors[color_idx].css_format();
+            // check if board is ready
             if (this.is_ready) {
                 this.__setAt(x, y, color)
             }
+            // if not push to pixelQueue
             else {
                 this.pixelQueue.push({
                     x: x,
@@ -1322,59 +1391,64 @@ const board = {
             }
         }
     },
-    // empty the pixel queen
+    /**
+     * beforeFirstDraw empty the pixel queue
+     */
     beforeFirstDraw() {
         while (this.pixelQueue.length != 0) {
             let top_pixel = this.pixelQueue.shift(); // remove
             this.__setAt(top_pixel.x, top_pixel.y, top_pixel.color);
         }
         this.is_ready = true;
-        // case of set during setting board is_ready, (tiny chanse of colliding but its very little)
+        // case of set during setting board is_ready, 
+        // (tiny chance of colliding but its very little)
         if(this.pixelQueue.length != 0){
             let top_pixel = this.pixelQueue.shift(); // remove
             this.__setAt(top_pixel.x, top_pixel.y, top_pixel.color);
         }
-        // draw board
+        // then draw board
         this.drawBoard();
     },
-    centerPos() {
+    /**
+     * fix center position by mapFrags
+     */
+    centerPos(cx, cy) {
         // center axis - (window_axis_size / 2 / mapFrags.scale)
         let divisor = 2 * mapFrags.scale
-        this.x = Math.floor(mapFrags.cx - this.canvas[0].width / divisor)
-        this.y = Math.floor(mapFrags.cy - this.canvas[0].height / divisor)
+        this.x = Math.floor(cx - this.canvas[0].width / divisor)
+        this.y = Math.floor(cy - this.canvas[0].height / divisor)
+        // update offset of pen
         pen.updateOffset()
         board.drawBoard();
     },
-    setCanvasZoom() {
-        //https://www.html5rocks.com/en/tutorials/canvas/hidpi/
+    /**
+     * sets the canavs zoom level
+     * @see {@link https://www.html5rocks.com/en/tutorials/canvas/hidpi/}
+     */
+    updateCanvasZoom() {
+        // set size of board
         let ratio = devicePixelRatio
         let width = innerWidth * ratio;
         let height = innerHeight * ratio;
         this.canvas[0].width = width;
         this.canvas[0].height = height;
-        console.lo
-        // scale canvas
+        // scale canvas for devicePixeRatio
         this.ctx.scale(ratio, ratio)
-        this.centerPos();
+        this.centerPos(mapFrags.cx, mapFrags.cy);
         this.drawBoard()
     },
+    /**
+     * update zoom level
+     */
     updateZoom() {
-        this.setCanvasZoom();
+        this.updateCanvasZoom();
         pen.updateOffset();
-        this.setZoomStyle();
+        // refresh zoom style
+        mapFrags.refreshZoomStyle();
     },
-    setZoomStyle() {
-        let zoom_button = $('#zoom-button')
-        if (mapFrags.scale >= 25) {
-            zoom_button.children('span').addClass('fa-search-minus').removeClass('fa-search-plus');
-            zoom_button.css('cursor', 'zoom-out');
-        }
-        else {
-            zoom_button.children('span').addClass('fa-search-plus').removeClass('fa-search-minus');
-            zoom_button.css('cursor', 'zoom-in');
-        }
-    },
-
+    /**
+     * update Coordination displayed
+     */
     updateCoords() {
         // not (A or B) == (not A) and (not B)
         if ($('#coordinates').is(':hover')) {
@@ -1388,8 +1462,14 @@ const board = {
             $('#coordinateY').text(pen.isAtBoard ? pen.y : '');
         }
     },
+    /**
+     * draw the board
+     * first the function checks if the board already called this method
+     * before the last animation loop or isnt ready, if so doesnt need to be redrawn
+     * then calls for the requestAnimationFrame
+     */
     drawBoard() {
-        // if board isnt ready or dont need to draw
+        // if board isn't ready or don't need to draw
         if (board.needs_draw || !board.is_ready) {
             return;
         }
@@ -1398,31 +1478,48 @@ const board = {
             () => { // 1-5 millisecond call, for all animation
                 // it seems the average time of 5 operations is 0.23404487173814767 milliseconds
                 //t = performance.now();
-                console.log(this.x, this.y)
+                // needs_draw = false
                 this.needs_draw = false;
+                // draw background
                 this.ctx.fillStyle = BACKGROUND_COLOR
                 this.ctx.fillRect(0, 0, innerWidth, innerHeight);
+                // save current state, to zoom for board
                 this.ctx.save()
+                // set imageSmoothingEnabled, good for pixel art
+                /** @see {@link https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/imageSmoothingEnabled} */
                 this.ctx.imageSmoothingEnabled = false;
+                // zoom in the amout of scale
                 this.ctx.scale(mapFrags.scale, mapFrags.scale)
+                // scroll the board negativly the position we are relative to created
+                // illusion of we are looking at him in that position
+                // (left to me is right to him)
                 this.ctx.translate(-this.x, -this.y);
+                // draws the image on canvas
                 this.ctx.drawImage(this.img_canvas, 0, 0);
+                //  draws pen
                 if (pen.canDrawPen()) {
                     this.ctx.fillStyle = colors[pen.color].css_format(0.6);
                     this.ctx.fillRect(pen.x, pen.y, 1, 1);
                 }
                 this.ctx.restore(); // return to default position
-                //performance_arr.push(performance.now()-t)
             });
     },
 };
 
-
+/**
+ * @namespace lockedState
+ * object used to represent the lock state of the board
+ */
 const lockedStates = {
     __locked: false,
     get locked() {
         return this.__locked;
     },
+    /**
+     * 
+     * @param {boolean} alert if to show the alert
+     * locks the board 
+     */
     lock(alert=false) {
         this.__locked = true;
         $('#lock-colors').attr('lock', 1);
@@ -1433,6 +1530,10 @@ const lockedStates = {
             })
         }
     },
+    /**
+     * @param {boolean} alert if to show alert
+     * handles the execution
+     */
     unlock(alert) {
         this.__locked = false;
         $('#lock-colors').attr('lock', 0);
@@ -1452,10 +1553,12 @@ const lockedStates = {
  */
 function DocumentKeyPress(key_event){
     switch (key_event.code) {
+        // toggle toolbox up
         case 'KeyX': {
             $('#toggle-toolbox-button').click();
             break;
         }
+        // select color to the right
         case 'KeyC': {
             let button = $(".colorButton[picked='1']").first();
             // if any of the is undefiend - reset
@@ -1465,6 +1568,7 @@ function DocumentKeyPress(key_event){
             pen.setColorButton(button.next())
             break;
         }
+        // select color to the left
         case 'KeyZ': {
             let button = $(".colorButton[picked='1']");
             if (_.isUndefined(button) || _.isUndefined(button.prev()[0])) {
@@ -1473,6 +1577,7 @@ function DocumentKeyPress(key_event){
             pen.setColorButton(button.prev())
             break;
         }
+        // go to keyboard mode or draw pixel in keyboard mode
         case 'KeyP': {
             // force keyboard if not in keyboard mode, else color a pixel
             if (pen.is_in_center_mode && isSwalClose()) {
@@ -1483,12 +1588,13 @@ function DocumentKeyPress(key_event){
             }
             break;
         }
+        // toggle zoom states
         case 'KeyT': {
             // press the zoom button
             nonSweetClick('#zoom-button')
             break;
         }
-
+        // toggle between full screen
         case 'KeyF': {
             // press the F button
             nonSweetClick('#screen-button')
@@ -1499,11 +1605,11 @@ function DocumentKeyPress(key_event){
             break;
         }
     }
+    // zoom bigger or smaller
     if (key_event.originalEvent.shiftKey) {
         if (key_event.originalEvent.key == '+') // key for plus
         {
             // option 0.5
-            console.log(mapFrags.scale >= 1, mapFrags.scale)
             mapFrags.setScale(mapFrags.scale >= 1 ? mapFrags.scale + 1 : 1);
         }
         else if (key_event.originalEvent.key == '_') { // key for minus
@@ -1564,7 +1670,7 @@ $(document).ready(function() {
             text: 'Lost Connection with the server',
         })
     })
-    // update board
+    // update coordinates when hover on them or leaves them, to copy them
     $('#coordinates').hover(function() {
         board.updateCoords();
     }, function() {
@@ -1573,6 +1679,7 @@ $(document).ready(function() {
     // set color
     board.canvas.mousemove((mouse_move_event) => {
         pen.setPenPos(mouse_move_event);
+        // change scale by mouse wheel
     }).mouseleave(() => pen.clearPos()).bind('mousewheel', (wheel_event) => {
         // mousewheel event for moving
         wheel_event.preventDefault();
@@ -1583,6 +1690,7 @@ $(document).ready(function() {
                 MIN_SCALE
             )
         );
+    // draw pixel by double click
     })[0].addEventListener('dblclick', (double_click_event) => {
         // @see {@link https://github.com/Leaflet/Leaflet/issues/4127}
         // @see {@link https://codepo8.github.io/canvas-images-and-pixels/#display-colour*/}
@@ -1604,9 +1712,10 @@ $(document).ready(function() {
                 [mouse_event.pageX, mouse_event.pageY],
                 mapFrags.scale
             ));
-            // center board
+            // Change to grab cursors
             cursor.grab();
         }
+        // stop draw board
     }).mouseup(() => {
         // clear drag data
         board.drag_data = null;
@@ -1615,9 +1724,10 @@ $(document).ready(function() {
     $(document)
     /** @see DocumentKeyPress */
     .keypress(DocumentKeyPress)
+    // keydown
     .keydown((key_down_event) => {
         // stack overflow
-        let key_name = (key_down_event || window.event).key;
+        let key_name = key_down_event.key;
         if(_.has(DirectionMap, key_name)){
             let movement_direction = DirectionMap[key_name];
             if ((movement_direction instanceof KeyDirection) && movement_direction.setIfCleared()) {
@@ -1675,6 +1785,7 @@ $(document).ready(function() {
     let clipboard = new ClipboardJS('#coordinates', {
         text: function() { return window.location.origin + window.location.pathname + mapFrags.arguments(); }
     });
+    // clipboard to copy board
     clipboard.on('success', function() {
         throw_message('Copy Success');
     })
@@ -1707,6 +1818,7 @@ $(document).ready(function() {
             }
         });
     });
+    // click on home button
     $('#home-button').click(function() {
         Swal.fire({
             title: 'return Home?',
@@ -1723,16 +1835,19 @@ $(document).ready(function() {
             }
         });
     });
+    // color color buttons
     $('.colorButton').each(function() {
 		$(this).css('background-color', colors[parseInt($(this).attr('value'))].css_format()); // set colors
     }).click(function(event) {
         event.preventDefault(); // prevent default clicking
         pen.setColorButton($(this))
     });
+    // go to new window
     //https://stackoverflow.com/a/11384018
     $('#chat-button').click((function(e) {
         window.open(this.getAttribute('href'), '_black')
     }));
+    // screen button -> fullscreen exit or enter
     $('#screen-button').click(function() {
         if (this.getAttribute('state') == '0') {
             openFullscreen();
@@ -1741,12 +1856,13 @@ $(document).ready(function() {
             closeFullscreen();
         }
     })
+    // onfullscreen
     document.onfullscreenchange = function() {
         let not_state = $('#screen-button').attr('state') == '1' ? '0' : '1'
         $('#screen-button').attr('state', not_state);
     }
-    // set color button
+    // on resize
     $(window).resize((e) => {
-        board.setCanvasZoom();
+        board.updateCanvasZoom();
     })
 });

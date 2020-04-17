@@ -44,8 +44,8 @@ class PreferencesForm(FlaskForm):
         ]
     )
 
-    url = StringField(
-        'Chat URL',
+    chat_url = StringField(
+        label='Chat URL',
         validators=[
             validators.Optional(),
             validators.URL(message="Not valid URL")

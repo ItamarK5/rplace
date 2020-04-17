@@ -1,6 +1,11 @@
-// shortcuts
+/** @const history_table jquery reference */
 const history_table = $('#history-table');
 // map for note type
+/** 
+ * @constant {Object.<string, Object.<string, string>>} NoteTypeEnums
+ * @enum {Object.<string, string>}
+ * options for different type of 
+ */
 const NoteTypeEnums = {
     unbanned_date: {row_class:'primary', text:'Future Unbanned Record'},
     banned_date: {row_class:'warning', text:'Future Banned Record'},
@@ -10,12 +15,58 @@ const NoteTypeEnums = {
 }
 
 
+class Note {
+    /**
+     * @param {number} id the id of the note
+     * @param {string} post_date the date the note was created
+     * @param {string} type type of the row @see {@link NoteTypeEnums}
+     * @param {string} writer the name of the writer of the note
+     * @param {string} description the text of note, what was written there
+     * @param {boolean} can_edit if user has permission to edit the note
+     * @param {?string} affect_form the date the note taken effect (if its record), if its a simple note its value is null
+     * @param {?string} reason message to the user why he was banned (if its record), if its a simple note its value is null
+     * @param {boolean} active if the user was active after the note taken effect (if its record), if its a simple note its value is null
+     */
+    constructor(id, type, post_date, writer, description, can_edit,
+        affect_from, reason, active){
+            this.id = id;
+            this.type = type;
+            this.post_date = post_date;
+            this.writer = writer;
+            this.description = description;
+            this.can_edit = can_edit
+            this.affect_from = affect_from;
+            this.reason = reason;
+            this.active = active;
+    }
+}
+
 // get the user name from the url (that suppose to be)
+/**
+ * @function
+ * @name GetUserName
+ * @returns {string} name of the user in url
+ * gets the user name
+ * url build in as http://127.0.0.1:8080/edit/{name}
+ */
 const GetUserName = () => window.location.pathname.split('/')[2];
-const getTargetRow = () => $('tr[targeted="true"]');
-// create row note from note data
+/**
+ * @function
+ * @name GetTargetRow
+ * @returns the current selected row of history rows [the one targeted]
+ * get a targeted note row in historyModal
+ */
+const GetTargetRow = () => $('tr[targeted="true"]');
+
+
+/**
+ * @function
+ * @name MakeNoteRow 
+ * @param {Note} note note object
+ */
 const MakeNoteRow = (note) => {
     // note attributes needed:
+    console.log(note)
     let note_row_type = NoteTypeEnums[note.type];
     let row = $('<tr></tr>')
                 .addClass('table-' + note_row_type.row_class)
@@ -34,55 +85,93 @@ const MakeNoteRow = (note) => {
  * @name hasNotFoundResponse
  * @param {XMLHttpRequest} xhr 
  * @return {Boolean} if its a 404 response (not found)
- * @summary checks if the context isnt found
+ * checks if response is XMLHttpResponse with status 404
  */
 const hasNotFoundResponse = (xhr) => _.has(xhr, 'status') && xhr.status == 404;
 
-// create page button from page data
+/**
+ * @param {?{number|string}} num represent the number of the page
+ * @param {?string} text text of he number
+ * @returns {HTMLButtonElement} new button
+ * create page button from page data
+ */
 function makePageButton(num, text=null){
+    // determine null text
     if(_.isNull(text)){
         text = _.isNull(num) ? 'none' : num.toString() 
     }
-    // then
+    // create page button
     let is_disabled =  _.isNull(num) || isNaN(num);
     let button = $('<button></button>').attr({
         type:'button',
         href: is_disabled ? 'none' : num.toString()
-    }).text(text).addClass('btn').addClass('btn-secondary').addClass('page-button');
+    }).text(text).addClass('btn btn-secondary page-button');
     if(is_disabled){
+        // add disabled
         button.addClass('disabled')
     }
     return button
 }
 
-// focus a note row, sets its background to bg type backrgound
-const focusNoteRow = (note_row) => {
-    let row_class = NoteTypeEnums[notes.get_notes_row(note_row).type].row_class
+/**
+ * @param {JSON} json_data
+ * @returns {Note} new note
+ * transfers note in json to note object
+ */
+const ConvertJSONToNotes = (json_data) =>{
+    return new Note(
+        json_data.id,
+        json_data.type,
+        json_data.post_date,
+        json_data.writer,
+        json_data.description,
+        json_data.can_edit,
+        _.has(json_data, 'affect_from') ? json_data.affect_from : null ,
+        _.has(json_data, 'reason') ? json_data.reason : null ,
+        _.has(json_data, 'active') ? json_data.reason : null
+    )
+}
+
+
+
+/**
+ * @function
+ * @param {jQuery} note_row selector for a row that describes a note
+ * sets it color to focus bg-{state} -> table-{state}
+ */
+const FocusNoteRow = (note_row) => {
+    let row_class = NoteTypeEnums[notes.getNoteOfRow(note_row).type].row_class
     $(note_row).addClass(`bg-${row_class}`);
     $(note_row).removeClass(`table-${row_class}`);
 }
 
-// focus a note row, sets its background to bg type background
-const loseFocusNoteRow = (note_row) => {
-    let row_class = NoteTypeEnums[notes.get_notes_row(note_row).type].row_class
+/**
+ * @function
+ * @param {jQuery} note_row selector for a row that describes a note
+ *  focus a note row, sets its background to bg type background
+ * sets it color to focus bg-{state} -> table-{state}
+ */
+const LoseFocusNoteRow = (note_row) => {
+    let row_class = NoteTypeEnums[notes.getNoteOfRow(note_row).type].row_class
     $(note_row).addClass(`table-${row_class}`);
     $(note_row).removeClass(`bg-${row_class}`);
 }
 
-function showNoteDetails(note){
+
+/**
+ * 
+ * @param {Note} note a specific not
+ * describes the note on the fields
+ */
+function ShowNoteDetails(note){
     // note, if note is false like null or undefined, sets undefined.
-    note = Boolean(note) ? note : {
-        type:'note',
-        post_date:'',
-        writer:'',
-        description:'',  
-        can_edit:false     
-    }
+    note = Boolean(note) ? note : new Note(-1, '', '', '', '', '')
     if(note.type == 'note'){
         $('.record-row:not(.d-none)').addClass('d-none')
     } else {
         $('.record-row.d-none').removeClass('d-none');
     }
+    // sets field texts
     $('#post-date-field').val(note.post_date);
     $('#writer-field').val(note.writer);
     $('#description-field').text(note.description)
@@ -105,7 +194,15 @@ function showNoteDetails(note){
     $('#edit-note-button').prop('disabled', true)
 }
 
-// storage of notes
+/** 
+ * @namespace notes 
+ * @property {?number[]} pages
+ * @property {?number} prev_ref previous page reference, number of the page but if there isn't a prev page then null
+ * @property {?number} next_ref next page reference, number of the page but if there isn't a next page then null
+ * @property {?number} current_page current page displayed, if there isn't any returns null
+ * @property {Note[]} query query of notes 
+ * @property {Note} __selected_note the current selected note
+*/
 const notes = {
     pages:null,
     prev_ref:null,
@@ -113,16 +210,30 @@ const notes = {
     current_page:null,
     __selected_note:null,
     query:null,
+    /**
+     * @returns the current selected note
+     * simple get method
+     */
     get selected_note() {
         return this.__selected_note;
     },
+    /**
+     * @param {*} value a new note that is being selected
+     * simple set method and update handle function
+     */
     set selected_note(value){
         if(value != this.__selected_note){
-            this.__selected_note = value;   
-            showNoteDetails(value);
+            this.__selected_note = value;  
+            // show note details 
+            ShowNoteDetails(value);
         }
     },
-    get_notes_row(row_selector) {
+    /**
+     * 
+     * @param {jQuery} row_selector of a note
+     * @returns {undefined|Note} note or undefiend 
+     */
+    getNoteOfRow(row_selector) {
         return this.query[
             _.findIndex(
                 this.query, 
@@ -130,10 +241,17 @@ const notes = {
             )
         ];
     },
-    update_notes(){
+    /**
+     * recreates all notes on DOM and page buttons
+     */
+    updateNotes(){
+        console.log(this.query)
         this.makeHistory()
         this.makePages()
     },
+    /** 
+     * make all rows of notes 
+    */
     makeHistory(){
         history_table.children('tr').remove();
         this.query.forEach((value) => {
@@ -141,31 +259,36 @@ const notes = {
         });
         // events
         $('.note-history-row').hover(
+            //hover
             function() {
-                focusNoteRow(this)
+                FocusNoteRow(this)
             },
+            //unhoer
             function(){
                 console.log($(this).attr('targeted'))
                 if($(this).attr('targeted') != 'true'){
-                    loseFocusNoteRow(this);     
+                    LoseFocusNoteRow(this);     
                 }
             }
         )
-        // wrong in so many levels
         $('.note-history-row').click(function() {
             let data_item = $(this).attr('data-item');
             $('tr[targeted="true"]').each(function() {
-                // this refereced to the current targeted row
+                // this referenced to the current targeted row
                 if($(this).attr('data-item') != data_item){
                     $(this).attr('targeted', "false");
-                    loseFocusNoteRow(this);
+                    LoseFocusNoteRow(this);
                 }
             })
             $(this).attr('targeted', "true");
-            focusNoteRow(this);
-            notes.selected_note = notes.get_notes_row(this);
+            FocusNoteRow(this);
+            // set note as selected if clicked
+            notes.selected_note = notes.getNoteOfRow(this);
         })
     },
+    /**
+     * creates all page references buttons
+     */
     makePages(){
         let page_group = $('#page-group');
         $('.page-button').remove();
@@ -193,7 +316,7 @@ const notes = {
                 e.preventDefault()
             } else {
                 let href = parseInt(this.getAttribute('href'));
-                ajaxGetPage(isNaN(href) ? 0 : href)
+                AjaxGetPage(isNaN(href) ? 0 : href)
             }
         });
     },
@@ -210,7 +333,14 @@ const notes = {
     }
 };
 
-// ajax error response
+
+/**
+ * @function
+ * ajaxErrorAlert
+ * @param {error} error error response of the ajax request
+ * @param {?function} result_func function to apply after closed the alert
+ * show a pop up message for the error and then executes an options function (result_func)
+ */
 function ajaxErrorAlert(error, result_func) {
     let alert = Swal.fire({
         title: 'Error!',
@@ -225,23 +355,29 @@ function ajaxErrorAlert(error, result_func) {
 
 // get page by ajax request
 /**
- * @param {Number} page page to get
+ * @param {number} page page to get
+ * @returns nothing
+ * gets the current page by ajax request
  */
-function ajaxGetPage(page=1){
+function AjaxGetPage(page=1){
     return $.get({
         url:'/get-notes',
         data: {name:GetUserName(), page:page}, 
         contentType: 'application/json;charset=UTF-8',
         success: (data) => {
+            console.log(data)
             notes.pages=data.pages;
-            notes.query=data.query;
+            notes.query= _.map(
+                data.query,
+                ConvertJSONToNotes
+            )
             notes.prev_ref=data.prev_ref;
             notes.next_ref=data.next_ref;
             notes.current_page=data.current_page;
-            notes.update_notes()
+            notes.updateNotes()
         },
         error:ajaxErrorAlert
-    }).catch(error => {
+    }).catch(() => {
         ajaxErrorAlert({responseText:'fail-to-get-message'})
     });
 }
@@ -275,11 +411,12 @@ $.fn.serializeForm = function() {
  * @name ready
  * event apply when DOM can be changed via javascript safely
  */
-
 // run when ready, when its safe to edit html elements 
 $(document).ready(() => {
     $('[data-toggle="tooltip"]').tooltip()
+    // when display history modal
     $('#historyModal').on('show.bs.modal', (e) => {
+        // no page
         if(notes.current_page == null){
             e.stopPropagation();
             Swal.fire({
@@ -290,9 +427,10 @@ $(document).ready(() => {
     
         }
     })
-    ajaxGetPage();
-    $('#ban-form').submit(function(e) {
-        let success_message = $('#ban-form .success-message')[0];
+    // get pages
+    AjaxGetPage();
+    $('#record-form').submit(function(e) {
+        let success_message = $('#record-form .success-message')[0];
         if (!success_message.hasAttribute('hidden')) {
             success_message.toggleAttribute('hidden');
         }
@@ -302,7 +440,6 @@ $(document).ready(() => {
         // post request
         $.post({
             url:$(this).attr('action'),
-            method:'POST',
             data:JSON.stringify(args),
             contentType: "application/json;charset=utf-8",
             success: (data) => {
@@ -319,7 +456,7 @@ $(document).ready(() => {
                             $('<ul></ul>')
                             .text(err)
                             .addClass("center-text list-group-item list-group-item-danger")
-                            .appendTo($(`#ban-form .error-list[error-for="${field}"]`).first())
+                            .appendTo($(`#record-form .error-list[error-for="${field}"]`).first())
                         })
                     })
                 }
@@ -357,12 +494,14 @@ $(document).ready(() => {
             }
         }).fail(ajaxErrorAlert);
     });
-    $('#submit-ban-form').click(() => {
-        $('#ban-form').submit();
+    // forms submitted
+    $('#submit-record-form').click(() => {
+        $('#record-form').submit();
     });
     $('#submit-note-form').click(() => {
         $('#note-form').submit();
     })
+    // affect from field in historyModal
     $('#set-affect-from').click(function() {
         let field = $('#affect_from')[0];
         if (this.checked) {
@@ -371,7 +510,7 @@ $(document).ready(() => {
             field.setAttribute('disabled', 'disabled')
         }
     })
-    //
+    // change rank button
     $('#rank-button').click(function() {
         let name = this.getAttribute('enum-name');
         Swal.fire({
@@ -412,13 +551,13 @@ $(document).ready(() => {
             .addClass('sr-only')
             .text('Loading'))
         )
-        ajaxGetPage(notes.current_page).then(() => {
+        AjaxGetPage(notes.current_page).then(() => {
             $('#refresh-history').children('div').remove();
             $('#refresh-history').text('refresh');
         })
     });
     $('#remove-note-button').click(() => {
-        let targeted_row = getTargetRow();
+        let targeted_row = GetTargetRow();
         let note_idx = parseInt(targeted_row.attr('data-item'))
         console.log(targeted_row)
         if(targeted_row){
@@ -481,7 +620,10 @@ $(document).ready(() => {
 
 })
 
-/** serialize the date input */
+/** 
+ * on windows load
+ * serialize the date input
+ */
 $(window).on('load', function() {
     $('#affect_from').datetimepicker({
         format: 'DD/MM/YYYY HH:mm',
@@ -489,16 +631,18 @@ $(window).on('load', function() {
         showClear: true,
         showClose: true,
         icons: {
-            time: 'far fa-clock',
-            date: 'fas fa-calendar',
-            up: 'fas fa-arrow-up',
-            down: 'fas fa-arrow-down',
-            previous: 'fas fa-chevron-left',
-            next: 'fas fa-chevron-right',
-            today: 'fas fa-calendar-check-o',
-            clear: 'fas fa-trash',
-			close: 'fas fa-times'
-		},
+            // icons
+            time: 'far fa-clock', // to select time
+            date: 'fas fa-calendar', // to select date
+            up: 'fas fa-arrow-up',  // move time up
+            down: 'fas fa-arrow-down', // move time down
+            previous: 'fas fa-chevron-left', // get previous day
+            next: 'fas fa-chevron-right', // get next day
+            today: 'fas fa-calendar-check-o',   // sets today
+            clear: 'fas fa-trash',  // clear the time
+			close: 'fas fa-times' // close tme
+        },
+        // time zone
         timeZone: 'utc-0'
     })
 });

@@ -14,19 +14,26 @@ from painter.others.quick_validation import (
 )
 from painter.models import SignupNameRecord, SignupMailRecord, RevokeMailAttempt
 
+
 """
 FlaskForms Mixin
+use mixins to make the size of the file smaller
 """
 
 
 class FlaskUsernameMixin(object):
+    """
+    class: FlaskUsernameMixin
+    contains username string field
+    """
     username = StringField(
         'username',
         validators=[
-            validators.data_required(),
+            validators.data_required(),  # required
             ABC_OR_DIGITS_VALIDATOR,
             USERNAME_LENGTH_VALIDATOR
         ],
+        # tooltip
         render_kw={
             'data-toggle': 'tooltip',
             'title': 'Your name, it must contain 5-15 characters and contains only abc chars\\digits',
@@ -35,6 +42,11 @@ class FlaskUsernameMixin(object):
 
 
 class FlaskPasswordMixin(object):
+    """
+    name: FlaskPasswordMixin
+    mixin class for FlaskForm child
+    the class member has a password field
+    """
     password = PasswordField(
         'password',
         validators=[
@@ -52,6 +64,10 @@ class FlaskPasswordMixin(object):
 
 
 class FlaskConfirmPasswordMixin(object):
+    """
+    name: FlaskConfirmPasswordMixin
+    mixin class for FlaskForm child to a confirm password field
+    """
     confirm_password = PasswordField(
         'password confirm',
         validators=[
@@ -63,8 +79,20 @@ class FlaskConfirmPasswordMixin(object):
         }
     )
 
+    def clear_data(self):
+        """
+        :return: none
+        clears the confirm password data
+        """
+        self.confirm_password.data = ''
+
 
 class FlaskEmailMixin(object):
+    """
+    name: FlaskEmailMixin
+    mixin class for FlaskForm child to have a remember field,
+    used for remember me option of the class
+    """
     email = EmailField(
         'Email',
         validators=[
@@ -80,17 +108,12 @@ class FlaskEmailMixin(object):
     )
 
 
-# Real Flask Forms
-class LoginForm(FlaskForm,
-                FlaskUsernameMixin,
-                FlaskPasswordMixin):
-    name = 'login'
-    title = 'Welcome Back to Social Painter'
-
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.non_field_errors = []
-
+class FlaskRememberMixin(object):
+    """
+    name: FlaskRememberMixin
+    mixin class for FlaskForm child to have a remember field,
+    used for remember me option of the class
+    """
     remember = BooleanField(
         'Remember me',
         render_kw={
@@ -101,28 +124,68 @@ class LoginForm(FlaskForm,
     )
 
 
-class RevokePasswordForm(FlaskForm,
+class BaseForm(FlaskForm):
+    """
+    to shortcut staff and add staff to form
+    """
+    name: str  # name of the form, used in the form template, as title
+    title: str  # big text in the top of the screen to show
+
+
+# Real Flask Forms
+class LoginForm(BaseForm,
+                FlaskUsernameMixin,
+                FlaskPasswordMixin,
+                FlaskRememberMixin
+                ):
+    """
+    name: LoginForm
+    a login form object represent a form submitting with login information
+    """
+    name = 'login'
+    title = 'Welcome Back to Social Painter'
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.non_field_errors = []
+
+
+class RevokePasswordForm(BaseForm,
                          FlaskEmailMixin):
     name = 'revoke'
     title = 'Chnage Your Password'
 
+    # sorry pep8, but otherwise wont work
     def validate_email(self, field) -> None:
+        """
+        :param field: the email fields
+        :return: none
+        extra validation for the email feld, check if exists in the system
+        """
         if RevokeMailAttempt.exists(field.data):
             raise ValidationError('You need to wait 15 minutes before you can use revoke mail again')
 
 
-class ChangePasswordForm(FlaskForm,
+class ChangePasswordForm(BaseForm,
                          FlaskPasswordMixin,
                          FlaskConfirmPasswordMixin):
-    name = 'change'
+    """
+    ChangePasswordForm
+    a template for a formo parse the second stage of changing passwodr
+    """
+    name = 'Change Password'
     title = 'Set new Password'
 
 
-class SignUpForm(FlaskForm,
+class SignUpForm(BaseForm,
                  FlaskUsernameMixin,
                  FlaskPasswordMixin,
                  FlaskConfirmPasswordMixin,
                  FlaskEmailMixin):
+    """
+    Sign up form
+    a form to parse a new user information
+    """
     name = 'sign-up'
     title = 'Welcome to Social Painter'
 
@@ -133,11 +196,13 @@ class SignUpForm(FlaskForm,
         """
         if not super().validate():
             return False
+        # check if name is duplication
         is_dup_name = (
                 User.query.filter_by(username=self.username.data).first() is not None
                 and
                 SignupNameRecord.exists(self.username.data)
         )
+        # check if email is duplication
         is_dup_email = (
                 User.query.filter_by(email=self.email.data).first() is not None
                 and
@@ -153,11 +218,15 @@ class SignUpForm(FlaskForm,
 
 
 # Simple Forms for validations
-class SignUpTokenForm(QuickForm,
+class SignupTokenForm(QuickForm,
                       UsernameFieldMixin,
                       MailAddressFieldMixin,
                       HashPasswordFieldMixin
                       ):
+    """
+    Form to parse Signup token that includes name, password and mail of the new user
+    using different mixins
+    """
     pass
 
 
@@ -166,4 +235,8 @@ class RevokeTokenForm(
     MailAddressFieldMixin,
     HashPasswordFieldMixin
 ):
+    """
+    Form to parse Signup token that includes name, password and mail of the new user
+    using different mixin's
+    """
     pass

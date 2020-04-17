@@ -43,14 +43,13 @@ def admin() -> str:
 
 @admin_router.route('/add-record', methods=('POST',))
 @only_if_superior
-def add_record(user: User, message: Dict[str, str]):
+def add_record(user: User):
     form = RecordForm()
     if form.validate_on_submit():
         record = Record(
-            user=user.id,
-            description=form.note.data,
-            declared=datetime.now(),
-            writer=current_user.id,
+            user_subject_id=user.id,
+            description=form.note_description.data,
+            user_writer_id=current_user.id,
             active=not form.set_banned.data,
             affect_from=form.affect_from.data,
             reason=form.reason.data
@@ -132,12 +131,12 @@ def edit_user(name: str) -> Response:
     if not current_user.is_superior_to(user):
         # forbidden error
         abort(exceptions.Forbidden.code, f"You are not allowed to edit the user {user.username}")
-    ban_form = RecordForm(set_banned=user.is_active)
+    record_form = RecordForm(set_banned=user.is_active)
     note_form = NoteForm()
     return render_template(
         'accounts/edit.html',
         user=user,
-        ban_form=ban_form,
+        record_form=record_form,
         note_form=note_form,
         Role=Role
     )

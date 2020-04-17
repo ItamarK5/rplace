@@ -53,6 +53,7 @@ FLAG_SERVICES_OPTINOS = {
 
 DEFAULT_MAX_AGE_USER_TOKEN = 3600
 
+
 class ServiceResultsPrint:
     """
     object used to save options for check-service command
