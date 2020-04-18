@@ -16,5 +16,8 @@ from painter.models import Role, User
 
 @sio.on('connect', ADMIN_NAMESPACE)
 @socket_io_role_required_connection(Role.admin)
-def connect():
+def connect() -> None:
+    """
+    just apply decorators to prevent no admin users to access this pages
+    """
     pass

@@ -10,6 +10,10 @@ from painter.others.constants import COLORS
 
 
 class PreferencesForm(FlaskForm):
+    """
+    Preference form
+    handling validating changes in the user preferences
+    """
     x = IntegerField(
         'X start',
         validators=[

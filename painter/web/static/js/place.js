@@ -518,7 +518,7 @@ const progress = {
      * @desc if progress isn't finished, user still cant place pixels
      */
 	hasFinished(){
-		return this.__work.isWorking
+		return this.__work.isWorking;
 	},
 	/**
 	 * @param {number} seconds_left number of seconds before the progress bar ends
@@ -549,12 +549,12 @@ const progress = {
 			$('prog-text').text('0:00'); // set text 0
 			$('#prog-fill').attr('state', 1); // prog-fill state is 9
 			$('#time-prog').attr('state', 0); // time progress set to 1
-			if (this.hasFinished) { // stop work in case
+			if (this.hasFinished()) { // stop work in case
 				this.__work.stop();
 			}
 		}
 		// when stops working
-		else if (!this.hasFinished) {
+		else if (!this.hasFinished()) {
 			this.__current_second = 300;
 			this.__work.start()
 			// set cursor to be pen
@@ -654,9 +654,10 @@ const mapFrags = {
 	},
 
 	/**
+	 * @private
 	 * @returns {string} the raw path for the map
 	 */
-	get __getFragsAsPathParams() {
+	__getFragsAsPathParams() {
 		return `x=${this.cx}&y=${this.cy}&scale=${this.scale}`
 	},
 	/**
@@ -896,9 +897,12 @@ const mapFrags = {
 			history.replaceState(null, null, document.location.pathname + this.hash());
 		}
 	},
+	/**
+	 * sets the style of the zoom button depending the zoom level on the scale
+	 */
 	refreshZoomStyle() {
 		let zoom_button = $('#zoom-button')
-		if (mapFrags.scale >= 25) {
+		if (this.scale >= 25) {
 			zoom_button.children('span').addClass('fa-search-minus').removeClass('fa-search-plus');
 			zoom_button.css('cursor', 'zoom-out');
 		}

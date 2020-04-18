@@ -12,7 +12,6 @@
     "MAIL_USE_SSL": false,
     "MAIL_USE_TLS": false,
     "MAX_AGE_USER_TOKEN": 3600,
-
     "REDIS_URL": null,
     "REMEMBER_COOKIE_HTTPONLY": false,
     "REMEMBER_COOKIE_NAME": null,

@@ -6,8 +6,10 @@ from threading import Lock
 from .extensions import redis, cache
 
 
+# the key for the board in redis database
 _BOARD_REDIS_KEY = 'board'
-board_temp = b'\x00' * 500 * 1000
+
+BOARD_BYTES_SIZE = 1000*500
 
 
 def make_board() -> bool:
@@ -17,7 +19,7 @@ def make_board() -> bool:
     if not creates new one
     """
     if not redis.exists(_BOARD_REDIS_KEY):
-        return bool(redis.set(_BOARD_REDIS_KEY, '\00' * 1000 * 500))
+        return bool(redis.set(_BOARD_REDIS_KEY, '\00' * BOARD_BYTES_SIZE))
     return True
 
 
@@ -55,20 +57,9 @@ def drop_board() -> bool:
     return bool(redis.delete(_BOARD_REDIS_KEY))
 
 
-"""
-def debug_board() -> None:
-    #:return: prints the board, for debug purpose
-    
-    brd = get_board()
-    for i in range(1000):
-        print(brd[i * 500:(i + 1) * 500])
-"""
-
 __all__ = [
     'make_board',
     'set_at',
-    'board_lock',
-    'drop_board'
+    'drop_board',
     'get_board',
-    # 'debug_board'
 ]

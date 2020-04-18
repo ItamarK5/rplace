@@ -231,7 +231,7 @@ const notes = {
 	/**
 	 * 
 	 * @param {jQuery} row_selector of a note
-	 * @returns {undefined|Note} note or undefiend 
+	 * @returns {undefined|Note} note or undefined 
 	 */
 	getNoteOfRow(row_selector) {
 		return this.query[
@@ -495,8 +495,8 @@ $(document).ready(() => {
 		}).fail(ajaxErrorAlert);
 	});
 	// forms submitted
-	$('#submit-record-form').click(() => {
-		$('#record-form').submit();
+	$('.submit-form').click(() => {
+		getModalParent()
 	});
 	$('#submit-note-form').click(() => {
 		$('#note-form').submit();

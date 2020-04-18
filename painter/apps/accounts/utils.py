@@ -3,9 +3,8 @@ from __future__ import absolute_import
 from functools import wraps
 from typing import Any, Optional, Union, Dict, Callable, Type
 
-from flask import Flask, redirect, url_for, flash
-from flask import current_app
-from flask_login import current_user
+from flask import Flask, redirect, url_for, flash, current_app
+from flask_login import current_user, login_fresh
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from painter.others.constants import DEFAULT_MAX_AGE_USER_TOKEN
 from painter.others.quick_validation import QuickForm
@@ -67,14 +66,15 @@ def extract_signature(token: str,
     else returns the timestamp of the token
     """
     try:
-        token, timestamp = serializer.loads(
+        token = serializer.loads(
             token,
             return_timestamp=True,
             max_age=max_age
-        )
-    except BadSignature as e:  # error
-        print(e)
+        )[0]
+    except SignatureExpired:
         return 'timestamp'
+    except BadSignature as e:  # error
+        return None
     # then
     # check type
     if not isinstance(token, dict):
@@ -99,7 +99,7 @@ def anonymous_required(f: Callable) -> Callable[[Any], Any]:
             # get from configuration
             flash(current_app.config.get('APP_NON_LOGIN_MESSAGE', 'You have to logout to access this page'))
             # redirect to home page
-            return redirect(url_for(current_app.config.get('APP_NON_LOGIN_ROUTE', 'auth.login')))
+            return redirect(url_for(current_app.config.get('APP_NON_LOGIN_ROUTE', 'auth.home')))
         # else, run function
         return f(*args, **kwargs)
     return wrapper

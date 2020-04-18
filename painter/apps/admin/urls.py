@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Dict
 
 from flask import render_template, abort, request, url_for, redirect, jsonify
 from flask.wrappers import Response
@@ -22,11 +21,12 @@ from painter.others.quick_validation import UsernamePattern
 
 @admin_router.route('/admin', methods=('GET',))
 @admin_only
-def admin() -> str:
+def admin() -> Response:
     """
     :return: return's admin template
     """
-    pagination = User.query.paginate(per_page=10, max_per_page=20)
+    # pagination
+    pagination = User.query.paginate(per_page=1, max_per_page=1)
     # try get page
     page = request.args.get('page', '1')
     if not page.isdigit():
@@ -35,7 +35,11 @@ def admin() -> str:
             title='Given page isn\'t a number',
             description='Are you, an admin of this site is mocking this program by editing this?')
     # page to integer
-    page = int(page)
+    try:
+        page = int(page)
+    except ValueError:
+        page = 1
+    # if page isn't valid
     if not (1 <= page <= pagination.pages):
         return redirect(url_for('/admin', args={'page': '1'}))
     return render_template('accounts/admin.html', pagination=pagination, lock=lock.is_open())
@@ -43,9 +47,14 @@ def admin() -> str:
 
 @admin_router.route('/add-record', methods=('POST',))
 @only_if_superior
-def add_record(user: User):
+def add_record(user: User) -> Response:
+    """
+    :param user: the user to add the record
+    :return: json response with the errors on adding the record/success message
+    """
     form = RecordForm()
     if form.validate_on_submit():
+        # create record
         record = Record(
             user_subject_id=user.id,
             description=form.note_description.data,
@@ -57,32 +66,29 @@ def add_record(user: User):
         datastore.session.add(record)
         datastore.session.commit()
         user.forget_last_record()
-        return {'valid': True}
+        return jsonify(valid=True)
     # csrf token has its own action
     elif form.csrf_token.errors:
         abort(CSRFError)
-    else:
-        return {
-            'valid': False,
-            'errors': dict(
-                [(field.name, field.errors) for field in iter(form) if field.id != 'csrf_token']
-            )
-        }
+    # else:
+    return jsonify(
+        valid=False,
+        errors=dict([(field.name, field.errors) for field in iter(form) if field.id != 'csrf_token'])
+    )
 
 
 @admin_router.route('/add-note/<string:name>', methods=('POST',))
 @only_if_superior
 def add_note(user: User) -> Response:
     """
-    :param user: the user that I add the record
-    :return: nothing
-    adds a ban record for the user
+    :param user: the user to add the record to
+    :return: JSON response
+    adds a note to the user
     """
     print(request.data)
     form = NoteForm()
     # check a moment for time
     if form.validate_on_submit():
-        print(4)
         note = Note(
             user_subject_id=user.id,
             user_writer_id=current_user.id,
@@ -91,26 +97,28 @@ def add_note(user: User) -> Response:
         )
         datastore.session.add(note)
         datastore.session.commit()
+        # forget last record for refinding
         user.forget_last_record()
         return jsonify({'valid': True})
     # else
-    else:
-        return jsonify({
-            'valid': False,
-            'errors': dict(
-                [(field.name, field.errors) for field in iter(form) if field.id != 'csrf_token']
-            )
-        })
+    return jsonify(
+        valid=False,
+        errors=dict([(field.name, field.errors) for field in iter(form) if field.id != 'csrf_token'])
+    )
 
 
 @admin_router.route('/change-lock-state', methods=('POST',))
 @superuser_only
-def set_admin_button():
+def set_admin_button() -> Response:
+    """
+    :return: json response
+    """
     if request.data not in (b'1', b'0'):
         return json_response(False, 'Unknown data')
     new_state = request.data == b'0'
-    # else
+    # else switch state
     lock.set_switch(new_state)
+    # emit changes
     sio.emit('change-lock-state', new_state, namespace=PAINT_NAMESPACE)
     sio.emit('set-lock-state', new_state, namespace=ADMIN_NAMESPACE)
     return json_response(True, new_state)
@@ -125,12 +133,15 @@ def edit_user(name: str) -> Response:
     """
     if UsernamePattern.match(name) is None:
         abort(exceptions.BadRequest.code, 'Name isn\'t good')
+    # get page of edit user
     user = User.query.filter_by(username=name).first_or_404()
     if user == current_user:
         return redirect(url_for('place.profile'))
+    # allow only for superior users
     if not current_user.is_superior_to(user):
         # forbidden error
         abort(exceptions.Forbidden.code, f"You are not allowed to edit the user {user.username}")
+    # create new record form/note_form for submitting new ones
     record_form = RecordForm(set_banned=user.is_active)
     note_form = NoteForm()
     return render_template(
@@ -144,9 +155,10 @@ def edit_user(name: str) -> Response:
 
 @admin_router.route('/get-active-state', methods=('GET',))
 @admin_only
-def get_active_state():
+def get_active_state() -> Response:
     """
-    :return: get active state of the board, only for admins
+    :return: json response
+    get active state of the board, only for admins
     """
     return jsonify(lock.is_open())
 
@@ -154,20 +166,26 @@ def get_active_state():
 @admin_router.route('/set-user-role/<string:name>', methods=('POST',))
 @only_if_superior
 def set_role(user: User) -> Response:
+    """
+    :param user: the user
+    :return: JSON response of the error data or success
+    sets the role o the user by the given value, if not return error
+    """
     if not current_user.has_required_status(Role.superuser):
         abort(exceptions.Forbidden.code)  # forbidden
     # get value
-    print(request.data)
     if request.data == b'Admin':
         new_role = Role.admin
     elif request.data == b'Common':
         new_role = Role.common
     else:
         return json_response(False, 'Unknown value')
+    # if the passed role is the role the user is in
     if new_role == user.role:
         return json_response(False, 'Refresh the page to pick different role')
     # else
     user.role = new_role
+    # save data
     datastore.session.add(user)
     datastore.session.commit()
     return json_response(True, 'Pless refresh the page to see changes')
@@ -176,9 +194,18 @@ def set_role(user: User) -> Response:
 @admin_router.route('/get-notes', methods=('GET',))
 @only_if_superior
 def get_user_notes(user: User):
-    # max_per_page = validate_get_notes_param('max-per-page')
+    """
+
+    :param user:
+    :return: JSON response contaiing:
+    query: group of notes
+    prev_ref: previous page to the asked one
+    next_ref: next page to the to the asked one displayed
+    pages: the pages displayed
+    current_page: the current page
+    """
     page = validate_get_notes_param('page')
-    # get note number x
+    # get notes for page
     pagination = user.related_notes.paginate(page=page, max_per_page=5)
     return jsonify(
         query=[item.json_format(current_user) for item in pagination.items],
@@ -190,7 +217,11 @@ def get_user_notes(user: User):
 
 
 @admin_router.route('/delete-note', methods=('POST',))
-def remove_user_note():
+def remove_user_note() -> Response:
+    """
+    :return: json response
+    deletes a note about the user
+    """
     # in case of fail aborts json error
     try:
         note_index = request.get_json()
@@ -214,7 +245,11 @@ def remove_user_note():
 
 
 @admin_router.route('/change-note-description', methods=('POST',))
-def change_note_description():
+def change_note_description() -> Response:
+    """
+    :return: JSON response
+    changes a note description
+    """
     note_index = None
     description = None
     try:

@@ -4,7 +4,7 @@ urls of the accounts blueprint
 """
 from __future__ import absolute_import
 
-from flask import render_template
+from flask import render_template, request
 from flask_login import logout_user, login_user, login_required
 from werkzeug.wrappers import Response
 
@@ -14,11 +14,10 @@ from painter.models import User
 from .forms import LoginForm, SignUpForm, RevokePasswordForm, ChangePasswordForm, SignupTokenForm, RevokeTokenForm
 from .mail import send_signing_up_message, send_revoke_password_message
 from .utils import *
+from painter.others.utils import redirect_to
 
 
-@accounts_router.route('/login', methods=('GET', 'POST'))
-@anonymous_required
-def login() -> Response:
+def login_response() -> Response:
     """
     :return: login page response
     """
@@ -28,21 +27,44 @@ def login() -> Response:
     extra_error = None
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()  # usernames are unique
-        if user is None and User.encrypt_password(form.username.data, form.password.data):
+        # validate if user exists and if the password the form is the same as the one saved
+        # the one saved is hashed
+        if user is None or User.encrypt_password(form.username.data, form.password.data) != user.password:
             form.password.errors.append('username and password don\'t match')
             form.username.errors.append('username and password don\'t match')
         # the only other reason it can be is that if the user is banned
         elif not login_user(user, remember=form.remember.data):
-            # must be because user isnt active
+            # must be because user isn't active
             form.non_field_errors.append(user.record_message())
         else:
-            return redirect(url_for('place.home'))
+            return redirect_to(url_for('place.home'))
     # clear password
-    form.password.data = ''
     return render_template('forms/index.html',
                            form=form,
                            entire_form_errors=entire_form_error,
                            extra_error=extra_error)
+
+
+@accounts_router.route('/login', methods=('GET', 'POST'))
+@anonymous_required
+def login():
+    """
+    :return: Response login page
+    just wraps the login function to make its only allowed by anonymous users
+    """
+    return login_response()
+
+
+@accounts_router.route('/refresh', methods=('GET', 'POST'))
+def refresh() -> Response:
+    """
+    :return: response containing the refresh message
+    """
+    if current_user.is_authenticated and not login_fresh():
+        # redirect to request path
+        return redirect(request.url)
+    # login response as fresh response
+    return login_response()
 
 
 @accounts_router.route('/signup', methods=('GET', 'POST'))
@@ -79,6 +101,7 @@ def signup() -> Response:
             view_ref='auth.login',
             view_name='login'
         )
+    # default sign up form
     return render_template('forms/signup.html', form=form)
 
 
@@ -92,8 +115,10 @@ def revoke() -> Response:
     if form.validate_on_submit():
         # after user validation checks if the user exists
         user = User.query.filter_by(email=form.email.data).first()
-        RevokeMailAttempt.create_new(form.email.data)
-        if user is not None:
+        if user is None:
+            form.email.errors.append('Unknown Mail Address')
+        else:
+            RevokeMailAttempt.create_new(form.email.data)
             # error handling
             send_revoke_password_message(
                 user.username,
@@ -103,43 +128,7 @@ def revoke() -> Response:
                     'mail_address': user.email
                 })
             )
-            render_template('transport/complete-revoke-form.html')
-        else:
-            """render_template('transport/revoke-unknown-user.html')"""
     return render_template('forms/revoke.html', form=form)
-
-
-@accounts_router.route('/refresh', methods=['GET', 'POST'])
-def refresh() -> Response:
-    """
-    :return: refresh view
-    the refresh view is for users that have there session as not fresh can be by 2 options
-    --they close the browser and re-open it while saving
-    --some changes the url, secure hash or user agent (while using session protection basic):
-    link: https://flask-login.readthedocs.io/en/latest/#session-protection
-    """
-    form = LoginForm()
-    entire_form_error = []
-    extra_error = None
-    # check if submitted and validate the values
-    if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()  # user names are unique
-        # compares username and password
-        if user is None and User.encrypt_password(form.username.data, form.password.data) != user.password:
-            form.password.errors.append('username and password don\'t match')
-            form.username.errors.append('username and password don\'t match')
-        # the only other reason it can be is that if the user is banned
-        elif not login_user(user, remember=True):
-            # must be because user isnt active
-            form.non_field_errors.append(user.get_last_record().messsage(user.username))
-        else:
-            return redirect(url_for('place.home'))
-    # clear password data
-    form.password.data = ''
-    return render_template('forms/refresh.html',
-                           form=form,
-                           entire_form_errors=entire_form_error,
-                           extra_error=extra_error)
 
 
 @accounts_router.route('/change-password/<string:token>', methods=['GET', 'POST'])
@@ -147,49 +136,50 @@ def refresh() -> Response:
 def change_password(token: str) -> Response:
     """
     :param token: token url represent saving url
-    :return: Response
+    :return: HTML Page of the response
     """
-    extracted = extract_signature(
+    extracted_token = extract_signature(
         token,
         TokenSerializer.get_max_age(),
         RevokeTokenForm,
         TokenSerializer.revoke,
     )
     # validated if any token
-    if extracted is None:
+    if extracted_token is None:
         return render_template(
-            'transport//revoke-error-token.html',
+            'transport//token-error.html',
             view_name='Revoke Password',
-            view_ref='auth.login',
+            view_ref='auth.revoke',
+            token_action='revoke your password'
         )
     # timestamp error
-    if isinstance(extracted, str):
+    if isinstance(extracted_token, str):
         return render_template(
-            'transport//signup-token-expires.html',
-            view_name='Signup',
-            page_title='Over Time',
-            title='Over Time',
-            view_ref='auth.signup',
+            'transport//token-expires.html',
+            view_name='Change Password',
+            view_ref='auth.revoke',
+            token_action='change your password',
         )
     # else
-    mail_address, pswd = extracted.pop('mail_address'), extracted.pop('password')
+    mail_address, pswd = extracted_token.pop('mail_address'), extracted_token.pop('password')
     # check timestamp
     user = User.query.filter_by(email=mail_address, password=pswd).first()
     if user is None or not RevokeMailAttempt.exists(mail_address):
         return render_template(
             'transport//revoke-error-token.html',
             view_name='Revoke Password',
-            view_ref='auth.login'
+            view_ref='auth.revoke'
         )
     form = ChangePasswordForm()
+    # if not valid new password
     if not form.validate_on_submit():
-        return render_template('forms/revoke-token-expires.html', form=form)
+        return render_template('forms/change-password.html', form=form)
     else:
         new_password = form.password.data
         user.set_password(new_password)
         # then forget he mail address that was passed
         RevokeMailAttempt.force_forget(mail_address)
-    return render_template('transport/complete-signup.html')
+    return render_template('transport/complete-change-password.html')
 
 
 @accounts_router.route('/logout', methods=('GET',))
@@ -210,36 +200,35 @@ def confirm(token: str) -> Response:
     :param token: a token that holds user information (username, mail and password)
     :return: response view, if use registered or not
     """
-    extracted = extract_signature(token,
+    extracted_token = extract_signature(token,
                                   TokenSerializer.get_max_age(),
                                   SignupTokenForm,
                                   TokenSerializer.signup)
-    if extracted is None:
+    if extracted_token is None:
         return render_template(
-            'transport//revoke-error-token.html',
-            view_name='Revoke Password',
-            view_ref='auth.login',
-        )
-    # timestamp error
-    if isinstance(extracted, str):
-        return render_template(
-            'transport//revoke-token-expires.html',
-            view_name='Signup',
-            page_title='Over Time',
-            title='Over Time',
-            view_ref='auth.signup',
+            'transport//token-error.html',
+            view_name='Sign Up',
+            view_ref='auth.singup',
         )
     # if got error while extracting that isn't timeout
-    if extracted is None:
+    if extracted_token is None:
         return render_template(
-            'transport//base.html',
+            'transport//token-error.html',
             view_name='Sign Up',
             view_ref='auth.signup',
+            token_action='Signing Up'
+        )
+    # timouet error
+    if not isinstance(extracted_token, dict):
+        return render_template(
+            'transport//token-expires.html',
+            view_name='Sign Up',
+            view_ref='auth.signup',
+            action_given_token='Signing Up'
         )
     # else get values
-    token, timestamp = extracted
     # time.timezone is the different between local time to gm-time d=(gm-local) => d+local = gm
-    name, pswd, email = token.pop('username'), token.pop('password'), token.pop('email')
+    name, pswd, email = extracted_token.pop('username'), extracted_token.pop('password'), extracted_token.pop('email')
     # check if user exists
     # https://stackoverflow.com/a/57925308
     user = datastore.session.query(User).filter(
@@ -248,11 +237,9 @@ def confirm(token: str) -> Response:
     # check if user exists
     if user is not None:
         return render_template(
-            'transport//base.html',
+            'transport//reconfirm-fail.html',
             view_name='Login',
             view_ref='auth.login',
-            message="you already confirmed your account, if you didn\'t "
-                    "maybe someone catch it before you completed, in this situation It should be recommended"
         )
     # else create user
     user = User(
@@ -265,10 +252,8 @@ def confirm(token: str) -> Response:
     datastore.session.commit()
     # return message
     return render_template(
-        'transport//base.html',
-        title='Congrats',
+        'transport//complete-confirm.html',
         view_name='Login',
         view_ref='auth.login',
-        message='Congrats, you completed registering to the social painter community,\n'
-                'to continue, pless login via the login that you be redirected by pressing the button down'
+
     )

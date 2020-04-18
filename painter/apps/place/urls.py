@@ -26,7 +26,10 @@ def home() -> Response:
 
 @place_router.route('/profile', methods=('GET',))
 @login_required
-def profile():
+def profile() -> Response:
+    """
+    :return: profile page
+    """
     form = PreferencesForm()
     return render_template(
         'accounts/profile.html', xstart=current_user.x, ystart=current_user.y,
@@ -40,7 +43,7 @@ def profile():
 def profile_ajax():
     """
     view function that process a POST request from client
-    thr url is for submiting a form request related
+    thr url is for submitting a form request related
     to change a preference value by the user
     """
     form = PreferencesForm()
@@ -48,6 +51,7 @@ def profile_ajax():
         # you can only set 1 preference at a time
         # detecting the key \ val of the submitted form
         key, val = form.safe_first_hidden_fields()
+        # why we dont have switch
         if key == 'url':
             current_user.url = val if val else None
         elif key == 'x':
@@ -59,17 +63,21 @@ def profile_ajax():
         elif key == 'color':
             current_user.color = val
         else:
+            # otherwise set key as null
             key = None
+        # save check in user
         if key is not None:
             datastore.session.add(current_user)
             datastore.session.commit()
             # https://stackoverflow.com/a/26080784
             return jsonify({'success': True, 'id': key, 'val': val})
         else:
+            # return errors
             return jsonify({
                 'success': False,
                 'errors': ['Not valid parameter {}'.format(key)]
             })
+    # return errors
     return jsonify({
         'success': False,
         'errors': next(iter(form.errors.values()))

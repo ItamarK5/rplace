@@ -6,7 +6,6 @@ from .extensions import redis
 _DISABLE = b'0'  # False
 _ENABLE = b'1'  # True
 _ENABLE_EDIT_BOARD_KEY = 'enable-edit-board'
-_flag_lock = False
 
 
 def create_lock() -> bool:
@@ -34,7 +33,6 @@ def is_open() -> bool:
     """
     :return: is lock open
     """
-    return True
     return redis.get(_ENABLE_EDIT_BOARD_KEY) == _ENABLE
 
 

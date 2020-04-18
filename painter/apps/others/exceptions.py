@@ -6,7 +6,7 @@ from werkzeug import Response
 from werkzeug import exceptions
 
 from . import other_router
-from .utils import is_ajax_request, has_matched_image, render_error_page
+from .utils import is_ajax_request, has_matched_image, render_meme_error_page
 
 
 @other_router.app_errorhandler(CSRFError)
@@ -14,9 +14,10 @@ def handle_csrf_error(e: CSRFError) -> Response:
     """
     :param e: csrf error
     :return: csrf error response page if its not a xhr request
+    handles CSRF excpeiton
     """
     if not is_ajax_request(request):
-        return render_error_page(
+        return render_meme_error_page(
             e,
             'csrf',
             'unvalid csrf token',
@@ -27,6 +28,12 @@ def handle_csrf_error(e: CSRFError) -> Response:
 
 @other_router.app_errorhandler(exceptions.HTTPException)
 def error_handler(e: exceptions.HTTPException) -> Union[str, exceptions.HTTPException]:
+    """
+    :param e: HTTPError raised
+    :return: handles normal HTTP Errors
+    """
+    # if can handle the specific http error by meme image
     if has_matched_image(e) and not is_ajax_request(request):
-        return render_error_page(e)
+        return render_meme_error_page(e)
+    # else continue raise
     return e

@@ -16,7 +16,6 @@ def admin_only(f: Callable) -> Callable:
     :param f: decorator, which decorates a view, make it admin only used
     :return: a route that aborts 404 non-admin users that enter, all actions of admin must be with refreshed login
     """
-
     @wraps(f)
     def wrapped(*args, **kwargs):
         if current_user.is_authenticated and current_user.has_required_status(Role.admin):
@@ -71,6 +70,11 @@ def only_if_superior(f: Callable[[User], Response]) -> Callable[[str], Response]
 
 
 def json_response(success: bool, text: str) -> Response:
+    """
+    :param success: if succeed
+    :param text: text of the response
+    :return: JSON Response with the params
+    """
     return jsonify({
         'success': int(success),
         'text': text
@@ -78,9 +82,14 @@ def json_response(success: bool, text: str) -> Response:
 
 
 def validate_get_notes_param(arg_name: str) -> Optional[int]:
+    """
+    :param arg_name: name of arguments holding the number of notes
+    :return: the number of notes contained
+    can raise BadRequest
+    """
     arg = request.args.get(arg_name, 'None')
     if arg.isdigit():  # all digits => int
         return int(arg)
     else:  # else abort Bad Request
-        abort(400, 'Unvalid value')
+        abort(400, 'Un-valid value for page')
     return arg

@@ -22,11 +22,12 @@ def generate_engine(app) -> None:
         print('Configuration doesnt have SQLALCHEMY_DATABASE_URI value')
 
 
-
 """
-    setting values for flask-login
+setting values for flask-login
 """
+# redirect all non logined clients that try access only logined clients to pages
 login_manager.login_view = 'auth.login'
+# redirect all non fresh clients that try access only freshed clients to pages
 login_manager.refresh_view = 'auth.refresh'
+# message
 login_manager.needs_refresh_message = 'you need to re-login to access the information'
-login_manager.needs_refresh_message_category = 'info'

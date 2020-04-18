@@ -29,6 +29,11 @@ class SmallEnum(TypeDecorator):
         raise ValueError()
 
     def process_result_value(self, value, dialect) -> IntEnum:
+        """
+        :param value:
+        :param dialect: dont know, but
+        :return:
+        """
         try:
             return self._enum_type(value)
         except ValueError:

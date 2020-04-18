@@ -1,3 +1,8 @@
+"""
+place router
+the router handeling urls related to users/main app
+"""
+
 from os import path
 
 from flask import Blueprint

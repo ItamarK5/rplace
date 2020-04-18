@@ -39,6 +39,13 @@ def connect():
 @sio.on('get-starter', PAINT_NAMESPACE)
 @socket_io_authenticated_only_event
 def get_start_data():
+    """
+    :return: the start data of the user {
+    board in pixels:bytes,
+    time: the next time the user can update the board,
+    lock: if the board is locked
+    }
+    """
     print(lock.is_open())
     return {
         'board': board.get_board(),
@@ -55,11 +62,14 @@ def set_board(params: Any) -> str:
     :return: string represent the next time the user can update the canvas,
              or undefined if couldn't update the screen
     """
-    # somehow logged out between requests
+    # try
     try:
+        # get current_time in utc
         current_time = datetime.utcnow()
+        # if the still cant update the board
         if current_user.next_time > current_time:
             return json.dumps({'code': 'time', 'status': str(current_user.next_time)})
+        # if the board is locked
         if not lock.is_open():
             return json.dumps({'code': 'lock', 'status': 'true'})
         # validating parameter
@@ -69,11 +79,16 @@ def set_board(params: Any) -> str:
             return 'undefined'
         if 'color' not in params or (not isinstance(params['color'], int)) or not (0 <= params['color'] < 16):
             return 'undefined'
+        # the data is valid, so emit the response
+        # update next time
         next_time = current_time + COLOR_COOLDOWN
         current_user.next_time = next_time
+        # update current_user in the SQL Database
         datastore.session.add(current_user)
         datastore.session.commit()
+        # get data
         x, y, clr = int(params['x']), int(params['y']), int(params['color'])
+        # start background task
         sio.start_background_task(task_set_board, x=x, y=y, color=clr)
         # setting the board
         """
@@ -86,6 +101,7 @@ def set_board(params: Any) -> str:
         """
         #        board.set_at(x, y, color)
         return json.dumps({'code': 'time', 'status': str(next_time)})
+    # execption handeling
     except Exception as e:
         print(e, e.args)
         return 'undefined'

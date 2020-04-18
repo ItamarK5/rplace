@@ -17,7 +17,6 @@
     transform: translate(-50%, -50%);
 }
 
-
 .no-select {
     /* don't allow selecting them */
     -webkit-touch-callout: none;

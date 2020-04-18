@@ -37,8 +37,14 @@ class RecordForm(FlaskForm):
     )
 
     def validate_affect_from(self, field: DateTimeField) -> None:
+        """
+        :param field: the affect_from field
+        :return None
+        validates if the new date would is dated at least 1 minute after task created
+        """
         # get field data
         if field.data is not None:
+            #
             if datetime.now() > field.data + timedelta(minutes=1):
                 raise ValidationError("You must select a day in the future, not now")
 
@@ -51,6 +57,7 @@ class NoteForm(FlaskForm):
         'description',
         [
             validators.required(),
-            validators.length(-1, 256, message="a description must be less then 256 characters"),
+            # note max size is 512
+            validators.length(-1, 512, message="a description must be less then 256 characters"),
         ],
     )

@@ -22,18 +22,31 @@ _NO_RECORD = 'none'
 
 
 class User(datastore.Model, UserMixin):
+    """
+    User model
+    represent the data of a user of the app,
+    inherits the UserMixin of flask_login so it will be supported by its methods
+    inherits from the datastore.Model to have SQL values
+    """
     __tablename__ = 'user'
 
+    # id (identifier) integer the identify the object between others - for fast filtering uses integer
     id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    # the name of the user
     username = Column(String(15), unique=True, nullable=False)
+    # password of the user -> saved as hash by the sha512 algorithem with the username as salt
     password = Column(String(128), nullable=False)
+    # the user's email address, to send mails
     email = Column(String(254), unique=True, nullable=False)
+    # the next time the user can draw on the bodr
     next_time = Column(DATETIME(), default=datetime.utcnow, nullable=False)
-    # when the user created
+    # when the user was created
     creation_date = Column(DATETIME(), default=datetime.utcnow, nullable=False)
+    # the role of the user
     role = Column(SmallEnum(Role), default=Role.common, nullable=False)
+    # start x position
     x = Column(SMALLINT(), default=500, nullable=False)
-    # start y default
+    # start y position
     y = Column(SMALLINT(), default=500, nullable=False)
 
     # default scale value, 4
@@ -61,6 +74,10 @@ class User(datastore.Model, UserMixin):
 
     @property
     def related_notes(self):
+        """
+        :return: all notes related to the user
+        """
+        print(Note.query.filter_by(user_subject_id=self.id).order_by(desc(Note.post_date)))
         return Note.query.filter_by(user_subject_id=self.id).order_by(desc(Note.post_date))
 
     def set_password(self, password: str) -> None:

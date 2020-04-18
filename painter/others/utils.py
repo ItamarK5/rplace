@@ -11,7 +11,7 @@ import os
 from abc import ABC
 from typing import Optional, Dict, Any, Generic, TypeVar, List, Union, FrozenSet
 
-from flask import current_app, redirect
+from flask import current_app, redirect, request
 from flask_script.cli import prompt, prompt_choices, prompt_bool
 from flask_script.commands import InvalidCommand, Command
 from wtforms.validators import ValidationError
@@ -286,3 +286,14 @@ def auto_redirect(url: str) -> Response:
         raise TypeError("Url must be string for redirecting")
     # then check if valid
     return view_func
+
+
+def redirect_to(fallback: str) -> Response:
+    """
+    :param fallback: fallback path
+    :return: response to redirect the user via the next argument
+    """
+    url_dest = request.args.get('next', None)
+    if not url_dest:
+        return redirect(url_dest)
+    return redirect(fallback)
