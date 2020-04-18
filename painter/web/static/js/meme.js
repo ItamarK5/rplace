@@ -2,33 +2,33 @@
  * @param {HTMImageElement} image image displayed the meme
  */
 const fix_size = (image) => {
-    // prefer min length to prevent overflow;
-    let max_height = Math.floor(parseFloat(window.innerHeight) - parseFloat($('#text-container').css('height').slice(0,-2)));
-    let image_height = $(image).css('height').slice(0, -2);
-    if(max_height < image_height){
-        $(image).css(
-            'height',
-            `min(${max_height}px, ${image_height}px)`
-        );
-    } 
+	// prefer min length to prevent overflow;
+	let max_height = Math.floor(parseFloat(window.innerHeight) - parseFloat($('#text-container').css('height').slice(0,-2)));
+	let image_height = $(image).css('height').slice(0, -2);
+	if(max_height < image_height){
+		$(image).css(
+		    'height',
+			`min(${max_height}px, ${image_height}px)`
+		);
+	} 
 };
 
 /**
- * fixes the size of the image
+ * @desc fixes the size of the image
  * @param {HTMImageElement} image image displayed the meme
  * @see {@link http://kimjoyfox.com/using-jquery-to-resize-images-after-loading/}
  */
 const waitToFixImageSize = (image) => {
-    if(image.complete){
-        fix_size(image);
-    } else { $(image).on('load', () => fix_size(image)) }
+	if(image.complete){
+		fix_size(image);
+	} else { $(image).on('load', () => fix_size(image)) }
 }
 
 // ready
 $(document).ready(function() {
-    let meme_image = $('#meme-image')[0];
-    waitToFixImageSize(meme_image)
-    $(window).resize(
-        waitToFixImageSize(meme_image)
-    );
+	let meme_image = $('#meme-image')[0];
+	waitToFixImageSize(meme_image)
+	$(window).resize(
+		waitToFixImageSize(meme_image)
+	);
 });

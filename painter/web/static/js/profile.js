@@ -1,5 +1,8 @@
+/** @constant BLACK_INDEX index of the black color, special one */
 const BLACK_INDEX = 1;
+/** @constant {jQuery} ColorPicker jquery reference to color picker */
 const ColorPicker = $('#color')
+/** @constant COLORS the palette of the board to decide favorite button */
 const COLORS = [
     'White', 'Black', 'Gray', 'Silver',
     'Red', 'Pink', 'Brown', 'Orange',
@@ -7,25 +10,60 @@ const COLORS = [
     'Blue', 'Aqua', 'Purple', 'Magenta'
 ]
 
+/**
+ * 
+ * @param {number|string} id id of field to change its value
+ * @param {number} val value to convert form
+ * @return {string|number} converted the value
+ * @desc handles color option and url option to fix for specific options
+ */
 const valueConvertor = (id, val) => {
     switch(id){
         case 'color':
-            return COLORS[val]
+            // number
+            return COLORS[val]  // select spcific colro
         case 'url':
-            return val ? val : 'None'
+            // strings
+            return val ? val : 'None'   // nothing becomes null
         default:
+            // number
             return val
     }
 }
 
+/**
+ * 
+ * @param {jQuery} modal_query jquery object the reference 1 query
+ * @param {boolean} success_or_error if for success or error
+ * @returns {HTMLElement} hml element the messages if the change to the value succeeded or got error
+ */
 const getModalMessageElement = (modal_query, success_or_error) => $(`#${modal_query.attr('id')} .if-${success_or_error}`);
+
+/**
+ * 
+ * @param {jQuery} query children of a modal objects
+ * @returns {jQuery} returns jQuery of holding the parent modal of the object, otherwise returns empty jQuery
+ */
 const getModalParent = (query) => query.parents('.modal').first();
 
+/**
+ * 
+ * @param {jQuery} jquery_ele 1
+ * @param {*} idx index of color
+ * @desc
+ * sets the background and color of the object, color of text is
+ * changed if the selected color is black (to white) and if switched from black then 
+ * text color returns to black
+ */
 const setColorSelector = (jquery_ele, idx) => {
     jquery_ele.css('background-color', COLORS[idx].toLowerCase());
     jquery_ele.css('color', () => idx ==  BLACK_INDEX ? 'white': 'black')
 }
-const colorSelector = () => {
+/**
+ * @desc updates the color field for the specific selected color choice
+ */
+const updatePickColor = () => {
+    // color field select
     ColorPicker.children().each(function(idx) {
         let ele = $(this);
         setColorSelector(ele, idx)
@@ -49,7 +87,7 @@ $(document).ready(() =>{
         $(`*[field-related="#${this.getAttribute('id')}"]`).text($(this).val())
     });
     $('#color').attr('selected', $(`#color > option:contains('${$('#text-color').text()}')`).attr('value'));
-    colorSelector();
+    updatePickColor();
     $('#delete-url').click(function() {
         let button = this;
         Swal.fire({

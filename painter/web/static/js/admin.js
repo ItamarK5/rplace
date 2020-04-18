@@ -53,31 +53,58 @@ sock.on('set-lock-state', (callback) => {
  * @name reconnect
  * @summary sets the lock state of the board
  */
-sock.on('reconnect', () => 	refreshButtonState());
-
-const messageConnectionError = () => {
-	Swal.fire({
-		icon:'error',
-		title:'Server Not Found',
-	})
-}
-
-let force_connection_message = false;
-
-const throttleIOMessageTimeout = 5000;	// ms
-
-const throttleMessageConnection = _.throttle(messageConnectionError, {leading:false})
 
 
 /**
- * @name reconnect_error
- * @summary sets the lock state of the board
+ * @const throttleIOMessageTimeout timeout in milliseconds until need to call again that found no connection
  */
-sock.on('reconnect_error', () =>{
-	//on reconnection error
+const throttleIOMessageTimeout = 5000;
 
-})
 
+/**
+ * @namespace
+ * @desc handles server not found responses
+ */
+const ServerReporter = {
+	/**
+	 * @name force_connection_message
+	 * @memberof ServerReporter
+	 * @type {boolean}
+	 * @desc if to show connection message
+	 */
+	force_connection_message : false,
+	messageConnectionError() {
+		Swal.fire({
+			icon:'error',
+			title:'Server Not Found',
+		});
+	},
+	/**
+	 * @private
+	 * wraps the message connection error, so it will be send 5 minutes after
+	 * last try
+	 */
+	__throttleMessageConnection: null,
+	/**
+	 * reports on reconnection
+	 */
+	onReconnectionError(){
+		if(this.reconnection_message){
+			force_connection_message = true;
+			this.__throttleMessageConnection = _.throttle(this.messageConnectionError, {leading:false})
+			this.throttleMessageConnection();
+		}
+		this.__throttleMessageConnection()
+	}
+}
+
+sock.on('reconnect', () => 	refreshButtonState());
+sock.on('reconnect_error', () => ServerReporter.onReconnectionError())
+
+
+
+
+//ready function
 $(document).ready(() => {
 	sock.connect()
 	//@ts-ignore
