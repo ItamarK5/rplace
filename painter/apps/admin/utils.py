@@ -6,9 +6,8 @@ from flask_login import current_user
 from flask_login import fresh_login_required
 from werkzeug import Response
 
-from painter.models.role import Role
-from painter.models.user import User
-from painter.others.quick_validation import UsernamePattern
+from painter.models.role import Role, User
+from painter.others.wtforms_mixins import UsernamePattern
 
 
 def admin_only(f: Callable) -> Callable:

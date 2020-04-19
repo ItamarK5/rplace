@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Any, Callable, Optional, Iterable
+from typing import Any, Callable, Optional
 
 from flask_login import current_user
 from flask_socketio import SocketIO, disconnect, ConnectionRefusedError

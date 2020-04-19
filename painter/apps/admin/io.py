@@ -1,17 +1,11 @@
 """
-admin urls staff
+admin urls staff with socketio
 """
-from functools import wraps
-from typing import Any, Callable
-
-from flask import request
-from flask_socketio import ConnectionRefusedError, rooms, disconnect
-
 from painter.backends.skio import (
     sio, ADMIN_NAMESPACE,
     socket_io_role_required_connection,
 )
-from painter.models import Role, User
+from painter.models import Role
 
 
 @sio.on('connect', ADMIN_NAMESPACE)

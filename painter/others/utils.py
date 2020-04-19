@@ -1,7 +1,7 @@
 """
-Name: utils.py
-Auther: Itamar Kanne
-utilies for mostly the manager.py
+    Name: utils.py
+    Auther: Itamar Kanne
+    utilies for mostly the manager.py
 """
 from __future__ import absolute_import
 
@@ -13,6 +13,7 @@ from typing import Optional, Dict, Any, Generic, TypeVar, List, Union, FrozenSet
 
 from flask import current_app, redirect, request
 from flask_script.cli import prompt, prompt_choices, prompt_bool
+from flask_script import Manager
 from flask_script.commands import InvalidCommand, Command
 from wtforms.validators import ValidationError
 
@@ -20,7 +21,7 @@ from .constants import (
     PAINTER_ENV_NAME, DEFAULT_TITLE, CONFIG_FILE_PATH_KEY,
     DEFAULT_PATH, MANAGER_TYPES_PARSE, FLAG_SERVICES_OPTINOS
 )
-from .quick_validation import (
+from .wtforms_mixins import (
     UsernameFieldMixin,
     PasswordFieldMixin,
     MailAddressFieldMixin,
@@ -31,7 +32,7 @@ from .quick_validation import (
 from ..models.user import User
 from werkzeug import Response
 
-ConvertType = TypeVar('ConvertType', str, int, bool, float)
+ConvertType = TypeVar('ConvertType', int, bool, float)
 
 
 class NewUserForm(
@@ -40,7 +41,10 @@ class NewUserForm(
     PasswordFieldMixin,
     MailAddressFieldMixin,
 ):
-
+    """
+    simple class to validate new user data
+    its email address, its name and its password
+    """
     def validate_mail_address(self, field) -> None:
         if User.query.filter_by(email=field.data).first() is not None:
             raise ValidationError('User with the mail address already exists')
@@ -54,6 +58,9 @@ class PortQuickForm(
     QuickForm,
     PortMixin
 ):
+    """
+    simple form to validate port field
+    """
     pass
 
 
@@ -61,17 +68,19 @@ class IPv4QuickForm(
     QuickForm,
     IPv4AddressMixin
 ):
+    """
+    quick form to validate IPv4 address
+    """
     pass
 
 
-class DescriableCommand(Command, ABC):
+class MyCommand(Command, ABC):
     """
         simple command but with options to describe itself,
     """
     # class help and class_description are utility for commands
     class_help: Optional[str] = None
     class_description: Optional[str] = None
-    option_list = True
 
     def __init__(self, func=None,
                  description: Optional[str] = None,
@@ -80,7 +89,6 @@ class DescriableCommand(Command, ABC):
         self.__description = description if description is not None else self.class_description
         self.__help_text = help_text if help_text is not None else self.class_help
         self.__help_text = help_text
-        # prevent function defined option list
         self.option_list = []
 
     @property
@@ -94,15 +102,23 @@ class DescriableCommand(Command, ABC):
         return help_text.strip()
 
 
+class ClassesManager:
+    def __init__(self):
+        self.__path = None
+
+    def save(self):
+        with open()
+
 def check_isfile(path: str,
-                 not_exist_message: Optional[str] = None,
-                 is_dir_message: Optional[str] = None) -> Optional[str]:
+                 is_dir_message: Optional[str] = None,) -> Optional[str]:
     not_exist_message = not_exist_message if not_exist_message else 'Path {0} don\'t exists'
     is_dir_message = is_dir_message if is_dir_message else 'Path {0} points to a directory'
     if not os.path.exists(path):
         return not_exist_message.format(path)
     elif os.path.isdir(path):
         return is_dir_message.format(path)
+    elif file_ext is not None and not path.endswith(file_ext):
+        return unvalid_file_ext_message.format(path)
     return None
 
 
@@ -128,7 +144,11 @@ def try_save_config(obj: Any) -> Dict[str, Any]:
     return json_parsed
 
 
-def __load_configuration(config_path: str, title: str) -> Dict[str, Any]:
+def __load_configuration(config_path: str, class_name: str) -> Dict[str, Any]:
+    try:
+        pass
+    except:
+        pass
     json_parsed = try_load_config(config_path)
     if DEFAULT_TITLE not in json_parsed:
         raise InvalidCommand('Default Title i\'snt found in json file')
@@ -190,11 +210,30 @@ def set_env_path(path: str) -> None:
     os.environ[PAINTER_ENV_NAME] = path
 
 
-def config_name_utility(name: str,
-                        callback_for_change: bool = True,
-                        no_default: bool = False) -> str:
+def class_name_utility(name: str,
+                       callback_for_change: bool = True,
+                       no_default: bool = False) -> str:
     # first fixes the name
-    real_name = name.upper().replace(' ', '_')
+    real_name = name.title().replace(' ', '')
+    if real_name != name and callback_for_change:
+        print('Changed Name to more appropriate:{0}'.format(name))
+    if no_default and real_name == DEFAULT_TITLE:
+        raise InvalidCommand("You enter the default title, the command cannot be used on the default "
+                             "configuration option")
+    return real_name
+
+
+def var_name_utility(name: str,
+                     callback_for_change: bool = True,
+                     no_default: bool = False) -> str:
+    """
+    :param name: name of configuration var
+    :param callback_for_change: if to say something if name format was changed
+    :param no_default: if preventing the default option
+    :return: proper format of configuration option (upper case with line down between)
+    """
+    # first fixes the name
+    real_name = name.title().replace(' ', '')
     if real_name != name and callback_for_change:
         print('Changed Name to more appropriate:{0}'.format(name))
     if no_default and real_name == DEFAULT_TITLE:
@@ -209,16 +248,28 @@ def config_name_utility(name: str,
 
 
 def parse_boolean() -> Optional[bool]:
+    """
+    :return: boolean
+    tries to parse boolean
+    """
     return prompt_bool('Enter a boolean value\n[VALUE]', default=None)
 
 
-def parse_bytes() -> Optional[str]:
-    val = prompt('Enter a Bytes values')
-    return (base64.encodebytes(val)+'\r\r\r\r').decode() if val else None
+def parse_bytes() -> bytes:
+    """
+    :return: try parsing bytes value
+    """
+    val = prompt('Enter a Bytes values', default=None)
+    return val.encode() if val else None
 
 
 def parse_type(convert_type: Generic[ConvertType]) -> Optional[ConvertType]:
+    """
+    :param convert_type: convert type of parsed type
+    :return: a value parsed by user in converted type reprehension
+    """
     val = prompt('Enter a valid {0} value\n[VALUE]'.format(convert_type.__name__))
+    # parse loop
     while val:
         try:
             return convert_type(val)
@@ -229,8 +280,11 @@ def parse_type(convert_type: Generic[ConvertType]) -> Optional[ConvertType]:
 
 
 def parse_string() -> Optional[str]:
-    val = prompt('Enter a string\n[VALUE]')
-    return val if val else None
+    """
+    :return: string parsed
+    tries parse a string, if nothing was given returns None
+    """
+    return prompt('Enter a string\n[VALUE]', default=None)
 
 
 CONVERT_MAP = {
@@ -242,7 +296,11 @@ CONVERT_MAP = {
 }
 
 
-def parse_value() -> Optional[ConvertType]:
+def parse_value() -> Optional[Union[bool, float, bytes, str, int]]:
+    """
+    parse value for valid field for environment
+    :return: tries to parse a value
+    """
     parsed_type = prompt_choices('Select a type', MANAGER_TYPES_PARSE)
     if parsed_type is None:
         return None
@@ -263,6 +321,10 @@ def has_service_option(flags: Optional[List[str]], *options) -> bool:
 
 
 def parse_service_options(flags: Union[bool, List[str]]) -> FrozenSet[str]:
+    """
+    :param flags: the raw services flags options the user gave
+    :return: the flags as set of values the all the values there represent setted flags
+    """
     return frozenset(
         option
         for option in FLAG_SERVICES_OPTINOS
@@ -271,6 +333,12 @@ def parse_service_options(flags: Union[bool, List[str]]) -> FrozenSet[str]:
 
 
 def check_service_flag(service_flag: Optional[bool], all_flag: bool) -> bool:
+    """
+    :param service_flag: if entered the flag of the service
+    :param all_flag: if the check all flag passed
+    :return the value of the all flag if the user didnt passed an service flag but
+    if he d'idnt passed its the value that dont match to all flag
+    """
     return all_flag if service_flag is None else service_flag ^ all_flag
 
 

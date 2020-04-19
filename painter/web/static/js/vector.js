@@ -234,13 +234,38 @@ class Vector2D {
 		}
 		return this;
 	}
+	/**
+	 * 
+	 * @param {*} x any value, hoped x to substract from value
+	 * substracts x from current x value
+	 */
 	subX(x){ this.__x -= Vector2D._evalSafe(x); return this;}
-	subY(y){ this.__y -=  Vector2D._evalSafe(y); return this;}
+		/**
+	 * 
+	 * @param {*} y any value, hoped y to subtract from value
+	 * subtract y from current y value
+	 */
+	subY(y){
+		this.__y -=  Vector2D._evalSafe(y);
+		return this;
+	}
+	/**
+	 * 
+	 * @param {*} x any value, hoped number to subtract from value
+	 * @param {*} y any value, hoped number to subtract from value
+	 * substracts x from vector.x and y from vector.y, except if the specific values (x, y) are undefined
+	 */
 	subXY(x, y) {
 		__vector2ArgsOperationWrapper(this, this.subX, x);
 		__vector2ArgsOperationWrapper(this, this.subY, y);
 		return this;
 	}
+	/**
+	 * 
+	 * @param {Vector2DType} other other object
+	 * @returns {Vector2DType} other other object
+	 * evaluates the other object as Vector2D, then substracts
+	 */
 	subVector(other) {
 		let other_vector = Vector2D.evalVector(other);
 		this.subXY(other_vector.x, other_vector.y);
@@ -260,6 +285,11 @@ class Vector2D {
 		}
 		return this;
 	}
+	/**
+	 * 
+	 * @param {*} mul any value hoping to be a number
+	 * multiples this.x by mul, if mul isnt a number its setted to NaN
+	 */
 	mulX(mul){
 		this.__x *= Vector2D._evalSafe(mul);
 		return this;

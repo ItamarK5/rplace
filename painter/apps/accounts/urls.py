@@ -8,9 +8,8 @@ from flask import render_template, request
 from flask_login import logout_user, login_user, login_required
 from werkzeug.wrappers import Response
 
-from painter.models.storage import SignupNameRecord, SignupMailRecord, RevokeMailAttempt
+from painter.models.storage import SignupNameRecord, SignupMailRecord, RevokeMailAttempt, User
 from painter.backends.extensions import datastore
-from painter.models import User
 from .forms import LoginForm, SignUpForm, RevokePasswordForm, ChangePasswordForm, SignupTokenForm, RevokeTokenForm
 from .mail import send_signing_up_message, send_revoke_password_message
 from .utils import *

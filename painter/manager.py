@@ -18,7 +18,7 @@ from .app import create_app, datastore, sio, redis
 from .models import Role, User, ExpireModels
 from .others.utils import (
     NewUserForm, PortQuickForm, IPv4QuickForm, get_config_json,
-    CONFIG_FILE_PATH_KEY, try_save_config, DescriableCommand, config_name_utility,
+    CONFIG_FILE_PATH_KEY, try_save_config, MyCommand, class_name_utility, var_name_utility,
     parse_value, parse_service_options, check_service_flag
 )
 from .backends import board, lock
@@ -30,13 +30,17 @@ manager = Manager(
     description='Social Painter CMD Service',
     help='Social Painter CMD Service\n'
          'if you want to start the server, follow the following steps:\n'
-         'second use check-services --a to check if all services are avialable (services means outside support)'
+         'second use check-services --a to check if all services are available (services means outside support)'
          'third use start-redis --a to create all redis support',
+    disable_argcomplete=False
 )
-manager.add_option('--c', '-config', dest='config_path', required=False, help='Configuration file to use')
+# configuration file
+manager.add_option('--cp', '-config', dest='config_path', required=False, help='Configuration file to use')
+# if set configuration file as default
 manager.add_option('--D', '-default', dest='set_env', action='store_true', required=False,
                    help='If to set the configuration option that passed as default')
-manager.add_option('--t', '-title', dest='title', required=False)
+# the title of the configuration option to use
+manager.add_option('--cn', '-class_name', dest='class_name', required=False)
 
 
 class RunServer(Server):
@@ -119,11 +123,18 @@ class RunServer(Server):
         )
 
 
-class CreateUser(Command):
+class CreateUser(MyCommand):
+    """
+        command creating a new user in the system
+    """
     description = 'create a new user in the system'
     help = 'creates a new user'
 
     def get_options(self):
+        """
+        :return: list of all options for the command
+        :type: List[Option]
+        """
         return (
             Option('--n', '-name', '-username',
                    dest='username',
@@ -148,6 +159,20 @@ class CreateUser(Command):
         )
 
     def run(self, username, password, mail_address, role):
+        """
+        :param  username: name of the new user
+        :type   username: Optional[str]
+        :param  password: the password of the new user
+        :type   password: Optional[str]
+        :param  mail_address: the mail address of the new user
+        :type   mail_address: Optional[str]
+        :param  role: string representing the role of the user default superuser
+        :type   role: Optional[str]
+        :return:runs the command
+        :rtype: None
+        if neither values didnt passed the command parses them
+        runs a command to create new user
+        """
         if username is None:
             username = prompt('enter a username address of the user\n[username]')
         if password is None:
@@ -155,6 +180,7 @@ class CreateUser(Command):
         if mail_address is None:
             mail_address = prompt('enter a mail address of the user\nMail:')
         if role is None:
+            # select choices
             role = prompt_choices(
                 'You must pick a role, if not default is superuser\n',
                 [
@@ -169,7 +195,9 @@ class CreateUser(Command):
                 ],
                 'superuser'
             )
+        # get matched role
         role_matched = Role.get_member_or_none(role)
+        # if user given a role but isnt valid
         if role_matched is None:
             raise InvalidCommand('Pless enter a valid role, not: {0}'.format(role))
         # check valid role
@@ -191,17 +219,24 @@ class CreateUser(Command):
                 email=mail_address,
                 role=role_matched
             )
+            # save user
             datastore.session.add(user)
             datastore.session.commit()
             print('user created successfully')
 
 
-class CeleryWorker(DescriableCommand):
+class CeleryWorker(Command):
     """Starts the celery worker."""
     capture_all_args = True
     help = 'Start mail celery worker'
 
     def run(self, argv):
+        """
+        :param argv: string arguments
+        :type argv: List[str]
+        :return: None
+        runs a celery worker
+        """
         ret = subprocess.call(
             ['venv/scripts/celery.exe', 'worker',
              '-A', 'painter.tasks.mail_worker.celery', '-P', 'eventlet'] + argv
@@ -215,9 +250,15 @@ manager.add_command("runserver", RunServer())
 manager.add_command("create-user", CreateUser())
 
 
+"""Create Database Command"""
 
 
 def create_db(drop_first=False):
+    """
+    :param drop_first: if to fist drop all databases before creating
+    :type drop_first: boolean
+    :return: if to drop first
+    """
     if drop_first and prompt_bool('Are you sure you want to drop the table'):
         datastore.drop_all()
         print('database droped')
@@ -225,10 +266,11 @@ def create_db(drop_first=False):
     print('databse created successfully')
 
 
-create_db_command = DescriableCommand(
+create_db_command = MyCommand(
     create_db,
     'creates the database'
 )
+# option to drop first before creating the database
 create_db_command.add_option(
     Option('--d', '-drop', dest='drop_first',
            action='store_true', default=False,
@@ -244,17 +286,24 @@ def drop_db():
         print('You should create a new superuser, see create-user command')
 
 
-drop_database_command = DescriableCommand(drop_db, 'drops the database entirely')
+drop_database_command = MyCommand(drop_db, 'drops the database entirely')
 manager.add_command('drop-db', drop_database_command)
 
 
-def add_config(config_name=None, host=None, port=None):
-    # config_name in save mode
-    config_name = config_name_utility(config_name, no_default=True)
+def add_config_class(config_class_name=None, host=None, port=None):
+    """
+    :param config_class_name: new class name
+    :param host: host of the app
+    :param port: port of the app
+    :return: nothing
+    add new configuraiton class in selected config.py
+    """
+    # config_class_name in save mode
+    config_class_name = class_name_utility(config_class_name, no_default=True)
     # get file
     configuration = get_config_json()
-    if config_name in configuration:
-        raise InvalidCommand('Configure Option {0} already exists'.format(config_name))
+    if config_class_name in configuration:
+        raise InvalidCommand('Configure Option {0} already exists'.format(config_class_name))
     # else get host and port
     # if passed any arguments => didn't pass both None
     if host is not None or port is not None:
@@ -275,7 +324,7 @@ def add_config(config_name=None, host=None, port=None):
             print(len(host))
             form, is_valid = IPv4QuickForm.fast_validation(address=host)
             if not is_valid:
-                form.error_print()
+                print(form.errors, sep='\n')
     # validate port
     if port is None:
         is_valid = isinstance(port, str) and port.isdigit() and PortQuickForm.are_valid(port=port)
@@ -289,20 +338,20 @@ def add_config(config_name=None, host=None, port=None):
                 # check form now it knows that port cannot be a number
                 form, is_valid = PortQuickForm.fast_validation(port=int(port))
                 if not is_valid:
-                    form.error_print()
+                    print(form.errors, sep='\n')
     # add the configure
-    configuration[config_name] = {
+    configuration[config_class_name] = {
         'APP_HOST': host,
         'APP_PORT': int(port)
     }
     # save configuration
     try_save_config(configuration, current_app.config.get(CONFIG_FILE_PATH_KEY))
-    print('Configuration {0} Created'.format(config_name))
+    print('Configuration {0} Created'.format(config_class_name))
     print('if you want to add more configuration, use the parse command')
 
 
-create_config_command = DescriableCommand(
-    add_config,
+create_config_command = MyCommand(
+    add_config_class,
     'Adds a new configuration option inside the used configuration file (JSON Format)'
 )
 create_config_command.add_option(
@@ -314,57 +363,57 @@ create_config_command.add_option(
            help="Port the server listens to default is 8080 if no app configuration is passed")
 )
 create_config_command.add_option(
-    Option('--n', '-config_name', dest='config_name',
+    Option('--n', '-class_name', dest='config_class_name',
            help="Port the server listens to default is 8080 if no app configuration is passed")
 )
 manager.add_command('add-config', create_config_command)
 
 
 # Delete Configuration
-def del_config(config_name=None):
-    config_name = config_name_utility(config_name, True)
+def del_config(config_class_name=None):
+    config_class_name = class_name_utility(config_class_name, True)
     # get file
     # the real deal
     configuration = get_config_json()
-    if config_name is None:
-        while config_name not in configuration:
-            config_name = config_name_utility(
+    if config_class_name is None:
+        while config_class_name not in configuration:
+            config_class_name = class_name_utility(
                 prompt('Enter a configure name'),
                 False
             )
-    if config_name not in configuration:
+    if config_class_name not in configuration:
         raise InvalidCommand("Error, Config Title")
     # remove it
-    if prompt_bool('Are you sure you want to remove the {0} config_name?'.format(config_name)):
-        configuration.pop(config_name)
+    if prompt_bool('Are you sure you want to remove the {0} config_class_name?'.format(config_class_name)):
+        configuration.pop(config_class_name)
         try_save_config(configuration)
     else:
         print('as your wish, I stop the task')
 
 
-del_config_command = DescriableCommand(
+del_config_command = MyCommand(
     del_config,
-    'Delete entire Configuration (title)'
+    'Delete entire Configuration (class_name)'
 )
 del_config_command.add_option(Option(
-    '--n', '-config_name', dest='config_name', required=None
+    '--c', '-class_name', dest='config_class_name', required=None
 ))
 manager.add_command('del-config', del_config_command)
 
 
-def parse_config(config_name, only_create=None):
+def parse_config(config_class_name, only_create=None):
     only_create = only_create if only_create is not None else False
-    config_name = config_name_utility(config_name)
+    config_class_name = class_name_utility(config_class_name)
     all_configuration = get_config_json()
-    if config_name not in all_configuration:
-        raise InvalidCommand('Title {0} not found'.format(config_name))
-    config = all_configuration[config_name]
+    if config_class_name not in all_configuration:
+        raise InvalidCommand('Title {0} not found'.format(config_class_name))
+    config = all_configuration[config_class_name]
     key = prompt('Parsing changes to configuration, to exit enter __EXIT__\n[KEY]:', default='')
     while key.upper() != '__EXIT__':
         if key:
-            key = config_name_utility(key)
+            key = class_name_utility(key)
             if key in config and only_create:
-                print('Key {0} already registered in the configuration {1}'.format(config_name, key))
+                print('Key {0} already registered in the configuration {1}'.format(config_class_name, key))
             else:
                 config_val = parse_value()
                 if config_val is not None:
@@ -374,15 +423,15 @@ def parse_config(config_name, only_create=None):
     try_save_config(config)
 
 
-command_parse_config = DescriableCommand(
+command_parse_config = MyCommand(
     parse_config,
     description='option to parse keys to a configuration title',
     help_text='option to parse keys to the configuration title'
 )
 command_parse_config.add_option(
     Option('--n', '-name',
-           dest='config_name',
-           help='config_name of the configuration to parse the changes to',
+           dest='config_class_name',
+           help='config_class_name of the configuration to parse the changes to',
            required=True)
 )
 command_parse_config.add_option(
@@ -396,38 +445,38 @@ command_parse_config.add_option(
 manager.add_command('parse', command_parse_config)
 
 
-def clear_config_key(config_name):
+def clear_config_key(config_class_name):
     """
-    :param config_name: configuretion options name
+    :param config_class_name: configuretion options name
     :return: nothing
     deletes the configuration options
     """
-    config_name = config_name_utility(config_name)
+    config_class_name = class_name_utility(config_class_name)
     configuration = get_config_json()
-    if config_name not in configuration:
+    if config_class_name not in configuration:
         raise InvalidCommand('Title {0} not found'
-                             .format(config_name))
+                             .format(config_class_name))
     else:
-        var_config_name = config_name_utility(
+        var_config_class_name = class_name_utility(
             prompt(
                 'Enter a key in configuration to delete',
                 default=''),
             False
         )
-        while var_config_name:
-            if var_config_name not in configuration:
-                print('Error: key {0} not in configuration'.format(var_config_name))
-            configuration[config_name].pop(var_config_name)
+        while var_config_class_name:
+            if var_config_class_name not in configuration:
+                print('Error: key {0} not in configuration'.format(var_config_class_name))
+            configuration[config_class_name].pop(var_config_class_name)
     try_save_config(configuration)
     print('Completely clear config')
 
 
-clear_config_command = DescriableCommand(
+clear_config_command = MyCommand(
     clear_config_key,
     description='clear keys in configuration option'
 )
 clear_config_command.add_option(
-    Option('--n', '-name', dest='config_name', help='name of configuration to change')
+    Option('--n', '-name', dest='config_class_name', help='name of configuration to change')
 )
 manager.add_command('clear', clear_config_command)
 
@@ -515,9 +564,7 @@ check_services_command.add_option(Option(
 ))
 check_services_command.add_option(Option(
     '--o', '-options', nargs='*', dest='option_flags',
-    help=(
-        'special options for the command'
-    )
+    help='special options for the command'
 ))
 manager.add_command('check-services', check_services_command)
 
@@ -585,7 +632,7 @@ def redis_database(board_operator=None, lock_operator=None, apply_all=None):
     print('command finishes')
 
 
-redis_database_command = DescriableCommand(
+redis_database_command = MyCommand(
     redis_database,
     description='function to work with the redis objects\n'
                 'args options:\n'
@@ -620,4 +667,5 @@ def clear_cache():
     print('Clear Cache Complete')
 
 
+# adds clear cache command
 manager.add_command('clear-cache', Command(clear_cache))

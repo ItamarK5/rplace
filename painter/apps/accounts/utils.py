@@ -7,7 +7,7 @@ from flask import Flask, redirect, url_for, flash, current_app
 from flask_login import current_user, login_fresh
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from painter.others.constants import DEFAULT_MAX_AGE_USER_TOKEN
-from painter.others.quick_validation import QuickForm
+from painter.others.wtforms_mixins import QuickForm
 from .router import accounts_router
 
 

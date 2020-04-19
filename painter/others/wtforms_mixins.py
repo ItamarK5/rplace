@@ -29,11 +29,17 @@ HASH_PASSWORD_MAX_LENGTH = 128
 """
     validators
 """
+
+# check if all values given are abc characters or numbers using regex
 ABC_OR_DIGITS_VALIDATOR = validators.Regexp(
     ABC_OR_DIGITS_PATTERN,
     message=ABC_OR_DIGITS_MESSAGE
 )
 
+"""
+    check if all characters are valid character in string that each char represent a byte using rgex
+    used to check hashes
+"""
 HEX_STRING_VALIDATOR = validators.Regexp(
     HEX_PATTERN,
     message=HEX_PATTERN_MESSAGE
@@ -43,16 +49,19 @@ HEX_STRING_VALIDATOR = validators.Regexp(
     for the length validators I prefer the default validator message
 """
 
+# wtforms validator of length of username validator field, between 5 to 15
 USERNAME_LENGTH_VALIDATOR = validators.Length(
     USERNAME_MIN_LENGTH,
     USERNAME_MAX_LENGTH
 )
 
+# wtforms validator of length of password validator field, between 6 to 15
 PASSWORD_LENGTH_VALIDATOR = validators.Length(
     PASSWORD_MIN_LENGTH,
     PASSWORD_MAX_LENGTH
 )
 
+# wtforms for hashed password
 HASHED_PASSWORD_LENGTH_VALIDATOR = validators.Length(
     HASH_PASSWORD_MIN_LENGTH,
     HASH_PASSWORD_MAX_LENGTH
@@ -61,9 +70,8 @@ HASHED_PASSWORD_LENGTH_VALIDATOR = validators.Length(
 
 class QuickForm(Form):
     """
-    Simple Form using wtforms for quick validatons
+    Simple Form using wtforms.Form for quick validations
     """
-
     @classmethod
     def fast_validation(cls, **kwargs) -> Tuple['QuickForm', bool]:
         form = cls(formdata=MultiDict(dict(kwargs)))
@@ -78,14 +86,6 @@ class QuickForm(Form):
         """
         return cls.fast_validation(**kwargs)[1]
 
-    def error_print(self):
-        """
-        :return: nothing
-        prints all errors of the form
-        """
-        for field in iter(self):
-            for error in field.errors:
-                print(error)
 
 class UsernameFieldMixin(object):
     """
@@ -152,6 +152,9 @@ class MailAddressFieldMixin(object):
 
 
 class IPv4AddressMixin(object):
+    """
+    mixin class to validate an IPv4 field with wtforms.Form object
+    """
     address = StringField(
         'address',
         validators=[
@@ -163,6 +166,9 @@ class IPv4AddressMixin(object):
 
 
 class PortMixin(object):
+    """
+    mixin class to validate a Port field with wtforms.Form object
+    """
     port = IntegerField(
         'port',
         validators=[

@@ -2,8 +2,8 @@ from flask_wtf import FlaskForm
 from wtforms import *
 from wtforms.fields.html5 import EmailField
 
-from painter.models.user import User
-from painter.others.quick_validation import (
+from painter.models import User, SignupNameRecord, SignupMailRecord, RevokeMailAttempt
+from painter.others.wtforms_mixins import (
     ABC_OR_DIGITS_VALIDATOR,
     USERNAME_LENGTH_VALIDATOR,
     PASSWORD_LENGTH_VALIDATOR,
@@ -12,7 +12,6 @@ from painter.others.quick_validation import (
     HashPasswordFieldMixin,
     QuickForm
 )
-from painter.models import SignupNameRecord, SignupMailRecord, RevokeMailAttempt
 
 
 """

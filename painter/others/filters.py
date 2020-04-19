@@ -1,14 +1,23 @@
+"""
+filters used in html rendering
+"""
+from __future__ import absolute_import
 from typing import Optional, Union, List
 
 from flask import Flask
 
-from painter.models.user import User, Role
+from painter.models import User, Role
 from painter.others.constants import COLORS
 from painter.others.constants import COLOR_COOLDOWN
 from datetime import datetime
 
 
 def draw_time(user: User) -> str:
+    """
+    :param user: a user
+    :return: the last time the user draw a pixel in the format displaed, if it never draw the value should be
+    the creation date
+    """
     # https://stackoverflow.com/a/35643540
     if user.next_time == user.creation_date:
         return 'never'
@@ -27,6 +36,11 @@ def is_admin(user: User) -> bool:
 
 
 def class_ftr(classes: Optional[Union[str, List]], comma: Optional[str] = None) -> str:
+    """
+    :param classes:
+    :param comma:
+    :return:
+    """
     if classes is None:
         return ''
     if isinstance(classes, list):
@@ -38,13 +52,17 @@ def class_ftr(classes: Optional[Union[str, List]], comma: Optional[str] = None) 
 
 
 def color(color_idx: int) -> str:
+    """
+    :param color_idx: index of color in palette
+    :return: the name of the color
+    """
     return COLORS[color_idx]
 
 
 def date(tm: datetime) -> str:
     """
-    @param tm: datetime object, represent a time
-    @return the datetime in format first day of the week, date
+    :param tm: datetime object, represent a time
+    :return the datetime in format {first day of the week}, {date}
     https://www.programiz.com/python-programming/datetime/strftime
     """
     return tm.strftime('%a, %x')
@@ -52,8 +70,8 @@ def date(tm: datetime) -> str:
 
 def add_filters(flask_app: Flask) -> None:
     """
-    @param flask_app: the application
-    @return nothing
+    :param flask_app: the application
+    :return nothing
     adds all filters to the app
     """
     flask_app.add_template_filter(draw_time, 'draw_time')

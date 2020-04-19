@@ -10,13 +10,12 @@ from werkzeug import exceptions
 from painter.backends import lock
 from painter.backends.extensions import datastore
 from painter.backends.skio import ADMIN_NAMESPACE, PAINT_NAMESPACE, sio
-from painter.models.notes import Record, Note
-from painter.models import Role, User
-from painter.others.quick_validation import UsernamePattern
+from painter.models import Record, Note, Role, User
+from painter.others.wtforms_mixins import UsernamePattern
 from . import admin_router
 from .forms import RecordForm, NoteForm
 from .utils import only_if_superior, admin_only, superuser_only, json_response, validate_get_notes_param
-from painter.others.quick_validation import UsernamePattern
+from painter.others.wtforms_mixins import UsernamePattern
 
 
 @admin_router.route('/admin', methods=('GET',))
@@ -33,7 +32,8 @@ def admin() -> Response:
         abort(
             exceptions.BadRequest.code,
             title='Given page isn\'t a number',
-            description='Are you, an admin of this site is mocking this program by editing this?')
+            description='Are you, an admin of this site is mocking this program by editing this?'
+        )
     # page to integer
     try:
         page = int(page)

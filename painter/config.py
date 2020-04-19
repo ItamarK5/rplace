@@ -1,29 +1,53 @@
-DEBUG = True
-SEND_FILE_MAX_AGE_DEFAULT = 1
-SQLALCHEMY_DATABASE_URI = 'sqlite:///C:\\Cyber\\2020\\rplace\\database.db'
-SQLALCHEMY_TRACK_MODIFICATIONS = True
-SECRET_KEY = b'O\x0c\xaf\xe9\xd2\x9b#\x0f\xcaB\xa4B\xa7\xf2f:\xda5\xcf\x104\x16A\xbd'
-MAIL_SERVER = 'smtp.gmail.com'
-MAIL_USERNAME = 'socialpainterdash@gmail.com'
-MAIL_PASSWORD = 'EFnsDY8>.r^9n~u5FRT/%@n^'
-MAIL_USE_SSL = True
-MAIL_USE_TLS = False
-SESSION_PROTECTION = 'basic'
-REDIS_URL = 'redis://192.168.1.8:6379/0'
-MAIL_DEBUG = False
-MAIL_PORT = 465
-CELERY_BROKER_URL = 'pyamqp://guest@localhost//'  # 'redis://192.168.0.214:6379/0'
-MAIL_DEFAULT_SENDER = 'Social Painter Dash'
-USER_PASSWORD_SALT = b'\x20\xf8\x1a\x62\x34\x08\x48\x86\xbd\xa5\x56\x09\x34\x4a\xc5\x2c'
-USER_PASSWORD_ROUNDS = 4493  # some random 4-digit number no one would guess
-TOKEN_SIGNUP_SALT = b'MsT0FcUgSOzapJi7RAbDi5q5XWdzS3NC'
-TOKEN_REVOKE_SALT = b'2lTCKOgjMPJLCQUtpxhAv7uroIRpFwwX'
-MAX_AGE_USER_SIGN_UP_TOKEN = 3600  # 3600 seconds = 1 hour
-MAIL_MAX_EMAILS = 10
-# https://stackoverflow.com/a/54802481
-REMEMBER_COOKIE_NAME = 'SocialPainterDashCookie'
-REMEMBER_COOKIE_HTTPONLY = False
-CACHE_TYPE = 'simple'
-# non login options
-NON_LOGIN_ROUTE = 'place.home'
-NON_LOGIN_MESSAGE = 'You were redirected from pages that are for non autheneticated users'
+class Default:
+    CACHE_TYPE = "simple"
+    CELERY_BROKER_URL = "pyamqp://guest@localhost//"
+    MAIL_DEBUG = "False"
+    MAIL_DEFAULT_SENDER = "Social Painter Dash"
+    MAIL_MAX_EMAILS = "10"
+    MAIL_PASSWORD = "EFnsDY8>.r^9n~u5FRT/%@n^"
+    MAIL_PORT = "465"
+    MAIL_SERVER = "smtp.gmail.com"
+    MAIL_USERNAME = "socialpainterdash@gmail.com"
+    MAIL_USE_SSL = "True"
+    MAIL_USE_TLS = "False"
+    MAX_AGE_USER_TOKEN = "3600"
+    APP_NON_LOGIN_MESSAGE = "You were redirected from pages that are for non autheneticated users"
+    APP_NON_LOGIN_ROUTE = "place.home"
+    REDIS_URL = "redis://:UmPWoMqjGXVY7MI15rTHVKmTNRIroxcEPMVN@192.168.1.31:6379/0"
+    REMEMBER_COOKIE_HTTPONLY = "False"
+    REMEMBER_COOKIE_NAME = "SocialPainterDashCookie"
+    SECRET_KEY = "b'Twyv6dKbIw/KQqRCp/JmOto1zxA0FkG9'"
+    SEND_FILE_MAX_AGE_DEFAULT = "1"
+    SESSION_PROTECTION = "basic"
+    SQLALCHEMY_DATABASE_URI = "sqlite:///C:\Cyber\2020\\rplace\database.db"
+    SQLALCHEMY_TRACK_MODIFICATIONS = "True"
+    APP_TOKEN_REVOKE_SALT = "b'MmxUQ0tPZ2pNUEpMQ1FVdHB4aEF2N3Vyb0lScEZ3d1g='"
+    APP_TOKEN_SIGNUP_SALT = "b'TXNUMEZjVWdTT3phcEppN1JBYkRpNXE1WFdkelMzTkM='"
+    APP_USER_PASSWORD_ROUNDS = "4493"
+    APP_USER_PASSWORD_SALT = "b'IPgaYjQISIa9pVYJNErFLA=='"
+    WERKZEUG_RUN_MAIN = "True"
+    SESSION_COOKIE_SAMESITE = "Lax"
+
+
+class DEBUG(Default):
+    """
+    configuration for
+    """
+    APP_HOST = "127.0.0.1"
+    APP_PORT = "8080"
+    DEBUG = "True"
+
+
+class APP(Default):
+    """
+    configuration for production app
+    """
+    APP_HOST = "192.168.1.24"
+    APP_PORT = "8080"
+
+
+class CELERY(Default):
+    """
+    configuration for celery tasks
+    """
+    pass

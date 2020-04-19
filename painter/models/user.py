@@ -1,9 +1,10 @@
 from datetime import datetime
 from hashlib import pbkdf2_hmac
-from typing import Optional, TypeVar
+from typing import Optional, TypeVar, Union
 
 from flask import Markup, current_app
 from flask_login import UserMixin
+from flask_sqlalchemy import BaseQuery
 from sqlalchemy import Column, Integer, String, desc
 from sqlalchemy.dialects.sqlite import DATETIME, SMALLINT
 
@@ -15,9 +16,7 @@ from .role import Role
 
 """
     only defiend for the current model to user
-    #_CachedRecordID, types for the options that the caching can cache
 """
-_CachedRecordID = TypeVar('_CachedRecordID', str, int)
 _NO_RECORD = 'none'
 
 
@@ -73,11 +72,10 @@ class User(datastore.Model, UserMixin):
         super().__init__(password=password, **kwargs)
 
     @property
-    def related_notes(self):
+    def related_notes(self) -> BaseQuery:
         """
         :return: all notes related to the user
         """
-        print(Note.query.filter_by(user_subject_id=self.id).order_by(desc(Note.post_date)))
         return Note.query.filter_by(user_subject_id=self.id).order_by(desc(Note.post_date))
 
     def set_password(self, password: str) -> None:
@@ -103,6 +101,9 @@ class User(datastore.Model, UserMixin):
         ).hex()
 
     def __repr__(self) -> str:
+        """
+        :return: string repression of the object with its primary key
+        """
         return f"<User(name={self.username}>"
 
     def has_required_status(self, role: Role) -> bool:
@@ -116,12 +117,20 @@ class User(datastore.Model, UserMixin):
         """
 
         :param other: nothing
-        :return: if the user superier to the other user
+        :return: if the user superior to the other user
         """
         return self.role > other.role or self.role == Role.superuser
 
     def can_edit_note(self, note: Note) -> bool:
-        return self.id == note.user_writer_id
+        """
+        :param note: a note object
+        :return: if the user can edit the note, the user can edit the note if he is its writer
+        or the user is superuser
+        """
+        if self.id == note.user_writer_id:
+            return True
+        # otherwise
+        return self.has_required_status(Role.superuser)
 
     def get_id(self) -> str:
         """
@@ -131,9 +140,9 @@ class User(datastore.Model, UserMixin):
         return super().get_id() + '&' + self.password
 
     @cache.memoize(timeout=300)
-    def __get_last_record(self) -> Optional[str]:
+    def __get_last_record(self) -> Union[str, int]:
         """
-        :return: an in
+        :return: id of the user
         assumes that the notes are sorted by ids, that are auto
         """
         record = self.related_notes.first()
@@ -147,7 +156,6 @@ class User(datastore.Model, UserMixin):
         it uses the method __get_last_record for caching the result to handle less requirements
         """
         identifier = self.__get_last_record()
-        print(identifier)
         return None if isinstance(identifier, str) else Record.query.get(identifier)
 
     @property
@@ -165,6 +173,10 @@ class User(datastore.Model, UserMixin):
         return last_record.active  # isnt expired, so must has the other status
 
     def forget_last_record(self):
+        """
+        :return: nothing
+        deletes the memory about the last record of the user
+        """
         cache.delete_memoized(self.__get_last_record, self)
 
     def record_message(self) -> Optional[Markup]:

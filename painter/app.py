@@ -38,18 +38,19 @@ celery = Celery(
 # to register tasks
 
 
-def create_app(config_path: Optional[str] = None,
+def create_app(config_class_name: str,
+               config_path: Optional[str] = None,
                set_env: bool = False,
-               title: Optional[str] = None,
                is_celery: bool = False) -> Flask:
     """
     the command to create default app, with configuration
-    :param config_path: path to JSON configuration file, if None load from environment variable
-    :param set_env: if to set default enviroment
-    :param title: title of the configuration option
+    :param config_class_name: name of the class of the configuraton
+    :param config_path: path to python file containing the configuration classes
+    :param set_env: if to set default environment
     :param is_celery: is celery task
     :return: application
     """
+    # if config path wasn't passed
     if not config_path:
         # default configure file
         if set_env:
@@ -58,25 +59,29 @@ def create_app(config_path: Optional[str] = None,
     elif set_env:
         set_env_path(config_path)
     # check celery trying
-    if title == CELERY_TITLE and not is_celery:
+    if config_class_name == CELERY_TITLE and not is_celery:
         raise InvalidCommand('Loading Configuration Error: '
                              'Celery Configuration can only be accessed by celery worker')
-    elif title != CELERY_TITLE and is_celery:
+    elif config_class_name != CELERY_TITLE and is_celery:
         raise InvalidCommand('On Loading Configuration: '
                              'Celery worker can only access celery configuration')
-    if title is None:
+    if config_class_name is None:
         print('Running with default parameters only')
     return _create_app(
-        load_configuration(
-            config_path,
-            title.upper() if title else None
-        ),
         is_celery
     )
 
 
-def _create_app(config: Dict[str, Any],
+def _create_app(config_path: str,
+                config_class: str,
                 is_celery: bool = False) -> Flask:
+    """
+    :param config_path: path to configuration file by importing
+    like: painter.config
+    :param config_class: the configuration class to load the configuration from
+    :param is_celery: if its a celery
+    :return: the flask application
+    """
     # first check if calls celery from none celery run
     # The Flask Application
     app = Flask(
@@ -87,7 +92,10 @@ def _create_app(config: Dict[str, Any],
     )
     # The Application Configuration, import
     # first checks if its from directly
-    app.config.from_mapping(config)
+    app.config.from_pyfile('.'.join(
+        config_path.rstrip('.py'),
+        config_class
+    ))
     # socketio
     sio.init_app(
         None if is_celery else app,
