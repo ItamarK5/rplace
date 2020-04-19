@@ -20,7 +20,6 @@ def send_mail(subject: str,
               html: str,
               attachments: List[Dict[str, Any]]) -> None:
     # import app of mail
-    print('mail')
     from .mail_worker import app
     with app.app_context():
         message = Message(

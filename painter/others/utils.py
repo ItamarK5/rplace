@@ -16,6 +16,8 @@ from flask_script.cli import prompt, prompt_choices, prompt_bool
 from flask_script import Manager
 from flask_script.commands import InvalidCommand, Command
 from wtforms.validators import ValidationError
+from wtforms import StringField
+
 
 from .constants import (
     PAINTER_ENV_NAME, DEFAULT_TITLE, CONFIG_FILE_PATH_KEY,
@@ -45,11 +47,19 @@ class NewUserForm(
     simple class to validate new user data
     its email address, its name and its password
     """
-    def validate_mail_address(self, field) -> None:
+    def validate_mail_address(self, field: StringField) -> None:
+        """
+        :param field:  username field
+        :return: validates if the mail address isn't already existing with the name
+        """
         if User.query.filter_by(email=field.data).first() is not None:
             raise ValidationError('User with the mail address already exists')
 
-    def validate_username(self, field) -> None:
+    def validate_username(self, field: StringField) -> None:
+        """
+        :param field:  username field
+        :return: validate if the name isn't already existing with the name
+        """
         if User.query.filter_by(username=field.data).first() is not None:
             raise ValidationError('User with the username already exists')
 
@@ -92,12 +102,18 @@ class MyCommand(Command, ABC):
         self.option_list = []
 
     @property
-    def description(self):
+    def description(self) -> str:
+        """
+        :return: description of command
+        """
         desc = self.__description if self.__description is not None else ''
         return desc.strip()
 
     @property
-    def help(self):
+    def help(self) -> str:
+        """
+        :return: help text of command
+        """
         help_text = self.__help_text if self.__help_text is not None else self.__description
         return help_text.strip()
 
@@ -105,6 +121,12 @@ class MyCommand(Command, ABC):
 def check_isfile(path: str,
                  is_dir_message: Optional[str] = None,
                  not_exist_message: Optional[str] = None) -> Optional[str]:
+    """
+    :param path: path to file
+    :param is_dir_message: message printed if file don't exist, if none uses default
+    :param not_exist_message: message printed if file don't exist, if none uses default
+    :return: check if its a file
+    """
     not_exist_message = not_exist_message if not_exist_message else 'Path {0} don\'t exists'
     is_dir_message = is_dir_message if is_dir_message else 'Path {0} points to a directory'
     if not os.path.exists(path):
@@ -115,6 +137,10 @@ def check_isfile(path: str,
 
 
 def try_load_config(path: str) -> Dict[str, Any]:
+    """
+    :param path: path to configuration file
+    :return: returns path to config.jsons
+    """
     try:
         fp = open(path, 'rt')
         json_parsed = json.load(fp)
@@ -125,37 +151,43 @@ def try_load_config(path: str) -> Dict[str, Any]:
     return json_parsed
 
 
-def try_save_config(obj: Any) -> Dict[str, Any]:
+def try_save_config(obj: Any) -> None:
+    """
+    :param obj: configuration to save
+    :return: dump json configuration
+    """
     try:
         fp = open(current_app[CONFIG_FILE_PATH_KEY], 'wt')
-        json_parsed = json.dump(obj, fp)
+        json.dump(obj, fp)
         fp.close()
     except Exception as e:
         raise InvalidCommand('Error on saving configuration json\n:'
                              '{0}'.format(e))
-    return json_parsed
 
 
-def __load_configuration(config_path: str, class_name: str) -> Dict[str, Any]:
-    try:
-        pass
-    except:
-        pass
+def __load_configuration(config_path: str, config_title: str) -> Dict[str, Any]:
+    """
+    :param config_path: path to configuration file
+    :param config_title: title of configuration
+    :return: the configration
+    """
     json_parsed = try_load_config(config_path)
+    # not in parsed
     if DEFAULT_TITLE not in json_parsed:
         raise InvalidCommand('Default Title i\'snt found in json file')
     default_configuration = json_parsed[DEFAULT_TITLE]
+    # not dict
     if not isinstance(default_configuration, dict):
         raise InvalidCommand("default configuration matched value isn\'t a dict but:{0}"
                              .format(type(default_configuration)))
     # if title isnt None
-    if title is not None:
-        if title not in json_parsed:
-            raise InvalidCommand('Title {0} isnt included in'.format(str(title)))
-        app_configuration = json_parsed[title]
+    if config_title is not None:
+        if config_title not in json_parsed:
+            raise InvalidCommand('Title {0} isnt included in'.format(str(config_title)))
+        app_configuration = json_parsed[config_title]
         if not isinstance(app_configuration, dict):
             raise InvalidCommand("value for title {0} isn\'t a dict but:{1}"
-                                 .format(title, type(app_configuration)))
+                                 .format(config_title, type(app_configuration)))
         app_configuration.update(default_configuration)
     else:
         app_configuration = default_configuration
@@ -168,6 +200,12 @@ def __load_configuration(config_path: str, class_name: str) -> Dict[str, Any]:
 
 
 def load_configuration(config_path: str, title: Optional[str] = None) -> Dict[str, Any]:
+    """
+    :param config_path: path to config.json
+    :param title: title of the configuration
+    :return: if can load the configuration
+    """
+    # check file
     error_text = check_isfile(config_path)
     if error_text is not None:
         raise InvalidCommand(error_text)
@@ -192,19 +230,31 @@ def __get_absolute_if_relative(pth: str) -> str:
     return pth if os.path.isabs(pth) else os.path.abspath(pth)
 
 
-def get_env_path():
+def get_env_path() -> str:
+    """
+    :return: enviromert default config path
+    """
     if PAINTER_ENV_NAME not in os.environ:
         os.environ[PAINTER_ENV_NAME] = DEFAULT_PATH
     return __get_absolute_if_relative(os.environ.get(PAINTER_ENV_NAME))
 
 
 def set_env_path(path: str) -> None:
+    """
+        set enviroment path
+    """
     os.environ[PAINTER_ENV_NAME] = path
 
 
-def config_name_utility(name: str,
-                        callback_for_change: bool = True,
-                        no_default: bool = False) -> str:
+def config_title_utility(name: str,
+                         callback_for_change: bool = True,
+                         no_default: bool = False) -> str:
+    """
+    :param name: name to user utility
+    :param callback_for_change: message to print if title was fixed
+    :param no_default: if prevent default title, using some staff
+    :return:
+    """
     # first fixes the name
     real_name = name.upper().replace(' ', '_')
     if real_name != name and callback_for_change:

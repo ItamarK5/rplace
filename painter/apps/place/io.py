@@ -46,7 +46,6 @@ def get_start_data():
     lock: if the board is locked
     }
     """
-    print(lock.is_open())
     return {
         'board': board.get_board(),
         'time': str(current_user.next_time),
@@ -102,8 +101,7 @@ def set_board(params: Any) -> str:
         #        board.set_at(x, y, color)
         return json.dumps({'code': 'time', 'status': str(next_time)})
     # execption handeling
-    except Exception as e:
-        print(e, e.args)
+    except:
         return 'undefined'
 
 

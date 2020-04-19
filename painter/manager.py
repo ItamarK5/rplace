@@ -5,7 +5,6 @@
     https://flask-script.readthedocs.io/en/latest/
 """
 
-
 import subprocess
 import sys
 from flask import current_app
@@ -18,12 +17,14 @@ from .app import create_app, datastore, sio, redis
 from .models import Role, User, ExpireModels
 from .others.utils import (
     NewUserForm, PortQuickForm, IPv4QuickForm, get_config_json,
-    CONFIG_FILE_PATH_KEY, try_save_config, MyCommand, config_name_utility,
+    CONFIG_FILE_PATH_KEY, try_save_config, MyCommand, config_title_utility,
     parse_value, parse_service_options, check_service_flag
 )
+from sqlalchemy import exc
 from .backends import board, lock
 from .others.constants import DURATION_OPTION_FLAG, PRINT_OPTION_FLAG, SERVICE_RESULTS_FORMAT
 import time
+
 
 manager = Manager(
     create_app,
@@ -35,12 +36,12 @@ manager = Manager(
     disable_argcomplete=False
 )
 # configuration file
-manager.add_option('--cp', '-config', dest='config_path', required=False, help='Configuration file to use')
+manager.add_option('--c', '-config', dest='config_path', required=False, help='Configuration file to use')
 # if set configuration file as default
 manager.add_option('--D', '-default', dest='set_env', action='store_true', required=False,
                    help='If to set the configuration option that passed as default')
 # the title of the configuration option to use
-manager.add_option('--cn', '-class_name', dest='class_name', required=False)
+manager.add_option('--t', '-config_title', dest='config_title', required=False)
 
 
 class RunServer(Server):
@@ -294,20 +295,20 @@ drop_database_command = MyCommand(drop_db, 'drops the database entirely')
 manager.add_command('drop-db', drop_database_command)
 
 
-def add_config_class(config_class_name=None, host=None, port=None):
+def add_config_class(config_title=None, host=None, port=None):
     """
-    :param config_class_name: new class name
+    :param config_title: new class name
     :param host: host of the app
     :param port: port of the app
     :return: nothing
     add new configuraiton class in selected config.py
     """
-    # config_class_name in save mode
-    config_class_name = config_name_utility(config_class_name, no_default=True)
+    # config_title in save mode
+    config_title = config_title_utility(config_title, no_default=True)
     # get file
     configuration = get_config_json()
-    if config_class_name in configuration:
-        raise InvalidCommand('Configure Option {0} already exists'.format(config_class_name))
+    if config_title in configuration:
+        raise InvalidCommand('Configure Option {0} already exists'.format(config_title))
     # else get host and port
     # if passed any arguments => didn't pass both None
     if host is not None or port is not None:
@@ -325,7 +326,6 @@ def add_config_class(config_class_name=None, host=None, port=None):
         while not is_valid:
             # after first parse
             host = prompt('Pless enter a valid IPv4 Address\n[HOST]')
-            print(len(host))
             form, is_valid = IPv4QuickForm.fast_validation(address=host)
             if not is_valid:
                 print(form.errors, sep='\n')
@@ -344,13 +344,13 @@ def add_config_class(config_class_name=None, host=None, port=None):
                 if not is_valid:
                     print(form.errors, sep='\n')
     # add the configure
-    configuration[config_class_name] = {
+    configuration[config_title] = {
         'APP_HOST': host,
         'APP_PORT': int(port)
     }
     # save configuration
     try_save_config(configuration, current_app.config.get(CONFIG_FILE_PATH_KEY))
-    print('Configuration {0} Created'.format(config_class_name))
+    print('Configuration {0} Created'.format(config_title))
     print('if you want to add more configuration, use the parse command')
 
 
@@ -367,29 +367,29 @@ create_config_command.add_option(
            help="Port the server listens to default is 8080 if no app configuration is passed")
 )
 create_config_command.add_option(
-    Option('--n', '-class_name', dest='config_class_name',
+    Option('--n', '-class_name', dest='config_title',
            help="Port the server listens to default is 8080 if no app configuration is passed")
 )
 manager.add_command('add-config', create_config_command)
 
 
 # Delete Configuration
-def del_config(config_class_name=None):
-    config_class_name = config_name_utility(config_class_name, True)
+def del_config(config_title=None):
+    config_title = config_title_utility(config_title, True)
     # get file
     # the real deal
     configuration = get_config_json()
-    if config_class_name is None:
-        while config_class_name not in configuration:
-            config_class_name = config_name_utility(
+    if config_title is None:
+        while config_title not in configuration:
+            config_title = config_title_utility(
                 prompt('Enter a configure name'),
                 False
             )
-    if config_class_name not in configuration:
+    if config_title not in configuration:
         raise InvalidCommand("Error, Config Title")
     # remove it
-    if prompt_bool('Are you sure you want to remove the {0} config_class_name?'.format(config_class_name)):
-        configuration.pop(config_class_name)
+    if prompt_bool('Are you sure you want to remove the {0} config_title?'.format(config_title)):
+        configuration.pop(config_title)
         try_save_config(configuration)
     else:
         print('as your wish, I stop the task')
@@ -400,24 +400,29 @@ del_config_command = MyCommand(
     'Delete entire Configuration (class_name)'
 )
 del_config_command.add_option(Option(
-    '--c', '-class_name', dest='config_class_name', required=None
+    '--c', '-class_name', dest='config_title', required=None
 ))
 manager.add_command('del-config', del_config_command)
 
 
-def parse_config(config_class_name, only_create=None):
+def parse_config(config_title, only_create=None):
+    """
+    :param config_title: title of configuration
+    :param only_create:  config path
+    :return:
+    """
     only_create = only_create if only_create is not None else False
-    config_class_name = config_name_utility(config_class_name)
+    config_title = config_title_utility(config_title)
     all_configuration = get_config_json()
-    if config_class_name not in all_configuration:
-        raise InvalidCommand('Title {0} not found'.format(config_class_name))
-    config = all_configuration[config_class_name]
+    if config_title not in all_configuration:
+        raise InvalidCommand('Title {0} not found'.format(config_title))
+    config = all_configuration[config_title]
     key = prompt('Parsing changes to configuration, to exit enter __EXIT__\n[KEY]:', default='')
     while key.upper() != '__EXIT__':
         if key:
-            key = config_name_utility(key)
+            key = config_title_utility(key)
             if key in config and only_create:
-                print('Key {0} already registered in the configuration {1}'.format(config_class_name, key))
+                print('Key {0} already registered in the configuration {1}'.format(config_title, key))
             else:
                 config_val = parse_value()
                 if config_val is not None:
@@ -434,8 +439,8 @@ command_parse_config = MyCommand(
 )
 command_parse_config.add_option(
     Option('--n', '-name',
-           dest='config_class_name',
-           help='config_class_name of the configuration to parse the changes to',
+           dest='config_title',
+           help='config_title of the configuration to parse the changes to',
            required=True)
 )
 command_parse_config.add_option(
@@ -449,28 +454,30 @@ command_parse_config.add_option(
 manager.add_command('parse', command_parse_config)
 
 
-def clear_config_key(config_class_name):
+def clear_config_key(config_title):
     """
-    :param config_class_name: configuretion options name
+    :param config_title: configuretion options name
+    :type config_title: str
     :return: nothing
     deletes the configuration options
     """
-    config_class_name = config_name_utility(config_class_name)
+    config_title = config_title_utility(config_title)
     configuration = get_config_json()
-    if config_class_name not in configuration:
+    if config_title not in configuration:
         raise InvalidCommand('Title {0} not found'
-                             .format(config_class_name))
+                             .format(config_title))
     else:
-        var_config_class_name = config_name_utility(
+        config_name = config_title_utility(
             prompt(
                 'Enter a key in configuration to delete',
                 default=''),
             False
         )
-        while var_config_class_name:
-            if var_config_class_name not in configuration:
-                print('Error: key {0} not in configuration'.format(var_config_class_name))
-            configuration[config_class_name].pop(var_config_class_name)
+        while config_name:
+            if config_name not in configuration:
+                print('Error: key {0} not in configuration'.format(config_name))
+            configuration[config_title].pop(config_name)
+    # save
     try_save_config(configuration)
     print('Completely clear config')
 
@@ -480,7 +487,7 @@ clear_config_command = MyCommand(
     description='clear keys in configuration option'
 )
 clear_config_command.add_option(
-    Option('--n', '-name', dest='config_class_name', help='name of configuration to change')
+    Option('--n', '-name', dest='config_title', help='name of configuration to change')
 )
 manager.add_command('clear', clear_config_command)
 
@@ -491,14 +498,22 @@ manager.add_command('clear', clear_config_command)
 
 
 def check_redis_service(option_flags: FrozenSet[str]) -> Dict[str, Any]:
+    """
+    :param option_flags: option flags to check
+    :return: redis-service response data
+    --name
+    --status
+    --time taken to execute
+    """
     result = False
     duration = 'None'
     try:
         if DURATION_OPTION_FLAG in option_flags:
             current_time = time.time()
-        redis.ping()
-        if DURATION_OPTION_FLAG in option_flags:
+            redis.ping()
             duration = time.time() - current_time
+        else:
+            redis.ping()
         if PRINT_OPTION_FLAG in option_flags:
             print('Successfully ping to redis')
         result = True
@@ -521,12 +536,47 @@ def check_redis_service(option_flags: FrozenSet[str]) -> Dict[str, Any]:
         }
 
 
-def check_services(all_flag=False, redis_flag=None, option_flags=None):
+def check_sql_service(option_flags: FrozenSet[str]) -> Dict[str, Any]:
+    """
+    :param option_flags: option flags to check
+    :return: sql database-service response data
+    --name
+    --status
+    --time taken to execute
+    """
+    result = False
+    duration = 'None'
+    try:
+        # connection
+        if DURATION_OPTION_FLAG in option_flags:
+            current_time = time.time()
+            datastore.engine.connect()
+            duration = time.time() - current_time
+        else:
+            datastore.engine.connect()
+        if PRINT_OPTION_FLAG in option_flags:
+            print('Successfully connected to sql')
+        result = True
+    except Exception as e:
+        print("Fail to connect to SQL Alchemy")
+        raise e
+    finally:
+        return {
+            'service_name': 'SQL',
+            'result': 'Connected' if result else 'Error',
+            'duration': duration if DURATION_OPTION_FLAG else 'None'
+        }
+
+
+def check_services(all_flag=False, redis_flag=None, sql_flag=None, option_flags=None):
     """
     :param all_flag: boolean flag to check if get all services or none
     :type  all_flag: bool
     (if a flag is set and this is set there dont check service)
     :param redis_flag: flag if to check the redis service
+    :type  redis_flag: bool
+    :param redis_flag: flag if to check the sql service
+    :type  redis_flag: bool
     :param option_flags: option flags, include print and check time of response
     :return: if services are active
     """
@@ -543,8 +593,14 @@ def check_services(all_flag=False, redis_flag=None, option_flags=None):
         # try with redis
         results.append(check_redis_service(option_flags))
     # check sqlite
+    sql_flag = check_service_flag(sql_flag, all_flag)
+    # redis check
+    if sql_flag:
+        # time check
+        print('checks if can connect to sql')
+        # try with redis
+        results.append(check_sql_service(option_flags))
     # print all
-
     enabled_contexts = tuple(filter(
         lambda option_context: option_context.is_option_enabled(option_flags),
         SERVICE_RESULTS_FORMAT
@@ -563,14 +619,15 @@ check_services_command.add_option(Option(
     '--r', '-redis', dest='redis_flag', action='store_true', help='to check update with redis'
 ))
 check_services_command.add_option(Option(
-    '--R', '-Redis', dest='redis_flag', action='store_false', help='to not check update with redis'
-))  
+    '--s', '-sql', dest='sql_flag', action='store_true', help='to check update with sqlalchemy'
+))
 check_services_command.add_option(Option(
     '--a', '-all', dest='all_flag', action='store_true', help='to check update with all'
 ))
 check_services_command.add_option(Option(
     '--o', '-options', nargs='*', dest='option_flags',
-    help='special options for the command'
+    help='special options for the command: t for display the time it takes to end and'
+         ''
 ))
 manager.add_command('check-services', check_services_command)
 

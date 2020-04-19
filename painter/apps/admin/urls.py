@@ -85,7 +85,6 @@ def add_note(user: User) -> Response:
     :return: JSON response
     adds a note to the user
     """
-    print(request.data)
     form = NoteForm()
     # check a moment for time
     if form.validate_on_submit():

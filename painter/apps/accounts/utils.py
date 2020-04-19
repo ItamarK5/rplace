@@ -80,7 +80,6 @@ def extract_signature(token: str,
     if not isinstance(token, dict):
         return None
     # check are valid
-    print(token)
     form.fast_validation(**token)[0].error_print()
     if not form.are_valid(**token):
         return None

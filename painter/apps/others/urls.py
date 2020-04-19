@@ -55,8 +55,7 @@ def serve_static(key: str) -> Response:
             key,
             mimetype=mime_type
         )
-    except Exception as e:
-        print('error', e)
+    except:
         abort(404, 'file don\'t found')
 
 

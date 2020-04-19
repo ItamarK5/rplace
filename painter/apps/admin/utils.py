@@ -6,7 +6,7 @@ from flask_login import current_user
 from flask_login import fresh_login_required
 from werkzeug import Response
 
-from painter.models.role import Role, User
+from painter.models import Role, User
 from painter.others.wtforms_mixins import UsernamePattern
 
 
@@ -54,7 +54,6 @@ def only_if_superior(f: Callable[[User], Response]) -> Callable[[str], Response]
             name = kwargs.pop('name')
         else:
             name = request.args.get('name', None)
-            print(type(name), name)
             if not isinstance(name, str):
                 abort(400)
         if not UsernamePattern.match(name):

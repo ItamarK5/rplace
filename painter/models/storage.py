@@ -105,9 +105,8 @@ class CacheTextMixin:
             # error handling
             try:
                 datastore.session.delete(record)
-            except NoResultFound:
-                print('File has been found')
-            return True
+            finally:
+                return True
         return False
 
     @classmethod

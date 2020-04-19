@@ -6,7 +6,7 @@ it can send mails using the flask-mail extension
 """
 from painter.app import create_app, celery
 from painter.others.constants import CELERY_TITLE
-
+''
 app = create_app(title=CELERY_TITLE, is_celery=True)
 app.app_context().push()
 
