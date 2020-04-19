@@ -102,23 +102,15 @@ class MyCommand(Command, ABC):
         return help_text.strip()
 
 
-class ClassesManager:
-    def __init__(self):
-        self.__path = None
-
-    def save(self):
-        with open()
-
 def check_isfile(path: str,
-                 is_dir_message: Optional[str] = None,) -> Optional[str]:
+                 is_dir_message: Optional[str] = None,
+                 not_exist_message: Optional[str] = None) -> Optional[str]:
     not_exist_message = not_exist_message if not_exist_message else 'Path {0} don\'t exists'
     is_dir_message = is_dir_message if is_dir_message else 'Path {0} points to a directory'
     if not os.path.exists(path):
         return not_exist_message.format(path)
     elif os.path.isdir(path):
         return is_dir_message.format(path)
-    elif file_ext is not None and not path.endswith(file_ext):
-        return unvalid_file_ext_message.format(path)
     return None
 
 
@@ -210,11 +202,11 @@ def set_env_path(path: str) -> None:
     os.environ[PAINTER_ENV_NAME] = path
 
 
-def class_name_utility(name: str,
-                       callback_for_change: bool = True,
-                       no_default: bool = False) -> str:
+def config_name_utility(name: str,
+                        callback_for_change: bool = True,
+                        no_default: bool = False) -> str:
     # first fixes the name
-    real_name = name.title().replace(' ', '')
+    real_name = name.upper().replace(' ', '_')
     if real_name != name and callback_for_change:
         print('Changed Name to more appropriate:{0}'.format(name))
     if no_default and real_name == DEFAULT_TITLE:
@@ -222,24 +214,6 @@ def class_name_utility(name: str,
                              "configuration option")
     return real_name
 
-
-def var_name_utility(name: str,
-                     callback_for_change: bool = True,
-                     no_default: bool = False) -> str:
-    """
-    :param name: name of configuration var
-    :param callback_for_change: if to say something if name format was changed
-    :param no_default: if preventing the default option
-    :return: proper format of configuration option (upper case with line down between)
-    """
-    # first fixes the name
-    real_name = name.title().replace(' ', '')
-    if real_name != name and callback_for_change:
-        print('Changed Name to more appropriate:{0}'.format(name))
-    if no_default and real_name == DEFAULT_TITLE:
-        raise InvalidCommand("You enter the default title, the command cannot be used on the default "
-                             "configuration option")
-    return real_name
 
 
 """

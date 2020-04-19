@@ -18,7 +18,7 @@ from .app import create_app, datastore, sio, redis
 from .models import Role, User, ExpireModels
 from .others.utils import (
     NewUserForm, PortQuickForm, IPv4QuickForm, get_config_json,
-    CONFIG_FILE_PATH_KEY, try_save_config, MyCommand, class_name_utility, var_name_utility,
+    CONFIG_FILE_PATH_KEY, try_save_config, MyCommand, config_name_utility,
     parse_value, parse_service_options, check_service_flag
 )
 from .backends import board, lock
@@ -56,7 +56,11 @@ class RunServer(Server):
 
     help = description = 'Runs the server'
 
-    def get_options(self):
+    def get_options(self) -> Iterable[Option]:
+        """
+        options of the run-server command
+        :return: option list
+        """
         options = (
             Option('-h', '--host',
                    dest='host',
@@ -268,7 +272,7 @@ def create_db(drop_first=False):
 
 create_db_command = MyCommand(
     create_db,
-    'creates the database'
+    'creates the database',
 )
 # option to drop first before creating the database
 create_db_command.add_option(
@@ -299,7 +303,7 @@ def add_config_class(config_class_name=None, host=None, port=None):
     add new configuraiton class in selected config.py
     """
     # config_class_name in save mode
-    config_class_name = class_name_utility(config_class_name, no_default=True)
+    config_class_name = config_name_utility(config_class_name, no_default=True)
     # get file
     configuration = get_config_json()
     if config_class_name in configuration:
@@ -371,13 +375,13 @@ manager.add_command('add-config', create_config_command)
 
 # Delete Configuration
 def del_config(config_class_name=None):
-    config_class_name = class_name_utility(config_class_name, True)
+    config_class_name = config_name_utility(config_class_name, True)
     # get file
     # the real deal
     configuration = get_config_json()
     if config_class_name is None:
         while config_class_name not in configuration:
-            config_class_name = class_name_utility(
+            config_class_name = config_name_utility(
                 prompt('Enter a configure name'),
                 False
             )
@@ -403,7 +407,7 @@ manager.add_command('del-config', del_config_command)
 
 def parse_config(config_class_name, only_create=None):
     only_create = only_create if only_create is not None else False
-    config_class_name = class_name_utility(config_class_name)
+    config_class_name = config_name_utility(config_class_name)
     all_configuration = get_config_json()
     if config_class_name not in all_configuration:
         raise InvalidCommand('Title {0} not found'.format(config_class_name))
@@ -411,7 +415,7 @@ def parse_config(config_class_name, only_create=None):
     key = prompt('Parsing changes to configuration, to exit enter __EXIT__\n[KEY]:', default='')
     while key.upper() != '__EXIT__':
         if key:
-            key = class_name_utility(key)
+            key = config_name_utility(key)
             if key in config and only_create:
                 print('Key {0} already registered in the configuration {1}'.format(config_class_name, key))
             else:
@@ -451,13 +455,13 @@ def clear_config_key(config_class_name):
     :return: nothing
     deletes the configuration options
     """
-    config_class_name = class_name_utility(config_class_name)
+    config_class_name = config_name_utility(config_class_name)
     configuration = get_config_json()
     if config_class_name not in configuration:
         raise InvalidCommand('Title {0} not found'
                              .format(config_class_name))
     else:
-        var_config_class_name = class_name_utility(
+        var_config_class_name = config_name_utility(
             prompt(
                 'Enter a key in configuration to delete',
                 default=''),
@@ -538,7 +542,9 @@ def check_services(all_flag=False, redis_flag=None, option_flags=None):
         print('checks if can connect to redis')
         # try with redis
         results.append(check_redis_service(option_flags))
+    # check sqlite
     # print all
+
     enabled_contexts = tuple(filter(
         lambda option_context: option_context.is_option_enabled(option_flags),
         SERVICE_RESULTS_FORMAT
@@ -558,7 +564,7 @@ check_services_command.add_option(Option(
 ))
 check_services_command.add_option(Option(
     '--R', '-Redis', dest='redis_flag', action='store_false', help='to not check update with redis'
-))
+))  
 check_services_command.add_option(Option(
     '--a', '-all', dest='all_flag', action='store_true', help='to check update with all'
 ))
@@ -575,6 +581,10 @@ def redis_database(board_operator=None, lock_operator=None, apply_all=None):
     :param board_operator: operation with the board object
     :param lock_operator: operation with the lock object
     :return:
+    operators avilage:
+    --reset: reset data: create and remove
+    --delete: entirely remove data
+    --create: create data
     """
     # check redis
     board_operator = board_operator if board_operator is not None else apply_all
@@ -584,6 +594,7 @@ def redis_database(board_operator=None, lock_operator=None, apply_all=None):
     try:
         redis.ping()
         print('Redis Works')
+    # exception
     except Exception as e:
         print('While Checking Redis encouter error')
         print(repr(e))

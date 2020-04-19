@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect
 from sqlalchemy import create_engine
 
-
+# Flask-Mail extension
 mailbox = Mail()
 redis = FlaskRedis()
 datastore = SQLAlchemy()
@@ -16,6 +16,10 @@ login_manager = LoginManager()
 
 
 def generate_engine(app) -> None:
+    """
+    :param app: generate engine of app
+    :return: none
+    """
     try:
         create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
     except IndexError:
