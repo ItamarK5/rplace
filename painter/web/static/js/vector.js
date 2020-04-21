@@ -322,14 +322,31 @@ class Vector2D {
 		__vector2ArgsOperationWrapper(this, this.safeMulX, mul2);
 		return this;
 	}
+	/**
+	 * 
+	 * @param {*} div number to div y
+	 * @returns {Vector} this
+	 */
 	divX(div){
 		this.__x /= Vector2D._evalSafe(div);
 		return this;
 	}
+	/**
+	 * 
+	 * @param {*} div number to div y
+	 * @returns {Vector} this
+	 */
 	divY(div){
 		this.__y /= Vector2D._evalSafe(div);
 		return this;
 	}
+	/**
+	 * 
+	 * @param {*} div  number to div
+	 * @param {*} div2 number to div2
+	 * @returns {Vector} this
+	 * div X and Y by numbers,if they aren't numbers divide by NaN, if div2 is undefined divides both by div2
+	 */
 	divXY(div, div2){
 		if(_.isUndefined(div2)){
 			div2 = div;
@@ -338,10 +355,20 @@ class Vector2D {
 		__vector2ArgsOperationWrapper(this, this.divY, div2);
 		return this;
 	}
+	/**
+	 * 
+	 * @param {*} div hopefully a number to divide x
+	 * @returns {Vector} this
+	 * divides x if not safe
+	 */
 	safeDivX(div){
 		this.setXIfValid(this.__x / Vector2D._evalSafe(div));
 		return this;
 	}
+	/**
+	 * @param {*} div hopefully a number to divide y
+	 * @return {Vector} vector
+	 */
 	safeDivY(div){
 		this.setYIfValid(this.__y / Vector2D._evalSafe(div));
 		return this;
@@ -350,6 +377,7 @@ class Vector2D {
      * 
      * @param {*} div anything hoping to be a number to divide
      * @param {*} div2 anything hoping to be a number
+	 * @return {Vector} vector
      */
 	safeDivXY(div, div2){
 		if(_.isUndefined(div2)){
@@ -359,11 +387,15 @@ class Vector2D {
 		this.safeDivY(this, this.safeDivX, div2);
 		return this;
 	}
+	/**
+	 * @return {Vector} vector
+	 */
 	neg(){
 		return new Vector2D(-this.__x, -this.__y);
 	}
 	/**
 	 * clones the vector as new object, to prevent 
+	 * @returns {Vector} clone of this object
 	 */
 	clone(){
 		return new Vector2D(this.__x, this.__y);

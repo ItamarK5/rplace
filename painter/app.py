@@ -28,6 +28,8 @@ from .others.utils import get_env_path, load_configuration, set_env_path
 # a must set
 celery = Celery(
     __name__,
+    # enter the result backend
+    result_backend=null
 )
 # to register tasks
 

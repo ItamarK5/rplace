@@ -1,47 +1,39 @@
 {
   "DEFAULT": {
     "CACHE_TYPE": "simple",
-    "CELERY_BROKER_URL": "pyamqp://guest@localhost//",
+    "CELERY_BROKER_URL": null,
     "MAIL_DEBUG": false,
-    "MAIL_DEFAULT_SENDER": "Social Painter Dash",
-    "MAIL_MAX_EMAILS": 10,
-    "MAIL_PASSWORD": "EFnsDY8>.r^9n~u5FRT/%@n^",
-    "MAIL_PORT": 465,
-    "MAIL_SERVER": "smtp.gmail.com",
-    "MAIL_USERNAME": "socialpainterdash@gmail.com",
-    "MAIL_USE_SSL": true,
-    "MAIL_USE_TLS": false,
+    "MAIL_DEFAULT_SENDER": null,
+    "MAIL_MAX_EMAILS": 1,
+    "MAIL_PASSWORD": null,
+    "MAIL_PORT": ,  /* port send mail too */
+    "MAIL_SERVER": '',  /* port send mail to */
+    "MAIL_USERNAME": '', /* name of the mail account */
+    "MAIL_USE_SSL": false, /* name user ssl */
+    "MAIL_USE_TLS": false, /* mail use tls */
     "MAX_AGE_USER_TOKEN": 3600,
-    "APP_NON_LOGIN_MESSAGE": "You were redirected from pages that are for non autheneticated users",
-    "APP_NON_LOGIN_ROUTE": "place.home",
-    "REDIS_URL": "redis://:UmPWoMqjGXVY7MI15rTHVKmTNRIroxcEPMVN@192.168.1.31:6379/0",
+    "REDIS_URL": null,  /* url to the resid server */
     "REMEMBER_COOKIE_HTTPONLY": false,
-    "REMEMBER_COOKIE_NAME": "SocialPainterDashCookie",
-    "SECRET_KEY": "Twyv6dKbIw/KQqRCp/JmOto1zxA0FkG9\n\r\r\r\r",
+    "REMEMBER_COOKIE_NAME": null,
+    "SECRET_KEY": null, /* SECRET KEY */
     "SEND_FILE_MAX_AGE_DEFAULT": 1,
     "SESSION_PROTECTION": "basic",
-    "SQLALCHEMY_DATABASE_URI": "sqlite:///C:\\Cyber\\2020\\rplace\\database.db",
-    "SQLALCHEMY_TRACK_MODIFICATIONS": true,
-    "APP_TOKEN_REVOKE_SALT": "MmxUQ0tPZ2pNUEpMQ1FVdHB4aEF2N3Vyb0lScEZ3d1g=\n\r\r\r\r",
-    "APP_TOKEN_SIGNUP_SALT": "TXNUMEZjVWdTT3phcEppN1JBYkRpNXE1WFdkelMzTkM=\n\r\r\r\r",
-    "APP_USER_PASSWORD_ROUNDS": 4493,
-    "APP_USER_PASSWORD_SALT": "IPgaYjQISIa9pVYJNErFLA==\n\r\r\r\r",
-    "WERKZEUG_RUN_MAIN": true,
-    "SESSION_COOKIE_SAMESITE":"Lax"
+    "SQLALCHEMY_DATABASE_URI": null,  /* Databse URI */
+    "SQLALCHEMY_TRACK_MODIFICATIONS": false,
+    "APP_TOKEN_REVOKE_SALT": null,  /* APP Token Revoke Salt */
+    "APP_TOKEN_SIGNUP_SALT": null,
+    "APP_USER_PASSWORD_ROUNDS": 1,
+    "APP_USER_PASSWORD_SALT": null,
+    "APP_NON_LOGIN_MESSAGE": "You were redirected from pages that are for non autheneticated users",
+    "APP_NON_LOGIN_ROUTE": "place.home",
+    "WERKZEUG_RUN_MAIN": true
   },
   "DEBUG": {
     "APP_HOST": "127.0.0.1",
     "APP_PORT": 8080,
     "DEBUG": true
   },
-  "APP": {
-    "APP_HOST": "192.168.1.24",
-    "APP_PORT": 8080
-  },
-  "APP2": {
-    "APP_HOST": "192.168.1.24",
-    "APP_PORT": 8081
-  },
   "CELERY": {
+
   }
 }

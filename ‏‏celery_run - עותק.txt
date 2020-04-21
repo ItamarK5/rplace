@@ -1,5 +1,0 @@
-run the following code on a command promot on this app
-
-; for me
-venv\Scripts\celery.exe -A painter.celery.celery worker -P eventlet -c 1000
-you can replace venv\Scripts\celery.exe with any path to the current 
