@@ -1784,6 +1784,36 @@ function DocumentKeyPress(key_event){
 }
 
 /**
+ * recursive function to get the board
+ */
+function getBoard() {
+	sock.emit('get-start', (data) => {
+		if(_.isUndefined(data)){
+			progress.setTime(data.time)
+			board.buildBoard(new Uint8Array(data.board));
+			if (data.lock) {
+				lockedState.lock();
+			}
+		} else {
+			Swal.fire({
+				icon:'warning',
+				title:'Fail',
+				text:'Fail to collect data from the server'
+			});
+			_.delay(
+				() => {
+					// clear pixel queue to prevent long time pushing
+					board.pixelQueue = [];
+					_.defer(getBoard);
+				},
+				5000	// wait 5 seconds before retry
+			);
+			// also clear board.queue
+		}
+	});
+}
+
+/**
  * Docuemnt event
  */
 $(document).ready(function() {
@@ -1793,15 +1823,9 @@ $(document).ready(function() {
 	board.preRun();
 	pen.preRun();
 	sock.on('connect', function() {
-        // when get starter values
-		sock.emit('get-starter', (data) => {
-			progress.setTime(data.time)
-			board.buildBoard(new Uint8Array(data.board));
-			if (data.lock) {
-				lockedState.lock();
-			}
-		});
-    })
+		// loop until get board
+		getBoard();
+	})
     // connect socket
     sock.connect()
     // fix location of mapFrags, also to remove html argument

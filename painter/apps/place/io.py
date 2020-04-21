@@ -1,7 +1,8 @@
 import json
 from datetime import datetime
-from typing import Any
-
+from typing import Any, Dict, Union
+from painter.backends.extensions import redis
+from redis.exceptions import ConnectionError as RedisConnectionError
 from flask_login import current_user
 from painter.others.constants import COLOR_COOLDOWN
 from painter.backends import lock, board
@@ -36,9 +37,9 @@ def connect():
     pass
 
 
-@sio.on('get-starter', PAINT_NAMESPACE)
+@sio.on('get-start', PAINT_NAMESPACE)
 @socket_io_authenticated_only_event
-def get_start_data():
+def get_start_data() -> Union[Dict[str, Any], str]:
     """
     :return: the start data of the user {
     board in pixels:bytes,
@@ -47,9 +48,9 @@ def get_start_data():
     }
     """
     return {
-        'board': board.get_board(),
-        'time': str(current_user.next_time),
-        'lock': not lock.is_open()
+            'board': board.get_board(),
+            'lock': lock.is_open(),
+            'time': str(current_user.next_time)
     }
 
 
@@ -89,22 +90,8 @@ def set_board(params: Any) -> str:
         x, y, clr = int(params['x']), int(params['y']), int(params['color'])
         # start background task
         sio.start_background_task(task_set_board, x=x, y=y, color=clr)
-        # setting the board
-        """
-        if x % 2 == 0:
-            board[y, x // 2] &= 0xF0
-            board[y, x // 2] |= clr
-        else:
-            board[y, x // 2] &= 0x0F
-            board[y, x // 2] |= clr << 4
-        """
-        #        board.set_at(x, y, color)
+        #  board.set_at(x, y, color)
         return json.dumps({'code': 'time', 'status': str(next_time)})
     # execption handeling
     except:
         return 'undefined'
-
-
-"""
-    Preference Namespace
-"""

@@ -4,10 +4,8 @@ from typing import Tuple
 from werkzeug.datastructures import MultiDict
 from wtforms import Form, StringField, validators, IntegerField
 
-
 UsernamePattern = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
 HashPasswordPattern = re.compile(r'^[a-f0-9]{128}$')  # password hashed so get hash value
-
 
 """
  Form Fields and messages
@@ -17,7 +15,6 @@ ABC_OR_DIGITS_PATTERN = re.compile(r'^[A-Z0-9]+$', re.I)
 ABC_OR_DIGITS_MESSAGE = 'Field must contain only abc chars or digits'
 HEX_PATTERN = re.compile(r'[a-f0-9]')
 HEX_PATTERN_MESSAGE = 'Field must only contain hex values, digits or characters a to f'
-
 
 USERNAME_MIN_LENGTH = 5
 USERNAME_MAX_LENGTH = 16
@@ -72,6 +69,7 @@ class QuickForm(Form):
     """
     Simple Form using wtforms.Form for quick validations
     """
+
     @classmethod
     def fast_validation(cls, **kwargs) -> Tuple['QuickForm', bool]:
         form = cls(formdata=MultiDict(dict(kwargs)))
@@ -147,32 +145,5 @@ class MailAddressFieldMixin(object):
         validators=[
             validators.data_required(),
             validators.Email()
-        ]
-    )
-
-
-class IPv4AddressMixin(object):
-    """
-    mixin class to validate an IPv4 field with wtforms.Form object
-    """
-    address = StringField(
-        'address',
-        validators=[
-            validators.data_required(),
-            # using IPv4
-            validators.IPAddress()
-        ]
-    )
-
-
-class PortMixin(object):
-    """
-    mixin class to validate a Port field with wtforms.Form object
-    """
-    port = IntegerField(
-        'port',
-        validators=[
-            validators.data_required(),
-            validators.NumberRange(0, 2**16-1)
         ]
     )

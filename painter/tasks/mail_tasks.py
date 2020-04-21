@@ -19,6 +19,15 @@ def send_mail(subject: str,
               body: str,
               html: str,
               attachments: List[Dict[str, Any]]) -> None:
+    """
+    :param subject: subject of the mail
+    :param recipients: to who send the mail
+    :param body: body of the message in text form
+    :param html: body of the message in html
+    :param attachments:
+    :return: nothing
+    sends an email using app as flask application for its flask_mail extension
+    """
     # import app of mail
     from .mail_worker import app
     with app.app_context():
@@ -37,4 +46,3 @@ def send_mail(subject: str,
                     headers=attach['headers']
                 )
         mailbox.send(message)
-

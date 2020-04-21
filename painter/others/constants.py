@@ -1,5 +1,6 @@
-from typing import Optional, FrozenSet
 from datetime import timedelta
+from typing import Optional, FrozenSet
+
 # mime types the application send
 # for some strange reason
 MIME_TYPES = {
@@ -23,27 +24,6 @@ COLORS = (
     "olive", "yellow", "green", "lime",
     "blue", "aqua", "purple", "magenta"
 )
-PAINTER_ENV_NAME = 'SOCIAL-PAINTER-CONFIG-PATH'
-DEFAULT_PATH = 'painter/config.json'
-CELERY_TITLE = 'CELERY'
-DEFAULT_TITLE = 'DEFAULT'
-CONFIG_FILE_PATH_KEY = '__CONFIG_PATH'
-
-MANAGER_TYPES_PARSE = {
-    'int': int,
-    'integer': int,
-    'number': int,
-    'float': float,
-    'real': float,
-    'str': str,
-    'string': str,
-    'text': str,
-    'bytes': bytes,
-    'byt': bytes,
-    'bool': bool,
-    'cond': bool,  # shortcut for condition
-}
-
 
 """
     options flags for service flags
@@ -54,7 +34,7 @@ DURATION_OPTION_FLAG = 'timeout'
     flags strings to check if option is in
 """
 # type : Dict[str, Set[str]]
-FLAG_SERVICES_OPTINOS = {
+FLAG_SERVICES_OPTIONS = {
     PRINT_OPTION_FLAG: {'p', 'print'},  # if to print debug staff
     DURATION_OPTION_FLAG: {'timeout', 't'},  # if display timeout
 }
@@ -66,6 +46,7 @@ class ServiceResultsPrint:
     """
     object used to save options for check-service command
     """
+
     def __init__(self, string_format: str, title: str, key: str, option_flag: Optional[str] = None):
         """
         :param string_format: the format to enter the screen with string.format method
@@ -81,7 +62,10 @@ class ServiceResultsPrint:
         self.option_flag = option_flag
 
     def is_option_enabled(self, flags: FrozenSet[str]) -> bool:
-        print(self.title, self.option_flag is None or self.option_flag in flags)
+        """
+        :param flags: list of all flags related to check-service
+        :return: if needs an option flag and it isn't the set returns false, otherwise True
+        """
         return self.option_flag is None or self.option_flag in flags
 
 

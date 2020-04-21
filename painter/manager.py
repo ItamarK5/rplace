@@ -7,24 +7,21 @@
 
 import subprocess
 import sys
-from flask import current_app
+import time
+from typing import Iterable, Any, Dict, FrozenSet
+
 from flask_script import Manager, Server, Option, Command
 from flask_script.cli import prompt_bool, prompt_choices, prompt
 from flask_script.commands import InvalidCommand
 from redis import exceptions as redis_exception
-from typing import Iterable, Any, Dict, FrozenSet
+# first import app to prevent some time related import bugs
 from .app import create_app, datastore, sio, redis
-from .models import Role, User, ExpireModels
-from .others.utils import (
-    NewUserForm, PortQuickForm, IPv4QuickForm, get_config_json,
-    CONFIG_FILE_PATH_KEY, try_save_config, MyCommand, config_title_utility,
-    parse_value, parse_service_options, check_service_flag
-)
-from sqlalchemy import exc
 from .backends import board, lock
+from .models import Role, User, ExpireModels
 from .others.constants import DURATION_OPTION_FLAG, PRINT_OPTION_FLAG, SERVICE_RESULTS_FORMAT
-import time
-
+from .others.utils import (
+    NewUserForm, MyCommand, parse_service_options, check_service_flag
+)
 
 manager = Manager(
     create_app,
@@ -36,12 +33,9 @@ manager = Manager(
     disable_argcomplete=False
 )
 # configuration file
-manager.add_option('--c', '-config', dest='config_path', required=False, help='Configuration file to use')
-# if set configuration file as default
-manager.add_option('--D', '-default', dest='set_env', action='store_true', required=False,
-                   help='If to set the configuration option that passed as default')
-# the title of the configuration option to use
-manager.add_option('--t', '-config_title', dest='config_title', required=False)
+manager.add_option('--D', '-debug', dest='debug_mode', action='store_true',
+                   help="debugs the app in debug mode",
+                   required=False)
 
 
 class RunServer(Server):
@@ -294,202 +288,6 @@ def drop_db():
 drop_database_command = MyCommand(drop_db, 'drops the database entirely')
 manager.add_command('drop-db', drop_database_command)
 
-
-def add_config_class(config_title=None, host=None, port=None):
-    """
-    :param config_title: new class name
-    :param host: host of the app
-    :param port: port of the app
-    :return: nothing
-    add new configuraiton class in selected config.py
-    """
-    # config_title in save mode
-    config_title = config_title_utility(config_title, no_default=True)
-    # get file
-    configuration = get_config_json()
-    if config_title in configuration:
-        raise InvalidCommand('Configure Option {0} already exists'.format(config_title))
-    # else get host and port
-    # if passed any arguments => didn't pass both None
-    if host is not None or port is not None:
-        is_host_valid = host is None or IPv4QuickForm.are_valid(address=host)
-        is_port_valid = port is None or PortQuickForm.are_valid(port=port)
-        if not (is_host_valid or is_port_valid):
-            raise InvalidCommand('Invalid Host and Port:{0}:{1}'.format(host, port))
-        elif not is_host_valid:
-            raise InvalidCommand('Invalid Host: {0}'.format(host))
-        elif not is_port_valid:
-            raise InvalidCommand('Invalid Port: {0}'.format(port))
-    # parse if neither is None
-    if host is None:
-        is_valid = IPv4QuickForm.are_valid(address=host)
-        while not is_valid:
-            # after first parse
-            host = prompt('Pless enter a valid IPv4 Address\n[HOST]')
-            form, is_valid = IPv4QuickForm.fast_validation(address=host)
-            if not is_valid:
-                print(form.errors, sep='\n')
-    # validate port
-    if port is None:
-        is_valid = isinstance(port, str) and port.isdigit() and PortQuickForm.are_valid(port=port)
-        while not is_valid:
-            # after first parse
-            port = prompt('pless enter a valid Port [0-65536]\n[PORT]')
-            if not port.isdigit():
-                print('Port must be a number')
-                # dont validate because it still as before, false
-            else:
-                # check form now it knows that port cannot be a number
-                form, is_valid = PortQuickForm.fast_validation(port=int(port))
-                if not is_valid:
-                    print(form.errors, sep='\n')
-    # add the configure
-    configuration[config_title] = {
-        'APP_HOST': host,
-        'APP_PORT': int(port)
-    }
-    # save configuration
-    try_save_config(configuration, current_app.config.get(CONFIG_FILE_PATH_KEY))
-    print('Configuration {0} Created'.format(config_title))
-    print('if you want to add more configuration, use the parse command')
-
-
-create_config_command = MyCommand(
-    add_config_class,
-    'Adds a new configuration option inside the used configuration file (JSON Format)'
-)
-create_config_command.add_option(
-    Option('--h', '-host', dest='host', default=None, required=False,
-           help="Host/The IP Address of the server, default 127.0.0.1 (localhost), if no app configuration exist"),
-)
-create_config_command.add_option(
-    Option('--p', '-port', dest='port', default=None, required=False,
-           help="Port the server listens to default is 8080 if no app configuration is passed")
-)
-create_config_command.add_option(
-    Option('--n', '-class_name', dest='config_title',
-           help="Port the server listens to default is 8080 if no app configuration is passed")
-)
-manager.add_command('add-config', create_config_command)
-
-
-# Delete Configuration
-def del_config(config_title=None):
-    config_title = config_title_utility(config_title, True)
-    # get file
-    # the real deal
-    configuration = get_config_json()
-    if config_title is None:
-        while config_title not in configuration:
-            config_title = config_title_utility(
-                prompt('Enter a configure name'),
-                False
-            )
-    if config_title not in configuration:
-        raise InvalidCommand("Error, Config Title")
-    # remove it
-    if prompt_bool('Are you sure you want to remove the {0} config_title?'.format(config_title)):
-        configuration.pop(config_title)
-        try_save_config(configuration)
-    else:
-        print('as your wish, I stop the task')
-
-
-del_config_command = MyCommand(
-    del_config,
-    'Delete entire Configuration (class_name)'
-)
-del_config_command.add_option(Option(
-    '--c', '-class_name', dest='config_title', required=None
-))
-manager.add_command('del-config', del_config_command)
-
-
-def parse_config(config_title, only_create=None):
-    """
-    :param config_title: title of configuration
-    :param only_create:  config path
-    :return:
-    """
-    only_create = only_create if only_create is not None else False
-    config_title = config_title_utility(config_title)
-    all_configuration = get_config_json()
-    if config_title not in all_configuration:
-        raise InvalidCommand('Title {0} not found'.format(config_title))
-    config = all_configuration[config_title]
-    key = prompt('Parsing changes to configuration, to exit enter __EXIT__\n[KEY]:', default='')
-    while key.upper() != '__EXIT__':
-        if key:
-            key = config_title_utility(key)
-            if key in config and only_create:
-                print('Key {0} already registered in the configuration {1}'.format(config_title, key))
-            else:
-                config_val = parse_value()
-                if config_val is not None:
-                    config[key] = config_val
-                # else
-        key = prompt('Parsing changes to configuration, to exit enter __EXIT__\n[KEY]:', default='')
-    try_save_config(config)
-
-
-command_parse_config = MyCommand(
-    parse_config,
-    description='option to parse keys to a configuration title',
-    help_text='option to parse keys to the configuration title'
-)
-command_parse_config.add_option(
-    Option('--n', '-name',
-           dest='config_title',
-           help='config_title of the configuration to parse the changes to',
-           required=True)
-)
-command_parse_config.add_option(
-    Option(
-        '--o', '-only-create',
-        dest='only_create', action='store_true',
-        help='prevent any changes to current values, only create new staff',
-        required=False, default=None
-    )
-)
-manager.add_command('parse', command_parse_config)
-
-
-def clear_config_key(config_title):
-    """
-    :param config_title: configuretion options name
-    :type config_title: str
-    :return: nothing
-    deletes the configuration options
-    """
-    config_title = config_title_utility(config_title)
-    configuration = get_config_json()
-    if config_title not in configuration:
-        raise InvalidCommand('Title {0} not found'
-                             .format(config_title))
-    else:
-        config_name = config_title_utility(
-            prompt(
-                'Enter a key in configuration to delete',
-                default=''),
-            False
-        )
-        while config_name:
-            if config_name not in configuration:
-                print('Error: key {0} not in configuration'.format(config_name))
-            configuration[config_title].pop(config_name)
-    # save
-    try_save_config(configuration)
-    print('Completely clear config')
-
-
-clear_config_command = MyCommand(
-    clear_config_key,
-    description='clear keys in configuration option'
-)
-clear_config_command.add_option(
-    Option('--n', '-name', dest='config_title', help='name of configuration to change')
-)
-manager.add_command('clear', clear_config_command)
 
 """
  Check Service Command

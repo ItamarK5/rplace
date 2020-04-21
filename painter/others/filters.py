@@ -2,6 +2,8 @@
 filters used in html rendering
 """
 from __future__ import absolute_import
+
+from datetime import datetime
 from typing import Optional, Union, List
 
 from flask import Flask
@@ -9,7 +11,6 @@ from flask import Flask
 from painter.models import User, Role
 from painter.others.constants import COLORS
 from painter.others.constants import COLOR_COOLDOWN
-from datetime import datetime
 
 
 def draw_time(user: User) -> str:
@@ -37,9 +38,9 @@ def is_admin(user: User) -> bool:
 
 def class_ftr(classes: Optional[Union[str, List]], comma: Optional[str] = None) -> str:
     """
-    :param classes:
-    :param comma:
-    :return:
+    :param classes: list of classes or just 1
+    :param comma: a comma string ",' and etc.
+    :return: the combined list of string as one
     """
     if classes is None:
         return ''

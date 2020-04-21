@@ -5,7 +5,7 @@ from .extensions import redis
 
 _DISABLE = b'0'  # False
 _ENABLE = b'1'  # True
-_ENABLE_EDIT_BOARD_KEY = 'enable-edit-board'
+KEY = 'enable-edit-board'
 
 
 def create_lock() -> bool:
@@ -14,8 +14,8 @@ def create_lock() -> bool:
     dont check for errors
     :return: if lock created
     """
-    if not redis.exists(_ENABLE_EDIT_BOARD_KEY):
-        return bool(redis.set(_ENABLE_EDIT_BOARD_KEY, _ENABLE))  # default allow
+    if not redis.exists(KEY):
+        return bool(redis.set(KEY, _ENABLE))  # default allow
     return False
 
 
@@ -24,16 +24,24 @@ def drop_lock() -> bool:
     :return: if to drop lock
     :rtype drop lock
     """
-    if redis.exists(_ENABLE_EDIT_BOARD_KEY):
-        return bool(redis.delete(_ENABLE_EDIT_BOARD_KEY, _ENABLE))  # default allow
+    if redis.exists(KEY):
+        return bool(redis.delete(KEY, _ENABLE))  # default allow
     return False
+
+
+def is_open_val(val: bytes) -> bool:
+    """
+    :param val: a val represent redis represention of lock
+    :return: if lock is open, enabled
+    """
+    return val == _ENABLE
 
 
 def is_open() -> bool:
     """
     :return: is lock open
     """
-    return redis.get(_ENABLE_EDIT_BOARD_KEY) == _ENABLE
+    return is_open_val(redis.get(KEY))
 
 
 def open_lock() -> bool:
@@ -41,7 +49,7 @@ def open_lock() -> bool:
     enable setting pixel on board
     :return: if changed the redis value
     """
-    return bool(redis.set(_ENABLE_EDIT_BOARD_KEY, _ENABLE))
+    return bool(redis.set(KEY, _ENABLE))
 
 
 def close_lock() -> bool:
@@ -49,7 +57,7 @@ def close_lock() -> bool:
     disable setting pixel on board
     :return: if changed the redis value
     """
-    return bool(redis.set(_ENABLE_EDIT_BOARD_KEY, _DISABLE))
+    return bool(redis.set(KEY, _DISABLE))
 
 
 def set_switch(set_active: bool) -> bool:
@@ -65,4 +73,4 @@ def set_switch(set_active: bool) -> bool:
     return close_lock()
 
 
-__all__ = ['open_lock', 'close_lock', 'is_open', 'set_switch', 'create_lock']
+__all__ = ['open_lock', 'close_lock', 'is_open', 'set_switch', 'create_lock', 'is_open_val']
