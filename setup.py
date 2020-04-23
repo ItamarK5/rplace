@@ -9,11 +9,11 @@ if __name__ == '__main__':
     monkey_patch()
 
     import sys
-    from painter import cli
+    from painter.manager import cli
     from flask_script.commands import InvalidCommand
 
     try:
-        cli.main()
+        cli()
     except InvalidCommand as err:
         # prints
         print(err, file=sys.stderr)

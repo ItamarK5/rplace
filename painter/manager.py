@@ -8,26 +8,33 @@
 import subprocess
 import sys
 import time
-from typing import Iterable, Any, Dict, FrozenSet
+from typing import Iterable, Any, Dict, FrozenSet, Optional
 
+import click
+import flask.cli
 from flask_script import Manager, Server, Option, Command
 from flask_script.cli import prompt_bool, prompt_choices, prompt
 from flask_script.commands import InvalidCommand
 from redis import exceptions as redis_exception
+
 # first import app to prevent some time related import bugs
-from .app import create_app, datastore, sio, redis
+from .app import datastore, sio, redis, create_app
 from .backends import board, lock
 from .models import Role, User, ExpireModels
 from .others.constants import DURATION_OPTION_FLAG, PRINT_OPTION_FLAG, SERVICE_RESULTS_FORMAT
 from .others.utils import (
     NewUserForm, MyCommand, parse_service_options, check_service_flag
 )
-import click
 
+
+@click.group(cls=flask.cli.FlaskGroup, create_app=create_app)
+@click.option('-debug', '--D', is_flag=True, flag_value=True, help="debug the app in debug mode")
+@flask.cli.with_appcontext
+def cli(*args, **kwargs):
+    print('Social Painter CMD Service')
 
 
 manager = Manager(
-    create_app,
     description='Social Painter CMD Service',
     help='Social Painter CMD Service\n'
          'if you want to start the server, follow the following steps:\n'
@@ -35,62 +42,26 @@ manager = Manager(
          'third use start-redis --a to create all redis support',
     disable_argcomplete=False
 )
-# configuration file
+
+"""
+    Create Database Command
+"""
 
 
-
-class RunServer(Server):
+@cli.command()
+@click.option('-drop-first', is_flag=True, default=True,
+              help='Drops the current database before creation', type=bool)
+def create_db(drop_first: bool = False):
     """
-    source: https://github.com/miguelgrinberg/flack/blob/master/manage.py
-    auther: miguelgrinberg
-    The Start Server Command
-    the function get the following parameters:
-    host: the host to start the server
-    port: the port to start the server
-    note: I add a couple of changes to the command
+    creates the SQL tables of the program
+    you can pass the flag drop_first to first drop the entire database
     """
+    if drop_first and prompt_bool('Are you sure you want to drop the table'):
+        datastore.drop_all()
+        print('database droped')
+    datastore.create_all()
+    print('database created successfully')
 
-    help = description = 'Runs the server'
-
-    def get_options(self) -> Iterable[Option]:
-        """
-        options of the run-server command
-        :return: option list
-        """
-        options = (
-            Option('-h', '--host',
-                   dest='host',
-                   default=None,
-                   help='host url of the server'),
-            Option('-p', '--port',
-                   dest='port',
-                   type=int,
-                   default=None,
-                   help='host port of the server'),
-            Option('-d', '--debug',
-                   action='store_true',
-                   dest='use_debugger',
-                   help=('enable the Werkzeug debugger (DO NOT use in '
-                         'production code)'),
-                   default=self.use_debugger),  # True
-            Option('-D', '--no-debug',
-                   action='store_false',
-                   dest='use_debugger',
-                   help='disable the Werkzeug debugger',
-                   default=self.use_debugger),  # False
-            Option('-r', '--reload',
-                   action='store_true',
-                   dest='use_reloader',
-                   help=('monitor Python files for changes (not 100%% safe '
-                         'for production use)'),
-                   default=self.use_reloader),  # True
-            Option('-R', '--no-reload',
-                   action='store_false',
-                   dest='use_reloader',
-                   help='do not monitor Python files for changes',
-                   default=self.use_reloader),  # False
-        )
-        return options
 
     def __call__(self, app, host, port, use_debugger, use_reloader):
         """
@@ -246,37 +217,7 @@ class CeleryWorker(Command):
 
 # adding command
 manager.add_command('celery-mail', CeleryWorker)
-manager.add_command("runserver", RunServer())
 manager.add_command("create-user", CreateUser())
-
-
-"""Create Database Command"""
-
-
-def create_db(drop_first=False):
-    """
-    :param drop_first: if to fist drop all databases before creating
-    :type drop_first: boolean
-    :return: if to drop first
-    """
-    if drop_first and prompt_bool('Are you sure you want to drop the table'):
-        datastore.drop_all()
-        print('database droped')
-    datastore.create_all()
-    print('databse created successfully')
-
-
-create_db_command = MyCommand(
-    create_db,
-    'creates the database',
-)
-# option to drop first before creating the database
-create_db_command.add_option(
-    Option('--d', '-drop', dest='drop_first',
-           action='store_true', default=False,
-           help='Drops the current database before creation')
-)
-manager.add_command('create-db', create_db_command)
 
 
 # drop database
@@ -288,7 +229,6 @@ def drop_db():
 
 drop_database_command = MyCommand(drop_db, 'drops the database entirely')
 manager.add_command('drop-db', drop_database_command)
-
 
 """
  Check Service Command

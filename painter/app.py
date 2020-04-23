@@ -27,14 +27,15 @@ celery = Celery(
 )
 
 
-def create_app(is_celery: bool = False, debug_mode: bool = False) -> Flask:
+def create_app(debug: bool = False, is_celery: bool = False) -> Flask:
     """
     the command to create default app, with configuration
     :param is_celery: if the app is celery task
-    :param debug_mode: if debugging app
+    :param debug: if debugging app
     :return: a Flask application
     creates the application
     """
+    print(debug)
     app = Flask(
         __name__,   # the name from where to import the application
         static_folder='',
@@ -45,19 +46,21 @@ def create_app(is_celery: bool = False, debug_mode: bool = False) -> Flask:
     # first checks if its from directly
     object_configuration = 'painter.config.'
     if is_celery:
-        if debug_mode:
+        if debug:
             object_configuration += 'CeleryDebug'
         else:
             object_configuration += 'CeleryApp'
     else:
-        if debug_mode:
+        if debug:
             object_configuration += 'DebugSettings'
         else:
             object_configuration += 'AppSettings'
 
     app.config.from_object(object_configuration)
     # socketio
-    sio.init_app(None if is_celery else app)
+    sio.init_app(
+        None if is_celery else app,
+    )
     # init Extensions
     datastore.init_app(app)
     generate_engine(app)
@@ -78,10 +81,3 @@ def create_app(is_celery: bool = False, debug_mode: bool = False) -> Flask:
     app.register_blueprint(admin.admin_router)
     app.register_blueprint(others.other_router)
     return app
-
-
-@click.group(cls=cli.FlaskGroup, create_app=create_app)
-@click.option('--D', '-debug', dest='debug_mode', action='store_true',
-              help="debugs the app in debug mode", required=False)
-def cli(*args, **kwargs):
-    print(args, kwargs)
