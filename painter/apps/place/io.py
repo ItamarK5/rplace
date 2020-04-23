@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, TypeVar, Generic
 from painter.backends.extensions import redis
 from redis.exceptions import ConnectionError as RedisConnectionError
 from flask_login import current_user
@@ -49,7 +49,7 @@ def get_start_data() -> Union[Dict[str, Any], str]:
     """
     return {
             'board': board.get_board(),
-            'lock': lock.is_open(),
+            'locked': not lock.is_open(),
             'time': str(current_user.next_time)
     }
 

@@ -1,5 +1,5 @@
-{% from 'accounts/_macros.html' import button_model %}
-{% extends 'accounts/profile.html' %}
+{% from 'profiles/_macros.html' import button_model %}
+{% extends 'profiles/profile.html' %}
 {%- set current_page = 'admin' %}
 {% block css %}
 {{super()}}
@@ -16,9 +16,9 @@
 {% endblock %}
 {% block user_preferences %}
     {% if current_user.has_required_status(Role.superuser) %}
-        {% include 'accounts/abstract/profile-preferences-view.html' %}
+        {% include 'profiles/abstract/profile-preferences-view.html' %}
     {% else %}
-        {% include 'accounts/abstract/profile-preferences-view.html' %}
+        {% include 'profiles/abstract/profile-preferences-view.html' %}
     {% endif %}
 {% endblock %}
 {% block container %}
@@ -51,9 +51,9 @@
     </div>
 {% endblock %}
     {% block modals %}
-        {% include 'accounts/abstract/recordModal.html' %}
-        {% include 'accounts/abstract/noteModal.html' %}
-        {% include 'accounts/abstract/historyModal.html' %}
+        {% include 'profiles/abstract/recordModal.html' %}
+        {% include 'profiles/abstract/noteModal.html' %}
+        {% include 'profiles/abstract/historyModal.html' %}
     {% endblock %}
 {% block javascript %}
     <script src="{{url_for('other.serve_static', key='edit.js')}}"></script>

@@ -59,9 +59,9 @@ def refresh() -> Response:
     """
     :return: response containing the refresh message
     """
-    if current_user.is_authenticated and not login_fresh():
-        # redirect to request path
-        return redirect(request.url)
+    if current_user.is_anonymous and not login_fresh():
+        # redirect to home
+        return redirect(url_for('paint.home'))
     # login response as fresh response
     return login_response()
 
@@ -127,6 +127,7 @@ def revoke() -> Response:
                     'mail_address': user.email
                 })
             )
+        return render_template('transport/complete-revoke.html', form=form)
     return render_template('forms/revoke.html', form=form)
 
 

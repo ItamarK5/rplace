@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 {% from 'global.jinja' import message_alert %}
 {% from 'forms/_macros.html' import render_field, render_errors, render_link %}
 <html>
@@ -65,32 +66,5 @@
         src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
 <script src="{{url_for('other.serve_static', key='auth.js')}}"></script>
 {% endblock %}
-{#
-<script src="https://www.gstatic.com/firebasejs/7.9.1/firebase-app.js"></script>
-<!-- TODO: Add SDKs for Firebase products that you want to use
-     https://firebase.google.com/docs/web/setup#available-libraries -->
-<script src="https://www.gstatic.com/firebasejs/7.9.1/firebase-analytics.js"></script>
-<script>
-  // Your web app's Firebase configuration
-  var firebaseConfig = {
-    apiKey: "AIzaSyBQI2lGKvg09O0qrJ0ZQYatZoFUGNNlKzE",
-    authDomain: "my-place-43d4e.firebaseapp.com",
-    databaseURL: "https://my-place-43d4e.firebaseio.com",
-    projectId: "my-place-43d4e",
-    storageBucket: "my-place-43d4e.appspot.com",
-    messagingSenderId: "932095189321",
-    appId: "1:932095189321:web:335dd29dca593ee04eba98",
-    measurementId: "G-TS0GW31XWY"
-  };
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-  firebase.analytics();
-
-
-</script>
-<script src="https://www.gstatic.com/firebasejs/7.9.1/firebase-auth.js"></script>
-#}
-<!-- popper.js - needed for bootstarp -->
-
 </body>
 </html>

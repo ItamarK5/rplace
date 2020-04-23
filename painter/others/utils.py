@@ -89,9 +89,14 @@ class MyCommand(Command, ABC):
         return help_text.strip()
 
 
-def has_service_option(flags: Optional[List[str]], *options) -> bool:
+def has_service_option(flags: Union[bool, List[str]], *options) -> bool:
+    """
+    :param flags: the service flags passed
+    :param options: list of options for a option for check-services
+    :return: if the option service enabled
+    """
     if not isinstance(flags, list):
-        return False
+        return flags
     # other option flag is empty
     elif not flags:
         return True

@@ -25,24 +25,12 @@ def admin() -> Response:
     :return: return's admin template
     """
     # pagination
-    pagination = User.query.paginate(per_page=1, max_per_page=1)
+    pagination = User.query.paginate(
+        per_page=5,
+        max_per_page=5
+    )
     # try get page
-    page = request.args.get('page', '1')
-    if not page.isdigit():
-        abort(
-            exceptions.BadRequest.code,
-            title='Given page isn\'t a number',
-            description='Are you, an admin of this site is mocking this program by editing this?'
-        )
-    # page to integer
-    try:
-        page = int(page)
-    except ValueError:
-        page = 1
-    # if page isn't valid
-    if not (1 <= page <= pagination.pages):
-        return redirect(url_for('/admin', args={'page': '1'}))
-    return render_template('accounts/admin.html', pagination=pagination, lock=lock.is_open())
+    return render_template('profiles/admin.html', pagination=pagination, lock=lock.is_open())
 
 
 @admin_router.route('/add-record', methods=('POST',))
@@ -119,7 +107,7 @@ def set_admin_button() -> Response:
     lock.set_switch(new_state)
     # emit changes
     sio.emit('change-lock-state', new_state, namespace=PAINT_NAMESPACE)
-    sio.emit('set-lock-state', new_state, namespace=ADMIN_NAMESPACE)
+    sio.emit('set-lock-state', new_state, namespace=ADMIN_NAMESPACE, include_self=False)
     return json_response(True, new_state)
 
 
@@ -144,7 +132,7 @@ def edit_user(name: str) -> Response:
     record_form = RecordForm(set_banned=user.is_active)
     note_form = NoteForm()
     return render_template(
-        'accounts/edit.html',
+        'profiles/edit.html',
         user=user,
         record_form=record_form,
         note_form=note_form,

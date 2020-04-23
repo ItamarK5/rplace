@@ -34,6 +34,7 @@ def is_open_val(val: bytes) -> bool:
     :param val: a val represent redis represention of lock
     :return: if lock is open, enabled
     """
+    print(val)
     return val == _ENABLE
 
 

@@ -34,3 +34,6 @@ tr, td, th {user-select:none;}
     background-color:#666666; 
     color:lime;
 }
+a .list-group-item-action {
+    cursor: pointer;
+}

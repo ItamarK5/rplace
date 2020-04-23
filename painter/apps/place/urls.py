@@ -32,7 +32,7 @@ def profile() -> Response:
     """
     form = PreferencesForm()
     return render_template(
-        'accounts/profile.html', xstart=current_user.x, ystart=current_user.y,
+        'profiles/profile.html', xstart=current_user.x, ystart=current_user.y,
         scalestart=current_user.scale, colorstart=current_user.color, form=form,
         chaturl=current_user.url
     )

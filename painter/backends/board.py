@@ -23,9 +23,11 @@ def make_board() -> bool:
     return True
 
 
-def get_board() -> bytes:
+@cache.cached(timeout=1)
+def get_board() -> str:
     """
     :return: the board from the database
+    cached for 1 second because of timeout
     """
     return redis.get(KEY)
 

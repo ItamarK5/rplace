@@ -22,6 +22,9 @@ from .others.constants import DURATION_OPTION_FLAG, PRINT_OPTION_FLAG, SERVICE_R
 from .others.utils import (
     NewUserForm, MyCommand, parse_service_options, check_service_flag
 )
+import click
+
+
 
 manager = Manager(
     create_app,
@@ -33,9 +36,7 @@ manager = Manager(
     disable_argcomplete=False
 )
 # configuration file
-manager.add_option('--D', '-debug', dest='debug_mode', action='store_true',
-                   help="debugs the app in debug mode",
-                   required=False)
+
 
 
 class RunServer(Server):
@@ -366,7 +367,7 @@ def check_sql_service(option_flags: FrozenSet[str]) -> Dict[str, Any]:
         }
 
 
-def check_services(all_flag=False, redis_flag=None, sql_flag=None, option_flags=None):
+def check_services(all_flag=False, redis_flag=None, sql_flag=None, option_flags=False):
     """
     :param all_flag: boolean flag to check if get all services or none
     :type  all_flag: bool
@@ -376,6 +377,7 @@ def check_services(all_flag=False, redis_flag=None, sql_flag=None, option_flags=
     :param redis_flag: flag if to check the sql service
     :type  redis_flag: bool
     :param option_flags: option flags, include print and check time of response
+    :type  options_flags: Union[str, bool]
     :return: if services are active
     """
     # if in the future I should add other flags
@@ -423,9 +425,8 @@ check_services_command.add_option(Option(
     '--a', '-all', dest='all_flag', action='store_true', help='to check update with all'
 ))
 check_services_command.add_option(Option(
-    '--o', '-options', nargs='*', dest='option_flags',
+    '--o', '-options', nargs='*', dest='option_flags', default=True,
     help='special options for the command: t for display the time it takes to end and'
-         ''
 ))
 manager.add_command('check-services', check_services_command)
 

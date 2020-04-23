@@ -1788,10 +1788,11 @@ function DocumentKeyPress(key_event){
  */
 function getBoard() {
 	sock.emit('get-start', (data) => {
-		if(_.isUndefined(data)){
+		console.log(data)
+		if(!_.isUndefined(data)){
 			progress.setTime(data.time)
 			board.buildBoard(new Uint8Array(data.board));
-			if (data.lock) {
+			if (data.locked) {
 				lockedState.lock();
 			}
 		} else {
@@ -1799,15 +1800,16 @@ function getBoard() {
 				icon:'warning',
 				title:'Fail',
 				text:'Fail to collect data from the server'
+			}).then(() =>{
+				_.delay(
+					() => {
+						// clear pixel queue to prevent long time pushing
+						board.pixelQueue = [];
+						getBoard();
+					},
+					5000	// wait 5 seconds before retry
+				);
 			});
-			_.delay(
-				() => {
-					// clear pixel queue to prevent long time pushing
-					board.pixelQueue = [];
-					_.defer(getBoard);
-				},
-				5000	// wait 5 seconds before retry
-			);
 			// also clear board.queue
 		}
 	});

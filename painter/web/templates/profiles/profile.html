@@ -1,10 +1,10 @@
-{% from 'accounts/_macros.html' import edit_title, pre_input_text, settingModal %}
+{% from 'profiles/_macros.html' import edit_title, pre_input_text, settingModal %}
 {% if not user %}{%- set user=current_user %}{% endif %}
 {% if not current_page %}{%- set current_page='profile' %}{% endif %}
 <html>
 <head>
     {% block head %}
-        <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
+        <meta content="width=device-width, height=device-height, initial-scale=1" name="viewport">
         <title>{{current_user.username}}</title>
         <!-- Boostrap Style -->
         {% block css %}
@@ -26,14 +26,14 @@
     <div class="container">
         {% block container %}
         {% block user_title %}
-        <div class="row justify-content-center text-center mb-3">
+        <div class="row justify-content-center mb-3">
             {% block user_title_text %}
             <h3 class="text-warning display-3 font-weight-bold" id="user-title"><u>{{user.username}}</u></h3>
             {% endblock %}
         </div>
         {% endblock %}
         {% block user_icon %}
-        <div class="row justify-content-center center-text mt-1 mb-1">
+        <div class="row justify-content-center mt-1 mb-1">
             {% block user_icon_container %}
             <h1 class="display-1" id="big-user-icon">
                 {% block user_icon_image %}
@@ -46,12 +46,12 @@
         <div class="row">
             <div class="col user-data-col" id="user-col">
                 {% block user_attrs %}
-                {% include 'accounts/abstract/profile-attrs-view.html' %}
+                {% include 'profiles/abstract/profile-attrs-view.html' %}
                 {% endblock %}
             </div>
             <div class="col user-data-col" id="settings-col">
                 {% block user_preferences %}
-                {% include 'accounts/abstract/profile-preferences-edit.html' %}
+                {% include 'profiles/abstract/profile-preferences-edit.html' %}
                 {% endblock %}
             </div>
         </div>
@@ -60,7 +60,7 @@
     {% endblock %}
 {% block modals %}
     {% with user=current_user %}
-    {% include "accounts/abstract/preferencesModal.html" %}
+    {% include "profiles/abstract/preferencesModal.html" %}
     {% endwith %}
 {% endblock %}
 {% block javascriptCDN %}
