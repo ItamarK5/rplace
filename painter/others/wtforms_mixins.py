@@ -2,7 +2,8 @@ import re
 from typing import Tuple
 
 from werkzeug.datastructures import MultiDict
-from wtforms import Form, StringField, validators, IntegerField
+from wtforms import Form, StringField, validators, IntegerField, ValidationError
+from painter.models import User, SignupMailRecord, SignupNameRecord
 
 UsernamePattern = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
 HashPasswordPattern = re.compile(r'^[a-f0-9]{128}$')  # password hashed so get hash value
@@ -147,3 +148,36 @@ class MailAddressFieldMixin(object):
             validators.Email()
         ]
     )
+
+
+class NewUsernameFieldMixin(UsernameFieldMixin):
+    """
+      same as mail field mixin
+      but also validates if the email is new one
+    """
+
+    def validate_username(self, field: StringField) -> None:
+        """
+        :param field: username field
+        :return: validates if the username isn't already existing with the name
+        """
+        if User.query.filter_by(username=field.data).first() is not None or\
+                SignupNameRecord.exists(field.data) is not None:
+            raise ValidationError('User with the mail address already exists')
+
+
+class NewEmailFieldMixin(MailAddressFieldMixin):
+    """
+      same as mail field mixin
+      but also validates if the email is new one
+    """
+
+    def validate_mail_address(self, field: StringField) -> None:
+        """
+        :param field:  email field
+        :return: validates if the mail address isn't already existing with the name
+        """
+        if User.query.filter_by(email=field.data).first() is not None or\
+                SignupMailRecord.exists(field.data) is not None:
+            raise ValidationError('User with the mail address already exists')
+

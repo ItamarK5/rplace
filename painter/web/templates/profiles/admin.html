@@ -19,7 +19,7 @@
     <link href="{{url_for('other.serve_static', key='nav.css')}}" rel="stylesheet">
     <link href="//cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@3/dark.css" rel="stylesheet">
     <!--io-->
-    <title>Admin Privilage</title>
+    <title>Admin Privilege</title>
     <script crossorigin="anonymous"
             integrity="sha256-bQmrZe4yPnQrLTY+1gYylfNMBuGfnT/HKsCGX+9Xuqo=" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
 </head>
@@ -29,18 +29,20 @@
 {% endwith %}
 <div class="container">
     <div class="row justify-content-center center-text">
-        <h2 class="display-4 no-select" id="title"><u>Admin Privilage<i class="fas fa-shield-alt"></i></u></h2>
+        <h2 class="display-4 no-select" id="title"><u>Admin Privilege<i class="fas fa-shield-alt"></i></u></h2>
     </div>
     <div class="row justify-content-center">
-        <button class="btn round-rect" id='place-button' state="0">
-            <h6></h6>
+        <button class="btn round-rect " id='place-button' state="2">
+            <h6 class="align-items-center">
+                <span class="spinner spinner-border spinner-border-md" role="status" aria-hidden="true"></span>
+            </h6>
         </button>
     </div>
     <div class="row justify-context-center mt-3">
         <table class="table table-bordered table-dark">
             <thead>
             <tr>
-                <th class="text-center fit-column" scope="col">Privilage</th>
+                <th class="text-center fit-column" scope="col">Privilege</th>
                 <th class="text-center" scope="col">Name</th>
                 <th class="text-center" scope="col">Mail Address</th>
                 <th class="text-center" scope="col">Last Draw</th>

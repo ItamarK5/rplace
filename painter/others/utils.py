@@ -5,54 +5,76 @@
 """
 from __future__ import absolute_import
 
-from abc import ABC
-from typing import Optional, TypeVar, List, Union, FrozenSet, Iterable
+from typing import (
+    Optional, TypeVar, List,
+    Union, FrozenSet, Iterable,
+    Type, Dict, Any
+)
 
+import click
 from flask import redirect, request
 from werkzeug import Response
-from wtforms import StringField
-from wtforms.validators import ValidationError
 
 from .constants import (
     FLAG_SERVICES_OPTIONS
 )
 from .wtforms_mixins import (
-    UsernameFieldMixin,
-    PasswordFieldMixin,
-    MailAddressFieldMixin,
+    NewUsernameFieldMixin,
+    NewEmailFieldMixin,
     QuickForm
 )
-from ..models.user import User
-import click
 
 ConvertType = TypeVar('ConvertType', int, bool, float)
 
 
-class NewUserForm(
+class QuickEmailForm(
     QuickForm,
-    UsernameFieldMixin,
-    PasswordFieldMixin,
-    MailAddressFieldMixin,
+    NewEmailFieldMixin
 ):
-    """
-    simple class to validate new user data
-    its email address, its name and its password
-    """
-    def validate_mail_address(self, field: StringField) -> None:
-        """
-        :param field:  username field
-        :return: validates if the mail address isn't already existing with the name
-        """
-        if User.query.filter_by(email=field.data).first() is not None:
-            raise ValidationError('User with the mail address already exists')
+    pass
 
-    def validate_username(self, field: StringField) -> None:
+
+class QuickUsernameForm(
+    QuickForm,
+    NewUsernameFieldMixin
+):
+    pass
+
+
+class QuickPasswordForm(
+    QuickForm,
+    NewUsernameFieldMixin
+):
+    pass
+
+
+class FormValidateType(click.ParamType):
+    """
+    Utility class to use wtforms validators to validate flask.cli values
+    """
+
+    def __init__(self, field: str, form: Type[QuickForm]) -> None:
         """
-        :param field:  username field
-        :return: validate if the name isn't already existing with the name
+        :param field: the name of the field parrssed by the form
+        :param form: a QuickForm that parses 1 field
         """
-        if User.query.filter_by(username=field.data).first() is not None:
-            raise ValidationError('User with the username already exists')
+        super().__init__()
+        self.__field = field
+        self.__form = form
+
+    def convert(self, value: str, param: str, ctx: click.Context) -> str:
+        """
+        :param value: value passed to click option
+        :param param: the parameter name
+        :param ctx: context of flask.cli
+        :return: the same value after validating it
+        "converts" validates a option passed
+        """
+        form, is_valid = self.__form.fast_validation(**{self.__field: value})
+        if not is_valid:
+            # show just first error, it would be enought
+            self.fail(form.errors[0], param, ctx)
+        return value
 
 
 def has_service_option(flags: Union[List[str]], all_flag: bool, *options: Iterable[str]) -> bool:
@@ -136,8 +158,28 @@ def abort_if_false(ctx: click.Context, param: str, value:bool):
         ctx.abort()
 
 
-def prompt_are_you_sure(ctx:click.Context, message:Optional[str] = None):
+def prompt_are_you_sure(ctx: click.Context, message: Optional[str] = None):
     message = message if message else "Are you sure you want to do this?"
     are_you_sure = click.prompt(type=click.types.BOOL)
     if not are_you_sure:
         return ctx.abort()
+
+
+class ChoiceMap(click.types.Choice):
+    def __init__(self, choices: Dict[Any, str]) -> None:
+        # choices aren't case insensitive
+        self._map_choices = choices
+        # use tuple as said in docs
+        super().__init__(choices=tuple(self._map_choices.keys()), case_sensitive=False)
+
+    def convert(self, value: str, param: str, ctx: click.Context) -> str:
+        answer_key = super().convert(value, param, ctx)
+        # returns the mapped value
+        try:
+            return self._map_choices[answer_key]
+        except KeyError:
+            # same as choice
+            self.fail(
+                "Meet Some Stupid Errro with getting the key",
+                param, ctx
+            )

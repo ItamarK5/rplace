@@ -1,7 +1,11 @@
-/**
- * @returns integer form
- */
-Boolean.prototype.toInt = function() { return this.valueOf() ? 1 : 0; }
+const SPINNER_DOM = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>'
+
+const PlaceButtonTexts = [
+	'Turn Place Off',
+	'Turn Place Off',
+	'<span class="spinner spinner-border spinner-border-md" role="status" aria-hidden="true"></span>',
+	'Error'
+]
 
 /**
  * @param {Number} new_state 
@@ -9,25 +13,60 @@ Boolean.prototype.toInt = function() { return this.valueOf() ? 1 : 0; }
  */
 function ChangeLockButton(new_state) {
 	let lock_button = $('#place-button')
-  	lock_button.attr('state', new_state.toInt().toString());
-  	lock_button.children('h6').text(new_state ? 'Turn Place Off' : 'Turn Place On')
+	if(_.isNull(new_state)){
+		lock_button.children('h6').text('Tries again in 10 seconds');
+		lock_button.attr('state', 2);
+
+	} else {
+		lock_button.attr('state', new_state ? 1 : 0);
+		lock_button.children('h6').text(new_state ? 'Turn Place Off' : 'Turn Place On');
+	}
 }
 
-
+let currently_refreshes = false;
 /**
  * @function
+ * @param {_repeat} number to repeat the tas
  * @returns checks again the button state
  * sends ajax request to check if the lock state
  */
-const refreshButtonState = () => {
+const refreshButtonState = (_stack=0, _ignore_refresh=false) => {
+	if(currently_refreshes || !_ignore_refresh){
+		return;
+	}
+	if(!currently_refreshes){
+		currently_refreshes = true;
+	}
+	function _refreshAgain(){
+		// change lock button
+		if(_stack > 5){
+			// if its null
+			_.delay(
+				10000,	// 10000 ms
+				() => refreshButtonState(_stack + 1, true)
+			)
+		} else {
+			// change lock button
+			ChangeLockButton(3);
+			currently_refreshes = false;
+		}
+	}
+	// change lock button state to 2;
+	ChangeLockButton(2)
+
 	$.ajax({
 		url:'/get-active-state',
 		method:'GET',
 		contentType:'application/json;charset=UTF-8',
 		success: function(lock_state){
-			ChangeLockButton(JSON.parse(lock_state));
+			if(_.isNull(lock_state)){
+				ChangeLockButton(2);
+			} else {
+				ChangeLockButton(new_state ? 1 : 0);
+			}
+			
 		}
-	})
+	}).catch(_refreshAgain)
 }
 // creates the io object
 /**
@@ -121,34 +160,43 @@ $(document).ready(() => {
 	$('#place-button').click(function(){
 		let board_state = $(this).attr('state');
 		// swal message to check if user is sure
-		Swal.fire({
-			title: 'Are you sure?',
-			text: `You want to ${board_state == "1" ? "pause" : "unpause"} the place`,
-			icon: 'warning',
-			showCancelButton: true,
-			confirmButtonColor: '#3085d6',
-			cancelButtonColor: '#d33',
-		}).then((result) => {
-			if (result.value) {
-				$.post({
-					url:'/change-lock-state',
-					contentType:'application/json;charset=UTF-8',
-					data:board_state,
-					success:function(message){
+		if(board_state == '2'){
+			Swal.fire({
+				icon:'error',
+				title:"Waiting for request answer",
+				text:"Waiting for server give the data about the lock"
+
+			})
+		} else {
+			Swal.fire({
+				title: 'Are you sure?',
+				text: `You want to ${board_state == "1" ? "pause" : "unpause"} the place`,
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+			}).then((result) => {
+				if (result.value) {
+					$.post({
+						url:'/change-lock-state',
+						contentType:'application/json;charset=UTF-8',
+						data:board_state,
+						success:function(message){
+							Swal.fire({
+								title: message.success ? `App is ${message.text ? 'paused' : 'unpause'}` : 'Error!',
+								icon:  message.success ? 'success' : 'error',
+								text: message.success ? 'You lock/unlock board for all users' : message.text
+							});
+						},
+					}).catch((error) => {
 						Swal.fire({
-							title: message.success ? `App is ${message.text ? 'paused' : 'unpause'}` : 'Error!',
-							icon:  message.success ? 'success' : 'error',
-							text: message.success ? 'You lock/unlock board for all users' : message.text
-						});
-					},
-				}).catch((error) => {
-					Swal.fire({
-						icon:'error',
-						title:error.statusText ? '' : 'Error',
-						html:error.responseText
+							icon:'error',
+							title:error.statusText ? '' : 'Error',
+							html:error.responseText
+						})
 					})
-				})
-			}
-		})
-	});
+				}
+			})
+		}
+	})
 });

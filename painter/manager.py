@@ -1,8 +1,11 @@
 """
     Author: Itamar Kanne
+
     the manager module decorates the app by command line parameter
+    first I use the flask script module
     the module is based of flask_script module
     https://flask-script.readthedocs.io/en/latest/
+    but then I used the click and flask.cli
 """
 import subprocess
 import sys
@@ -12,78 +15,33 @@ from typing import Iterable, Any, Dict, FrozenSet, Optional
 import click
 import flask.cli
 from flask import current_app
-from flask_script import Manager, Command
-from flask_script.commands import InvalidCommand
 from redis import exceptions as redis_exception
-
 # first import app to prevent some time related import bugs
 from .app import datastore, sio, redis as redis_ext, create_app
 from .backends import board, lock
 from .models import ExpireModels, User, Role
 from .others.constants import (
     DURATION_OPTION_FLAG, PRINT_OPTION_FLAG,
-    SERVICE_RESULTS_FORMAT, REDIS_DATABASE_OPERATIONS
+    SERVICE_RESULTS_FORMAT, REDIS_DATABASE_OPERATIONS,
+    ROLE_CHOICE_MAP
 )
 from .others.utils import (
     parse_service_options, check_service_flag, prompt_are_you_sure,
-    abort_if_false
+    abort_if_false, QuickEmailForm, QuickPasswordForm, QuickUsernameForm,
+    FormValidateType, ChoiceMap
 )
+import time
+t = time.time()
 
-
-@click.group(cls=flask.cli.FlaskGroup, create_app=create_app,
-             add_default_commands=False,
-             help='Social Painter CMD Service\n'
-                  'if you want to start the server, follow the following steps:\n'
-                  'second use check-services --a to check if all services are '
-                  'available (services means outside support) third '
-                  'use start-redis --a to create all redis support')
-@click.option('-debug', '--D', is_flag=True, flag_value=True, help="debug the app in debug mode")
-@flask.cli.with_appcontext
-def cli(*args: Any, **kwargs: Any) -> None:
-    """
-    :param args: anything
-    :param kwargs: anything
-    :return: nothing
-    created a creates a group with optional arguments
-    the "parent" of the
-    """
-    print('Social Painter CMD Service')
-
-
-manager = Manager(
-    description='Social Painter CMD Service',
+cli = flask.cli.FlaskGroup(
+    create_app=create_app,
+    add_default_commands=False,
     help='Social Painter CMD Service\n'
          'if you want to start the server, follow the following steps:\n'
-         'second use check-services --a to check if all services are available (services means outside support)'
-         'third use start-redis --a to create all redis support',
-    disable_argcomplete=False
+         'second use check-services --a to check if all services are '
+         'available (services means outside support) third '
+         'use start-redis --a to create all redis support'
 )
-
-"""
-    Create Database Command
-"""
-
-
-@cli.command(
-    name="create-db",
-    short_help="creates the SQL tables of the program",
-    help="creates the SQL tables of the program\n"
-         "you can pass the flag drop_first to first drop the entire database"
-)
-@click.option('-drop-first', is_flag=True, default=False,
-              help='Drops the current database before creation', type=bool,
-              prompt='Are you sure you want to drop the table')
-@click.pass_context
-def create_db(ctx: click.Context, drop_first: bool = False):
-    """
-    :param ctx: the flask.cli context
-    :param drop_first: if to drop all database before creating
-    """
-    if drop_first and prompt_are_you_sure(ctx, 'Are you sure you want to drop the board?'):
-        datastore.drop_all()
-        print('database droped')
-    datastore.create_all()
-    print('database created successfully')
 
 
 @cli.command(name="run", short_help="Run a development server.")
@@ -110,7 +68,7 @@ def run_server(
         port: Optional[int] = None,
         reload: Optional[bool] = None,
         debugger: Optional[bool] = None,
-):
+) -> None:
     """Run a local development server.
 
     This server is for development purposes only. It does not provide
@@ -143,14 +101,52 @@ def run_server(
     if debugger is None:
         # if debugger isn't set, use debug
         debugger = debug
-    print(info.load_app())
+    print(time.time()-t)
     sio.run(
         info.load_app(),
         host,
         port,
         use_reloader=reload,
         debug=debugger or True,  # if to use the debugger
+        threaded=True
     )
+
+
+@cli.command(name='create-user')
+@click.option('-n', '--name', '--username', required=True,
+              help='username of the new user', type=FormValidateType('username', QuickUsernameForm))
+@click.option('-p', '-pswd', '--password', required=True,
+              help="password of the new user", type=FormValidateType('password', QuickPasswordForm))
+@click.option('-m', '--mail', required=True,
+              help='mail address of the new user', type=FormValidateType('mail_address', QuickEmailForm))
+@click.option('--r', '-role', required=True,
+              help='Role of the new User', type=ChoiceMap(ROLE_CHOICE_MAP))
+def create_user(username: str, password: str, mail_address: str, role: Role) -> None:
+    """
+    :param  username: name of the new user
+    :type   username: Optional[str]
+    :param  password: the password of the new user
+    :type   password: Optional[str]
+    :param  mail_address: the mail address of the new user
+    :type   mail_address: Optional[str]
+    :param  role: string representing the role of the user default superuser
+    :type   role: Optional[str]
+    :return:runs the command
+    :rtype: None
+    if neither values didnt passed the command parses them
+    runs a command to create new user
+    """
+    # create user
+    user = User(
+        username=username,
+        password=password,
+        email=mail_address,
+        role=role
+    )
+    # save user
+    datastore.session.add(user)
+    datastore.session.commit()
+    print('user created successfully')
 
 
 @cli.command('worker', help='Starts mail celery worker')
@@ -172,6 +168,29 @@ def celery_worker(name: str, args: Iterable[Any]) -> None:
     sys.exit(celery_process)
 
 
+# create database
+@cli.command(
+    name="create-db",
+    short_help="creates the SQL tables of the program",
+    help="creates the SQL tables of the program\n"
+         "you can pass the flag drop_first to first drop the entire database"
+)
+@click.option('-drop-first', is_flag=True, default=False,
+              help='Drops the current database before creation', type=bool,
+              prompt='Are you sure you want to drop the table')
+@click.pass_context
+def create_db(ctx: click.Context, drop_first: bool = False):
+    """
+    :param ctx: the flask.cli context
+    :param drop_first: if to drop all database before creating
+    """
+    if drop_first and prompt_are_you_sure(ctx, 'Are you sure you want to drop the board?'):
+        datastore.drop_all()
+        print('database droped')
+    datastore.create_all()
+    print('database created successfully')
+
+
 # drop database
 @cli.command('drop-db', help='drops the database entirely')
 @click.confirmation_option('--yes', is_flag=True, callback=abort_if_false,
@@ -188,7 +207,7 @@ def drop_db():
 
 """
  Check Service Command
- Command to check if services required for the app are working
+ Commands to check if services required for the app are working
 """
 
 
@@ -392,7 +411,7 @@ def redis_database(ctx: click.Context, board_operator: str = None, lock_operator
     board_operator = board_operator if board_operator is not None else apply_all
     lock_operator = lock_operator if lock_operator is not None else apply_all
     if board_operator is None and lock_operator is None:
-        raise InvalidCommand('You must enter any value')
+        raise click.UsageError('You must enter any value')
     try:
         redis_ext.ping()
         print('Redis Works')
@@ -461,7 +480,3 @@ def clear_cache():
         model_class.clear_cache(False)
     datastore.session.commit()
     print('Clear Cache Complete')
-
-
-# adds clear cache command
-manager.add_command('clear-cache', Command(clear_cache))

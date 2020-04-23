@@ -12,6 +12,7 @@ from painter.backends.extensions import datastore
 from painter.backends.skio import ADMIN_NAMESPACE, PAINT_NAMESPACE, sio
 from painter.models import Record, Note, Role, User
 from painter.others.wtforms_mixins import UsernamePattern
+
 from . import admin_router
 from .forms import RecordForm, NoteForm
 from .utils import only_if_superior, admin_only, superuser_only, json_response, validate_get_notes_param
@@ -147,7 +148,10 @@ def get_active_state() -> Response:
     :return: json response
     get active state of the board, only for admins
     """
-    return jsonify(lock.is_open())
+    try:
+        return jsonify(lock.is_open())
+    except:
+        return jsonify(None)
 
 
 @admin_router.route('/set-user-role/<string:name>', methods=('POST',))

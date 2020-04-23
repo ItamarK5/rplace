@@ -1,4 +1,4 @@
-from click import types
+import click
 from datetime import timedelta
 from typing import Optional, FrozenSet
 
@@ -77,6 +77,17 @@ SERVICE_RESULTS_FORMAT = (
     ServiceResultsPrint('{:^15}', 'TASK DURATION', 'duration', DURATION_OPTION_FLAG),
 )
 
-REDIS_DATABASE_OPERATIONS = types.Choice(
+REDIS_DATABASE_OPERATIONS = click.types.Choice(
     ('drop', 'create', 'reset')
 )
+
+ROLE_CHOICE_MAP = {
+    'admin': 'admin',
+    'a': 'admin',
+    'user': 'common',
+    'u': 'common',
+    'c': 'common',
+    'common': 'common',
+    'superuser': 'superuser',
+    's': 'superuser'
+}
