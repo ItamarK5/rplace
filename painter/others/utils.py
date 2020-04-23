@@ -5,89 +5,98 @@
 """
 from __future__ import absolute_import
 
-from typing import (
-    Optional, TypeVar, List,
-    Union, FrozenSet, Iterable,
-    Type, Dict, Any
-)
+from abc import ABC
+from typing import Optional, TypeVar, List, Union, FrozenSet
 
-import click
 from flask import redirect, request
+from flask_script.commands import Command
 from werkzeug import Response
+from wtforms import StringField
+from wtforms.validators import ValidationError
 
 from .constants import (
     FLAG_SERVICES_OPTIONS
 )
 from .wtforms_mixins import (
-    NewUsernameFieldMixin,
-    NewEmailFieldMixin,
+    UsernameFieldMixin,
+    PasswordFieldMixin,
+    MailAddressFieldMixin,
     QuickForm
 )
+from ..models.user import User
 
 ConvertType = TypeVar('ConvertType', int, bool, float)
 
 
-class QuickEmailForm(
+class NewUserForm(
     QuickForm,
-    NewEmailFieldMixin
+    UsernameFieldMixin,
+    PasswordFieldMixin,
+    MailAddressFieldMixin,
 ):
-    pass
-
-
-class QuickUsernameForm(
-    QuickForm,
-    NewUsernameFieldMixin
-):
-    pass
-
-
-class QuickPasswordForm(
-    QuickForm,
-    NewUsernameFieldMixin
-):
-    pass
-
-
-class FormValidateType(click.ParamType):
     """
-    Utility class to use wtforms validators to validate flask.cli values
+    simple class to validate new user data
+    its email address, its name and its password
     """
+    def validate_mail_address(self, field: StringField) -> None:
+        """
+        :param field:  username field
+        :return: validates if the mail address isn't already existing with the name
+        """
+        if User.query.filter_by(email=field.data).first() is not None:
+            raise ValidationError('User with the mail address already exists')
 
-    def __init__(self, field: str, form: Type[QuickForm]) -> None:
+    def validate_username(self, field: StringField) -> None:
         """
-        :param field: the name of the field parrssed by the form
-        :param form: a QuickForm that parses 1 field
+        :param field:  username field
+        :return: validate if the name isn't already existing with the name
         """
-        super().__init__()
-        self.__field = field
-        self.__form = form
-
-    def convert(self, value: str, param: str, ctx: click.Context) -> str:
-        """
-        :param value: value passed to click option
-        :param param: the parameter name
-        :param ctx: context of flask.cli
-        :return: the same value after validating it
-        "converts" validates a option passed
-        """
-        form, is_valid = self.__form.fast_validation(**{self.__field: value})
-        if not is_valid:
-            # show just first error, it would be enought
-            self.fail(form.errors[0], param, ctx)
-        return value
+        if User.query.filter_by(username=field.data).first() is not None:
+            raise ValidationError('User with the username already exists')
 
 
-def has_service_option(flags: Union[List[str]], all_flag: bool, *options: Iterable[str]) -> bool:
+class MyCommand(Command, ABC):
+    """
+        simple command but with options to describe itself,
+    """
+    # class help and class_description are utility for commands
+    class_help: Optional[str] = None
+    class_description: Optional[str] = None
+
+    def __init__(self, func=None,
+                 description: Optional[str] = None,
+                 help_text: Optional[str] = None):
+        super().__init__(func)
+        self.__description = description if description is not None else self.class_description
+        self.__help_text = help_text if help_text is not None else self.class_help
+        self.__help_text = help_text
+        self.option_list = []
+
+    @property
+    def description(self) -> str:
+        """
+        :return: description of command
+        """
+        desc = self.__description if self.__description is not None else ''
+        return desc.strip()
+
+    @property
+    def help(self) -> str:
+        """
+        :return: help text of command
+        """
+        help_text = self.__help_text if self.__help_text is not None else self.__description
+        return help_text.strip()
+
+
+def has_service_option(flags: Union[bool, List[str]], *options) -> bool:
     """
     :param flags: the service flags passed
-    :param all_flag: flag
     :param options: list of options for a option for check-services
     :return: if the option service enabled
     """
-    if all_flag:
-        return True
-    if flags is None:
-        return False
+    if not isinstance(flags, list):
+        return flags
     # other option flag is empty
     elif not flags:
         return True
@@ -97,16 +106,15 @@ def has_service_option(flags: Union[List[str]], all_flag: bool, *options: Iterab
     return False
 
 
-def parse_service_options(flags: Optional[List[str]], all_flag: bool) -> FrozenSet[str]:
+def parse_service_options(flags: Union[bool, List[str]]) -> FrozenSet[str]:
     """
     :param flags: the raw services flags options the user gave
-    :param all_flag: flag selecting all options
     :return: the flags as set of values the all the values there represent setted flags
     """
     return frozenset(
         option
         for option in FLAG_SERVICES_OPTIONS
-        if has_service_option(flags, all_flag, *FLAG_SERVICES_OPTIONS[option])
+        if has_service_option(flags, FLAG_SERVICES_OPTIONS[option])
     )
 
 
@@ -143,43 +151,3 @@ def redirect_to(fallback: str) -> Response:
     if url_dest:
         return redirect(url_dest)
     return redirect(fallback)
-
-
-def abort_if_false(ctx: click.Context, param: str, value:bool):
-    """
-    :param ctx: context
-    :param param: parameter name
-    :param value: value of the parameter
-    :return: nothing
-    aborts the command if value is false
-    https://click.palletsprojects.com/en/7.x/options/#yes-parameters
-    """
-    if not value:
-        ctx.abort()
-
-
-def prompt_are_you_sure(ctx: click.Context, message: Optional[str] = None):
-    message = message if message else "Are you sure you want to do this?"
-    are_you_sure = click.prompt(type=click.types.BOOL)
-    if not are_you_sure:
-        return ctx.abort()
-
-
-class ChoiceMap(click.types.Choice):
-    def __init__(self, choices: Dict[Any, str]) -> None:
-        # choices aren't case insensitive
-        self._map_choices = choices
-        # use tuple as said in docs
-        super().__init__(choices=tuple(self._map_choices.keys()), case_sensitive=False)
-
-    def convert(self, value: str, param: str, ctx: click.Context) -> str:
-        answer_key = super().convert(value, param, ctx)
-        # returns the mapped value
-        try:
-            return self._map_choices[answer_key]
-        except KeyError:
-            # same as choice
-            self.fail(
-                "Meet Some Stupid Errro with getting the key",
-                param, ctx
-            )

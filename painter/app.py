@@ -27,12 +27,15 @@ celery = Celery(
 )
 
 
-def create_app(import_object: str = 'FlaskApp',
-               is_celery: bool = False) -> Flask:
+def create_app(
+        debug: bool = False,
+        import_class: Optional[str] = None,
+        is_celery: bool = False) -> Flask:
     """
     the command to create default app, with configuration
-    :param import_object: the object to import from config.py as configuration base
+    :param import_Class: the class to import from config.py as configuration base
     :param is_celery: does the app is used for celery worker context
+    :param debug: if to debug app
     :return: a Flask application
     creates the application
     """
@@ -42,7 +45,8 @@ def create_app(import_object: str = 'FlaskApp',
         static_url_path='',
         template_folder=path.join('web', 'templates'),
     )
-    # The Application Configuration, import
+    # The Application Configuration, import default
+    import_object = import_class if import_class is not None else 'FlaskApp'
     # first checks if its from directly
     object_configuration = 'painter.config.' + import_object
     try:
@@ -54,6 +58,8 @@ def create_app(import_object: str = 'FlaskApp',
         None if is_celery else app,
         async_mode='eventlet'
     )
+    # set debug
+    app.debug = debug
     # init Extensions
     datastore.init_app(app)
     generate_engine(app)
