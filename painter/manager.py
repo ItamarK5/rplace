@@ -4,7 +4,6 @@
     the module is based of flask_script module
     https://flask-script.readthedocs.io/en/latest/
 """
-
 import subprocess
 import sys
 import time
@@ -12,25 +11,42 @@ from typing import Iterable, Any, Dict, FrozenSet, Optional
 
 import click
 import flask.cli
-from flask_script import Manager, Server, Option, Command
-from flask_script.cli import prompt_bool, prompt_choices, prompt
+from flask import current_app
+from flask_script import Manager, Command
 from flask_script.commands import InvalidCommand
 from redis import exceptions as redis_exception
 
 # first import app to prevent some time related import bugs
-from .app import datastore, sio, redis, create_app
+from .app import datastore, sio, redis as redis_ext, create_app
 from .backends import board, lock
-from .models import Role, User, ExpireModels
-from .others.constants import DURATION_OPTION_FLAG, PRINT_OPTION_FLAG, SERVICE_RESULTS_FORMAT
+from .models import ExpireModels, User, Role
+from .others.constants import (
+    DURATION_OPTION_FLAG, PRINT_OPTION_FLAG,
+    SERVICE_RESULTS_FORMAT, REDIS_DATABASE_OPERATIONS
+)
 from .others.utils import (
-    NewUserForm, MyCommand, parse_service_options, check_service_flag
+    parse_service_options, check_service_flag, prompt_are_you_sure,
+    abort_if_false
 )
 
 
-@click.group(cls=flask.cli.FlaskGroup, create_app=create_app)
+@click.group(cls=flask.cli.FlaskGroup, create_app=create_app,
+             add_default_commands=False,
+             help='Social Painter CMD Service\n'
+                  'if you want to start the server, follow the following steps:\n'
+                  'second use check-services --a to check if all services are '
+                  'available (services means outside support) third '
+                  'use start-redis --a to create all redis support')
 @click.option('-debug', '--D', is_flag=True, flag_value=True, help="debug the app in debug mode")
 @flask.cli.with_appcontext
-def cli(*args, **kwargs):
+def cli(*args: Any, **kwargs: Any) -> None:
+    """
+    :param args: anything
+    :param kwargs: anything
+    :return: nothing
+    created a creates a group with optional arguments
+    the "parent" of the
+    """
     print('Social Painter CMD Service')
 
 
@@ -48,187 +64,127 @@ manager = Manager(
 """
 
 
-@cli.command()
-@click.option('-drop-first', is_flag=True, default=True,
-              help='Drops the current database before creation', type=bool)
-def create_db(drop_first: bool = False):
+@cli.command(
+    name="create-db",
+    short_help="creates the SQL tables of the program",
+    help="creates the SQL tables of the program\n"
+         "you can pass the flag drop_first to first drop the entire database"
+)
+@click.option('-drop-first', is_flag=True, default=False,
+              help='Drops the current database before creation', type=bool,
+              prompt='Are you sure you want to drop the table')
+@click.pass_context
+def create_db(ctx: click.Context, drop_first: bool = False):
     """
-    creates the SQL tables of the program
-    you can pass the flag drop_first to first drop the entire database
+    :param ctx: the flask.cli context
+    :param drop_first: if to drop all database before creating
     """
-    if drop_first and prompt_bool('Are you sure you want to drop the table'):
+    if drop_first and prompt_are_you_sure(ctx, 'Are you sure you want to drop the board?'):
         datastore.drop_all()
         print('database droped')
     datastore.create_all()
     print('database created successfully')
 
 
-    def __call__(self, app, host, port, use_debugger, use_reloader):
-        """
-        :param  host: host the ip to run the server
-        :type:  host: int
-        :param  port: port to listen on the ip
-        :type   port: int
-        :param  use_debugger: if to use debbugger while running the application
-        :type   use_debugger: bool
-        :param  use_reloader: if to use the reloader option of flask
-        :type   use_reloader: bool
-        :return: nothing
-        override the default runserver command to start a Socket.IO server
-        """
-        host = host if host is not None else app.config.get('APP_HOST', '127.0.0.1')
-        port = port if port is not None else app.config.get('APP_PORT', 8080)
-        if use_debugger is None:
-            use_debugger = app.debug
-            if use_debugger is None:
-                use_debugger = True
-        if use_reloader is None:
-            use_reloader = (not app.debug) or app.config.get('WERKZEUG_RUN_MAIN', None) == 'true'
-        sio.run(
-            app,
-            host=host,
-            port=port,
-            debug=use_debugger,
-            use_reloader=use_reloader,
-            **self.server_options
-        )
+@cli.command(name="run", short_help="Run a development server.")
+@click.option("--host", "-h", default=None, help="The interface to bind to.")
+@click.option("--port", "-p", default=None, help="The port to bind to.")
+# if to use the reload option
+@click.option(
+    "--reload/--no-reload",
+    default=None,
+    help="Enable or disable the reloader. By default the reloader "
+         "is active if debug is enabled.",
+)
+# if to use the debugger
+@click.option(
+    "--debugger/--no-debugger",
+    default=None,
+    help="Enable or disable the debugger. By default the debugger "
+         "is active if debug is enabled.",
+)
+@flask.cli.pass_script_info
+def run_server(
+        info: flask.cli.ScriptInfo,
+        host: Optional[str] = None,
+        port: Optional[int] = None,
+        reload: Optional[bool] = None,
+        debugger: Optional[bool] = None,
+):
+    """Run a local development server.
 
+    This server is for development purposes only. It does not provide
+    the stability, security, or performance of production WSGI servers.
 
-class CreateUser(MyCommand):
+    The reloader and debugger are enabled by default if
+    FLASK_ENV=development or FLASK_DEBUG=1.
     """
-        command creating a new user in the system
     """
-    description = 'create a new user in the system'
-    help = 'creates a new user'
+        overrides the default 
+    """
+    host = host if host else current_app.config.get('APP_HOST', '127.0.0.1')
+    if host == 'local-router':
+        # try get router
+        # https://stackoverflow.com/a/166520
+        try:
+            import socket
+            host = socket.gethostbyname(socket.gethostname())
+        finally:
+            # if host didnt change
+            if host == 'local-router':
+                host = '127.0.0.1'
 
-    def get_options(self):
-        """
-        :return: list of all options for the command
-        :type: List[Option]
-        """
-        return (
-            Option('--n', '-name', '-username',
-                   dest='username',
-                   help='username of the new user'),
-            Option('--p', '-password', '-pswd',
-                   dest='password',
-                   help='password of the new user'),
-            Option('--m', '-mail', '-addr', dest='mail_address',
-                   help='mail address of the new user'),
-            Option('--r', '-role', dest='role',
-                   help='Role of the new User'),
-            Option('--a', '-admin',
-                   dest='role', action='store_const', const='common',
-                   help='the users\'s role is setted to be admin'),
-            Option('--u', '-user',
-                   dest='role', action='store_const', const='common',
-                   help='the user\'s role is a simple user'
-                   ),
-            Option('--s', '-superuser',
-                   dest='role', action='store_const', const='common',
-                   help='the user\'s role is a superuser, highest rank')
-        )
+    port = port if port else current_app.config.get('APP_PORT', 5000)
+    debug = flask.cli.get_debug_flag()  # get debug flag
+    if reload is None:
+        # reloading
+        reload = reload
 
-    def run(self, username, password, mail_address, role):
-        """
-        :param  username: name of the new user
-        :type   username: Optional[str]
-        :param  password: the password of the new user
-        :type   password: Optional[str]
-        :param  mail_address: the mail address of the new user
-        :type   mail_address: Optional[str]
-        :param  role: string representing the role of the user default superuser
-        :type   role: Optional[str]
-        :return:runs the command
-        :rtype: None
-        if neither values didnt passed the command parses them
-        runs a command to create new user
-        """
-        if username is None:
-            username = prompt('enter a username address of the user\n[username]')
-        if password is None:
-            password = prompt('you forgeot entering a password, pless enter 1\nPassword: ')
-        if mail_address is None:
-            mail_address = prompt('enter a mail address of the user\nMail:')
-        if role is None:
-            # select choices
-            role = prompt_choices(
-                'You must pick a role, if not default is superuser\n',
-                [
-                    ('admin', 'admin'),
-                    ('a', 'admin'),
-                    ('user', 'common'),
-                    ('u', 'common'),
-                    ('c', 'common'),
-                    ('common', 'common'),
-                    ('superuser', 'superuser'),
-                    ('s', 'superuser')
-                ],
-                'superuser'
-            )
-        # get matched role
-        role_matched = Role.get_member_or_none(role)
-        # if user given a role but isnt valid
-        if role_matched is None:
-            raise InvalidCommand('Pless enter a valid role, not: {0}'.format(role))
-        # check valid role
-        form, is_valid = NewUserForm.fast_validation(
-            username=username,
-            password=password,
-            mail_address=mail_address
-        )
-        if not is_valid:
-            # to get first error
-            for field in iter(form):
-                for error in field.errors:
-                    raise InvalidCommand('{0}: {1}'.format(field.name, error))
-        # create user
-        else:
-            user = User(
-                username=username,
-                password=password,
-                email=mail_address,
-                role=role_matched
-            )
-            # save user
-            datastore.session.add(user)
-            datastore.session.commit()
-            print('user created successfully')
+    if debugger is None:
+        # if debugger isn't set, use debug
+        debugger = debug
+    print(info.load_app())
+    sio.run(
+        info.load_app(),
+        host,
+        port,
+        use_reloader=reload,
+        debug=debugger or True,  # if to use the debugger
+    )
 
 
-class CeleryWorker(Command):
-    """Starts the celery worker."""
-    capture_all_args = True
-    help = 'Start mail celery worker'
-
-    def run(self, argv):
-        """
-        :param argv: string arguments
-        :type argv: List[str]
-        :return: None
-        runs a celery worker
-        """
-        ret = subprocess.call(
-            ['venv/scripts/celery.exe', 'worker',
-             '-A', 'painter.tasks.mail_worker.celery', '-P', 'eventlet'] + argv
-        )
-        sys.exit(ret)
-
-
-# adding command
-manager.add_command('celery-mail', CeleryWorker)
-manager.add_command("create-user", CreateUser())
+@cli.command('worker', help='Starts mail celery worker')
+@click.argument('name', required=False, default='0', nargs=1)
+@click.argument('args', nargs=-1)
+def celery_worker(name: str, args: Iterable[Any]) -> None:
+    """
+    :param name: the name of the worker to
+    :param args: arguments to call with the celery worker
+    :return: using the subprocess module calls the celery worker
+    """
+    name_args = [] if not name else ['-n', name]
+    celery_process = subprocess.call(
+        ['venv/scripts/celery.exe', 'worker',
+         '-A', 'painter.tasks.worker.celery', '-P', 'eventlet']
+        + name_args
+        + list(args)
+    )
+    sys.exit(celery_process)
 
 
 # drop database
+@cli.command('drop-db', help='drops the database entirely')
+@click.confirmation_option('--yes', is_flag=True, callback=abort_if_false,
+                           expose_value=False,
+                           prompt='Are you sure you want to drop the db?')
 def drop_db():
-    if prompt_bool('Are you sure to drop the database'):
+    """
+    :return: Drops the database
+    """
+    if click.prompt('Are you sure to drop the database'):
         datastore.drop_all()
         print('You should create a new superuser, see create-user command')
 
-
-drop_database_command = MyCommand(drop_db, 'drops the database entirely')
-manager.add_command('drop-db', drop_database_command)
 
 """
  Check Service Command
@@ -249,10 +205,10 @@ def check_redis_service(option_flags: FrozenSet[str]) -> Dict[str, Any]:
     try:
         if DURATION_OPTION_FLAG in option_flags:
             current_time = time.time()
-            redis.ping()
+            redis_ext.ping()
             duration = time.time() - current_time
         else:
-            redis.ping()
+            redis_ext.ping()
         if PRINT_OPTION_FLAG in option_flags:
             print('Successfully ping to redis')
         result = True
@@ -307,24 +263,69 @@ def check_sql_service(option_flags: FrozenSet[str]) -> Dict[str, Any]:
         }
 
 
-def check_services(all_flag=False, redis_flag=None, sql_flag=None, option_flags=False):
+@cli.command(
+    name='check-services',
+    short_help='check if services related to the are active and can connect to them',
+    help="You can also set optional flags for the parameter:\n"
+         "\ttimestamp:"
+         "\t"
+)
+@click.option(
+    '-all',
+    is_flag=True,
+    default=False,
+    required=False,
+    help='flag, if set the command checks all options expect those who were given',
+)
+@click.option(
+    '-redis',
+    is_flag=True,
+    default=False,
+    required=False,
+    help='to check if the redis server is active'
+)
+@click.option(
+    '-s', '--sql',
+    is_flag=True,
+    default=False,
+    type=click.types.BOOL,
+    required=False,
+    help='to check if the sql server is active'
+)
+@click.option(
+    '--options',
+    default=None,
+    required=False,
+    help='Optional flags to set'
+)
+@click.option(
+    '-all-options',
+    is_flag=True,
+    default=False,
+    required=False,
+    help="select all optional flags"
+)
+def check_services(all: bool = False, redis: bool = False, sql: bool = False,
+                   options: Optional[str] = None, all_options: bool = False) -> None:
     """
-    :param all_flag: boolean flag to check if get all services or none
-    :type  all_flag: bool
-    (if a flag is set and this is set there dont check service)
-    :param redis_flag: flag if to check the redis service
-    :type  redis_flag: bool
-    :param redis_flag: flag if to check the sql service
-    :type  redis_flag: bool
-    :param option_flags: option flags, include print and check time of response
-    :type  options_flags: Union[str, bool]
+    :param all: boolean flag to check if get all services or none
+    (if a flag is set and this is set there don;t check service)
+    :param redis: flag if to check the redis service
+    :param sql: flag if to check the sql service
+    :param options: option flags, include print and check time of response
+    :param all_options: if to select all options available
     :return: if services are active
     """
+    # if all flags are cleared : nothing happend
+    # also if they all set, all flags negate all flag
+    if sql == redis == all:
+        raise click.UsageError("You must set at least one flag something"
+                               if not all else "You must remove at least 1 flag, you cant set them all")
     # if in the future I should add other flags
     # check if all of them are None
-    option_flags = parse_service_options(option_flags)
+    option_flags = parse_service_options(None if not options else options.split(','), all_options)
     # if all of them are None, check them all
-    redis_flag = check_service_flag(redis_flag, all_flag)
+    redis_flag = check_service_flag(redis, all)
     results = []
     # redis check
     if redis_flag:
@@ -333,7 +334,7 @@ def check_services(all_flag=False, redis_flag=None, sql_flag=None, option_flags=
         # try with redis
         results.append(check_redis_service(option_flags))
     # check sqlite
-    sql_flag = check_service_flag(sql_flag, all_flag)
+    sql_flag = check_service_flag(sql, all)
     # redis check
     if sql_flag:
         # time check
@@ -352,30 +353,35 @@ def check_services(all_flag=False, redis_flag=None, sql_flag=None, option_flags=
         print(result_format.format(*[str(result[context.key]) for context in enabled_contexts]))
 
 
-check_services_command = Command(check_services)
-check_services_command.__dict__['description'] = 'check if services the app uses are active,' \
-                                                 'there are currently 1: redis'
-check_services_command.add_option(Option(
-    '--r', '-redis', dest='redis_flag', action='store_true', help='to check update with redis'
-))
-check_services_command.add_option(Option(
-    '--s', '-sql', dest='sql_flag', action='store_true', help='to check update with sqlalchemy'
-))
-check_services_command.add_option(Option(
-    '--a', '-all', dest='all_flag', action='store_true', help='to check update with all'
-))
-check_services_command.add_option(Option(
-    '--o', '-options', nargs='*', dest='option_flags', default=True,
-    help='special options for the command: t for display the time it takes to end and'
-))
-manager.add_command('check-services', check_services_command)
-
-
-# work on this
-def redis_database(board_operator=None, lock_operator=None, apply_all=None):
+@cli.command(
+    name='redis',
+    help='function to work with the redis objects\n'
+         'choices for options:\n'
+         '\treset:\t\tresets the value and recreated is'
+         '\tdrop:\t\tdrops the key and remove it from the database'
+         '\tcreate:\t\tcreated the key in the database'
+)
+@click.option(
+    '-b', '-board',
+    help='clear/create/reset board value in database',
+    required=False,
+    default=None,
+    type=REDIS_DATABASE_OPERATIONS,
+)
+@click.option(
+    '-l', '--lock',
+    help='clear/create/reset lock value in database',
+    required=False,
+    default=None,
+    type=REDIS_DATABASE_OPERATIONS,
+)
+@click.pass_context
+def redis_database(ctx: click.Context, board_operator: str = None, lock_operator: str = None, apply_all: str = None):
     """
+    :param ctx: context of flask.cli
     :param board_operator: operation with the board object
     :param lock_operator: operation with the lock object
+    :param apply_all: apply to both objects
     :return:
     operators avilage:
     --reset: reset data: create and remove
@@ -388,17 +394,18 @@ def redis_database(board_operator=None, lock_operator=None, apply_all=None):
     if board_operator is None and lock_operator is None:
         raise InvalidCommand('You must enter any value')
     try:
-        redis.ping()
+        redis_ext.ping()
         print('Redis Works')
     # exception
     except Exception as e:
-        print('While Checking Redis encouter error')
+        print('While Checking Redis encounter error')
         print(repr(e))
         return
         # try
     if board_operator is not None:
         try:
-            if board_operator == 'reset' and prompt_bool('Are you sure you want to reset the board?'):
+            # try get the board
+            if board_operator == 'reset' and prompt_are_you_sure(ctx, 'Are you sure you want to reset the board?'):
                 board.drop_board()
                 board.make_board()
                 print('Board reset successfully')
@@ -407,7 +414,7 @@ def redis_database(board_operator=None, lock_operator=None, apply_all=None):
                     print('board already created, use reset or drop to clear board')
                 else:
                     print('Board created successfully')
-            elif board_operator == 'drop':
+            elif board_operator == 'drop' and prompt_are_you_sure(ctx, "are you sure you want to drop the board"):
                 if not board.drop_board():
                     print('Error while dropping board')
                 else:
@@ -416,17 +423,20 @@ def redis_database(board_operator=None, lock_operator=None, apply_all=None):
             print(repr(e))
     if lock_operator is not None:
         try:
+            # reset operation
             if lock_operator == 'reset':
                 if not lock.drop_lock():
                     print('Lock doesnt exists, create it using create command')
                 else:
                     lock.create_lock()
                     print('Lock reset successfully')
+            # create operation
             elif lock_operator == 'create':
                 if not lock.create_lock():
                     print('Lock already created, use reset or drop to clear board')
                 else:
                     print('Lock deleted successfully')
+            # drop operation
             elif lock_operator == 'drop':
                 if not lock.drop_lock():
                     # error print
@@ -439,31 +449,10 @@ def redis_database(board_operator=None, lock_operator=None, apply_all=None):
     print('command finishes')
 
 
-redis_database_command = MyCommand(
-    redis_database,
-    description='function to work with the redis objects\n'
-                'args options:\n'
-                '\treset:\t\tresets the value and recreated is'
-                '\tdrop:\t\tdrops the key and remove it from the database'
-                '\tcreate:\t\tcreated the key in the database'
+@cli.command(
+    name='clear-cache',
+    help='Clears cache that expired'
 )
-redis_database_command.add_option(Option(
-    '--b', '-board', dest='board_operator',
-    help='options with lock',
-    choices=['reset', 'drop', 'create']
-))
-redis_database_command.add_option(Option(
-    '--l', '-lock', dest='lock_operator', help='options with lock',
-    choices=['reset', 'drop', 'create'], default='reset'
-))
-redis_database_command.add_option(Option(
-    '--a', '-all', dest='apply_all', help='options with all variables',
-    choices=['reset', 'drop', 'create'], default='create'
-))
-
-manager.add_command('redis', redis_database_command)
-
-
 def clear_cache():
     """
         clears all unused cache of storage models

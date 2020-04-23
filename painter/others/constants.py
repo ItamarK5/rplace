@@ -1,3 +1,4 @@
+from click import types
 from datetime import timedelta
 from typing import Optional, FrozenSet
 
@@ -74,4 +75,8 @@ SERVICE_RESULTS_FORMAT = (
     ServiceResultsPrint('{:^12}', 'SERVICE', 'service_name'),
     ServiceResultsPrint('{:^12}', 'STATUS', 'result'),
     ServiceResultsPrint('{:^15}', 'TASK DURATION', 'duration', DURATION_OPTION_FLAG),
+)
+
+REDIS_DATABASE_OPERATIONS = types.Choice(
+    ('drop', 'create', 'reset')
 )

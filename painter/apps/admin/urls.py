@@ -30,7 +30,7 @@ def admin() -> Response:
         max_per_page=5
     )
     # try get page
-    return render_template('profiles/admin.html', pagination=pagination, lock=lock.is_open())
+    return render_template('profiles/admin.html', pagination=pagination)
 
 
 @admin_router.route('/add-record', methods=('POST',))

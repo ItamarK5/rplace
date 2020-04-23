@@ -29,7 +29,7 @@ def send_mail(subject: str,
     sends an email using app as flask application for its flask_mail extension
     """
     # import app of mail
-    from .mail_worker import app
+    from .worker import app
     with app.app_context():
         message = Message(
             subject,

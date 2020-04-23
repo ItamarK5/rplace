@@ -3,7 +3,7 @@ from typing import Callable, Optional
 
 from flask import abort, jsonify, request
 from flask_login import current_user
-from flask_login import fresh_login_required
+from flask_login import fresh_login_required, login_fresh
 from werkzeug import Response
 
 from painter.models import Role, User
@@ -17,13 +17,13 @@ def admin_only(f: Callable) -> Callable:
     """
     @wraps(f)
     def wrapped(*args, **kwargs):
-        if current_user.is_authenticated and current_user.has_required_status(Role.admin):
-            # decorated by flesh_login_required, so that it user isnt refreshed and prevent seeing the site
-            return fresh_login_required(f)(*args, **kwargs)
+        if (not current_user.is_authenticated) or (not current_user.has_required_status(Role.admin)):
+            # abort 404
+            abort(404)
         # else
         else:
-            # not found error
-            abort(404)
+            # decorated by flesh_login_required, so that it user isnt refreshed and prevent seeing the site
+            return fresh_login_required(f)(*args, **kwargs)
     return wrapped
 
 

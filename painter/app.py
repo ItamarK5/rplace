@@ -5,7 +5,7 @@ Handles generating the app
 """
 from __future__ import absolute_import
 from os import path
-# backends
+from typing import Optional
 from celery import Celery
 from flask import Flask, cli
 from painter.backends.extensions import (
@@ -27,15 +27,15 @@ celery = Celery(
 )
 
 
-def create_app(debug: bool = False, is_celery: bool = False) -> Flask:
+def create_app(import_object: str = 'FlaskApp',
+               is_celery: bool = False) -> Flask:
     """
     the command to create default app, with configuration
-    :param is_celery: if the app is celery task
-    :param debug: if debugging app
+    :param import_object: the object to import from config.py as configuration base
+    :param is_celery: does the app is used for celery worker context
     :return: a Flask application
     creates the application
     """
-    print(debug)
     app = Flask(
         __name__,   # the name from where to import the application
         static_folder='',
@@ -44,22 +44,15 @@ def create_app(debug: bool = False, is_celery: bool = False) -> Flask:
     )
     # The Application Configuration, import
     # first checks if its from directly
-    object_configuration = 'painter.config.'
-    if is_celery:
-        if debug:
-            object_configuration += 'CeleryDebug'
-        else:
-            object_configuration += 'CeleryApp'
-    else:
-        if debug:
-            object_configuration += 'DebugSettings'
-        else:
-            object_configuration += 'AppSettings'
-
-    app.config.from_object(object_configuration)
-    # socketio
+    object_configuration = 'painter.config.' + import_object
+    try:
+        app.config.from_object(object_configuration)
+    except ImportError:
+        raise click.UsageError("Cannot import configuration {} from config.py".format(import_object))
+    # socketio, force eventlet async mode
     sio.init_app(
         None if is_celery else app,
+        async_mode='eventlet'
     )
     # init Extensions
     datastore.init_app(app)

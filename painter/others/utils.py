@@ -6,10 +6,9 @@
 from __future__ import absolute_import
 
 from abc import ABC
-from typing import Optional, TypeVar, List, Union, FrozenSet
+from typing import Optional, TypeVar, List, Union, FrozenSet, Iterable
 
 from flask import redirect, request
-from flask_script.commands import Command
 from werkzeug import Response
 from wtforms import StringField
 from wtforms.validators import ValidationError
@@ -24,6 +23,7 @@ from .wtforms_mixins import (
     QuickForm
 )
 from ..models.user import User
+import click
 
 ConvertType = TypeVar('ConvertType', int, bool, float)
 
@@ -55,48 +55,17 @@ class NewUserForm(
             raise ValidationError('User with the username already exists')
 
 
-class MyCommand(Command, ABC):
-    """
-        simple command but with options to describe itself,
-    """
-    # class help and class_description are utility for commands
-    class_help: Optional[str] = None
-    class_description: Optional[str] = None
-
-    def __init__(self, func=None,
-                 description: Optional[str] = None,
-                 help_text: Optional[str] = None):
-        super().__init__(func)
-        self.__description = description if description is not None else self.class_description
-        self.__help_text = help_text if help_text is not None else self.class_help
-        self.__help_text = help_text
-        self.option_list = []
-
-    @property
-    def description(self) -> str:
-        """
-        :return: description of command
-        """
-        desc = self.__description if self.__description is not None else ''
-        return desc.strip()
-
-    @property
-    def help(self) -> str:
-        """
-        :return: help text of command
-        """
-        help_text = self.__help_text if self.__help_text is not None else self.__description
-        return help_text.strip()
-
-
-def has_service_option(flags: Union[bool, List[str]], *options) -> bool:
+def has_service_option(flags: Union[List[str]], all_flag: bool, *options: Iterable[str]) -> bool:
     """
     :param flags: the service flags passed
+    :param all_flag: flag
     :param options: list of options for a option for check-services
     :return: if the option service enabled
     """
-    if not isinstance(flags, list):
-        return flags
+    if all_flag:
+        return True
+    if flags is None:
+        return False
     # other option flag is empty
     elif not flags:
         return True
@@ -106,15 +75,16 @@ def has_service_option(flags: Union[bool, List[str]], *options) -> bool:
     return False
 
 
-def parse_service_options(flags: Union[bool, List[str]]) -> FrozenSet[str]:
+def parse_service_options(flags: Optional[List[str]], all_flag: bool) -> FrozenSet[str]:
     """
     :param flags: the raw services flags options the user gave
+    :param all_flag: flag selecting all options
     :return: the flags as set of values the all the values there represent setted flags
     """
     return frozenset(
         option
         for option in FLAG_SERVICES_OPTIONS
-        if has_service_option(flags, FLAG_SERVICES_OPTIONS[option])
+        if has_service_option(flags, all_flag, *FLAG_SERVICES_OPTIONS[option])
     )
 
 
@@ -151,3 +121,23 @@ def redirect_to(fallback: str) -> Response:
     if url_dest:
         return redirect(url_dest)
     return redirect(fallback)
+
+
+def abort_if_false(ctx: click.Context, param: str, value:bool):
+    """
+    :param ctx: context
+    :param param: parameter name
+    :param value: value of the parameter
+    :return: nothing
+    aborts the command if value is false
+    https://click.palletsprojects.com/en/7.x/options/#yes-parameters
+    """
+    if not value:
+        ctx.abort()
+
+
+def prompt_are_you_sure(ctx:click.Context, message:Optional[str] = None):
+    message = message if message else "Are you sure you want to do this?"
+    are_you_sure = click.prompt(type=click.types.BOOL)
+    if not are_you_sure:
+        return ctx.abort()
