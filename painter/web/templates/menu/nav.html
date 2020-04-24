@@ -1,22 +1,15 @@
-{#
-    nav_item: macro for 1 navigator icon
-    title: the title of navigator for tooltips
-    url: the url the icon points to
-    page: the page the url suppose to be pressed
-#}
-{% macro nav_icon(fa, title, url, page=None, gap_right=False) %}
+{% macro nav_item(fa, title, url, page=None, gap_right=False) %}
 <li class="nav-item">
-    {% with set_navigator = page and page == current_page %}
-    <a class="nav-link fas {{fa}} btn {% if set_navigator %}disabled{% endif %}" data-placement="bottom" data-toggle="tooltip" href="{{url_for(url)}}" title="{{title|striptags|title}}">
-        {% if set_navigator %}
-            <span><span class="sr-only">(current)</span>
+    {% with set_navigator = page and page==current_page %}
+    <a class="nav-link fas {{fa}} btn {% if set_navigator %}set{% endif %}" data-placement="bottom"
+       data-toggle="tooltip" href="{{url_for(url)}}" title="{{title|striptags|title}}">
+        {% if set_navigator%}
+        <span><span class="sr-only">(current)</span>
        {% endif %}
     </a>
     {% endwith %}
 </li>
 {% endmacro %}
-
-{% macro navigator() %}
 <nav class="navbar navbar-light justify-content-between">
     <span class="navbar-brand">Social Painter</span>
     <ul class="nav nav-pills nav-fill">
@@ -28,4 +21,3 @@
         {{nav_item('fa-door-open', 'exit', 'auth.logout')}}
     </ul>
 </nav>
-{% endmacro %}
