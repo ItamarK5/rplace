@@ -5,7 +5,7 @@
 <head>
     <meta content="width=device-width, initial-scale=1.0, shrink-to-fit=no" name="viewport">
     {% block styles %}
-    <link href="{{ url_for('other.serve_icon') }}" rel="shortcut icon">
+    <link href="{{ url_for('other.serve_icon')  }}" rel="shortcut icon">
     <!-- Jquery.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" type="text/javascript"></script>
     <!-- Boostrap Style -->
@@ -18,25 +18,25 @@
           integrity="sha256-wMES50JHO82E/LjWWLWeCXXQahHeA0oemqGIfMkD5BI=" rel="stylesheet"/>
     <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css"
           integrity="sha256-UZFVAO0Fn854ajzdWnJ2Oze6k1X4LNqE2RJPW3MBfq8=" rel="stylesheet"/>
-    <link href="{{ url_for('other.serve_static', key='auth.css') }}" rel="stylesheet">
+    <link href="{{ url_for('other.serve_static', key='auth.css')  }}" rel="stylesheet">
     <script crossorigin="anonymous" integrity="sha256-O4179En8zabOlPYBNvGp8cF0uh0vnSZpW4Q6Ul1h+8c=" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore.js"></script>
     {% endblock %}
-    <title>{{ form.title }} </title>
+    <title>{{ form.title  }} </title>
 </head>
     <body>
     {% block body %}
     <div class="container">
         <div class="row justify-content-center align-items-center">
             {% block form %}
-            <form class="w-75 x-auto y-auto" id="submit-form" method="POST" url="{{ request.url }}">
-                {{ form.hidden_tag() }}{% block before_title %}{% endblock %}
+            <form class="w-75 x-auto y-auto" id="submit-form" method="POST" url="{{ request.url  }}">
+                {{ form.hidden_tag()  }}{% block before_title %}{% endblock %}
                 <div class="form-row mb-1s display-2 text-center">
                     <!-- warning was used as nice title -->
-                    <h2 class="mx-auto text-warning non-select"><u>{{ form.title }}</u></h2>
+                    <h2 class="mx-auto text-warning non-select"><u>{{ form.title  }}</u></h2>
                 </div>
                 {# messages from flash #}
-                {{ message_alert() }}
-                <img class="rounded mx-auto d-block mb-2" height="250" src="{{ url_for('other.serve_static', key='favicon.gif') }}" width="190">
+                {{ message_alert()  }}
+                <img class="rounded mx-auto d-block mb-2" height="250" src="{{ url_for('other.serve_static', key='favicon.gif')  }}" width="190">
                 {% block fields %}
                 {% endblock %}
                 <div class="row justify-content-around mx-auto mt-1">
@@ -55,7 +55,7 @@
     <script crossorigin="anonymous" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
     <!-- bootstarp -->
     <script crossorigin="anonymous" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
-    <script src="{{ url_for('other.serve_static', key='auth.js') }}"></script>
+    <script src="{{ url_for('other.serve_static', key='auth.js')  }}"></script>
     {% endblock %}
 </body>
 </html>

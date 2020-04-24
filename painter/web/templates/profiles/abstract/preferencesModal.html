@@ -6,50 +6,50 @@
 {% endmacro %}
 {% macro modal_header(modal_name, label) %}
 <div class="modal-header">
-    <h5 class="modal-title" id="{{modal_name}}-title" style="text-transform: capitalize !important;">{{label}}</h5>
+    <h5 class="modal-title" id="{{ modal_name }}-title" style="text-transform: capitalize !important;">{{ label }}</h5>
     <button aria-label="Close" class="close" data-dismiss="modal" type="button">
         <span aria-hidden="true">&times;</span>
     </button>
 </div>
 {% endmacro %}
 {% macro simple_preference_modal(index, modal_name, field, input, value) %}
-<div aria-hidden="true" aria-labelledby="#{{modal_name}}-title" class="modal" id="{{modal_name}}" role="dialog" tabindex="-{{index}}">
+<div aria-hidden="true" aria-labelledby="#{{ modal_name }}-title" class="modal" id="{{ modal_name }}" role="dialog" tabindex="-{{ index }}">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            {{modal_header(modal_name, input.label)}}
+            {{ modal_header(modal_name, input.label) }}
             <div class="modal-body">
-                <form action="{{url_for('place.profile_ajax')}}" class="setting-form" method="POST" id="{{modal_name}}-form">
+                <form action="{{ url_for('place.profile_ajax') }}" class="setting-form" method="POST" id="{{ modal_name }}-form">
                     <div class="text-center justify-content-center form-row" class="row-describer">
                         <span class="font-weight-bold font-size-15 justify-content-center"
-                              class="setting-describer" field-related='#{{input.id}}'>{{value}}</span><br>
+                              class="setting-describer" field-related='#{{ input.id }}'>{{ value }}</span><br>
                     </div>
                     <div class="form-row">
-                        {{field}}                        
+                        {{ field }}                        
                     </div>
                 </form>
-                {{alerts()}}
+                {{ alerts() }}
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-dismiss="modal" type="button">Close</button>
-                <button class="btn btn-primary commit-setting" type="button" data-target="#{{modal_name}}">Save changes</button>
+                <button class="btn btn-primary commit-setting" type="button" data-target="#{{ modal_name }}">Save changes</button>
             </div>
         </div>
     </div>
 </div>
 {% endmacro %}
-{{simple_preference_modal(1, 'modal-change-x', form.x(class_="form-control-range col", value=user.x, min=0, max=1000, type="range"), form.x, user.x)}}
-{{simple_preference_modal(2, 'modal-change-y', form.y(class_="form-control-range col", value=user.y, min=0, max=1000, type="range"), form.y, user.y)}}
-{{simple_preference_modal(3, 'modal-change-scale', form.scale(class_="form-control-range col", value=user.scale, min=1, max=50, type="range"), form.scale, user.scale)}}
+{{ simple_preference_modal(1, 'modal-change-x', form.x(class_="form-control-range col", value=user.x, min=0, max=1000, type="range"), form.x, user.x) }}
+{{ simple_preference_modal(2, 'modal-change-y', form.y(class_="form-control-range col", value=user.y, min=0, max=1000, type="range"), form.y, user.y) }}
+{{ simple_preference_modal(3, 'modal-change-scale', form.scale(class_="form-control-range col", value=user.scale, min=1, max=50, type="range"), form.scale, user.scale) }}
 {# color #}
 <div aria-hidden="true" aria-labelledby="#modal-change-color-title" class="modal" id="modal-change-color" role="dialog" tabindex="-4">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            {{modal_header('modal-change-color', form.color.label)}}
+            {{ modal_header('modal-change-color', form.color.label) }}
             <div class="modal-body">
-                <form action="{{url_for('place.profile_ajax')}}" class="setting-form" method="POST" id="modal-change-color-form">
-                    {{form.color(class_="custom-select")}}
+                <form action="{{ url_for('place.profile_ajax') }}" class="setting-form" method="POST" id="modal-change-color-form">
+                    {{ form.color(class_="custom-select") }}
                 </form>
-                {{alerts()}}
+                {{ alerts() }}
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-dismiss="modal" type="button">Close</button>
@@ -62,19 +62,19 @@
 <div aria-hidden="true" aria-labelledby="#modal-change-url-title" class="modal" id="modal-change-url" role="dialog" tabindex="-5">
 <div class="modal-dialog" role="document">
    <div class="modal-content">
-       {{modal_header('modal-change-url', form.chat_url.label)}}
+       {{ modal_header('modal-change-url', form.chat_url.label) }}
        <div class="modal-body">
-           <form action="{{url_for('place.profile_ajax')}}" class="setting-form" method="POST">
+           <form action="{{ url_for('place.profile_ajax') }}" class="setting-form" method="POST">
                <div class="input-group">
                     <div class="input-group-append">
-                        <button type="button" class="btn btn-outline-secondary" id="delete-url" data-target="#{{form.chat_url.id}}">
+                        <button type="button" class="btn btn-outline-secondary" id="delete-url" data-target="#{{ form.chat_url.id }}">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </div>
-                    {{form.chat_url(class_="form-control", value=user.url)}}
+                    {{ form.chat_url(class_="form-control", value=user.url) }}
                </div>
            </form>
-           {{alerts()}}
+           {{ alerts() }}
        </div>
        <div class="modal-footer">
            <button class="btn btn-secondary" data-dismiss="modal" type="button">Close</button>

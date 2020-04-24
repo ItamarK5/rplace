@@ -1,22 +1,22 @@
 {% macro settingField(key, val, modal, describe) %}
-<tr class="mb-2 justify-content-center" id="row-{{key}}">
+<tr class="mb-2 justify-content-center" id="row-{{ key }}">
     <td class="justify-content-center align-content-center">
-        <button class="btn btn-outline-light w-100 h-100 block text-center text-xl" data-target="{{modal}}"
-                data-toggle="modal" id="{{key}}-active">
+        <button class="btn btn-outline-light w-100 h-100 block text-center text-xl" data-target="{{ modal }}"
+                data-toggle="modal" id="{{ key }}-active">
             <i class="fas fa-edit"></i>
         </button>
     </td>
     <td>
         <h5 class="text-warning">
-            {{ key|title }}{% if key|length > 2 %}:{% endif %}
+            {{ key|title  }}{% if key|length > 2 %}:{% endif %}
         </h5>
     </td>
     <td class="justify-content-center setting-val">
-        <h5 class="text-break text-warning" id="text-{{key}}" aria-describedat="#{{describe}}">{{val|string}}</h5>
+        <h5 class="text-break text-warning" id="text-{{ key }}" aria-describedat="#{{ describe }}">{{ val|string }}</h5>
     </td>
 </tr>
 {% endmacro %}
-{{edit_title('Preferences')}}
+{{ edit_title('Preferences') }}
 <table class="table table-striped table-dark table-bordered table-sm">
     <thead>
     <th class="text-center" style="width:5%">Edit:</th>
@@ -24,10 +24,10 @@
     <th class="text-center" style="width:80%">Value:</th>
     </thead>
     <tbody class="text-center">
-    {{settingField('x', user.x, '#modal-change-x', form.x.id)}}
-    {{settingField('y', user.y, '#modal-change-y', form.y.id)}}
-    {{settingField('scale', user.scale, '#modal-change-scale', form.scale.id)}}
-    {{settingField('color', user.color|color|title, '#modal-change-color', form.color.id)}}
-    {{settingField('url', user.url, '#modal-change-url', form.chat_url.id)}}
+    {{ settingField('x', user.x, '#modal-change-x', form.x.id) }}
+    {{ settingField('y', user.y, '#modal-change-y', form.y.id) }}
+    {{ settingField('scale', user.scale, '#modal-change-scale', form.scale.id) }}
+    {{ settingField('color', user.color|color|title, '#modal-change-color', form.color.id) }}
+    {{ settingField('url', user.url, '#modal-change-url', form.chat_url.id) }}
     </tbody>
 </table>

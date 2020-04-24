@@ -1,21 +1,21 @@
 {% macro note_description(key, title, addon_class='') %}
-<div class="input-group" id="{{ket}}-box" data-toggle="tooltip" data-placement="top" title="{{title}}">
+<div class="input-group" id="{{ ket }}-box" data-toggle="tooltip" data-placement="top" title="{{ title }}">
     <div class="input-group-prepend">
-        <span class='input-group-text' for='{{key}}-field'>
-            <i class="{{addon_class}}"></i>
+        <span class='input-group-text' for='{{ key }}-field'>
+            <i class="{{ addon_class }}"></i>
         </span>
     </div>
-    <input type="text" class="form-control" id="{{key}}-field" disabled>
+    <input type="text" class="form-control" id="{{ key }}-field" disabled>
 </div>
 {% endmacro %}
 {% macro big_note_description(key, title, addon_class) %}
-<div class="input-group" id="{{ket}}-box" data-toggle="tooltip" data-placement="top" title="{{title}}">
+<div class="input-group" id="{{ ket }}-box" data-toggle="tooltip" data-placement="top" title="{{ title }}">
     <div class="input-group-prepend">
-        <span class='input-group-text' for='{{key}}-field'>
-            <i class="{{addon_class}}"></i>
+        <span class='input-group-text' for='{{ key }}-field'>
+            <i class="{{ addon_class }}"></i>
         </span>
     </div>
-    <textarea class="form-control" id="{{key}}-field" disabled></textarea>
+    <textarea class="form-control" id="{{ key }}-field" disabled></textarea>
 </div>
 {% endmacro %}
 <div aria-hidden="true" aria-labelledby="#history-title" class="modal fade" id="historyModal" role="dialog" tabindex="-3">
@@ -50,18 +50,18 @@
                     </div>
                     <div class="col justify-content-center" id="view-record">
                         <div class="row justify-content-around my-1">
-                            <div class="col-5">{{note_description('post-date', 'Posted', 'far fa-clock')}}</div>
-                            <div class="col-5">{{note_description('writer', 'Writer', 'fas fa-pen-fancy')}}</div>
+                            <div class="col-5">{{ note_description('post-date', 'Posted', 'far fa-clock') }}</div>
+                            <div class="col-5">{{ note_description('writer', 'Writer', 'fas fa-pen-fancy') }}</div>
                         </div>
                         <div class="row justify-content-around my-1 record-row">
-                            <div class="col-5">{{note_description('affect-from', 'Takes Effect from', 'fas fa-calendar')}}</div>
-                            <div class="col-5">{{note_description('active', 'Status', 'fas fa-cogs')}}</div>
+                            <div class="col-5">{{ note_description('affect-from', 'Takes Effect from', 'fas fa-calendar') }}</div>
+                            <div class="col-5">{{ note_description('active', 'Status', 'fas fa-cogs') }}</div>
                         </div>
                         <div class="row justify-content-around m-1 record-row">
-                            {{big_note_description('reason', 'Reason', 'fas fa-comment')}}
+                            {{ big_note_description('reason', 'Reason', 'fas fa-comment') }}
                         </div>
                         <div class="row justify-content-around m-1">
-                            {{big_note_description('description', 'Description', 'fas fa-paragraph')}}
+                            {{ big_note_description('description', 'Description', 'fas fa-paragraph') }}
                         </div>
                         <div id="edit-note-tools" class="row justify-content-around d-none">
                             <button type="button" id="remove-note-button" class="btn btn-danger">Remove</button>

@@ -10,14 +10,14 @@
     <div class="input-group">
         <div class="input-group-prepend">
       <span class="input-group-text">
-        <i class="{{icon_class}} mr-1"></i>{{label.text|title}}
+        <i class="{{ icon_class }} mr-1"></i>{{ label.text|title }}
       </span>
         </div>
-        {{field}}
+        {{ field }}
     </div>
 </div>
 <div class="form-row">
-    <li class="error-list list-group" error-for="{{id}}"></li>
+    <li class="error-list list-group" error-for="{{ id }}"></li>
 </div>
 {% endmacro %}
 <div aria-hidden="true" aria-labelledby="#record-title" class="modal fade" id="recordModal" role="dialog" tabindex="-2">
@@ -30,7 +30,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form action="{{url_for('admin.add_record', name=user.username)}}" id="record-form" method="POST">
+                <form action="{{ url_for('admin.add_record', name=user.username) }}" id="record-form" method="POST">
                     <div class="form-row">
                         <div class="alert alert-success success-message" hidden>
                             You Added a record to the user
@@ -41,21 +41,21 @@
                     </div>
                     <div class="form-row mb-1">
                         <div class="form-check form-check-inline"> {# no record - default #}
-                            {{record_form.set_banned(class_="custom-check-input form-inline")}}
-                            <label class="custom-check-label" for="{{record_form.set_banned.id}}">To Record The User</label>
+                            {{ record_form.set_banned(class_="custom-check-input form-inline") }}
+                            <label class="custom-check-label" for="{{ record_form.set_banned.id }}">To Record The User</label>
                         </div>
                     </div>
                     <div class="form-row">
-                        <li class="error-list list-group" error-for="{{record_form.set_banned.id}}"></li>
+                        <li class="error-list list-group" error-for="{{ record_form.set_banned.id }}"></li>
                     </div>
                     <div class="form-row mb-1 mt-1">
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text">
-                                    <i class="far fa-calendar mr-1"></i>{{record_form.affect_from.label.text|title}}
+                                    <i class="far fa-calendar mr-1"></i>{{ record_form.affect_from.label.text|title }}
                                 </span>
                             </div>
-                            {{record_form.affect_from(type='text', class='form-control datetimepicker-input', disabled=true)}}
+                            {{ record_form.affect_from(type='text', class='form-control datetimepicker-input', disabled=true) }}
                             <div class="input-group-append">
                                 <div class="input-group-text">
                                     <input aria-label="add time" id="set-affect-from" type="checkbox">
@@ -64,10 +64,10 @@
                         </div>
                     </div>
                     <div class="form-row">
-                        <li class="error-list list-group" error-for="{{record_form.affect_from.id}}"></li>
+                        <li class="error-list list-group" error-for="{{ record_form.affect_from.id }}"></li>
                     </div>
-                    {{form_row(record_form.reason(type="text", class="form-control mw-100 mh-100"), 'far fa-clipboard', record_form.reason.label, record_form.reason.id)}}
-                    {{form_row(record_form.note_description(type="text", class="form-control mw-100 mh-100"), 'fas fa-sticky-note', record_form.note_description.label, record_form.note_description.id)}}
+                    {{ form_row(record_form.reason(type="text", class="form-control mw-100 mh-100"), 'far fa-clipboard', record_form.reason.label, record_form.reason.id) }}
+                    {{ form_row(record_form.note_description(type="text", class="form-control mw-100 mh-100"), 'fas fa-sticky-note', record_form.note_description.label, record_form.note_description.id) }}
                     <div class="form-row">
                         <li class="list-group" id="any-error-list">
 

@@ -6,25 +6,25 @@
     <!-- bootstrap styles-->
     <link crossorigin="anonymous" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
           integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" rel="stylesheet">
-    <link href="{{url_for('other.serve_static', key='transport.css')}}" rel="stylesheet">
-    <title>{% block block_page_title %}{{page_title}}{% endblock %}</title>
+    <link href="{{ url_for('other.serve_static', key='transport.css') }}" rel="stylesheet">
+    <title>{% block block_page_title %}{{ page_title }}{% endblock %}</title>
 </head>
 <body>
 <div class="container">
     <div class="row justify-content-center">
-        <h2 class="text-primary text-center col"><u>{% block block_title %}{{title}}{% endblock %}</u></h2>
+        <h2 class="text-primary text-center col"><u>{% block block_title %}{{ title }}{% endblock %}</u></h2>
     </div>
     <div class="row justify-content-center">
         <img alt="favicon wasn't load" class="autorounded float-right d-inline-block non-select"
-             draggable="0" src="{{url_for('other.serve_static', key='favicon.gif')}}">
+             draggable="0" src="{{ url_for('other.serve_static', key='favicon.gif') }}">
     </div>
     <div class="w-50 form-row mx-auto">
-        <h5 class="text-warning">{% block block_message %}{{content}}{% endblock %}</h5>
+        <h5 class="text-warning">{% block block_message %}{{ content }}{% endblock %}</h5>
     </div>
     {% if view_name and view_ref %}
     <div class="row justify-content-center">
         <div class="btn btn-default border-warning d-inline-block text-center">
-            <a class="text-primary font-weight-bold" href="{{url_for(view_ref)}}" id="view-url">{{view_name}}</a>
+            <a class="text-primary font-weight-bold" href="{{ url_for(view_ref) }}" id="view-url">{{ view_name }}</a>
         </div>
     </div>
 </div>

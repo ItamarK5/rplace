@@ -8,7 +8,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form action="{{url_for('admin.add_note', name=user.username)}}" id="note-form" method="POST">
+                <form action="{{ url_for('admin.add_note', name=user.username) }}" id="note-form" method="POST">
                     <div class="form-row">
                         <div class="alert alert-success success-message" hidden>
                             You Added a Note about the user
@@ -18,14 +18,14 @@
                         <div class="input-group">
                             <div class="input-group-prepend">
                     <span class="input-group-text">
-                      <i class='fas fa-sticky-note mr-1'></i>{{note_form.description.label.text|title}}
+                      <i class='fas fa-sticky-note mr-1'></i>{{ note_form.description.label.text|title }}
                     </span>
                             </div>
-                            {{note_form.description(type="text", class="form-control mw-100 mh-100")}}
+                            {{ note_form.description(type="text", class="form-control mw-100 mh-100") }}
                         </div>
                     </div>
                     <div class="form-row">
-                        <li class="error-list list-group" error-for="{{note_form.description.id}}"></li>
+                        <li class="error-list list-group" error-for="{{ note_form.description.id }}"></li>
                     </div>
                 </form>
             </div>

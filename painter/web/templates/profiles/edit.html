@@ -2,7 +2,7 @@
 {% extends 'profiles/profile.html' %}
 {%- set current_page = 'admin' %}
 {% block css %}
-{{ super()}}
+{{ super() }}
 <link href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet"/>
 <script crossorigin="anonymous" integrity="sha256-DgfbtH6ya+miGHqPZNQCTK3JPq0KdQg45kOZzmotUoM=" src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/js/regular.min.js"></script>
 <link href="//cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@3/dark.css" rel="stylesheet">
@@ -22,26 +22,26 @@
     {% endif %}
 {% endblock %}
 {% block container %}
-{{ super()}}
+{{ super() }}
     <div class="row justify-content-center">
         <div aria-label="Toolbar with button groups" class="btn-toolbar" role="toolbar">
             <div class="btn-group mr-2" role="group">
-                {{ button_model('Add Record', 'recordModal', 'fas fa-ban', 'Ban', classes="btn-secondary")}}
-                {{ button_model('Add Note', 'noteModal', 'far fa-sticky-note', 'Note', classes="btn-secondary")}}
-                {{ button_model('History', 'historyModal', 'fas fa-history', 'History', classes="btn-secondary")}}
+                {{ button_model('Add Record', 'recordModal', 'fas fa-ban', 'Ban', classes="btn-secondary") }}
+                {{ button_model('Add Note', 'noteModal', 'far fa-sticky-note', 'Note', classes="btn-secondary") }}
+                {{ button_model('History', 'historyModal', 'fas fa-history', 'History', classes="btn-secondary") }}
                 {% if current_user.has_required_status(Role.superuser) %}
                     {% if user.role == Role.common %}
                         <span>
-                            <button class="btn btn-secondary" enum-name="{{ Role.admin.name|title}}" id="rank-button" title="change rank"
+                            <button class="btn btn-secondary" enum-name="{{ Role.admin.name|title }}" id="rank-button" title="change rank"
                                     type="button">
-                                <i class="fas {{ Role.admin.icon}}"></i>
+                                <i class="fas {{ Role.admin.icon }}"></i>
                             </button>
                         </span>
                         {% else %}
                         <span>
-                            <button class="btn btn-secondary" enum-name="{{ Role.common.name|title}}" id="rank-button" title="change rank"
+                            <button class="btn btn-secondary" enum-name="{{ Role.common.name|title }}" id="rank-button" title="change rank"
                                     type="button">
-                                <i class="fas {{ Role.common.icon}}"></i>
+                                <i class="fas {{ Role.common.icon }}"></i>
                             </button>
                         </span>
                     {% endif %}
@@ -56,5 +56,5 @@
         {% include 'profiles/abstract/historyModal.html' %}
     {% endblock %}
 {% block javascript %}
-    <script src="{{ url_for('other.serve_static', key='edit.js')}}"></script>
+    <script src="{{ url_for('other.serve_static', key='edit.js') }}"></script>
 {% endblock %}
