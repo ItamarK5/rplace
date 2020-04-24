@@ -22,9 +22,6 @@ from .others.utils import (
     NewUserForm, MyCommand, parse_service_options, check_service_flag
 )
 
-import time
-t = time.time()
-
 manager = Manager(
     create_app,
     description='Social Painter CMD Service',
@@ -53,6 +50,9 @@ class RunServer(Server):
     """
 
     help = description = 'Runs the Production Server'
+
+    # constant to search host
+    _SEARCH_HOST = 'search'
 
     def get_options(self) -> Iterable[Option]:
         """
@@ -94,21 +94,24 @@ class RunServer(Server):
         )
 
     @staticmethod
-    def __convert_router(host: str) -> str:
+    def __search_ip(host: str) -> str:
         """
         :param host: host address
         :return: if host is router returns
         # https://stackoverflow.com/a/166520
         """
-        if host == "router":
-            try:
-                host = socket.gethostbyname(socket.gethostname())
-            except Exception as e:
-                print("Fail to get router IP, because:")
-                print(e)
-                print("Running On local host")
-                host = '127.0.0.1'
-        return host
+        print("You decided to search \'search\' host ip for router")
+        try:
+            host = socket.gethostbyname(socket.gethostname())
+            print("Host found to be:{}\n"
+                  "to make the app start faster pless replace APP_HOST as the given host"
+                  "if you want to have the server running on router"
+                  "".format(host))
+        except Exception as e:
+            print("Fail to found router IP, because:")
+            print(e)
+            print("Running On local host")
+            host = '127.0.0.1'
 
     def __call__(self, app, host, port, use_debugger, use_reloader):
         """
@@ -123,7 +126,9 @@ class RunServer(Server):
         :return: nothing
         override the default runserver command to start a Socket.IO server
         """
-        host = self.__convert_router(host if host is not None else app.config.get('APP_HOST', '127.0.0.1'))
+        host = host if host is not None else app.config.get('APP_HOST', '127.0.0.1')
+        if host == self._SEARCH_HOST:
+            host = self.__search_ip()
         port = port if port is not None else app.config.get('APP_PORT', 8080)
         # if didn't given debugger
         if use_debugger is None:
@@ -134,7 +139,6 @@ class RunServer(Server):
         if use_reloader is None:
             use_reloader = (not app.debug) or app.config.get('WERKZEUG_RUN_MAIN', None) == 'true'
         # runs the socketio server
-        print(time.time()-t)
         sio.run(
             app,
             host=host,
