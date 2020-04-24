@@ -33,7 +33,7 @@
     <div id="color-table-box">
         <div class='center' id=colorTable>
             {% for i in range(16) %}
-            <div class='colorButton' picked="{{ (i==current_user.color)|int  }}" value='{{ i  }}'></div>
+            <div class='colorButton' picked="{{ (i==current_user.color) | int  }}" value='{{ i  }}'></div>
             {% endfor %}
             <div id="lock-colors" lock="0">
                 <i class="fa fa-lock"></i>

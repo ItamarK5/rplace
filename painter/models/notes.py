@@ -52,9 +52,9 @@ class Note(storage_sql.Model):
     """
     __mapper_args__ = {
         'polymorphic_identity': 'note',
+        # whats decided if record or note
         'polymorphic_on': case(
-            # sorry for pep 8, this is how it was in the example
-            [(is_record == True, 'record'), ],
+            [(is_record.__eq__(True), 'record'), ],
             else_='note'
         )
     }

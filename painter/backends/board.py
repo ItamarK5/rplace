@@ -36,7 +36,7 @@ def set_at(x: int, y: int, color: int) -> None:
     """
     :param x: x of the colored pixel
     :param y: y of the colored pixel
-    :param color: the color the user setted the pixel
+    :param color: id of palette
     :return: nothing
     set a pixel on the board copy in the redis server
     """
@@ -50,7 +50,7 @@ def set_at(x: int, y: int, color: int) -> None:
 def drop_board() -> bool:
     """
     deletes the board
-    :return: if board was deleated
+    :return: if the board was deleteated completly
     :rtype: bool
     """
     if not redis.exists(KEY):

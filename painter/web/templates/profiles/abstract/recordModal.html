@@ -10,7 +10,7 @@
     <div class="input-group">
         <div class="input-group-prepend">
       <span class="input-group-text">
-        <i class="{{ icon_class }} mr-1"></i>{{ label.text|title }}
+        <i class="{{ icon_class }} mr-1"></i>{{ label.text | title }}
       </span>
         </div>
         {{ field }}
@@ -52,7 +52,7 @@
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text">
-                                    <i class="far fa-calendar mr-1"></i>{{ record_form.affect_from.label.text|title }}
+                                    <i class="far fa-calendar mr-1"></i>{{ record_form.affect_from.label.text | title }}
                                 </span>
                             </div>
                             {{ record_form.affect_from(type='text', class='form-control datetimepicker-input', disabled=true) }}

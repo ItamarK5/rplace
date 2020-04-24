@@ -27,10 +27,9 @@ celery = Celery(
 )
 
 
-def create_app(
-        debug: bool = False,
-        import_class: Optional[str] = None,
-        is_celery: bool = False) -> Flask:
+def create_app(debug: bool = False,
+               import_class: Optional[str] = None,
+               is_celery: bool = False) -> Flask:
     """
     the command to create default app, with configuration
     :param import_class: the class to import from config.py as configuration base

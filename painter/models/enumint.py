@@ -1,6 +1,6 @@
 """
-Name: enumint
-Contains the enumint class support, a utility to save small integer enums (with 64 or less args) in sql
+Name: enum_int
+Contains the enum_int class support, a utility to save small integer enums (with 64 or less args) in sql
 """
 from enum import IntEnum
 from typing import Type, Any
@@ -13,6 +13,11 @@ class SmallEnum(TypeDecorator):
     Enables passing in a Python enum and storing the enum's *value* in the db.
     The default would have stored the enum's *name* (ie the string).
     """
+
+    @property
+    def python_type(self):
+        return int
+
     impl = SmallInteger
 
     def __init__(self, enum_type: Type[IntEnum], *args, **kwargs) -> None:
@@ -31,10 +36,10 @@ class SmallEnum(TypeDecorator):
     def process_result_value(self, value, dialect) -> IntEnum:
         """
         :param value:
-        :param dialect: dont know, but
+        :param dialect:
         :return:
         """
         try:
             return self._enum_type(value)
         except ValueError:
-            raise ValueError('enum value isnt valid: %s' % value)
+            raise ValueError('enum value isn\'t valid: %s' % value)

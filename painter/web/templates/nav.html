@@ -7,8 +7,8 @@
 {% macro nav_icon(fa, title, url, page=None) %}
 <li class="nav-item">
     {% with set_navigator = page and page==current_page %}
-    # Unescape markup into an text_type string and strip all tags. This also resolves known HTML4 and XHTML entities. Whitespace is normalized to one: 
-    <a class="nav-link fas {{ fa }} btn {% if set_navigator %}set{% endif %}" data-placement="bottom" data-toggle="tooltip" href="{{ url_for(url) }}" title="{{ title|striptags|title }}">
+    {# Unescape markup into an text_type string and strip all tags. This also resolves known HTML4 and XHTML entities. Whitespace is normalized to one: #}
+    <a class="nav-link fas {{ fa }} btn {% if set_navigator %}set{% endif %}" data-placement="bottom" data-toggle="tooltip" href="{{ url_for(url) }}" title="{{ title | striptags | title }}">
         {% if set_navigator%}
         <span><span class="sr-only">(current)</span>
        {% endif %}
@@ -22,7 +22,7 @@
     <ul class="nav nav-pills nav-fill">
         {{ nav_icon('fa-paint-brush', 'paint', 'place.place') }}
         {{ nav_icon('fa-home', 'home', 'place.home', 'home') }}
-        {{ nav_icon('fa-cog', 'profile', 'place.profile', 'profile') }}{% if current_user|is_admin %}
+        {{ nav_icon('fa-cog', 'profile', 'place.profile', 'profile') }}{% if current_user | is_admin %}
         {{ nav_icon('fa-tools', 'admin tools', 'admin.admin', 'admin') }}{% endif %}
         {{ nav_icon('fa-door-open', 'exit', 'auth.logout') }}
     </ul>

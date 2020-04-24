@@ -5,13 +5,13 @@
 {% endmacro %}
 {% macro pre_input_text(text, for_input, id=None, classes="") %}
 <div class="input-group-prepend">
-    <span class="custom-input-text{{ classes|class_ftr }}" for="{{ for_input }}" id="{{ id }}">{{ text }}</span>
+    <span class="custom-input-text{{ classes | class_ftr }}" for="{{ for_input }}" id="{{ id }}">{{ text }}</span>
 </div>
 {% endmacro %}
 {% macro button_model(span, modal, fa, title='none', placement="top", classes=None) %}
 {# http://jsfiddle.net/sso79Ldj/1/ #}
 <div data-target="#{{ modal }}" data-toggle="modal" id="{{ span }}">
-    <button class="btn{{ classes|class_ftr }}" data-placement="{{ placement }}" data-toggle="tooltip" title="{{ title }}" type="button">
+    <button class="btn{{ classes | class_ftr }}" data-placement="{{ placement }}" data-toggle="tooltip" title="{{ title }}" type="button">
         <i class="{{ fa }}"></i>
     </button>
 </div>

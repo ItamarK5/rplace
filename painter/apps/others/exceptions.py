@@ -14,13 +14,13 @@ def handle_csrf_error(e: CSRFError) -> Response:
     """
     :param e: csrf error
     :return: csrf error response page if its not a xhr request
-    handles CSRF excpeiton
+    handles CSRF exception
     """
     if not is_ajax_request(request):
         return render_meme_error_page(
             e,
             'csrf',
-            'unvalid csrf token',
+            'invalid csrf token',
             'Cross-Site-Forgery-Key Error'
         )
     return e

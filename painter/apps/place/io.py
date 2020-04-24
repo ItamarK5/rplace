@@ -93,5 +93,5 @@ def set_board(params: Any) -> str:
         #  board.set_at(x, y, color)
         return json.dumps({'code': 'time', 'status': str(next_time)})
     # execption handeling
-    except:
+    except Exception:
         return 'undefined'

@@ -10,14 +10,11 @@ painter/config.py
 painter/web/node_modules/*
 painter/web/package-lock.json
 painter/web/package.json
-certificate.json
 venv/
 count.py
 *.docx
 config.ini
-parser.py
 *.tmp
 מסמך/מסמך אפיון.docx
 *.docx
 /painter/web/docs/
-templates.py
