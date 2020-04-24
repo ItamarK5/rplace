@@ -56,5 +56,5 @@
         {% include 'profiles/abstract/historyModal.html' %}
     {% endblock %}
 {% block javascript %}
-    <script src="{{ url_for('other.serve_static', key='edit.js') }}"></script>
+    <script src="{{ url_for('other.serve_static', filename='edit.js') }}"></script>
 {% endblock %}

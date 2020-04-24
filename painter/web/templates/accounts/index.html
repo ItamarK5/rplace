@@ -13,12 +13,14 @@
         </div>
     </div>
 {% endblock %}
+
 {% block links %}
     {{ render_link('signup-link', 'Are you new?', url_for('auth.signup'))  }}
     {{ render_link('revoke-link', 'Forgot your password?', url_for('auth.revoke'))  }}
 {% endblock %}
 
 {% block submit %}Login{% endblock %}
+
 {% block imports %}
 {{ super() }}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>

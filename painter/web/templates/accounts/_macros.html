@@ -1,17 +1,26 @@
+{#
+    render_field
+    renders a form field
+    field: wtforms.Field object to render
+#}
 {% macro render_field(field) %}
 <div class="form-group form-row mb-1">
     <div class="input-group">
+        {# selects extras class for type of text, if has error normal else danger-red #}
         {% if field.errors %}
-        {% set extra_class = "danger" %}
+            {% set extra_class = "danger" %}
         {% else %}
-        {% set extra_class = "primary" %}
+            {% set extra_class = "primary" %}
         {% endif %}
+        {# input box #}
         <div class="input-group-prepend">
-            <span class='text-{{ extra_class }} is-invalid input-group-text field-input non-select border-{{ extra_class }}'
+            <span class='text-{{ extra_class }} input-group-text field-input non-select border-{{ extra_class }}'
                   for='{{ field.id }}'
                   id='{{ field.label.id }}'>{{ field.label.text }}</span>
         </div>
+        {# field #}
         {{ field(class_ = 'form-control align-self-center border-'+ extra_class) }}
+        {# if password add show/hide button#}
         {% if field.widget.input_type == 'password' %}
         <div class="input-group-append">
             <button class="btn btn-outline-secondary border-{{ extra_class }} password-button">
@@ -22,12 +31,36 @@
     </div>
 </div>
 {% endmacro %}
+{#
+     render_error
+     err: text of error
+     style: style of error: of bootstrap 4 alert (danger/warning/ext.)
+     render a single error of the form
+#}
 {% macro render_error(err, style) %}
 <div class="form-row mb-1">
     <div class="col rounded alert-{{ style }} text-justify ml-3 mr-3" style="text-anchor:middle;">{{ err  }}</div>
 </div>
 {% endmacro %}
-{% macro render_errors(errors, style='danger') %}{% if errors %}{% for err in errors %}{{ render_error(err, style)  }}{% endfor %}{% endif %}{% endmacro %}
+{#
+    render multiple errors of a form
+    errors: the errors to render
+    style: style of the alert box the errors are shown (see render_error )
+#}
+{% macro render_errors(errors, style='danger') %}
+    {% if errors %}
+        {% for err in errors %}
+            {{ render_error(err, style)  }}
+        {% endfor %}
+    {% endif %}
+{% endmacro %}
+
+{#
+    render_link
+    id: the id of the link
+    text: text of the link
+    path: text of the link
+#}
 {% macro render_link(id, text, path) %}
-<a class="primary-text mb-1 col-12 text-center" href="{{ path }}" id={{ id }}>{{ text }}</a>
+    <a class="primary-text mb-1 col-12 text-center" href="{{ path }}" id={{ id }}>{{ text }}</a>
 {% endmacro %}

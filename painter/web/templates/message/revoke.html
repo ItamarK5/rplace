@@ -1,12 +1,10 @@
 {% extends 'message//basemail.html' %}
-{% block body %}
-{{ super()  }}
-<h2 style="margin:10.640;text-decoration: underline;">Greetings, <b>{{ username }}</b></h2>
-<img alt="Logo" src="cid:favicon" style="display:block" title="Logo">
-<h4 style="margin:10.640;">From The Social Painter Manager</h4>
-<h4 style="margin:10.640;">If you forgot your password pless enter the following link</h4>
-<a href="{{ url_for('auth.change_password', token=token , _external=True) }}"
-   style="color:blue;text-decoration: solid;font-size:105%;">{{ url_for('auth.confirm', token=token
-    ,_external=True) }}</a>
-{#<h4>to read again our guidlines pless press {{ url_for('auth.guildelines')  }}</h4>#}
+{% block content %}
+    {{ super()  }}
+    <h2 style="margin:10.640;text-decoration: underline;">Greetings, <b>{{ username }}</b></h2>
+    <img alt="Logo" src="cid:favicon" style="display:block" title="Logo">
+    <h4 style="margin:10.640;">From The Social Painter Manager</h4>
+    <h4 style="margin:10.640;">If you forgot your password pless enter the following link</h4>
+    <a href="{{ url_for('auth.change_password', token=token , _external=True) }}"
+    style="color:blue;text-decoration: solid;font-size:105%;">{{ url_for('auth.confirm', token=token ,_external=True) }}</a>
 {% endblock %}

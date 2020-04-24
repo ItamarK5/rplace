@@ -1,5 +1,12 @@
-{% macro note_description(key, title, addon_class='') %}
-<div class="input-group" id="{{ ket }}-box" data-toggle="tooltip" data-placement="top" title="{{ title }}">
+{#
+    note_description
+    the field description of a note
+    key: the key of the note
+    title: title of the note
+    addon_class = font awesome class to look nice 
+#}
+{% macro note_description(key, title, addon_class) %}
+<div class="input-group" id="{{ key }}-box" data-toggle="tooltip" data-placement="top" title="{{ title }}">
     <div class="input-group-prepend">
         <span class='input-group-text' for='{{ key }}-field'>
             <i class="{{ addon_class }}"></i>
@@ -8,6 +15,13 @@
     <input type="text" class="form-control" id="{{ key }}-field" disabled>
 </div>
 {% endmacro %}
+{#
+    note_description
+    the field description of a note
+    key: the key of the note
+    title: title of the note
+    addon_class = font awesome classes to look nice 
+#}
 {% macro big_note_description(key, title, addon_class) %}
 <div class="input-group" id="{{ ket }}-box" data-toggle="tooltip" data-placement="top" title="{{ title }}">
     <div class="input-group-prepend">

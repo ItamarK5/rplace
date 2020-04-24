@@ -6,7 +6,7 @@
     <!-- bootstrap styles-->
     <link crossorigin="anonymous" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
           integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" rel="stylesheet">
-    <link href="{{ url_for('other.serve_static', key='transport.css') }}" rel="stylesheet">
+    <link href="{{ url_for('other.serve_static', filename='transport.css') }}" rel="stylesheet">
     <title>{% block block_page_title %}{{ page_title }}{% endblock %}</title>
 </head>
 <body>
@@ -16,7 +16,7 @@
     </div>
     <div class="row justify-content-center">
         <img alt="favicon wasn't load" class="autorounded float-right d-inline-block non-select"
-             draggable="0" src="{{ url_for('other.serve_static', key='favicon.gif') }}">
+             draggable="0" src="{{ url_for('other.serve_static', filename='favicon.gif') }}">
     </div>
     <div class="w-50 form-row mx-auto">
         <h5 class="text-warning">{% block block_message %}{{ content }}{% endblock %}</h5>

@@ -1,15 +1,14 @@
 {% extends "forms/forms.html" %}
+
 {% block fields %}
-{{ super() }}
-{{ render_field(form.email) }}
-{{ render_errors(form.email.errors)  }}
+    {{ super() }}
+    {{ render_field(form.email) }}
+    {{ render_errors(form.email.errors)  }}
 {% endblock %}
+
 {% block links %}
-{{ render_link('signup-link', 'Are you new?', url_for('auth.signup'))  }}
-{{ render_link('login-link', 'Remember your password?', url_for('auth.login'))  }}
+    {{ render_link('signup-link', 'Are you new?', url_for('auth.signup'))  }}
+    {{ render_link('login-link', 'Remember your password?', url_for('auth.login'))  }}
 {% endblock %}
+
 {% block submit %}Change Password{% endblock %}
-{% block imports %}
-{{ super() }}
-<script src="{{ url_for('other.serve_static', key='auth.js') }}" type="text/javascript"></script>
-{% endblock %}

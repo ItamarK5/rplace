@@ -15,8 +15,8 @@
           integrity="sha256-wMES50JHO82E/LjWWLWeCXXQahHeA0oemqGIfMkD5BI=" rel="stylesheet"/>
     <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css"
           integrity="sha256-UZFVAO0Fn854ajzdWnJ2Oze6k1X4LNqE2RJPW3MBfq8=" rel="stylesheet"/>
-    <link href="{{ url_for('other.serve_static', key='home.css')  }}" rel="stylesheet">
-    <link href="{{ url_for('other.serve_static', key='nav.css')  }}" rel="stylesheet">
+    <link href="{{ url_for('other.serve_static', filename='home.css')  }}" rel="stylesheet">
+    <link href="{{ url_for('other.serve_static', filename='nav.css')  }}" rel="stylesheet">
 </head>
 <body>
 {% with current_page = 'home' %}
@@ -112,7 +112,7 @@
     </div>
     <div class="row d-flex justify-content-center" id='img-col'>
         <img class=" mx-auto" height="250"
-             src="{{ url_for('other.serve_static', key='favicon.gif')  }}" width="190">
+             src="{{ url_for('other.serve_static', filename='favicon.gif')  }}" width="190">
     </div>
 </div>
 <!-- Jquery.js -->
