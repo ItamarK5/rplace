@@ -1,25 +1,28 @@
 {% extends "forms/forms.html" %}
+{# the form fields #}
 {% block fields %}
-{{super()}}
-{{ render_field(form.username)}}
-{{ render_errors(form.username.errors) }}
-{{ render_field(form.password)}}
-{{ render_errors(form.password.errors) }}
-{{ render_errors(form.non_field_errors, 'warning') }}
-<div class="form-row justify-content-center" id="remember-me-row">
-    <div class="custom-control custom-checkbox">
-        {{form.remember(class="custom-control-input")}}
-        <label class="custom-control-label text-warning non-select" for="{{form.remember.id}}">{{form.remember.label.text}}</label>
+    {{ super() }}
+    {{ render_field(form.username) }}
+    {{ render_errors(form.username.errors) }}
+    {{ render_field(form.password) }}
+    {{ render_errors(form.password.errors) }}
+    {{ render_errors(form.non_field_errors, 'warning') }}
+    <div class="form-row justify-content-center" id="remember-me-row">
+        <div class="custom-control custom-checkbox">
+            {{ form.remember(class="custom-control-input") }}
+            <label class="custom-control-label text-warning non-select" for="{{ form.remember.id }}">{{ form.remember.label.text }}</label>
+        </div>
     </div>
-</div>
 {% endblock %}
+{# links #}
 {% block links %}
     {{ render_link('signup-link', 'Are you new?', url_for('auth.signup')) }}
     {{ render_link('revoke-link', 'Forgot your password?', url_for('auth.revoke')) }}
 {% endblock %}
+{# the form's submit button text #}
 {% block submit %}Login{% endblock %}
+
 {% block scripts %}
-    {{super()}}
-    {{"underscore.js"|importCDN}}
-    {{'login.js'|import_static}}
+    {{ super() }}
+    {{ 'auth.js' | import_static }}
 {% endblock %}

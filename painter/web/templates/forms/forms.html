@@ -1,11 +1,11 @@
 {% extends 'bootstrap/base.html' %}
 {% from 'macros.jinja' import message_alert, render_field, render_errors, render_link %}
 {% block styles %}
-    {{"bootstrap.css"|import_web}}
-    {{"font-awesome.css"|import_web}}
-    {{"font-awesome-solid.css"|import_web}}
-    {{"font-awesome-brands.css"|import_web}}
-    {{"auth.css"|import_static}}
+    {{ "bootstrap.css" | import_web }}
+    {{ "font-awesome.css" | import_web }}
+    {{ "font-awesome-solid.css" | import_web }}
+    {{ "font-awesome-brands.css" | import_web }}
+    {{ "auth.css" | import_static }}
 {% endblock %}
 {% block body %}
 <div class="container">
@@ -15,11 +15,11 @@
             {{ form.hidden_tag() }}{% block before_title %}{% endblock %}
             <div class="form-row mb-1s display-2 text-center">
                 <!-- warning was used as nice title -->
-                <h2 class="mx-auto text-warning non-select"><u>{{form.title}}</u></h2>
+                <h2 class="mx-auto text-warning non-select"><u>{{ form.title }}</u></h2>
             </div>
-            {{message_alert()}}
+            {{ message_alert() }}
             <img class="rounded mx-auto d-block mb-2"
-                 height="250" src="{{url_for('other.serve_static', key='favicon.gif')}}"
+                 height="250" src="{{ url_for('other.serve_static', key='favicon.gif') }}"
                  width="190">
             {% block fields %}
             {% endblock %}
@@ -37,8 +37,8 @@
 </div>
 {% endblock %}
 {% block scripts %}
-    {{"jquery.js"|import_web}}
-    {{"popper.js"|import_web}}
-    {{"bootstrap.js"|import_web}}
-    {{"auth.js"|import_static}}
+    {{ "jquery.js" | import_web }}
+    {{ "popper.js" | import_web }}
+    {{ "bootstrap.js" | import_web }}
+    {{ "accounts-base-form.js" | import_static }}
 {% endblock %}

@@ -75,50 +75,42 @@ def date(tm: datetime) -> str:
 
 
 class CDNResource:
-    def __init__(self, is_script: bool, src: str, integrity: str, cross_origin: str, **kwargs) -> None:
+    def __init__(self, is_script: bool, src: str, **kwargs) -> None:
         self.is_script = is_script
-        self.integrity = integrity
-        self.src = src
-        self.cross_origin = cross_origin
-        self.extra = kwargs
+        # get source
+        self.__render_kwargs = (
+            ('src' if self.is_script else 'href', src),
+        )
+        self.__render_kwargs += tuple(kwargs.items())
 
-    def __tag_attrs(self):
-
-        return f'{"src" if self.is_script else "href"}="{self.src}" ' \
-               f'integrity="{self.integrity}" ' \
-               f'crossorigin="{self.cross_origin}"'
-
-    def __render_attrs(self, **kwargs):
-        if not self.extra:
-            return ''
-        # else
-        return ' '.join([f'{pair[0]}="{pair[1]}"' for pair in kwargs if pair[1] is not None])
+    def __render_attrs(self):
+        return ' '.join([f'{pair[0]}="{pair[1]}"' for pair in self.__render_kwargs if pair[1] is not None])
 
     def render(self):
         if self.is_script:
-            return f'<script {self.__tag_attrs()} type="text/javascript">'
+            return f'<script {self.__render_attrs()} type="text/javascript">'
         # else
-        return f'<link {self.__tag_attrs()} type="text/css" rel="stylesheet">'
+        return f'<link {self.__render_attrs()} type="text/css" rel="stylesheet">'
 
 
 CDN_RESOURCES = {
     "underscore.js": CDNResource(
         True,
         "https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js",
-        "sha256-G7A4JrJjJlFqP0yamznwPjAApIKPkadeHfyIwiaa9e0=",
-        "anonymous"
+        integrity="sha256-G7A4JrJjJlFqP0yamznwPjAApIKPkadeHfyIwiaa9e0=",
+        crossorigin="anonymous"
     ),
     "bootstrap.css": CDNResource(
         False,
         "https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css",
-        "sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh",
-        "anonymous"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh",
+        crossorigin="anonymous"
     ),
     "font-awesome.js": CDNResource(
         False,
         "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css",
-        "sha256-/sdxenK1NDowSNuphgwjv8wSosSNZB0t5koXqd7XqOI=",
-        "anonymous"
+        integrity="sha256-/sdxenK1NDowSNuphgwjv8wSosSNZB0t5koXqd7XqOI=",
+        crossorigin="anonymous"
     ),
     'popper.js': CDNResource(
         False,
@@ -135,27 +127,31 @@ CDN_RESOURCES = {
     'jquery.js': CDNResource(
         False,
         "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js",
-        "sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=",
-        "anonymous"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=",
+        crossorigin="anonymous"
     ),
     'font-awesome.css': CDNResource(
         False,
         "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css",
-        "sha256",
-        "anonymous"
+        integrity="sha256",
+        crossorigin="anonymous"
     ),
-    'font-awesome-solid': CDNResource(
+    'font-awesome-solid.css': CDNResource(
         False,
         "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.css",
-        "sha256-wMES50JHO82E/LjWWLWeCXXQahHeA0oemqGIfMkD5BI=",
-        "anonymous"
+        integrity="sha256-wMES50JHO82E/LjWWLWeCXXQahHeA0oemqGIfMkD5BI=",
+        crossorigin="anonymous"
     ),
-    'font-awesome-brands': CDNResource(
+    'font-awesome-brands.css': CDNResource(
         False,
         "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css",
-        "sha256-UZFVAO0Fn854ajzdWnJ2Oze6k1X4LNqE2RJPW3MBfq8=",
-        "anonymous"
+        integrity="sha256-UZFVAO0Fn854ajzdWnJ2Oze6k1X4LNqE2RJPW3MBfq8=",
+        crossorigin="anonymous"
     ),
+    "sweetalert.js": CDNResource(
+        True,
+        "https://cdn.jsdelivr.net/npm/sweetalert2@9"
+    )
 }
 
 

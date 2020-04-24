@@ -61,7 +61,7 @@ def render_meme_error_page(e: exceptions.HTTPException,
         return e  # return default error
     else:
         return render_template(
-            'memes/meme.html',
+            'meme.html',
             case=case,
             title=name,
             description=e.description or name,
