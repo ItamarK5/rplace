@@ -3,7 +3,7 @@
 <head>
     <title>Home</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <link href="{{url_for('other.serve_icon')}}" rel="shortcut icon">
+    <link href="{{ url_for('other.serve_icon') }}" rel="shortcut icon">
     <!-- Boostrap Style -->
     <link crossorigin="anonymous" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
           integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" rel="stylesheet">
@@ -15,15 +15,15 @@
           integrity="sha256-wMES50JHO82E/LjWWLWeCXXQahHeA0oemqGIfMkD5BI=" rel="stylesheet"/>
     <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css"
           integrity="sha256-UZFVAO0Fn854ajzdWnJ2Oze6k1X4LNqE2RJPW3MBfq8=" rel="stylesheet"/>
-    <link href="{{url_for('other.serve_static', key='home.css')}}" rel="stylesheet">
-    <link href="{{url_for('other.serve_static', key='nav.css')}}" rel="stylesheet">
+    <link href="{{ url_for('other.serve_static', key='home.css') }}" rel="stylesheet">
+    <link href="{{ url_for('other.serve_static', key='nav.css') }}" rel="stylesheet">
 </head>
 <body>
 {% with current_page = 'home' %}
 {% include 'menu/nav.html' %}
 {% endwith %}
 <div class="container">
-    {{message_alert()}}
+    {{ message_alert() }}
     <div class="row mb-2">
         <div class="col mx-auto no-select" id="instructions">
             Welcome To the Social Painter Web Page, Guide To the page:<br>
@@ -112,7 +112,7 @@
     </div>
     <div class="row d-flex justify-content-center" id='img-col'>
         <img class=" mx-auto" height="250"
-             src="{{url_for('other.serve_static', key='favicon.gif')}}" width="190">
+             src="{{ url_for('other.serve_static', key='favicon.gif') }}" width="190">
     </div>
 </div>
 <!-- Jquery.js -->

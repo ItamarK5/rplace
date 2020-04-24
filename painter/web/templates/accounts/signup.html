@@ -1,6 +1,6 @@
 {% extends "forms/forms.html" %}
 {% block fields %}
-{{super()}}
+{{ super()}}
 {{ render_field(form.username)}}
 {{ render_errors(form.username.errors) }}
 {{ render_field(form.password)}}
@@ -16,6 +16,6 @@
 {{ render_link('revoke-link', 'Forgot your password?', url_for('auth.revoke')) }}
 {% endblock %}
 {% block imports %}
-{{super()}}
-<script src="{{url_for('other.serve_static', key='auth.js')}}" type="text/javascript"></script>
+{{ super()}}
+<script src="{{ url_for('other.serve_static', key='auth.js')}}" type="text/javascript"></script>
 {% endblock %}

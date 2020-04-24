@@ -1,6 +1,6 @@
 {% extends "forms/forms.html" %}
 {% block fields %}
-{{super()}}
+{{ super()}}
 {{ render_field(form.username)}}
 {{ render_errors(form.username.errors) }}
 {{ render_field(form.password)}}
@@ -8,15 +8,15 @@
 {{ render_errors(form.non_field_errors, 'warning') }}
 <div class="form-row justify-content-center" id="remember-me-row">
     <div class="custom-control custom-checkbox">
-        {{form.remember(class="custom-control-input")}}
-        <label class="custom-control-label text-warning non-select" for="{{form.remember.id}}">{{form.remember.label.text}}</label>
+        {{ form.remember(class="custom-control-input")}}
+        <label class="custom-control-label text-warning non-select" for="{{ form.remember.id}}">{{ form.remember.label.text}}</label>
     </div>
 </div>
 <script>
 $(document).ready(function(){
     if(!navigator.cookieEnabled){
         $('#remember-me-row')[0].addAttribute('disabled');
-        $('#{{form.remember.id}}').attr(
+        $('#{{ form.remember.id}}').attr(
             'title', 'You must enable cookies in this site to use the remember me feature'
         )
     }
@@ -27,11 +27,11 @@ $(document).ready(function(){
 {% endblock %}
 {% block submit %}Login{% endblock %}
 {% block imports %}
-{{super()}}
+{{ super()}}
 <
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
 <script crossorigin="anonymous"
         integrity="sha256-G7A4JrJjJlFqP0yamznwPjAApIKPkadeHfyIwiaa9e0="
         src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"></script>
-<script src="{{url_for('other.serve_static', key='login.js')}}" type="text/javascript"></script>
+<script src="{{ url_for('other.serve_static', key='login.js')}}" type="text/javascript"></script>
 {% endblock %}

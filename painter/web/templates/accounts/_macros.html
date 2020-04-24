@@ -7,14 +7,14 @@
         {% set extra_class = "primary" %}
         {% endif %}
         <div class="input-group-prepend">
-            <span class='text-{{extra_class}} is-invalid input-group-text field-input non-select border-{{extra_class}}'
-                  for='{{field.id}}'
-                  id='{{field.label.id}}'>{{field.label.text}}</span>
+            <span class='text-{{ extra_class}} is-invalid input-group-text field-input non-select border-{{ extra_class}}'
+                  for='{{ field.id}}'
+                  id='{{ field.label.id}}'>{{ field.label.text}}</span>
         </div>
-        {{field(class_ = 'form-control align-self-center border-'+ extra_class)}}
+        {{ field(class_ = 'form-control align-self-center border-'+ extra_class)}}
         {% if field.widget.input_type == 'password' %}
         <div class="input-group-append">
-            <button class="btn btn-outline-secondary border-{{extra_class}} password-button">
+            <button class="btn btn-outline-secondary border-{{ extra_class}} password-button">
                 <i class="fa fa-eye"></i>
             </button>
         </div>
@@ -24,10 +24,10 @@
 {% endmacro %}
 {% macro render_error(err, style) %}
 <div class="form-row mb-1">
-    <div class="col rounded alert-{{style}} text-justify ml-3 mr-3" style="text-anchor:middle;">{{ err }}</div>
+    <div class="col rounded alert-{{ style}} text-justify ml-3 mr-3" style="text-anchor:middle;">{{ err }}</div>
 </div>
 {% endmacro %}
 {% macro render_errors(errors, style='danger') %}{% if errors %}{% for err in errors %}{{ render_error(err, style) }}{% endfor %}{% endif %}{% endmacro %}
 {% macro render_link(id, text, path) %}
-<a class="primary-text mb-1 col-12 text-center" href="{{path}}" id={{id}}>{{text}}</a>
+<a class="primary-text mb-1 col-12 text-center" href="{{ path}}" id={{ id}}>{{ text}}</a>
 {% endmacro %}
