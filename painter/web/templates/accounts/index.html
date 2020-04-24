@@ -1,4 +1,5 @@
-{% extends "forms/forms.html" %}
+{% extends "accounts/forms.html" %}
+
 {# the form fields #}
 {% block fields %}
     {{ super() }}
@@ -14,6 +15,7 @@
         </div>
     </div>
 {% endblock %}
+
 {# links #}
 {% block links %}
     {{ render_link('signup-link', 'Are you new?', url_for('auth.signup')) }}

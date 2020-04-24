@@ -38,7 +38,7 @@ def login_response() -> Response:
         else:
             return redirect_to(url_for('place.home'))
     # clear password
-    return render_template('forms/index.html',
+    return render_template('accounts/index.html',
                            form=form,
                            entire_form_errors=entire_form_error,
                            extra_error=extra_error)
@@ -101,7 +101,7 @@ def signup() -> Response:
             view_name='login'
         )
     # default sign up form
-    return render_template('forms/signup.html', form=form)
+    return render_template('accounts/signup.html', form=form)
 
 
 @accounts_router.route('/revoke', methods=['GET', 'POST'])
@@ -128,7 +128,7 @@ def revoke() -> Response:
                 })
             )
         return render_template('transport/complete-revoke.html', form=form)
-    return render_template('forms/revoke.html', form=form)
+    return render_template('accounts/revoke.html', form=form)
 
 
 @accounts_router.route('/change-password/<string:token>', methods=['GET', 'POST'])
@@ -147,7 +147,7 @@ def change_password(token: str) -> Response:
     # validated if any token
     if extracted_token is None:
         return render_template(
-            'transport//token-error.html',
+            'responses/token-error.html',
             view_name='Revoke Password',
             view_ref='auth.revoke',
             token_action='revoke your password'
@@ -155,7 +155,7 @@ def change_password(token: str) -> Response:
     # timestamp error
     if isinstance(extracted_token, str):
         return render_template(
-            'transport//token-expires.html',
+            'responses/token-expires.html',
             view_name='Change Password',
             view_ref='auth.revoke',
             token_action='change your password',
@@ -166,14 +166,14 @@ def change_password(token: str) -> Response:
     user = User.query.filter_by(email=mail_address, password=pswd).first()
     if user is None or not RevokeMailAttempt.exists(mail_address):
         return render_template(
-            'transport//revoke-error-token.html',
+            'responses/revoke-error-token.html',
             view_name='Revoke Password',
             view_ref='auth.revoke'
         )
     form = ChangePasswordForm()
     # if not valid new password
     if not form.validate_on_submit():
-        return render_template('forms/change-password.html', form=form)
+        return render_template('accounts/change-password.html', form=form)
     else:
         new_password = form.password.data
         user.set_password(new_password)
@@ -206,14 +206,14 @@ def confirm(token: str) -> Response:
                                   TokenSerializer.signup)
     if extracted_token is None:
         return render_template(
-            'transport//token-error.html',
+            'responses/token-error.html',
             view_name='Sign Up',
             view_ref='auth.singup',
         )
     # if got error while extracting that isn't timeout
     if extracted_token is None:
         return render_template(
-            'transport//token-error.html',
+            'responses/token-error.html',
             view_name='Sign Up',
             view_ref='auth.signup',
             token_action='Signing Up'
@@ -221,7 +221,7 @@ def confirm(token: str) -> Response:
     # timouet error
     if not isinstance(extracted_token, dict):
         return render_template(
-            'transport//token-expires.html',
+            'responses/token-expires.html',
             view_name='Sign Up',
             view_ref='auth.signup',
             action_given_token='Signing Up'
@@ -237,7 +237,7 @@ def confirm(token: str) -> Response:
     # check if user exists
     if user is not None:
         return render_template(
-            'transport//reconfirm-fail.html',
+            'responses/reconfirm-fail.html',
             view_name='Login',
             view_ref='auth.login',
         )
@@ -252,7 +252,7 @@ def confirm(token: str) -> Response:
     datastore.session.commit()
     # return message
     return render_template(
-        'transport//complete-confirm.html',
+        'responses/complete-confirm.html',
         view_name='Login',
         view_ref='auth.login',
 

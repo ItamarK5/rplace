@@ -310,23 +310,10 @@ class Vector2D {
 		this.setXIfValid(this.__x * Vector2D._evalSafe(mul));
 		return this;
 	}
-	/***
-	 * @param {*} mul2 number to multipliy y
-	 * @return {Vector} returns this object for massive operations
-	 * 
-	 */
 	safeMulY(mul){
 		this.setYIfValid(this.__y * Vector2D._evalSafe(mul));
 		return this;
 	}
-	/***
-	 * @param {*} mul1 number to multipliy x
-	 * @param {*} mul2 number to multipliy y
-	 * @return {Vector} returns this object for massive operations
-	 * multiples x and y respectively  the mul and mul2 values
-	 * if mul2 is undefined uses mul value instead
-	 * if the multiples values aren't number, the value i'snt multiplied
-	 */
 	safeMulXY(mul, mul2){
 		if(_.isUndefined(mul2)){
 			mul2 = mul;

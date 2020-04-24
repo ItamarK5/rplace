@@ -2,7 +2,6 @@
     File containing many html jinja related staff
     like filters and bootstrap
 """
-from flask_bootstrap import Bootstrap
 from flask import Flask, url_for
 from datetime import datetime
 from typing import Optional, Union, List
@@ -14,8 +13,6 @@ from painter.others.constants import COLOR_COOLDOWN
 """ 
     Filters
 """
-
-bootstrap = Bootstrap()
 
 
 def draw_time(user: User) -> str:
