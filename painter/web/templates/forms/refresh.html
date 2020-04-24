@@ -1,5 +1,4 @@
-{% extends "accounts/base.html" %}
-
+{% extends "forms/forms.html" %}
 {# the form fields #}
 {% block fields %}
 {{ super() }}
@@ -15,9 +14,7 @@
     </div>
 </div>
 {% endblock %}
-
 {% block submit %}Login{% endblock %}
-
 {% block scripts %}
     {{ super() }}
     {{ "auth.js" | import_static }}

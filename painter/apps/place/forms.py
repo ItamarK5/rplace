@@ -1,7 +1,7 @@
 from typing import Tuple, Optional, Any
 
 from flask_wtf import FlaskForm
-from wtforms import *
+from wtforms import fields, validators
 from wtforms.compat import text_type as text_field_types
 from wtforms.fields.html5 import IntegerField
 from wtforms.widgets import HiddenInput
@@ -14,12 +14,16 @@ class PreferencesForm(FlaskForm):
     Preference form
     handling validating changes in the user preferences
     """
-    x = IntegerField(
+    x = fields.html5.IntegerRangeField(
         'X start',
         validators=[
             validators.Optional(),
             validators.NumberRange(min=0, max=999, message='axis out of range')
         ],
+        render_kw = {
+            'min': 0,
+            'max': 999
+        }
     )
 
     y = IntegerField(
@@ -28,16 +32,26 @@ class PreferencesForm(FlaskForm):
             validators.Optional(),
             validators.NumberRange(min=0, max=999, message='coord out of range')
         ],
+        render_kw={
+            'min': 0,
+            'max': 999
+        }
     )
-    scale = IntegerField(
+
+    scale = fields.html5.IntegerRangeField(
         'Scale start',
         default=None,
         validators=[
             validators.Optional(),
             validators.NumberRange(min=1, max=50, message='axis out of range')
         ],
+        render_kw={
+            'min': 1,
+            'max': 50
+        }
     )
-    color = SelectField(
+
+    color = fields.SelectField(
         label='Select Color',
         coerce=int,
         choices=tuple(
@@ -48,7 +62,7 @@ class PreferencesForm(FlaskForm):
         ]
     )
 
-    chat_url = StringField(
+    chat_url = fields.StringField(
         label='Chat URL',
         validators=[
             validators.Optional(),
