@@ -20,8 +20,7 @@
             <div class="modal-body">
                 <form action="{{ url_for('place.profile_ajax') }}" class="setting-form" method="POST" id="{{ modal_name }}-form">
                     <div class="text-center justify-content-center form-row" class="row-describer">
-                        <span class="font-weight-bold font-size-15 justify-content-center"
-                              class="setting-describer" field-related='#{{ input.id }}'>{{ value }}</span><br>
+                        <span class="font-weight-bold font-size-15 justify-content-center" class="setting-describer" field-related='#{{ input.id }}'>{{ value }}</span><br>
                     </div>
                     <div class="form-row">
                         {{ field }}                        

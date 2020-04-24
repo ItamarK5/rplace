@@ -5,7 +5,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String, case
 from sqlalchemy.dialects.sqlite import DATETIME, BOOLEAN
 from sqlalchemy.orm import relationship
 
-from ..backends.extensions import datastore
+from ..backends.extensions import storage_sql
 
 """
     need to ask what is better:
@@ -15,7 +15,7 @@ from ..backends.extensions import datastore
 """
 
 
-class Note(datastore.Model):
+class Note(storage_sql.Model):
     """
     Note modal
     SQLAlchemy of notes, notes that are written about users to remember

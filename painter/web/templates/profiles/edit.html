@@ -32,15 +32,13 @@
                 {% if current_user.has_required_status(Role.superuser) %}
                     {% if user.role == Role.common %}
                         <span>
-                            <button class="btn btn-secondary" enum-name="{{ Role.admin.name|title }}" id="rank-button" title="change rank"
-                                    type="button">
+                            <button class="btn btn-secondary" enum-name="{{ Role.admin.name|title }}" id="rank-button" title="change rank" type="button">
                                 <i class="fas {{ Role.admin.icon }}"></i>
                             </button>
                         </span>
                         {% else %}
                         <span>
-                            <button class="btn btn-secondary" enum-name="{{ Role.common.name|title }}" id="rank-button" title="change rank"
-                                    type="button">
+                            <button class="btn btn-secondary" enum-name="{{ Role.common.name|title }}" id="rank-button" title="change rank" type="button">
                                 <i class="fas {{ Role.common.icon }}"></i>
                             </button>
                         </span>

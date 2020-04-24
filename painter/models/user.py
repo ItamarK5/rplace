@@ -8,7 +8,7 @@ from flask_sqlalchemy import BaseQuery
 from sqlalchemy import Column, Integer, String, desc
 from sqlalchemy.dialects.sqlite import DATETIME, SMALLINT
 
-from painter.backends.extensions import datastore, cache
+from painter.backends.extensions import storage_sql, cache
 from painter.backends.extensions import login_manager
 from .enumint import SmallEnum
 from .notes import Record, Note
@@ -20,7 +20,7 @@ from .role import Role
 _NO_RECORD = 'none'
 
 
-class User(datastore.Model, UserMixin):
+class User(storage_sql.Model, UserMixin):
     """
     User model
     represent the data of a user of the app,

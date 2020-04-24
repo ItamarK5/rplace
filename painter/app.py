@@ -9,7 +9,7 @@ from typing import Optional
 from celery import Celery
 from flask import Flask, cli
 from painter.backends.extensions import (
-    datastore, generate_engine,
+    storage_sql, generate_engine,
     mailbox, login_manager, cache,
     csrf, redis
 )
@@ -33,7 +33,7 @@ def create_app(
         is_celery: bool = False) -> Flask:
     """
     the command to create default app, with configuration
-    :param import_Class: the class to import from config.py as configuration base
+    :param import_class: the class to import from config.py as configuration base
     :param is_celery: does the app is used for celery worker context
     :param debug: if to debug app
     :return: a Flask application
@@ -61,7 +61,7 @@ def create_app(
     # set debug
     app.debug = debug
     # init Extensions
-    datastore.init_app(app)
+    storage_sql.init_app(app)
     generate_engine(app)
     mailbox.init_app(app)
     login_manager.init_app(app)

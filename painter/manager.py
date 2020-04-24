@@ -14,7 +14,7 @@ from flask_script.cli import prompt_bool, prompt_choices, prompt
 from flask_script.commands import InvalidCommand
 from redis import exceptions as redis_exception
 # first import app to prevent some time related import bugs
-from .app import create_app, datastore, sio, redis
+from .app import create_app, storage_sql, sio, redis
 from .backends import board, lock
 from .models import Role, User, ExpireModels
 from .others.constants import DURATION_OPTION_FLAG, PRINT_OPTION_FLAG, SERVICE_RESULTS_FORMAT
@@ -100,14 +100,13 @@ class RunServer(Server):
         :return: if host is router returns
         # https://stackoverflow.com/a/166520
         """
-        if host == "router":
-            try:
-                host = socket.gethostbyname(socket.gethostname())
-            except Exception as e:
-                print("Fail to get router IP, because:")
-                print(e)
-                print("Running On local host")
-                host = '127.0.0.1'
+        try:
+            host = socket.gethostbyname(socket.gethostname())
+        except Exception as e:
+            print("Fail to get router IP, because:")
+            print(e)
+            print("Running On local host")
+            host = '127.0.0.1'
         return host
 
     def __call__(self, app, host, port, use_debugger, use_reloader):
@@ -242,8 +241,8 @@ class CreateUser(MyCommand):
                 role=role_matched
             )
             # save user
-            datastore.session.add(user)
-            datastore.session.commit()
+            storage_sql.session.add(user)
+            storage_sql.session.commit()
             print('user created successfully')
 
 
@@ -282,9 +281,9 @@ def create_db(drop_first=False):
     :return: if to drop first
     """
     if drop_first and prompt_bool('Are you sure you want to drop the table'):
-        datastore.drop_all()
+        storage_sql.drop_all()
         print('database droped')
-    datastore.create_all()
+    storage_sql.create_all()
     print('databse created successfully')
 
 
@@ -304,7 +303,7 @@ manager.add_command('create-db', create_db_command)
 # drop database
 def drop_db():
     if prompt_bool('Are you sure to drop the database'):
-        datastore.drop_all()
+        storage_sql.drop_all()
         print('You should create a new superuser, see create-user command')
 
 
@@ -371,10 +370,10 @@ def check_sql_service(option_flags: FrozenSet[str]) -> Dict[str, Any]:
         # connection
         if DURATION_OPTION_FLAG in option_flags:
             current_time = time.time()
-            datastore.engine.connect()
+            storage_sql.engine.connect()
             duration = time.time() - current_time
         else:
-            datastore.engine.connect()
+            storage_sql.engine.connect()
         if PRINT_OPTION_FLAG in option_flags:
             print('Successfully connected to sql')
         result = True
@@ -552,7 +551,7 @@ def clear_cache():
     """
     for model_class in ExpireModels:
         model_class.clear_cache(False)
-    datastore.session.commit()
+    storage_sql.session.commit()
     print('Clear Cache Complete')
 
 

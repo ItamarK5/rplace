@@ -14,9 +14,7 @@
         {% endif %}
         {# input box #}
         <div class="input-group-prepend">
-            <span class='text-{{ extra_class }} input-group-text field-input non-select border-{{ extra_class }}'
-                  for='{{ field.id }}'
-                  id='{{ field.label.id }}'>{{ field.label.text }}</span>
+            <span class='text-{{ extra_class }} input-group-text field-input non-select border-{{ extra_class }}' for='{{ field.id }}' id='{{ field.label.id }}'>{{ field.label.text }}</span>
         </div>
         {# field #}
         {{ field(class_ = 'form-control align-self-center border-'+ extra_class) }}

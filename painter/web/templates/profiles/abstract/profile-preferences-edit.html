@@ -1,8 +1,7 @@
 {% macro settingField(key, val, modal, describe) %}
 <tr class="mb-2 justify-content-center" id="row-{{ key }}">
     <td class="justify-content-center align-content-center">
-        <button class="btn btn-outline-light w-100 h-100 block text-center text-xl" data-target="{{ modal }}"
-                data-toggle="modal" id="{{ key }}-active">
+        <button class="btn btn-outline-light w-100 h-100 block text-center text-xl" data-target="{{ modal }}" data-toggle="modal" id="{{ key }}-active">
             <i class="fas fa-edit"></i>
         </button>
     </td>

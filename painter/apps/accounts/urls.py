@@ -4,12 +4,12 @@ urls of the accounts blueprint
 """
 from __future__ import absolute_import
 
-from flask import render_template, request
+from flask import render_template
 from flask_login import logout_user, login_user, login_required
 from werkzeug.wrappers import Response
 
 from painter.models import SignupNameRecord, SignupMailRecord, RevokeMailAttempt, User
-from painter.backends.extensions import datastore
+from painter.backends.extensions import storage_sql
 from .forms import LoginForm, SignUpForm, RevokePasswordForm, ChangePasswordForm, SignupTokenForm, RevokeTokenForm
 from .mail import send_signing_up_message, send_revoke_password_message
 from .utils import *
@@ -95,7 +95,7 @@ def signup() -> Response:
                 }
             ))
         return render_template(
-            'responsescomplete-signup.html',
+            'responses/complete-signup.html',
             username=name,
             view_ref='auth.login',
             view_name='login'
@@ -127,7 +127,7 @@ def revoke() -> Response:
                     'mail_address': user.email
                 })
             )
-        return render_template('responsescomplete-revoke.html', form=form)
+        return render_template('responses/complete-revoke.html', form=form)
     return render_template('accounts/revoke.html', form=form)
 
 
@@ -231,7 +231,7 @@ def confirm(token: str) -> Response:
     name, pswd, email = extracted_token.pop('username'), extracted_token.pop('password'), extracted_token.pop('email')
     # check if user exists
     # https://stackoverflow.com/a/57925308
-    user = datastore.session.query(User).filter(
+    user = storage_sql.session.query(User).filter(
         User.username == name, User.password == pswd,
     ).first()
     # check if user exists
@@ -248,8 +248,8 @@ def confirm(token: str) -> Response:
         email=email
     )
     # save user
-    datastore.session.add(user)
-    datastore.session.commit()
+    storage_sql.session.add(user)
+    storage_sql.session.commit()
     # return message
     return render_template(
         'responses/complete-confirm.html',

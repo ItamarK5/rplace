@@ -6,7 +6,7 @@ from redis.exceptions import ConnectionError as RedisConnectionError
 from flask_login import current_user
 from painter.others.constants import COLOR_COOLDOWN
 from painter.backends import lock, board
-from painter.backends.extensions import datastore
+from painter.backends.extensions import storage_sql
 from painter.backends.skio import (
     sio, PAINT_NAMESPACE,
     socket_io_authenticated_only_connection,
@@ -84,8 +84,8 @@ def set_board(params: Any) -> str:
         next_time = current_time + COLOR_COOLDOWN
         current_user.next_time = next_time
         # update current_user in the SQL Database
-        datastore.session.add(current_user)
-        datastore.session.commit()
+        storage_sql.session.add(current_user)
+        storage_sql.session.commit()
         # get data
         x, y, clr = int(params['x']), int(params['y']), int(params['color'])
         # start background task

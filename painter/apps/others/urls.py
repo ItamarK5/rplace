@@ -34,8 +34,8 @@ def meme_image(error: str) -> Response:
     )
 
 
-@other_router.route('/files/<path:key>', methods=('GET',))
-def serve_static(key: str) -> Response:
+@other_router.route('/files/<path:filename>', methods=('GET',))
+def serve_static(filename: str) -> Response:
     """
     :param key: key representing a file name
     :return: the resource file name, if don't exists returns 404

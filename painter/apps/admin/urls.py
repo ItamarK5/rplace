@@ -8,7 +8,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from werkzeug import exceptions
 
 from painter.backends import lock
-from painter.backends.extensions import datastore
+from painter.backends.extensions import storage_sql
 from painter.backends.skio import ADMIN_NAMESPACE, PAINT_NAMESPACE, sio
 from painter.models import Record, Note, Role, User
 from painter.others.wtforms_mixins import UsernamePattern
@@ -52,8 +52,8 @@ def add_record(user: User) -> Response:
             affect_from=form.affect_from.data,
             reason=form.reason.data
         )
-        datastore.session.add(record)
-        datastore.session.commit()
+        storage_sql.session.add(record)
+        storage_sql.session.commit()
         user.forget_last_record()
         return jsonify(valid=True)
     # csrf token has its own action
@@ -83,8 +83,8 @@ def add_note(user: User) -> Response:
             post_date=datetime.now(),
             description=form.description.data,
         )
-        datastore.session.add(note)
-        datastore.session.commit()
+        storage_sql.session.add(note)
+        storage_sql.session.commit()
         # forget last record for refinding
         user.forget_last_record()
         return jsonify({'valid': True})
@@ -177,8 +177,8 @@ def set_role(user: User) -> Response:
     # else
     user.role = new_role
     # save data
-    datastore.session.add(user)
-    datastore.session.commit()
+    storage_sql.session.add(user)
+    storage_sql.session.commit()
     return json_response(True, 'Pless refresh the page to see changes')
 
 
@@ -227,8 +227,8 @@ def remove_user_note() -> Response:
     if user_last_record is None or user_last_record.equals(note):
         note.user_subject.forget_last_record()
     try:
-        datastore.session.delete(note)
-        datastore.session.commit()
+        storage_sql.session.delete(note)
+        storage_sql.session.commit()
     # it must have been removed
     except NoResultFound:
         abort(401, description="Note Was Removed")
@@ -261,8 +261,8 @@ def change_note_description() -> Response:
     # handle updates
     note.description = description
     try:
-        datastore.session.add(note)
-        datastore.session.commit()
+        storage_sql.session.add(note)
+        storage_sql.session.commit()
     # NoResult => object removed
     except NoResultFound:
         abort(404, description='Note was removed')

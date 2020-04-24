@@ -2,7 +2,7 @@ from flask import render_template, Response, jsonify
 from flask_login import login_required, current_user
 
 from painter.others.utils import auto_redirect
-from painter.backends.extensions import datastore
+from painter.backends.extensions import storage_sql
 from .forms import PreferencesForm
 from . import place_router
 
@@ -67,8 +67,8 @@ def profile_ajax():
             key = None
         # save check in user
         if key is not None:
-            datastore.session.add(current_user)
-            datastore.session.commit()
+            storage_sql.session.add(current_user)
+            storage_sql.session.commit()
             # https://stackoverflow.com/a/26080784
             return jsonify({'success': True, 'id': key, 'val': val})
         else:

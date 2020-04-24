@@ -5,16 +5,11 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <link href="{{ url_for('other.serve_icon')  }}" rel="shortcut icon">
     <!-- Boostrap Style -->
-    <link crossorigin="anonymous" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" rel="stylesheet">
+    <link crossorigin="anonymous" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" rel="stylesheet">
     <!-- Font Awesome -->
-    <link crossorigin="anonymous"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css"
-          integrity="sha256-/sdxenK1NDowSNuphgwjv8wSosSNZB0t5koXqd7XqOI=" rel="stylesheet"/>
-    <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.css"
-          integrity="sha256-wMES50JHO82E/LjWWLWeCXXQahHeA0oemqGIfMkD5BI=" rel="stylesheet"/>
-    <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css"
-          integrity="sha256-UZFVAO0Fn854ajzdWnJ2Oze6k1X4LNqE2RJPW3MBfq8=" rel="stylesheet"/>
+    <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" integrity="sha256-/sdxenK1NDowSNuphgwjv8wSosSNZB0t5koXqd7XqOI=" rel="stylesheet"/>
+    <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.css" integrity="sha256-wMES50JHO82E/LjWWLWeCXXQahHeA0oemqGIfMkD5BI=" rel="stylesheet"/>
+    <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" integrity="sha256-UZFVAO0Fn854ajzdWnJ2Oze6k1X4LNqE2RJPW3MBfq8=" rel="stylesheet"/>
     <link href="{{ url_for('other.serve_static', filename='home.css')  }}" rel="stylesheet">
     <link href="{{ url_for('other.serve_static', filename='nav.css')  }}" rel="stylesheet">
 </head>
@@ -51,12 +46,10 @@
             </ul>
             If you want to move on the board either:
             <ul class="option-list">
-                <li>Grab the board with the <i class="fas fa-mouse-pointer" data-placement="left" data-toggle="tooltip"
-                                title="mouse"></i> and grab the board
+                <li>Grab the board with the <i class="fas fa-mouse-pointer" data-placement="left" data-toggle="tooltip" title="mouse"></i> and grab the board
                 </li>
                 <li>Use the arrows to navigate<span>
-                <kbd><i class="fas fa-arrow-left fa-fw" data-placement="left" data-toggle="tooltip"
-                        title="left"></i></kbd>
+                <kbd><i class="fas fa-arrow-left fa-fw" data-placement="left" data-toggle="tooltip" title="left"></i></kbd>
                 <kbd><i class="fas fa-arrow-down fa-fw" data-placement="bottom" data-toggle="tooltip" title="down"></i></kbd>
                 <kbd><i class="fas fa-arrow-up fa-fw" data-placement="top" data-toggle="tooltip" title="up"></i></kbd>
                 <kbd><i class="fas fa-arrow-right fa-fw" data-placement="right" data-toggle="tooltip" title="right"></i></kbd>
@@ -70,20 +63,16 @@
                         <li>the Magnifying Glass can be used to zoom in and out depending on its state,
                             <i class="fas fa-search"></i> to zoom in, and <i class="fas fa-minus"> to zoom out</i>                            
                         </li>
-                        <li>You can also use the keyboard, key <kbd data-placement="bottom" data-toggle="tooltip" title="T">T</kbd> also toggles between scale modes</li>
+                        <li>You can also use the keyboard, key <!-- key T--><kbd data-placement="bottom" data-toggle="tooltip" title="T">T</kbd><!-- end Key--> also toggles between scale modes</li>
                     </ul>
                 </li>
                 <li>
                     You can also use other zoom methods but it isnt recommend them because 
                     <ul>
-                        <li>zooming with the <i class="fas fa-mouse" data-placement="left" data-toggle="tooltip"
-                            title="mouse"></i> wheel
+                        <li>zooming with the <i class="fas fa-mouse" data-placement="left" data-toggle="tooltip" title="mouse"></i> wheel</li>
+                        <li>zoom in with <span data-placement="top" data-toggle="tooltip" title="plus"><!-- key shift--><kbd>Shift <i class="fas fa-plus zoom-key"></i></kbd><!-- end key --></span> Key
                         </li>
-                        <li>zoom in with <span data-placement="top" data-toggle="tooltip" title="plus"><kbd>Shift <i
-                            class="fas fa-plus zoom-key"></i></kbd></span> Key
-                        </li>
-                        <li>zoom out with <span data-placement="top" data-toggle="tooltip" title="minus"><kbd>Shift <i
-                                class="fas fa-minus zoom-key"></i></kbd></span> Key
+                        <li>zoom out with <span data-placement="top" data-toggle="tooltip" title="minus"><<!-- key shift-->kbd>Shift <i class="fas fa-minus zoom-key"></i></kbd><!-- end key --></span> Key
                         </li>
                     </ul> 
                 </li>  
@@ -111,24 +100,20 @@
 
     </div>
     <div class="row d-flex justify-content-center" id='img-col'>
-        <img class=" mx-auto" height="250"
-             src="{{ url_for('other.serve_static', filename='favicon.gif')  }}" width="190">
+        <img class=" mx-auto" height="250" src="{{ url_for('other.serve_static', filename='favicon.gif')  }}" width="190">
     </div>
 </div>
 <!-- Jquery.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" type="text/javascript"></script>
 <!-- popper.js - needed for bootstrap -->
-<script crossorigin="anonymous"
-        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-        src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+<script crossorigin="anonymous" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
 <!-- bootstarp -->
-<script crossorigin="anonymous"
-        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
-        src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
-<script>
+<script crossorigin="anonymous" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+<!-- tooltips -->
+<script> 
     $(document).ready(() => {
         $('[data-toggle="tooltip"]').tooltip()
-    })
+    });
 </script>
 </body>
 </html>

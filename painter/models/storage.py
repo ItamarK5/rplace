@@ -8,7 +8,7 @@ from sqlalchemy import String, Column
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm.exc import NoResultFound
 from datetime import datetime, timedelta
-from painter.backends.extensions import datastore
+from painter.backends.extensions import storage_sql
 from flask_sqlalchemy import BaseQuery
 import re
 from flask import Flask
@@ -73,8 +73,8 @@ class CacheTextMixin:
             return False
         # else check if expires
         if model.has_expired():
-            datastore.session.delete(model)
-            datastore.session.commit()
+            storage_sql.session.delete(model)
+            storage_sql.session.commit()
             return False
         return True
 
@@ -85,8 +85,8 @@ class CacheTextMixin:
         :return: nothing
         creates the table and submit it to the database, fastly
         """
-        datastore.session.add(cls(identity_column=identity_string))
-        datastore.session.commit()
+        storage_sql.session.add(cls(identity_column=identity_string))
+        storage_sql.session.commit()
 
     @classmethod
     def check_string(cls, identity_string: str) -> bool:
@@ -104,7 +104,7 @@ class CacheTextMixin:
         if record.has_expired():
             # error handling
             try:
-                datastore.session.delete(record)
+                storage_sql.session.delete(record)
             finally:
                 return True
         return False
@@ -119,14 +119,14 @@ class CacheTextMixin:
         if forced_add is None:
             # create new one
             try:
-                datastore.session.remove()
+                storage_sql.session.remove()
             # ignore already deleted result
             except NoResultFound:
                 pass
         else:
             # reset the
             forced_add.expires = datetime.utcnow()
-        datastore.session.commit()
+        storage_sql.session.commit()
 
     @classmethod
     def force_forget(cls, identity_string: str) -> bool:
@@ -137,8 +137,8 @@ class CacheTextMixin:
         if model is None:
             return False
         # otherwise
-        datastore.session.delete(model)
-        datastore.session.commit()
+        storage_sql.session.delete(model)
+        storage_sql.session.commit()
 
     def has_expired(self) -> bool:
         return (datetime.utcnow() - self.creation_date).seconds > self.max_expires_seconds
@@ -147,12 +147,12 @@ class CacheTextMixin:
     def clear_cache(cls, save_session: bool):
         cache_expires = datetime.utcnow() + timedelta(seconds=cls.max_expires_seconds)
         for row in cls.query.filter(cls.creation_date < cache_expires).all():
-            datastore.session.delete(row)
+            storage_sql.session.delete(row)
         if save_session:
-            datastore.session.commit()
+            storage_sql.session.commit()
 
 
-class SignupMailRecord(datastore.Model, CacheTextMixin):
+class SignupMailRecord(storage_sql.Model, CacheTextMixin):
     """
         Used to cache a name of a new user.
         to prevent other users from using it
@@ -161,7 +161,7 @@ class SignupMailRecord(datastore.Model, CacheTextMixin):
     identity_max_length = 254
 
 
-class SignupNameRecord(datastore.Model, CacheTextMixin):
+class SignupNameRecord(storage_sql.Model, CacheTextMixin):
     """
         Used to cache a mail of a new user
         to prevent reuse of it and re-mailing over and over again
@@ -170,7 +170,7 @@ class SignupNameRecord(datastore.Model, CacheTextMixin):
     identity_max_length = 15
 
 
-class RevokeMailAttempt(datastore.Model, CacheTextMixin):
+class RevokeMailAttempt(storage_sql.Model, CacheTextMixin):
     identity_column_name = 'address'
     identity_max_length = 254
 
