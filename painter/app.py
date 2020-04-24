@@ -7,7 +7,7 @@ from __future__ import absolute_import
 from os import path
 from typing import Optional
 from celery import Celery
-from flask import Flask
+from flask import Flask, cli
 from painter.backends.extensions import (
     datastore, generate_engine,
     mailbox, login_manager, cache,
@@ -15,7 +15,7 @@ from painter.backends.extensions import (
 )
 from painter.models import init_storage_models
 from painter.backends.skio import sio
-from painter.backends.render import add_filters, bootstrap
+from .others.filters import add_filters
 from .config import CelerySettings
 import click
 
@@ -32,7 +32,8 @@ def create_app(
         import_class: Optional[str] = None,
         is_celery: bool = False) -> Flask:
     """
-    :param import_class: the class to import from config.py as configuration base
+    the command to create default app, with configuration
+    :param import_Class: the class to import from config.py as configuration base
     :param is_celery: does the app is used for celery worker context
     :param debug: if to debug app
     :return: a Flask application
@@ -55,7 +56,6 @@ def create_app(
     # socketio, force eventlet async mode
     sio.init_app(
         None if is_celery else app,
-        # force using evenlet
         async_mode='eventlet'
     )
     # set debug
@@ -69,7 +69,6 @@ def create_app(
     csrf.init_app(app)
     redis.init_app(app)
     celery.conf.update(app.config)
-    bootstrap.init_app(app)
     # add filters
     add_filters(app)
     # init storage models

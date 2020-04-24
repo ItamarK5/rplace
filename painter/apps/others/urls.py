@@ -30,17 +30,17 @@ def meme_image(error: str) -> Response:
     return send_from_directory(
         error_path, random_meme,
         mimetype=MIME_TYPES[get_file_type(random_meme)],
-        cache_timeout=5  # five seconds top save, to prevent fast reloads request
+        cache_timeout=5 # five seconds top save, to prevent fast reloads request
     )
 
 
-@other_router.route('/files/<path:static_file>', methods=('GET',))
-def serve_static(static_file: str) -> Response:
+@other_router.route('/files/<path:key>', methods=('GET',))
+def serve_static(key: str) -> Response:
     """
-    :param static_file: key representing a file name
+    :param key: key representing a file name
     :return: the resource file name, if don't exists returns 404
     """
-    file_format = get_file_type(static_file)
+    file_format = get_file_type(key)
     if not file_format:  # include no item scenario
         abort(404, 'invalid file format')
     if file_format not in listdir(path.join(current_app.root_path, 'web', 'static')):
@@ -51,8 +51,8 @@ def serve_static(static_file: str) -> Response:
         abort(404, 'invalid file format')
     try:
         return send_from_directory(
-            path.join(current_app.root_path, 'web', 'static', static_file.split(".")[-1]),
-            static_file,
+            path.join(current_app.root_path, 'web', 'static', key.split(".")[-1]),
+            key,
             mimetype=mime_type
         )
     except:

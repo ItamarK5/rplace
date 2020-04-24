@@ -21,7 +21,7 @@ const valueConvertor = (id, val) => {
     switch(id){
         case 'color':
             // number
-            return COLORS[val]  // select specific color
+            return COLORS[val]  // select spcific colro
         case 'url':
             // strings
             return val ? val : 'None'   // nothing becomes null
@@ -104,8 +104,8 @@ $(document).ready(() =>{
             }
         })
     })
-    // when a setting form object is submitted
     $('.setting-form').submit(function(e){
+        console.log(5)
         e.preventDefault();
         let form = $(this);
         let parent = getModalParent(form);
@@ -123,7 +123,6 @@ $(document).ready(() =>{
                 message_element = response.success ? success_div : error_div;
                 message_element.removeClass('d-none')
                 if(response.success){
-                    // get the item
                     $(`*[aria-describedat='#${response.id}']`).text(valueConvertor(response.id, response.val));
                     error_div.addClass('d-none')
                     success_div.removeClass('d-none')
@@ -136,12 +135,12 @@ $(document).ready(() =>{
                 }
                 
             },
-            error: (xmlhttprequest) =>{
+            error: (err) =>{
                 // read later https://stackoverflow.com/a/3543713
                 Swal.fire({
                     icon:'error',
                     title:'Error',
-                    html:xmlhttprequest.responseText
+                    html:err.responseText
                 });
             }
         });
