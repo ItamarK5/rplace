@@ -56,7 +56,8 @@ def create_app(debug: bool = False,
             'result_backend': app.config['CELERY_BROKER_URL']
         })
     else:
-        sio.init_app(app)
+        sio.init_app(app,
+                     async_mode='eventlet')
     # set debug
     app.debug = debug
     # init Extensions

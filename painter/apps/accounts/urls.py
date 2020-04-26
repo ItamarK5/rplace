@@ -16,6 +16,7 @@ from .forms import LoginForm, SignUpForm, RevokePasswordForm, ChangePasswordForm
 from .mail import send_signing_up_message, send_revoke_password_message
 from .tokens import MailTokens
 from .utils import *
+from flask_login import login_fresh
 
 
 def login_response() -> Response:

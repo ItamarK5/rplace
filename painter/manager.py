@@ -4,12 +4,11 @@
     the module is based of flask_script module
     https://flask-script.readthedocs.io/en/latest/
 """
-import socket
+import eventlet.patcher
 import subprocess
 import sys
 from typing import Iterable, Any, Dict, FrozenSet
 import time
-
 from flask_script import Manager, Server, Option, Command
 from flask_script.cli import prompt_bool, prompt_choices, prompt
 from flask_script.commands import InvalidCommand
@@ -92,26 +91,6 @@ class RunServer(Server):
                    default=self.use_reloader),  # False
         )
 
-    @staticmethod
-    def __search_host() -> str:
-        """
-        :return: if host for router if can get else local
-        # https://stackoverflow.com/a/166520
-        """
-        print("You choose to search router ip,\n"
-              "this decision takes a lot of time\n"
-              "After you decide to finish so please enter that as host argument\n"
-              "because it takes a couple of seconds before the app fetches the ip")
-        try:
-            host = socket.gethostbyname(socket.gethostname())
-            print(f'Your Host:{host}')
-        except Exception as e:
-            print("Fail to get router IP, because:")
-            print(e)
-            print("Running On 127.0.0.1")
-            host = '127.0.0.1'
-        return host
-
     def __call__(self, app, host, port, use_debugger, use_reloader):
         """
         :param  host: host the ip to run the server
@@ -126,8 +105,6 @@ class RunServer(Server):
         override the default runserver command to start a Socket.IO server
         """
         host = host if host is not None else app.config.get('APP_HOST', '127.0.0.1')
-        if host == 'search':
-            host = self.__search_host()
         port = port if port is not None else app.config.get('APP_PORT', 8080)
         # if didn't given debugger
         if use_debugger is None:
@@ -136,7 +113,7 @@ class RunServer(Server):
             if use_debugger is None:
                 use_debugger = True
         if use_reloader is None:
-            use_reloader = (not app.debug) or app.config.get('WERKZEUG_RUN_MAIN', None) == 'true'
+            use_reloader = app.debug or app.config.get('WERKZEUG_RUN_MAIN', None)
         # runs the socketio server
         sio.run(
             app,

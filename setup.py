@@ -4,7 +4,6 @@ Main App
 """
 
 if __name__ == '__main__':
-    # monkey patch
     from eventlet import monkey_patch
     monkey_patch()
     # import staff
