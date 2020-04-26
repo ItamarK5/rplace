@@ -1,4 +1,11 @@
-{% macro settingField(key, val, modal, describe) %}
+{#
+    prefernceField:
+    key: key of the preferences
+    val: the value of the preference by the use
+    describe: describing the value
+    modal the id of the modal related to the preference
+#}
+{% macro prefernceField(key, val, modal, describe) %}
 <tr class="mb-2 justify-content-center" id="row-{{ key }}">
     <td class="justify-content-center align-content-center">
         <button class="btn btn-outline-light w-100 h-100 block text-center text-xl" data-target="{{ modal }}" data-toggle="modal" id="{{ key }}-active">
@@ -23,10 +30,10 @@
     <th class="text-center" style="width:80%">Value:</th>
     </thead>
     <tbody class="text-center">
-    {{ settingField('x', user.x, '#modal-change-x', form.x.id) }}
-    {{ settingField('y', user.y, '#modal-change-y', form.y.id) }}
-    {{ settingField('scale', user.scale, '#modal-change-scale', form.scale.id) }}
-    {{ settingField('color', user.color | color | title, '#modal-change-color', form.color.id) }}
-    {{ settingField('url', user.url, '#modal-change-url', form.chat_url.id) }}
+    {{ prefernceField('x', user.x, '#modal-change-x', form.x.id) }}
+    {{ prefernceField('y', user.y, '#modal-change-y', form.y.id) }}
+    {{ prefernceField('scale', user.scale, '#modal-change-scale', form.scale.id) }}
+    {{ prefernceField('color', user.color | color | title, '#modal-change-color', form.color.id) }}
+    {{ prefernceField('url', user.url, '#modal-change-url', form.chat_url.id) }}
     </tbody>
 </table>

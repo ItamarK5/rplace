@@ -12,6 +12,13 @@
     </button>
 </div>
 {% endmacro %}
+{#
+    index: value to choose the index in front of the modal
+    modal-name: the name of the modal, basically its id
+    field: preference field of the modal rendered
+    input: the wtforms field related to the preference
+    value: the current value of the preference form
+#}
 {% macro simple_preference_modal(index, modal_name, field, input, value) %}
 <div aria-hidden="true" aria-labelledby="#{{ modal_name }}-title" class="modal" id="{{ modal_name }}" role="dialog" tabindex="-{{ index }}">
     <div class="modal-dialog" role="document">

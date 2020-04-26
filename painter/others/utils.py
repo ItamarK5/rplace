@@ -113,7 +113,6 @@ def check_service_flag(service_flag: Optional[bool], all_flag: bool) -> bool:
 
 
 
-
 def auto_redirect(url: str) -> Response:
     """
     :param url: to redirect the user accessing the page

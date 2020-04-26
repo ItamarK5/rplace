@@ -36,20 +36,17 @@ def is_admin(user: User) -> bool:
     return user.is_authenticated and user.role >= Role.admin
 
 
-def class_ftr(classes: Optional[Union[str, List]], comma: Optional[str] = None) -> str:
+def class_ftr(classes: Optional[Union[str, List]]) -> str:
     """
     :param classes: list of classes or just 1
-    :param comma: a comma string ",' and etc.
     :return: the combined list of string as one
     """
     if classes is None:
         return ''
-    if isinstance(classes, list):
+    elif isinstance(classes, list):
         classes = ' '.join(classes)
-    # if comma
-    if comma:
-        return f'class={comma}{classes}{comma}'
-    return f" {classes}"
+    # else
+    return classes
 
 
 def color(color_idx: int) -> str:

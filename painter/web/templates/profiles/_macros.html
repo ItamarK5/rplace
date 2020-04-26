@@ -1,17 +1,32 @@
-{% macro edit_title(text) %}
+{# text: text of the title #}
+{% macro edit_title(title) %}
 <div class="justify-content-center center-text row mb-2">
-    <h4 class="font-weight-bold"><u>{{ text }}</u></h4>
+    <h4 class="font-weight-bold"><u>{{ title }}</u></h4>
 </div>
 {% endmacro %}
+{#
+    text: text inside the span
+    id: id of the text
+    classes: classes of the span
+    for_input: the name of the input the field is for
+#}
 {% macro pre_input_text(text, for_input, id=None, classes="") %}
 <div class="input-group-prepend">
-    <span class="custom-input-text{{ classes | class_ftr }}" for="{{ for_input }}" id="{{ id }}">{{ text }}</span>
+    <span class="custom-input-text {{ classes | class_ftr }}" for="{{ for_input }}" id="{{ id }}">{{ text }}</span>
 </div>
 {% endmacro %}
+{#
+    button to show modal
+    span: text
+    fa: font awesome class
+    title: text of the modal]
+    placement: placement of the button modal text
+    classes: classes the modal is in
+#}
 {% macro button_model(span, modal, fa, title='none', placement="top", classes=None) %}
 {# http://jsfiddle.net/sso79Ldj/1/ #}
 <div data-target="#{{ modal }}" data-toggle="modal" id="{{ span }}">
-    <button class="btn{{ classes | class_ftr }}" data-placement="{{ placement }}" data-toggle="tooltip" title="{{ title }}" type="button">
+    <button class="btn {{ classes | class_ftr }}" data-placement="{{ placement }}" data-toggle="tooltip" title="{{ title }}" type="button">
         <i class="{{ fa }}"></i>
     </button>
 </div>
