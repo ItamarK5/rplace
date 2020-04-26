@@ -6,6 +6,7 @@ from enum import IntEnum
 from typing import Type, Any
 
 from sqlalchemy import SmallInteger, TypeDecorator
+from sqlalchemy.engine.default import DefaultDialect
 
 
 class SmallEnum(TypeDecorator):
@@ -21,10 +22,20 @@ class SmallEnum(TypeDecorator):
     impl = SmallInteger
 
     def __init__(self, enum_type: Type[IntEnum], *args, **kwargs) -> None:
+        """
+        :param enum_type: the enum the column keeps
+        :param args: anything for the init of the object
+        :param kwargs: anything for the init of the object
+        """
         super(SmallEnum, self).__init__(*args, **kwargs)
         self._enum_type = enum_type
 
-    def process_bind_param(self, value: Any, dialect) -> int:
+    def process_bind_param(self, value: Any, dialect:DefaultDialect) -> int:
+        """
+        :param value: enum or integer
+        :param dialect: dialect object
+        :return:
+        """
         # https://www.michaelcho.me/article/using-python-enums-in-sqlalchemy-models
         if isinstance(value, int):
             return value
@@ -33,11 +44,13 @@ class SmallEnum(TypeDecorator):
         # else
         raise ValueError()
 
-    def process_result_value(self, value, dialect) -> IntEnum:
+    def process_result_value(self, value: int, dialect:DefaultDialect) -> IntEnum:
         """
         :param value:
-        :param dialect:
-        :return:
+        :param dialect: some dialect object
+        return
+        :return: the enum represent the value
+        convert sqlite integer to enum
         """
         try:
             return self._enum_type(value)

@@ -7,24 +7,32 @@ from __future__ import absolute_import
 from flask import render_template
 from flask_login import logout_user, login_user, login_required
 from werkzeug.wrappers import Response
+from typing import Type
 
+from flask_wtf import FlaskForm
 from painter.backends.extensions import storage_sql
 from painter.models import SignupNameRecord, SignupMailRecord, RevokeMailAttempt, User
 from painter.others.utils import redirect_next
 from .router import accounts_router
-from .forms import LoginForm, SignUpForm, RevokePasswordForm, ChangePasswordForm, SignupTokenForm, RevokeTokenForm
+from .forms import (
+    LoginForm, SignUpForm, RevokePasswordForm,
+    ChangePasswordForm, SignupTokenForm, RevokeTokenForm, RefreshForm
+)
 from .mail import send_signing_up_message, send_revoke_password_message
 from .tokens import MailTokens
 from .utils import *
 from flask_login import login_fresh
 
 
-def login_response() -> Response:
+def login_response(flask_form: Type[FlaskForm], render_html: str) -> Response:
     """
-    :return: login page response
+    :param flask_form: form to validate the request
+    :param render_html: the page to render
+    :return: login page response\refresh page
+    so similar that its 1 function
     """
     # extract data
-    form = LoginForm()
+    form = flask_form()
     entire_form_error = []
     extra_error = None
     if form.validate_on_submit():
@@ -41,7 +49,7 @@ def login_response() -> Response:
         else:
             return redirect_next(url_for('place.home'))
     # clear password
-    return render_template('accounts/index.html',
+    return render_template(render_html,
                            form=form,
                            entire_form_errors=entire_form_error,
                            extra_error=extra_error)
@@ -54,7 +62,7 @@ def login():
     :return: Response login page
     just wraps the login function to make its only allowed by anonymous users
     """
-    return login_response()
+    return login_response(LoginForm, 'accounts/login.html')
 
 
 @accounts_router.route('/refresh', methods=('GET', 'POST'))
@@ -66,7 +74,7 @@ def refresh() -> Response:
         # redirect to home
         return redirect(url_for('paint.home'))
     # login response as fresh response
-    return login_response()
+    return login_response(RefreshForm, 'accounts/refresh.html')
 
 
 @accounts_router.route('/signup', methods=('GET', 'POST'))

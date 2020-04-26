@@ -149,6 +149,15 @@ class LoginForm(BaseForm,
         self.non_field_errors = []
 
 
+class RefreshForm(LoginForm):
+    """
+    refresh user form
+    its like login but without the password or email
+    """
+    name = 'refresh'
+    title = 're-Login to your account'
+
+
 class RevokePasswordForm(BaseForm,
                          FlaskEmailMixin):
     name = 'revoke'
@@ -177,7 +186,7 @@ class ChangePasswordForm(BaseForm,
 
 class SignUpForm(BaseForm,
                  FlaskUsernameMixin,
-                 FlaskPasswordMixin,
+                 FlaskConfirmPasswordMixin,
                  FlaskEmailMixin):
     """
     Sign up form
