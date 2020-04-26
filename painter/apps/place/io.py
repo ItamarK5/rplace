@@ -92,6 +92,6 @@ def set_board(params: Any) -> str:
         sio.start_background_task(task_set_board, x=x, y=y, color=clr)
         #  board.set_at(x, y, color)
         return json.dumps({'code': 'time', 'status': str(next_time)})
-    # execption handeling
+    # exception handling
     except Exception:
         return 'undefined'

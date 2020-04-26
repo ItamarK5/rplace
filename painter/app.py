@@ -23,7 +23,7 @@ import click
 celery = Celery(
     __name__,
     # enter the result backend
-    broker=CelerySettings.CELERY_BROKER_URL
+    broker=CelerySettings.CELERY_BROKER_URL,
 )
 
 

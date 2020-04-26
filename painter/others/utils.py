@@ -4,58 +4,42 @@
     utilies for mostly the manager.py
 """
 from __future__ import absolute_import
-
-from abc import ABC
+from werkzeug.routing import Rule
+import urllib.parse
 from typing import Optional, TypeVar, List, Union, FrozenSet
-
+from flask import current_app
 from flask import redirect, request
 from flask_script.commands import Command
 from werkzeug import Response
-from wtforms import StringField
-from wtforms.validators import ValidationError
+
 
 from .constants import (
     FLAG_SERVICES_OPTIONS
 )
 from .wtforms_mixins import (
-    UsernameFieldMixin,
+    NewUsernameFieldMixin,
     PasswordFieldMixin,
-    MailAddressFieldMixin,
+    NewEmailFieldMixin,
     QuickForm
 )
-from ..models.user import User
 
 ConvertType = TypeVar('ConvertType', int, bool, float)
 
 
 class NewUserForm(
     QuickForm,
-    UsernameFieldMixin,
+    NewUsernameFieldMixin,
     PasswordFieldMixin,
-    MailAddressFieldMixin,
+    NewEmailFieldMixin,
 ):
     """
     simple class to validate new user data
     its email address, its name and its password
     """
-    def validate_mail_address(self, field: StringField) -> None:
-        """
-        :param field:  username field
-        :return: validates if the mail address isn't already existing with the name
-        """
-        if User.query.filter_by(email=field.data).first() is not None:
-            raise ValidationError('User with the mail address already exists')
-
-    def validate_username(self, field: StringField) -> None:
-        """
-        :param field:  username field
-        :return: validate if the name isn't already existing with the name
-        """
-        if User.query.filter_by(username=field.data).first() is not None:
-            raise ValidationError('User with the username already exists')
+    pass
 
 
-class MyCommand(Command, ABC):
+class MyCommand(Command):
     """
         simple command but with options to describe itself,
     """
@@ -128,6 +112,8 @@ def check_service_flag(service_flag: Optional[bool], all_flag: bool) -> bool:
     return all_flag if service_flag is None else service_flag ^ all_flag
 
 
+
+
 def auto_redirect(url: str) -> Response:
     """
     :param url: to redirect the user accessing the page
@@ -142,12 +128,30 @@ def auto_redirect(url: str) -> Response:
     return view_func
 
 
-def redirect_to(fallback: str) -> Response:
+def find_rule(url:str, method:str) ->  Optional[Rule]:
+    for rule in current_app.url_map.iter_rules():
+        if rule.match(url, method):
+            return rule
+    # else
+    return None
+
+def is_url_safe(url: str) -> bool:
+    """
+    :param url: url
+    :return: if the url is safe
+    """
+    parsed_url = urllib.parse.urlparse(url)
+    if parsed_url.hostname is not None:
+        return False
+    if parsed_url.port == 80:
+        return True
+
+def redirect_next(fallback: str) -> Response:
     """
     :param fallback: fallback path
     :return: response to redirect the user via the next argument
     """
-    url_dest = request.args.get('next', None)
-    if url_dest:
-        return redirect(url_dest)
+    next_url = request.args.get('next', None)
+    if next_url is not None:
+        # check in same domain
     return redirect(fallback)

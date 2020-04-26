@@ -127,6 +127,7 @@ class RunServer(Server):
         override the default runserver command to start a Socket.IO server
         """
         host = host if host is not None else app.config.get('APP_HOST', '127.0.0.1')
+        print(host)
         if host == 'search':
             host = self.__search_host()
         port = port if port is not None else app.config.get('APP_PORT', 8080)

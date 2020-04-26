@@ -46,3 +46,4 @@ def send_mail(subject: str,
                     headers=attach['headers']
                 )
         mailbox.send(message)
+

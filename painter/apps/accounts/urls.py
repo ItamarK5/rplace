@@ -13,7 +13,7 @@ from painter.backends.extensions import storage_sql
 from .forms import LoginForm, SignUpForm, RevokePasswordForm, ChangePasswordForm, SignupTokenForm, RevokeTokenForm
 from .mail import send_signing_up_message, send_revoke_password_message
 from .utils import *
-from painter.others.utils import redirect_to
+from painter.others.utils import redirect_next
 
 
 def login_response() -> Response:
@@ -36,7 +36,7 @@ def login_response() -> Response:
             # must be because user isn't active
             form.non_field_errors.append(user.record_message())
         else:
-            return redirect_to(url_for('place.home'))
+            return redirect_next(url_for('place.home'))
     # clear password
     return render_template('accounts/index.html',
                            form=form,

@@ -5,11 +5,15 @@ from painter.others.utils import auto_redirect
 from painter.backends.extensions import storage_sql
 from .forms import PreferencesForm
 from . import place_router
+from flask import request
 
 
 @place_router.route('/place', methods=('GET',))
 @login_required
 def place():
+    """
+    :return: view for the main application
+    """
     if not current_user:
         return render_template('place.html')
     return render_template('place.html')

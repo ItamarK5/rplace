@@ -62,7 +62,7 @@ class FlaskPasswordMixin(object):
     )
 
 
-class FlaskConfirmPasswordMixin(object):
+class FlaskConfirmPasswordMixin(FlaskPasswordMixin):
     """
     name: FlaskConfirmPasswordMixin
     mixin class for FlaskForm child to a confirm password field
@@ -166,7 +166,6 @@ class RevokePasswordForm(BaseForm,
 
 
 class ChangePasswordForm(BaseForm,
-                         FlaskPasswordMixin,
                          FlaskConfirmPasswordMixin):
     """
     ChangePasswordForm
@@ -179,7 +178,6 @@ class ChangePasswordForm(BaseForm,
 class SignUpForm(BaseForm,
                  FlaskUsernameMixin,
                  FlaskPasswordMixin,
-                 FlaskConfirmPasswordMixin,
                  FlaskEmailMixin):
     """
     Sign up form
