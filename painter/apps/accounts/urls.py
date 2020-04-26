@@ -8,12 +8,13 @@ from flask import render_template
 from flask_login import logout_user, login_user, login_required
 from werkzeug.wrappers import Response
 
-from painter.models import SignupNameRecord, SignupMailRecord, RevokeMailAttempt, User
 from painter.backends.extensions import storage_sql
+from painter.models import SignupNameRecord, SignupMailRecord, RevokeMailAttempt, User
+from painter.others.utils import redirect_next
 from .forms import LoginForm, SignUpForm, RevokePasswordForm, ChangePasswordForm, SignupTokenForm, RevokeTokenForm
 from .mail import send_signing_up_message, send_revoke_password_message
+from .tokens import MailTokens
 from .utils import *
-from painter.others.utils import redirect_next
 
 
 def login_response() -> Response:
@@ -87,7 +88,7 @@ def signup() -> Response:
         send_signing_up_message(
             name,
             email,
-            TokenSerializer.signup.dumps(
+            MailTokens.signup.dumps(
                 {
                     'mail_address': email,
                     'username': name,
@@ -122,7 +123,7 @@ def revoke() -> Response:
             send_revoke_password_message(
                 user.username,
                 form.email.data,
-                TokenSerializer.revoke.dumps({
+                MailTokens.revoke.dumps({
                     'password': user.password,
                     'mail_address': user.email
                 })
@@ -138,11 +139,10 @@ def change_password(token: str) -> Response:
     :param token: token url represent saving url
     :return: HTML Page of the response
     """
-    extracted_token = extract_signature(
+    extracted_token = MailTokens.extract_signature(
         token,
-        TokenSerializer.get_max_age(),
         RevokeTokenForm,
-        TokenSerializer.revoke,
+        MailTokens.revoke,
     )
     # validated if any token
     if extracted_token is None:
@@ -200,10 +200,9 @@ def confirm(token: str) -> Response:
     :param token: a token that holds user information (username, mail and password)
     :return: response view, if use registered or not
     """
-    extracted_token = extract_signature(token,
-                                        TokenSerializer.get_max_age(),
-                                        SignupTokenForm,
-                                        TokenSerializer.signup)
+    extracted_token = MailTokens.extract_signature(token,
+                                                   SignupTokenForm,
+                                                   MailTokens.signup)
     if extracted_token is None:
         return render_template(
             'responses/token-error.html',
