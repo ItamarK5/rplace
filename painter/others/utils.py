@@ -128,23 +128,13 @@ def auto_redirect(url: str) -> Response:
     return view_func
 
 
-def find_rule(url:str, method:str) ->  Optional[Rule]:
+def find_rule(url: str, method: str) -> Optional[Rule]:
     for rule in current_app.url_map.iter_rules():
         if rule.match(url, method):
             return rule
     # else
     return None
 
-def is_url_safe(url: str) -> bool:
-    """
-    :param url: url
-    :return: if the url is safe
-    """
-    parsed_url = urllib.parse.urlparse(url)
-    if parsed_url.hostname is not None:
-        return False
-    if parsed_url.port == 80:
-        return True
 
 def redirect_next(fallback: str) -> Response:
     """
@@ -154,4 +144,5 @@ def redirect_next(fallback: str) -> Response:
     next_url = request.args.get('next', None)
     if next_url is not None:
         # check in same domain
+        return redirect(next_url)
     return redirect(fallback)

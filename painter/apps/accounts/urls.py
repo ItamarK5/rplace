@@ -11,6 +11,7 @@ from werkzeug.wrappers import Response
 from painter.backends.extensions import storage_sql
 from painter.models import SignupNameRecord, SignupMailRecord, RevokeMailAttempt, User
 from painter.others.utils import redirect_next
+from .router import accounts_router
 from .forms import LoginForm, SignUpForm, RevokePasswordForm, ChangePasswordForm, SignupTokenForm, RevokeTokenForm
 from .mail import send_signing_up_message, send_revoke_password_message
 from .tokens import MailTokens

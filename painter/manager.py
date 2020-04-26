@@ -95,8 +95,7 @@ class RunServer(Server):
     @staticmethod
     def __search_host() -> str:
         """
-        :param host: host address
-        :return: if host is router returns
+        :return: if host for router if can get else local
         # https://stackoverflow.com/a/166520
         """
         print("You choose to search router ip,\n"
@@ -109,7 +108,7 @@ class RunServer(Server):
         except Exception as e:
             print("Fail to get router IP, because:")
             print(e)
-            print("Running On local host")
+            print("Running On 127.0.0.1")
             host = '127.0.0.1'
         return host
 
@@ -127,7 +126,6 @@ class RunServer(Server):
         override the default runserver command to start a Socket.IO server
         """
         host = host if host is not None else app.config.get('APP_HOST', '127.0.0.1')
-        print(host)
         if host == 'search':
             host = self.__search_host()
         port = port if port is not None else app.config.get('APP_PORT', 8080)
@@ -252,10 +250,12 @@ class CreateUser(MyCommand):
             print('user created successfully')
 
 
-class CeleryWorker(Command):
+class CeleryWorker(MyCommand):
     """Starts the celery worker."""
     capture_all_args = True
-    help = 'Start mail celery worker'
+    help = 'Start an celery worker\n' \
+           'if you want to name it (all workers must have different name) you need' \
+           'to enter --n (name)'
 
     def run(self, argv):
         """
@@ -266,13 +266,13 @@ class CeleryWorker(Command):
         """
         ret = subprocess.call(
             ['venv/scripts/celery.exe', 'worker',
-             '-A', 'painter.tasks.mail_worker.celery', '-P', 'eventlet'] + argv
+             '-A', 'painter.tasks.worker.celery', '-P', 'eventlet'] + argv
         )
         sys.exit(ret)
 
 
 # adding command
-manager.add_command('celery-mail', CeleryWorker)
+manager.add_command('celery', CeleryWorker)
 manager.add_command("runserver", RunServer())
 manager.add_command("create-user", CreateUser())
 

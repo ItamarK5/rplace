@@ -6,6 +6,6 @@ used to handle staff related to login, register, change password and exc..
 
 from .router import accounts_router
 from . import urls
-from .utils import TokenSerializer
+
 
 __all__ = ['accounts_router']

@@ -7,7 +7,7 @@ from __future__ import absolute_import
 from os import path
 from typing import Optional
 from celery import Celery
-from flask import Flask, cli
+from flask import Flask
 from painter.backends.extensions import (
     storage_sql, generate_engine,
     mailbox, login_manager, cache,
@@ -22,8 +22,6 @@ import click
 # celery worker to register tasks
 celery = Celery(
     __name__,
-    # enter the result backend
-    broker=CelerySettings.CELERY_BROKER_URL,
 )
 
 
@@ -45,18 +43,20 @@ def create_app(debug: bool = False,
         template_folder=path.join('web', 'templates'),
     )
     # The Application Configuration, import default
-    import_object = import_class if import_class is not None else 'FlaskApp'
+    import_object = import_class if import_class is not None else 'FlaskApp' if not is_celery else 'CeleryApp'
     # first checks if its from directly
     object_configuration = 'painter.config.' + import_object
     try:
         app.config.from_object(object_configuration)
     except ImportError:
         raise click.UsageError("Cannot import configuration {} from config.py".format(import_object))
-    # socketio, force eventlet async mode
-    sio.init_app(
-        None if is_celery else app,
-        async_mode='eventlet'
-    )
+    # socketio, not socketio in celery
+    if is_celery:
+        celery.conf.update({
+            'result_backend': app.config['CELERY_BROKER_URL']
+        })
+    else:
+        sio.init_app(app)
     # set debug
     app.debug = debug
     # init Extensions
