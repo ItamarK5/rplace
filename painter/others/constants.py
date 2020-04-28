@@ -54,7 +54,7 @@ class ServiceResultsPrint:
         :param key: key, key in dictionary of the response passed
         :param option_flag: specific string for flag_service_option,
         result with that parameter are only enabled if the option flag was passed
-        to the check-sevice command
+        to the check-service command
         """
         self.string_format = string_format
         self.title = title

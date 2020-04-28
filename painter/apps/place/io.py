@@ -1,10 +1,9 @@
 import json
 from datetime import datetime
-from typing import Any, Dict, Union, TypeVar, Generic
-from painter.backends.extensions import redis
-from redis.exceptions import ConnectionError as RedisConnectionError
+from typing import Any, Dict, Union
+
 from flask_login import current_user
-from painter.others.constants import COLOR_COOLDOWN
+
 from painter.backends import lock, board
 from painter.backends.extensions import storage_sql
 from painter.backends.skio import (
@@ -12,6 +11,7 @@ from painter.backends.skio import (
     socket_io_authenticated_only_connection,
     socket_io_authenticated_only_event,
 )
+from painter.others.constants import COLOR_COOLDOWN
 
 
 def task_set_board(x: int, y: int, color: int) -> None:
@@ -93,5 +93,6 @@ def set_board(params: Any) -> str:
         #  board.set_at(x, y, color)
         return json.dumps({'code': 'time', 'status': str(next_time)})
     # exception handling
-    except Exception:
+    except Exception as e:
+        print(e)
         return 'undefined'

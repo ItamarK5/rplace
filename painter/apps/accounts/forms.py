@@ -13,10 +13,9 @@ from painter.others.wtforms_mixins import (
     QuickForm
 )
 
-
 """
 FlaskForms Mixin
-use mixins to make the size of the file smaller
+use mixin for making the size of the file smaller
 """
 
 
@@ -70,7 +69,7 @@ class FlaskConfirmPasswordMixin(FlaskPasswordMixin):
     confirm_password = PasswordField(
         'password confirm',
         validators=[
-            validators.equal_to('password', 'Your password must match the origianl')
+            validators.equal_to('password', 'Your password must match the original')
         ], render_kw={
             'data-toggle': 'tooltip',
             'title': 'You must re-enter your password, so we be really sure that know your password',
@@ -161,14 +160,14 @@ class RefreshForm(LoginForm):
 class RevokePasswordForm(BaseForm,
                          FlaskEmailMixin):
     name = 'revoke'
-    title = 'Chnage Your Password'
+    title = 'Change Your Password'
 
     # sorry pep8, but otherwise wont work
     def validate_email(self, field) -> None:
         """
         :param field: the email fields
         :return: none
-        extra validation for the email feld, check if exists in the system
+        extra validation for the email field, check if exists in the system
         """
         if RevokeMailAttempt.exists(field.data):
             raise ValidationError('You need to wait 15 minutes before you can use revoke mail again')

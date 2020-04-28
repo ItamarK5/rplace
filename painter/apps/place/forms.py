@@ -58,7 +58,7 @@ class PreferencesForm(FlaskForm):
 
     def safe_first_hidden_fields(self) -> Tuple[Optional[str], Optional[Any]]:
         """
-        :return: the fields that arent hidden
+        :return: the fields that aren't hidden
         inspired by flask_wtf.form.hidden_tag
         """
         for f in self.__iter__():

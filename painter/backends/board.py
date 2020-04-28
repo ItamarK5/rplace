@@ -1,10 +1,9 @@
 """
  A backend to work with the board on redis
 """
-from threading import Lock
+from redis.exceptions import RedisError
 
 from .extensions import redis, cache
-
 
 # the key for the board in redis database
 KEY = 'board'
@@ -12,15 +11,18 @@ KEY = 'board'
 BOARD_BYTES_SIZE = 1000*500
 
 
-def make_board() -> bool:
+def create() -> bool:
     """
     :return: if there is a board
     check if there is a board object in redis
     if not creates new one
     """
-    if not redis.exists(KEY):
-        return bool(redis.set(KEY, '\00' * BOARD_BYTES_SIZE))
-    return True
+    try:
+        if not redis.exists(KEY):
+            return bool(redis.set(KEY, '\00' * BOARD_BYTES_SIZE))
+        return True
+    except RedisError:
+        return False
 
 
 @cache.cached(timeout=1)
@@ -47,20 +49,22 @@ def set_at(x: int, y: int, color: int) -> None:
     bitfield.execute()
 
 
-def drop_board() -> bool:
+def drop() -> bool:
     """
     deletes the board
-    :return: if the board was deleteated completly
-    :rtype: bool
+    :return: if the board was deleted completely
     """
-    if not redis.exists(KEY):
+    try:
+        if not redis.exists(KEY):
+            return False
+        return bool(redis.delete(KEY))
+    except RedisError:
         return False
-    return bool(redis.delete(KEY))
 
 
 __all__ = [
-    'make_board',
+    'create',
     'set_at',
-    'drop_board',
+    'drop',
     'get_board',
 ]
