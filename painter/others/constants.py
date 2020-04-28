@@ -61,6 +61,7 @@ class ServiceResultsPrint:
     """
     object used to save options for check-service command
     """
+
     def __init__(self, string_format: str, title: str, key: str, option_flag: Optional[str] = None):
         """
         :param string_format: the format to enter the screen with string.format method

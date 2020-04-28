@@ -2,7 +2,8 @@ import re
 from typing import Tuple
 
 from werkzeug.datastructures import MultiDict
-from wtforms import Form, StringField, validators, IntegerField, ValidationError
+from wtforms import Form, StringField, validators, ValidationError
+
 from painter.models import User, SignupMailRecord, SignupNameRecord
 
 UsernamePattern = re.compile(r'^[A-Z0-9]{5,16}$', re.I)
@@ -161,7 +162,7 @@ class NewUsernameFieldMixin(UsernameFieldMixin):
         :param field: username field
         :return: validates if the username isn't already existing with the name
         """
-        if User.query.filter_by(username=field.data).first() is not None or\
+        if User.query.filter_by(username=field.data).first() is not None or \
                 SignupNameRecord.exists(field.data) is not None:
             raise ValidationError('User with the mail address already exists')
 
@@ -177,7 +178,6 @@ class NewEmailFieldMixin(MailAddressFieldMixin):
         :param field:  email field
         :return: validates if the mail address isn't already existing with the name
         """
-        if User.query.filter_by(email=field.data).first() is not None or\
+        if User.query.filter_by(email=field.data).first() is not None or \
                 SignupMailRecord.exists(field.data) is not None:
             raise ValidationError('User with the mail address already exists')
-

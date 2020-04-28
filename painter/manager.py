@@ -5,28 +5,23 @@
     https://flask-script.readthedocs.io/en/latest/
 """
 from __future__ import absolute_import
+
 import subprocess
 import sys
-from typing import Iterable, Any, Dict, FrozenSet
-import time
+from typing import Iterable
+
 from flask_script import Manager, Server, Option, Command
 from flask_script.cli import prompt_bool, prompt_choices, prompt
 from flask_script.commands import InvalidCommand
-from redis.exceptions import (
-    RedisError, AuthenticationWrongNumberOfArgsError, AuthenticationError,
-    TimeoutError as RedisTimeout,
-    ConnectionError as RedisConnectionError
-)
-from .managers import redis_manager, check_services_command
+
 # first import app to prevent some time related import bugs
-from .app import create_app, storage_sql, sio, redis
-from .managers import redis
+from .app import create_app, storage_sql, sio
+from .managers import redis_manager, check_services_command
 from .models import Role, User, ExpireModels
 from .others.constants import ROLE_OPTIONS
 from .others.utils import (
     NewUserForm, MyCommand
 )
-
 
 manager = Manager(
     create_app,
@@ -218,7 +213,6 @@ create_user_command.add_option(Option('--s', '-superuser', dest='role', action='
                                       help='the user\'s role is a superuser, highest rank'))
 
 
-
 class CeleryWorker(MyCommand):
     """Starts the celery worker."""
     capture_all_args = True
@@ -243,7 +237,6 @@ class CeleryWorker(MyCommand):
 # adding command
 manager.add_command('celery', CeleryWorker)
 manager.add_command("runserver", RunServer())
-
 
 """Create Database Command"""
 
@@ -283,7 +276,6 @@ def drop_db():
 
 drop_database_command = MyCommand(drop_db, 'drops the database entirely')
 manager.add_command('drop-db', drop_database_command)
-
 
 """
  Check Service Command

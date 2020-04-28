@@ -4,20 +4,22 @@ Author: Itamar Kanne
 Handles generating the app
 """
 from __future__ import absolute_import
+
 from os import path
 from typing import Optional
+
+import click
 from celery import Celery
 from flask import Flask
+
 from painter.backends.extensions import (
     storage_sql, generate_engine,
     mailbox, login_manager, cache,
     csrf, redis
 )
-from painter.models import init_storage_models
 from painter.backends.skio import sio
+from painter.models import init_storage_models
 from .others.filters import add_filters
-from .config import CelerySettings
-import click
 
 # celery worker to register tasks
 celery = Celery(
@@ -37,7 +39,7 @@ def create_app(debug: bool = False,
     creates the application
     """
     app = Flask(
-        __name__,   # the name from where to import the application
+        __name__,  # the name from where to import the application
         static_folder='',
         static_url_path='',
         template_folder=path.join('web', 'templates'),
