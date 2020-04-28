@@ -48,9 +48,9 @@ def get_start_data() -> Union[Dict[str, Any], str]:
     }
     """
     return {
-            'board': board.get_board(),
-            'locked': not lock.is_open(),
-            'time': str(current_user.next_time)
+        'board': board.get_board(),
+        'locked': not lock.is_open(),
+        'time': str(current_user.next_time)
     }
 
 

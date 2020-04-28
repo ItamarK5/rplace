@@ -1,6 +1,7 @@
-import click
 from datetime import timedelta
 from typing import Optional, FrozenSet
+
+import click
 
 # mime types the application send
 # for some strange reason
@@ -26,11 +27,24 @@ COLORS = (
     "blue", "aqua", "purple", "magenta"
 )
 
+ROLE_OPTIONS = (
+    ('admin', 'admin'),
+    ('a', 'admin'),
+    ('user', 'common'),
+    ('u', 'common'),
+    ('c', 'common'),
+    ('common', 'common'),
+    ('superuser', 'superuser'),
+    ('s', 'superuser')
+)
+
 """
     options flags for service flags
 """
+
 PRINT_OPTION_FLAG = 'print'
 DURATION_OPTION_FLAG = 'timeout'
+
 """
     flags strings to check if option is in
 """

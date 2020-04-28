@@ -1,4 +1,3 @@
-
 from enum import IntEnum, auto
 from typing import Optional
 

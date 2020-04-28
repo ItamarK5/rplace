@@ -3,15 +3,17 @@ Name: storage
 file contains simplify models that only used to hold 1-3 keys, they mostly used
 to remember simple staff easily
 """
-from sqlalchemy.dialects.sqlite import DATETIME
+import re
+from datetime import datetime, timedelta
+
+from flask import Flask
+from flask_sqlalchemy import BaseQuery
 from sqlalchemy import String, Column
+from sqlalchemy.dialects.sqlite import DATETIME
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm.exc import NoResultFound
-from datetime import datetime, timedelta
+
 from painter.backends.extensions import storage_sql
-from flask_sqlalchemy import BaseQuery
-import re
-from flask import Flask
 from painter.others.constants import DEFAULT_MAX_AGE_USER_TOKEN
 
 catch_pattern = re.compile(r'((?:^[a-z]|[A-Z])(?:[a-z]+)?)')
@@ -43,6 +45,7 @@ class CacheTextMixin:
 
     def __init_subclass__(cls, **kwargs):
         ExpireModels.append(cls)
+
     # its a class method
 
     @declared_attr

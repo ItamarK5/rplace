@@ -5,7 +5,7 @@ from flask_wtf.csrf import CSRFError
 from werkzeug import Response
 from werkzeug import exceptions
 
-from . import other_router
+from .router import other_router
 from .utils import is_ajax_request, has_matched_image, render_meme_error_page
 
 

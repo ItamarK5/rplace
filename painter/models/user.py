@@ -1,6 +1,6 @@
 from datetime import datetime
 from hashlib import pbkdf2_hmac
-from typing import Optional, TypeVar, Union
+from typing import Optional, Union
 
 from flask import Markup, current_app
 from flask_login import UserMixin
@@ -8,8 +8,8 @@ from flask_sqlalchemy import BaseQuery
 from sqlalchemy import Column, Integer, String, desc
 from sqlalchemy.dialects.sqlite import DATETIME, SMALLINT
 
-from painter.backends.extensions import storage_sql, cache
 from painter.backends.extensions import login_manager
+from painter.backends.extensions import storage_sql, cache
 from .enumint import SmallEnum
 from .notes import Record, Note
 from .role import Role
@@ -216,4 +216,3 @@ def load_user(user_token: str) -> Optional[User]:
     if (not user) or user.password != password or not user.is_active:
         return None
     return user
-

@@ -30,7 +30,7 @@ class SmallEnum(TypeDecorator):
         super(SmallEnum, self).__init__(*args, **kwargs)
         self._enum_type = enum_type
 
-    def process_bind_param(self, value: Any, dialect:DefaultDialect) -> int:
+    def process_bind_param(self, value: Any, dialect: DefaultDialect) -> int:
         """
         :param value: enum or integer
         :param dialect: dialect object
@@ -44,7 +44,7 @@ class SmallEnum(TypeDecorator):
         # else
         raise ValueError()
 
-    def process_result_value(self, value: int, dialect:DefaultDialect) -> IntEnum:
+    def process_result_value(self, value: int, dialect: DefaultDialect) -> IntEnum:
         """
         :param value:
         :param dialect: some dialect object

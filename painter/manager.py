@@ -22,9 +22,9 @@ from .managers import redis_manager, check_services_command
 from .app import create_app, storage_sql, sio, redis
 from .managers import redis
 from .models import Role, User, ExpireModels
-from .others.constants import DURATION_OPTION_FLAG, PRINT_OPTION_FLAG, SERVICE_RESULTS_FORMAT
+from .others.constants import ROLE_OPTIONS
 from .others.utils import (
-    NewUserForm, MyCommand, parse_service_options, check_service_flag
+    NewUserForm, MyCommand
 )
 
 
@@ -44,9 +44,9 @@ manager.add_option('--ic', '-import-class', dest='import_class',
                    help="which class to use for app",
                    required=False, default=None)
 
-
+# init from other files
 manager.add_command('redis', redis_manager)
-manager.add_command('check-services')
+manager.add_command('check-services', check_services_command)
 
 
 class RunServer(Server):
@@ -150,16 +150,7 @@ def create_user(username, password, mail_address, role):
         # select choices
         role = prompt_choices(
             'You must pick a role, if not default is superuser\n',
-            [
-                ('admin', 'admin'),
-                ('a', 'admin'),
-                ('user', 'common'),
-                ('u', 'common'),
-                ('c', 'common'),
-                ('common', 'common'),
-                ('superuser', 'superuser'),
-                ('s', 'superuser')
-            ],
+            ROLE_OPTIONS,
             'superuser'
         )
     # get matched role
@@ -191,22 +182,27 @@ def create_user(username, password, mail_address, role):
         storage_sql.session.commit()
         print('user created successfully')
 
+
 create_user_command = MyCommand(
     create_user,
     description='create a new user in the system',
-    help = 'creates a new user'
+    help_text='creates a new user'
 )
 
-create_user_command.add_option(Option('--n', '-name', '-username', dest='username', help='username of the new user'))
+create_user_command.add_option(Option('--n', '-name', '-username', dest='username',
+                                      help='username of the new user'))
 
-create_user_command.add_option(Option('--p', '-password', '-pswd', dest='password', help='password of the new user'))
+create_user_command.add_option(Option('--p', '-password', '-pswd', dest='password',
+                                      help='password of the new user'))
 
 create_user_command.add_option(Option('--m', '-mail', '-addr', dest='mail_address',
                                       help='mail address of the new user'))
 
-create_user_command.add_option(Option('--r', '-role', dest='role', help='Role of the new User'))
+create_user_command.add_option(Option('--r', '-role', dest='role',
+                                      help='Role of the new User'))
 
 create_user_command.add_option(Option('--r', '-admin', dest='store_const',
+                                      choices=tuple(set(map(lambda i: i[1], ROLE_OPTIONS))),
                                       const="common", help="the user\'s role would be admin"))
 
 create_user_command.add_option(Option('--a', '-admin', dest='store_const',
@@ -247,7 +243,6 @@ class CeleryWorker(MyCommand):
 # adding command
 manager.add_command('celery', CeleryWorker)
 manager.add_command("runserver", RunServer())
-manager.add_command("create-user", CreateUser())
 
 
 """Create Database Command"""

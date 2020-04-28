@@ -62,7 +62,6 @@ def open_lock() -> bool:
     return bool(redis.set(KEY, _ENABLE))
 
 
-
 def close_lock() -> bool:
     """
     disable setting pixel on board

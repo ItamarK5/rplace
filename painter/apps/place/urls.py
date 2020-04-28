@@ -1,11 +1,10 @@
 from flask import render_template, Response, jsonify
 from flask_login import login_required, current_user
 
-from painter.others.utils import auto_redirect
 from painter.backends.extensions import storage_sql
+from painter.others.utils import auto_redirect
+from .router import place_router
 from .forms import PreferencesForm
-from . import place_router
-from flask import request
 
 
 @place_router.route('/place', methods=('GET',))

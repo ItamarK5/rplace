@@ -1,18 +1,16 @@
 from __future__ import absolute_import
+
 import random
 from os import path, listdir
-from typing import Union
 
 from flask import (
     send_from_directory,
-    abort, Response, request, current_app
+    abort, Response, current_app
 )
-from flask_wtf.csrf import CSRFError  # ignore all
-from werkzeug.exceptions import HTTPException
-from painter.others.utils import auto_redirect
+
 from painter.others.constants import MIME_TYPES
-from . import other_router
-from .utils import get_file_type, has_matched_image, is_ajax_request, render_meme_error_page
+from .router import other_router
+from .utils import get_file_type
 
 
 @other_router.route('/meme/<string:error>')

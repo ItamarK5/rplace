@@ -8,7 +8,7 @@ from .extensions import redis, cache
 # the key for the board in redis database
 KEY = 'board'
 
-BOARD_BYTES_SIZE = 1000*500
+BOARD_BYTES_SIZE = 1000 * 500
 
 
 def create() -> bool:
@@ -44,7 +44,7 @@ def set_at(x: int, y: int, color: int) -> None:
     """
     bitfield = redis.bitfield(KEY)
     # need to count for little endian
-    x_endian = x + (-1)**(x % 2)
+    x_endian = x + (-1) ** (x % 2)
     bitfield.set('u4', (y * 1000 + x_endian) * 4, color)
     bitfield.execute()
 

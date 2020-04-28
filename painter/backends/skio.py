@@ -13,12 +13,14 @@ def socket_io_authenticated_only_connection(f: Callable[[Any], Any]) -> Callable
     :return: wraps the function with another function,
     so the only allows clients that are have already login to connent the namespace
     """
+
     @wraps(f)
     def wrapped(*args, **kwargs) -> Any:
         if current_user.is_anonymous or not current_user.is_active:
             disconnect('Not Authenticated')
         else:
             return f(*args, **kwargs)
+
     return wrapped
 
 
@@ -29,12 +31,14 @@ def socket_io_role_required_connection(role: Role, desc: Optional[str] = None) -
     :return: wrapper decorator
     creates new decorater function for the params (read the wrapper for more)
     """
+
     def wrapper(f: Callable[[Any], Any]) -> Callable[[Any], Any]:
         """
         :param f: io connection event handler
         :return: wraps f with another function (wrapped) so that only users
         with the role described above
         """
+
         @wraps(f)
         def wrapped(*args, **kwargs) -> Any:
             """
@@ -51,6 +55,7 @@ def socket_io_role_required_connection(role: Role, desc: Optional[str] = None) -
                 return f(*args, **kwargs)
 
         return socket_io_authenticated_only_connection(wrapped)
+
     return wrapper
 
 
@@ -61,12 +66,14 @@ def socket_io_authenticated_only_event(f: Callable[[Any], Any]) -> Callable[[Any
     wraps the given f with function wrapped, such that bans the user if become not active
     not need to recheck user existing, because already check on connection
     """
+
     @wraps(f)
     def wrapped(*args, **kwargs) -> Any:
         if not current_user.is_active:
             disconnect('Banned')
         else:
             return f(*args, **kwargs)
+
     return wrapped
 
 

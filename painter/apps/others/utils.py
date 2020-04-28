@@ -1,10 +1,11 @@
 from os import path, listdir
 from typing import Optional
+
+from flask import current_app
 from flask import render_template, Response
 from werkzeug import Request
 from werkzeug import exceptions
 from werkzeug.exceptions import BadRequest, Forbidden, NotFound, HTTPException, InternalServerError
-from flask import current_app
 
 # a set containing all valid HTTPExceptions that have answer in web\memes except CSRFError
 MEME_PAGE_ERROR_CODES = {BadRequest.code, Forbidden.code, NotFound.code, InternalServerError.code}
@@ -67,4 +68,3 @@ def render_meme_error_page(e: exceptions.HTTPException,
             description=e.description or name,
             page_title=case if page_title is None else page_title
         )
-

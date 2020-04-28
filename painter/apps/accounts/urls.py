@@ -4,24 +4,25 @@ urls of the accounts blueprint
 """
 from __future__ import absolute_import
 
-from flask import render_template
-from flask_login import logout_user, login_user, login_required
-from werkzeug.wrappers import Response
 from typing import Type
 
+from flask import render_template
+from flask_login import login_fresh
+from flask_login import logout_user, login_user, login_required
 from flask_wtf import FlaskForm
+from werkzeug.wrappers import Response
+
 from painter.backends.extensions import storage_sql
 from painter.models import SignupNameRecord, SignupMailRecord, RevokeMailAttempt, User
 from painter.others.utils import redirect_next
-from .router import accounts_router
 from .forms import (
     LoginForm, SignUpForm, RevokePasswordForm,
     ChangePasswordForm, SignupTokenForm, RevokeTokenForm, RefreshForm
 )
 from .mail import send_signing_up_message, send_revoke_password_message
+from .router import accounts_router
 from .tokens import MailTokens
 from .utils import *
-from flask_login import login_fresh
 
 
 def login_response(flask_form: Type[FlaskForm], render_html: str) -> Response:

@@ -3,7 +3,7 @@ from typing import Callable, Optional
 
 from flask import abort, jsonify, request
 from flask_login import current_user
-from flask_login import fresh_login_required, login_fresh
+from flask_login import fresh_login_required
 from werkzeug import Response
 
 from painter.models import Role, User
@@ -15,6 +15,7 @@ def admin_only(f: Callable) -> Callable:
     :param f: decorator, which decorates a view, make it admin only used
     :return: a route that aborts 404 non-admin users that enter, all actions of admin must be with refreshed login
     """
+
     @wraps(f)
     def wrapped(*args, **kwargs):
         if (not current_user.is_authenticated) or (not current_user.has_required_status(Role.admin)):
@@ -24,6 +25,7 @@ def admin_only(f: Callable) -> Callable:
         else:
             # decorated by flesh_login_required, so that it user isnt refreshed and prevent seeing the site
             return fresh_login_required(f)(*args, **kwargs)
+
     return wrapped
 
 
@@ -64,6 +66,7 @@ def only_if_superior(f: Callable[[User], Response]) -> Callable[[str], Response]
         elif not current_user.is_superior_to(user):
             abort(403, 'Cannot access user')  # Forbidden
         return f(user=user, *args, **kwargs)
+
     return admin_only(wrapped)  # uses admin_only to check if the user is authenticated and at least admin
 
 

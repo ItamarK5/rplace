@@ -1,7 +1,7 @@
 import time
 from typing import Any, FrozenSet, Dict, Optional, Union, List
 
-from flask_script import Command, Option
+from flask_script import Option
 from redis.exceptions import (
     RedisError, AuthenticationWrongNumberOfArgsError, AuthenticationError,
     TimeoutError as RedisTimeout,
@@ -9,6 +9,7 @@ from redis.exceptions import (
 )
 
 from painter.backends.extensions import redis, storage_sql
+from painter.others.utils import MyCommand
 from ..others.constants import (
     DURATION_OPTION_FLAG,
     PRINT_OPTION_FLAG,
@@ -171,16 +172,23 @@ def check_services(all=False, rds=None, sql=None, options=None):
         print(result_format.format(*[str(result[context.key]) for context in enabled_contexts]))
 
 
-check_services_command = Command(check_services)
+check_services_command = MyCommand(
+    check_services,
+    help_text="Check if services available"
+)
+# redis flag option
 check_services_command.add_option(Option(
     '--r', '-redis', dest='rds', action='store_true', help='to check update with redis'
 ))
+# sql flag option
 check_services_command.add_option(Option(
     '--s', '-sql', dest='sql', action='store_true', help='to check update with sqlalchemy'
 ))
+# all flag option
 check_services_command.add_option(Option(
     '--a', '-all', dest='all', action='store_true', help='to check update with all'
 ))
+# extra flags
 check_services_command.add_option(Option(
     '--o', '-options', nargs='*', dest='options',
     help='special options for the command: t for display the time it takes to end and'
