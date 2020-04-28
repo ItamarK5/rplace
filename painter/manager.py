@@ -55,37 +55,18 @@ class RunServer(Server):
         :return: option list
         """
         return (
-            Option('-h', '--host',
-                   dest='host',
-                   default=None,
-                   help='host url of the server'),
-            Option('-p', '--port',
-                   dest='port',
-                   type=int,
-                   default=None,
-                   help='host port of the server'),
-            Option('-d', '--debug',
-                   action='store_true',
-                   dest='use_debugger',
-                   help=('enable the Werkzeug debugger (DO NOT use in '
-                         'production code)'),
-                   default=self.use_debugger),  # True
-            Option('-D', '--no-debug',
-                   action='store_false',
-                   dest='use_debugger',
-                   help='disable the Werkzeug debugger',
-                   default=self.use_debugger),  # False
-            Option('-r', '--reload',
-                   action='store_true',
-                   dest='use_reloader',
-                   help=('monitor Python files for changes (not 100%% safe '
-                         'for production use)'),
-                   default=self.use_reloader),  # True
-            Option('-R', '--no-reload',
-                   action='store_false',
-                   dest='use_reloader',
-                   help='do not monitor Python files for changes',
-                   default=self.use_reloader),  # False
+            Option('-h', '--host', dest='host', help='host url of the server', default=None),
+            Option('-p', '--port', dest='port', type=int, help='host port of the server', default=None),
+            Option('-d', '--debug', action='store_true', dest='use_debugger', default=self.use_debugger,
+                   help='enable the Werkzeug debugger (DO NOT use in production code)',
+                   ),
+            Option('-D', '--no-debug', action='store_false', dest='use_debugger', default=self.use_debugger,
+                   help='disable the Werkzeug debugger'),
+            Option('-r', '--reload', action='store_true', dest='use_reloader', default=self.use_reloader,
+                   help='monitor Python files for changes (not 100%% safe for production use)',
+                   ),
+            Option('-R', '--no-reload', action='store_false', dest='use_reloader', default=self.use_reloader,
+                   help='do not monitor Python files for changes')
         )
 
     def __call__(self, app, host, port, use_debugger, use_reloader):
@@ -110,7 +91,7 @@ class RunServer(Server):
             if use_debugger is None:
                 use_debugger = True
         if use_reloader is None:
-            use_reloader = app.debug or app.config.get('WERKZEUG_RUN_MAIN', None)
+            use_reloader = app.debug or not app.config.get('WERKZEUG_RUN_MAIN', True)
         # runs the socketio server
         sio.run(
             app,
@@ -122,18 +103,21 @@ class RunServer(Server):
         )
 
 
+""" Create User """
+
+
 def create_user(username, password, mail_address, role):
     """
-        :param  username: name of the new user
-        :type   username: Optional[str]
-        :param  password: the password of the new user
-        :type   password: Optional[str]
-        :param  mail_address: the mail address of the new user
-        :type   mail_address: Optional[str]
-        :param  role: string representing the role of the user default superuser
-        :type   role: Optional[str]
-        :return:runs the command
-        :rtype: None
+    :param  username: name of the new user
+    :type   username: Optional[str]
+    :param  password: the password of the new user
+    :type   password: Optional[str]
+    :param  mail_address: the mail address of the new user
+    :type   mail_address: Optional[str]
+    :param  role: string representing the role of the user default superuser
+    :type   role: Optional[str]
+    :return:runs the command
+    :rtype: None
     """
     if username is None:
         username = prompt('enter a username address of the user\n[username]')
@@ -217,7 +201,7 @@ class CeleryWorker(MyCommand):
     """Starts the celery worker."""
     capture_all_args = True
     help = 'Start an celery worker\n' \
-           'if you want to name it (all workers must have different name) you need' \
+           'if you want to name it (all workers must have different name) you need ' \
            'to enter --n (name)'
 
     def run(self, argv):
