@@ -16,14 +16,14 @@ login_manager = LoginManager()
 
 
 def generate_engine(app) -> None:
-    """
-    :param app: generate engine of app
-    :return: none
-    """
-    try:
-        create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-    except IndexError:
-        print('Configuration doesnt have SQLALCHEMY_DATABASE_URI value')
+	"""
+	:param app: generate engine of app
+	:return: none
+	"""
+	try:
+		create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+	except IndexError:
+		print('Configuration doesnt have SQLALCHEMY_DATABASE_URI value')
 
 
 """
