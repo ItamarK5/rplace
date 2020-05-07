@@ -14,66 +14,66 @@ from painter.others.constants import COLOR_COOLDOWN
 
 
 def draw_time(user: User) -> str:
-	"""
-	:param user: a user
-	:return: the last time the user draw a pixel in the format displaed, if it never draw the value should be
-	the creation date
-	"""
-	# https://stackoverflow.com/a/35643540
-	if user.next_time == user.creation_date:
-		return 'never'
-	# else
-	return (user.next_time - COLOR_COOLDOWN).strftime(
-		'%y-%m-%d %a %H:%M:%S'
-	)
+    """
+    :param user: a user
+    :return: the last time the user draw a pixel in the format displaed, if it never draw the value should be
+    the creation date
+    """
+    # https://stackoverflow.com/a/35643540
+    if user.next_time == user.creation_date:
+        return 'never'
+    # else
+    return (user.next_time - COLOR_COOLDOWN).strftime(
+        '%y-%m-%d %a %H:%M:%S'
+    )
 
 
 def is_admin(user: User) -> bool:
-	"""
-	:param user: a user
-	:return: returns if the user is admin
-	"""
-	return user.is_authenticated and user.role >= Role.admin
+    """
+    :param user: a user
+    :return: returns if the user is admin
+    """
+    return user.is_authenticated and user.role >= Role.admin
 
 
 def class_ftr(classes: Optional[Union[str, List]]) -> str:
-	"""
-	:param classes: list of classes or just 1
-	:return: the combined list of string as one
-	"""
-	if classes is None:
-		return ''
-	elif isinstance(classes, list):
-		classes = ' '.join(classes)
-	# else
-	return classes
+    """
+    :param classes: list of classes or just 1
+    :return: the combined list of string as one
+    """
+    if classes is None:
+        return ''
+    elif isinstance(classes, list):
+        classes = ' '.join(classes)
+    # else
+    return classes
 
 
 def color(color_idx: int) -> str:
-	"""
-	:param color_idx: index of color in palette
-	:return: the name of the color
-	"""
-	return COLORS[color_idx]
+    """
+    :param color_idx: index of color in palette
+    :return: the name of the color
+    """
+    return COLORS[color_idx]
 
 
 def date(tm: datetime) -> str:
-	"""
-	:param tm: datetime object, represent a time
-	:return the datetime in format {first day of the week}, {date}
-	https://www.programiz.com/python-programming/datetime/strftime
-	"""
-	return tm.strftime('%a, %x')
+    """
+    :param tm: datetime object, represent a time
+    :return the datetime in format {first day of the week}, {date}
+    https://www.programiz.com/python-programming/datetime/strftime
+    """
+    return tm.strftime('%a, %x')
 
 
 def add_filters(flask_app: Flask) -> None:
-	"""
-	:param flask_app: the application
-	:return nothing
-	adds all filters to the app
-	"""
-	flask_app.add_template_filter(draw_time, 'draw_time')
-	flask_app.add_template_filter(is_admin, 'is_admin')
-	flask_app.add_template_filter(class_ftr, 'class_ftr')
-	flask_app.add_template_filter(color, 'color')
-	flask_app.add_template_filter(date, 'date')
+    """
+    :param flask_app: the application
+    :return nothing
+    adds all filters to the app
+    """
+    flask_app.add_template_filter(draw_time, 'draw_time')
+    flask_app.add_template_filter(is_admin, 'is_admin')
+    flask_app.add_template_filter(class_ftr, 'class_ftr')
+    flask_app.add_template_filter(color, 'color')
+    flask_app.add_template_filter(date, 'date')

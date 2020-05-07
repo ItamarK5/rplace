@@ -5,18 +5,18 @@ from typing import Optional, Union
 from flask import Markup, current_app
 from flask_login import UserMixin
 from flask_sqlalchemy import BaseQuery
-from sqlalchemy import Column, Integer, String, desc, Enum
+from sqlalchemy import Column, Integer, String, desc
 from sqlalchemy.dialects.sqlite import DATETIME, SMALLINT
 
 from painter.backends.extensions import login_manager
 from painter.backends.extensions import storage_sql, cache
+from .enumint import SmallEnum
 from .notes import Record, Note
 from .role import Role
 
 """
     only defiend for the current model to user
 """
-
 _NO_RECORD = 'none'
 
 
@@ -38,24 +38,24 @@ class User(storage_sql.Model, UserMixin):
     # the user's email address, to send mails
     email = Column(String(254), unique=True, nullable=False)
     # the next time the user can draw on the bodr
-    next_time = Column(DATETIME, default=datetime.utcnow, nullable=False)
+    next_time = Column(DATETIME(), default=datetime.utcnow, nullable=False)
     # when the user was created
-    creation_date = Column(DATETIME, default=datetime.utcnow, nullable=False)
+    creation_date = Column(DATETIME(), default=datetime.utcnow, nullable=False)
     # the role of the user
-    role = Column(Enum(Role), default=Role.common, nullable=False)
+    role = Column(SmallEnum(Role), default=Role.common, nullable=False)
     # start x position
-    x = Column(SMALLINT, default=500, nullable=False)
+    x = Column(SMALLINT(), default=500, nullable=False)
     # start y position
-    y = Column(SMALLINT, default=500, nullable=False)
+    y = Column(SMALLINT(), default=500, nullable=False)
 
     # default scale value, 4
-    scale = Column(SMALLINT, default=4, nullable=False)
+    scale = Column(SMALLINT(), default=4, nullable=False)
 
     # default color when entering, black
-    color = Column(SMALLINT, default=1, nullable=False)
+    color = Column(SMALLINT(), default=1, nullable=False)
 
     # default url
-    url = Column(String, default=None, nullable=True)
+    url = Column(String(), default=None, nullable=True)
 
     # https://stackoverflow.com/a/11579347
     sqlite_autoincrement = True

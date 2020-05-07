@@ -152,33 +152,29 @@ def get_active_state() -> Response:
 @admin_router.route('/set-user-role/<string:name>', methods=('POST',))
 @only_if_superior
 def set_role(user: User) -> Response:
-	"""
-	:param user: the user
-	:return: JSON response of the error data or success
-	sets the role o the user by the given value, if not return error
-	"""
-	if not current_user.has_required_status(Role.superuser):
-		abort(exceptions.Forbidden.code)  # forbidden
-	# get value
-	try:
-		if request.data == b'Admin':
-			new_role = Role.admin
-		elif request.data == b'Common':
-			new_role = Role.common
-		else:
-			return json_response(False, 'Unknown value')
-	# just any python error I can think of
-	except (KeyError, ValueError, TypeError, AttributeError):
-		abort(404, 'Role Not Found')
-	# if the passed role is the role the user is in
-	if new_role == user.role:
-		return json_response(False, 'Refresh the page to pick different role')
-	# else
-	user.role = new_role
-	# save data
-	storage_sql.session.add(user)
-	storage_sql.session.commit()
-	return json_response(True, 'please refresh the page to see changes')
+    """
+    :param user: the user
+    :return: JSON response of the error data or success
+    sets the role o the user by the given value, if not return error
+    """
+    if not current_user.has_required_status(Role.superuser):
+        abort(exceptions.Forbidden.code)  # forbidden
+    # get value
+    if request.data == b'Admin':
+        new_role = Role.admin
+    elif request.data == b'Common':
+        new_role = Role.common
+    else:
+        return json_response(False, 'Unknown value')
+    # if the passed role is the role the user is in
+    if new_role == user.role:
+        return json_response(False, 'Refresh the page to pick different role')
+    # else
+    user.role = new_role
+    # save data
+    storage_sql.session.add(user)
+    storage_sql.session.commit()
+    return json_response(True, 'Pless refresh the page to see changes')
 
 
 @admin_router.route('/get-notes', methods=('GET',))

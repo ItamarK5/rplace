@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Dict, Any
 
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, case
 from sqlalchemy.dialects.sqlite import DATETIME, BOOLEAN
 from sqlalchemy.orm import relationship
 
@@ -21,9 +21,6 @@ class Note(storage_sql.Model):
     SQLAlchemy of notes, notes that are written about users to remember
     later.
     """
-    # polymorphic identity
-    polymorphic_identity = Column(String(), nullable=False)
-
     # note identifier
     id = Column(Integer(), primary_key=True, unique=True, autoincrement=True)
 
@@ -43,8 +40,8 @@ class Note(storage_sql.Model):
     is_record = Column(BOOLEAN(), nullable=True)
 
     # relationships
-    user_subject = relationship('User', back_populates='notes')
-    user_writer = relationship('User', back_populates='writer')
+    user_subject = relationship('User', foreign_keys=user_subject_id, uselist=False)
+    user_writer = relationship('User', foreign_keys=user_writer_id, uselist=False)
 
     # autoincrement of sqlite
     sqlite_autoincrement = True
@@ -56,8 +53,10 @@ class Note(storage_sql.Model):
     __mapper_args__ = {
         'polymorphic_identity': 'note',
         # whats decided if record or note
-        'polymorphic_with': '[Note, Record]',
-        'polymorphic_on': polymorphic_identity
+        'polymorphic_on': case(
+            [(is_record.__eq__(True), 'record'), ],
+            else_='note'
+        )
     }
 
     def __init__(self, *args, **kwargs):
@@ -115,7 +114,6 @@ class Record(Note):
     affect_from = Column(DATETIME(), nullable=True, default=None)
     # the reason for the record, displayed to the user when tries to log in
     reason = Column(String(), nullable=False)
-    # auto increment
     sqlite_autoincrement = True
     # class inheritaces identity
     __mapper_args__ = {

@@ -64,7 +64,7 @@ class MailTokens(object):
             )[0]
         except SignatureExpired:
             return 'timestamp'
-        except BadSignature:  # error
+        except BadSignature as e:  # error
             return None
         # then
         # check type
