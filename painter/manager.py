@@ -105,7 +105,6 @@ class RunServer(Server):
 
 """ Create User """
 
-
 def create_user(username, password, mail_address, role):
     """
     :param  username: name of the new user
@@ -122,9 +121,9 @@ def create_user(username, password, mail_address, role):
     if username is None:
         username = prompt('enter a username address of the user\n[username]')
     if password is None:
-        password = prompt('you forgeot entering a password, pless enter 1\nPassword: ')
+        password = prompt('you forgeot entering a password, pless enter 1\n[Password]')
     if mail_address is None:
-        mail_address = prompt('enter a mail address of the user\nMail:')
+        mail_address = prompt('enter a mail address of the user\n[Mail]')
     if role is None:
         # select choices
         role = prompt_choices(
@@ -178,24 +177,11 @@ create_user_command.add_option(Option('--m', '-mail', '-addr', dest='mail_addres
                                       help='mail address of the new user'))
 
 create_user_command.add_option(Option('--r', '-role', dest='role',
-                                      help='Role of the new User'))
-
-create_user_command.add_option(Option('--r', '-admin', dest='store_const',
                                       choices=tuple(set(map(lambda i: i[1], ROLE_OPTIONS))),
-                                      const="common", help="the user\'s role would be admin"))
+                                      help="the user\'s role would be admin"))
 
-create_user_command.add_option(Option('--a', '-admin', dest='store_const',
-                                      const="common", help="the user\'s role would be admin"))
 
-create_user_command.add_option(Option('--a', '-admin', dest='store_const',
-                                      const="common", help="the user\'s role would be admin"))
-
-create_user_command.add_option(Option('--u', '-user', dest='role', action='store_const', const='common',
-                                      help='the user\'s role is a simple user'))
-
-create_user_command.add_option(Option('--s', '-superuser', dest='role', action='store_const', const='common',
-                                      help='the user\'s role is a superuser, highest rank'))
-
+manager.add_command('create-user', create_user_command)
 
 class CeleryWorker(MyCommand):
     """Starts the celery worker."""

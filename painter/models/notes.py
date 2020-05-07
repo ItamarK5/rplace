@@ -63,8 +63,8 @@ class Note(storage_sql.Model):
         """
         :param args: init args
         :param kwargs: init kwargs
-        wrapper for datastore.Model,
-        set that the value of is_record is False if isnt already set (by Record constrctor)
+        wrapper for db.Model,
+        set that the value of is_record is False if isn't already set (by Record constructor)
         """
         kwargs.setdefault('is_record', False)
         super().__init__(*args, **kwargs)

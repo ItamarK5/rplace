@@ -163,7 +163,7 @@ class NewUsernameFieldMixin(UsernameFieldMixin):
         :return: validates if the username isn't already existing with the name
         """
         if User.query.filter_by(username=field.data).first() is not None or \
-                SignupNameRecord.exists(field.data) is not None:
+                SignupNameRecord.exists(field.data):
             raise ValidationError('User with the mail address already exists')
 
 
@@ -179,5 +179,5 @@ class NewEmailFieldMixin(MailAddressFieldMixin):
         :return: validates if the mail address isn't already existing with the name
         """
         if User.query.filter_by(email=field.data).first() is not None or \
-                SignupMailRecord.exists(field.data) is not None:
+                SignupMailRecord.exists(field.data):
             raise ValidationError('User with the mail address already exists')

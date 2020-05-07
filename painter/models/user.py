@@ -5,12 +5,11 @@ from typing import Optional, Union
 from flask import Markup, current_app
 from flask_login import UserMixin
 from flask_sqlalchemy import BaseQuery
-from sqlalchemy import Column, Integer, String, desc
+from sqlalchemy import Column, Integer, String, desc, Enum
 from sqlalchemy.dialects.sqlite import DATETIME, SMALLINT
 
 from painter.backends.extensions import login_manager
 from painter.backends.extensions import storage_sql, cache
-from .enumint import SmallEnum
 from .notes import Record, Note
 from .role import Role
 
@@ -42,7 +41,7 @@ class User(storage_sql.Model, UserMixin):
     # when the user was created
     creation_date = Column(DATETIME(), default=datetime.utcnow, nullable=False)
     # the role of the user
-    role = Column(SmallEnum(Role), default=Role.common, nullable=False)
+    role = Column(Enum(Role), default=Role.common, nullable=False)
     # start x position
     x = Column(SMALLINT(), default=500, nullable=False)
     # start y position
