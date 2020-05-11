@@ -16,20 +16,20 @@ login_manager = LoginManager()
 
 
 def generate_engine(app) -> None:
-	"""
-	:param app: generate engine of app
-	:return: none
-	"""
-	try:
-		create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-	except IndexError:
-		print('Configuration doesnt have SQLALCHEMY_DATABASE_URI value')
+    """
+    :param app: generate engine of app
+    :return: none
+    """
+    try:
+        create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+    except IndexError:
+        print('Configuration doesnt have SQLALCHEMY_DATABASE_URI value')
 
 
 """
 setting values for flask-login
 """
-# redirect all non autherized clients that try access only login clients to pages
+# redirect all non authorized clients that try access only login clients to pages
 login_manager.login_view = 'auth.login'
 # redirect all non fresh clients that try access only fresh clients to pages
 login_manager.refresh_view = 'auth.refresh'

@@ -18,7 +18,7 @@ def send_signing_up_message(name: str, address: str, token: str) -> None:
 		kwargs={
 			'subject': 'Welcome to Social Painter',
 			'recipients': [address],
-			# 2 bodys, one for mail servers that show html messages and the other the text messages
+			# 2 bodies, one for mail servers that show html messages and the other the text messages
 			'body': render_template('message/signup.jinja', username=name, token=token),
 			'html': render_template('message/signup.html', username=name, token=token),
 			# reads the

@@ -151,6 +151,7 @@ class MailAddressFieldMixin(object):
     )
 
 
+# noinspection PyMethodMayBeStatic
 class NewUsernameFieldMixin(UsernameFieldMixin):
     """
       same as mail field mixin
@@ -167,6 +168,7 @@ class NewUsernameFieldMixin(UsernameFieldMixin):
             raise ValidationError('User with the mail address already exists')
 
 
+# noinspection PyMethodMayBeStatic
 class NewEmailFieldMixin(MailAddressFieldMixin):
     """
       same as mail field mixin

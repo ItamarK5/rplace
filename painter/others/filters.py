@@ -16,7 +16,7 @@ from painter.others.constants import COLOR_COOLDOWN
 def draw_time(user: User) -> str:
     """
     :param user: a user
-    :return: the last time the user draw a pixel in the format displaed, if it never draw the value should be
+    :return: the last time the user draw a pixel in the format displayed, if it never draw the value should be
     the creation date
     """
     # https://stackoverflow.com/a/35643540

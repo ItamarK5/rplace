@@ -1,6 +1,7 @@
 from typing import Union
 
 from flask import request
+# noinspection PyProtectedMember
 from flask_wtf.csrf import CSRFError
 from werkzeug import Response
 from werkzeug import exceptions

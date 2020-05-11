@@ -64,9 +64,7 @@ class PreferencesForm(FlaskForm):
 		for f in self.__iter__():
 			if isinstance(f, text_field_types):
 				f = getattr(self, f, None)
-
-			if f is None or isinstance(f.widget, HiddenInput) \
-					or (not f.raw_data) or f.id in self.errors:
+			if f is None or isinstance(f.widget, HiddenInput) or (not f.raw_data) or f.id in self.errors:
 				continue
 			return f.id, f.data
 		return None, None

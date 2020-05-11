@@ -38,6 +38,9 @@ manager = Manager(
 manager.add_option('--ic', '-import-class', dest='import_class',
                    help="which class to use for app",
                    required=False, default=None)
+manager.add_option('--d', '-debug', dest='import_class',
+                   help="which class to use for app",
+                   required=False, default=None)
 
 # init from other files
 manager.add_command('redis', redis_manager)
@@ -151,7 +154,7 @@ def create_user(username, password, mail_address, role):
     else:
         user = User(
             username=username,
-            password=password,
+            decrypted_password=password,
             email=mail_address,
             role=role_matched
         )
@@ -182,6 +185,7 @@ create_user_command.add_option(Option('--r', '-role', dest='role',
 
 
 manager.add_command('create-user', create_user_command)
+
 
 class CeleryWorker(MyCommand):
     """Starts the celery worker."""

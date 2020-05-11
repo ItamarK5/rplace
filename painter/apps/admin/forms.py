@@ -4,6 +4,7 @@ from flask_wtf import *
 from wtforms import TextAreaField, validators, BooleanField, DateTimeField, ValidationError
 
 
+# noinspection PyMethodMayBeStatic
 class RecordForm(FlaskForm):
 	"""
 	Form to validate a new record object
@@ -36,6 +37,7 @@ class RecordForm(FlaskForm):
 		],
 	)
 
+	# noinspection PyMethodMayBeStatic
 	def validate_affect_from(self, field: DateTimeField) -> None:
 		"""
 		:param field: the affect_from field

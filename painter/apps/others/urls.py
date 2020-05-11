@@ -4,8 +4,8 @@ import random
 from os import path, listdir
 
 from flask import (
-    send_from_directory,
-    abort, Response, current_app
+	send_from_directory,
+	abort, Response, current_app
 )
 
 from painter.others.constants import MIME_TYPES
@@ -59,4 +59,7 @@ def serve_static(filename: str) -> Response:
 
 @other_router.route('/favicon.ico', methods=('GET',))
 def serve_icon() -> Response:
+	"""
+	:return: serves the icon of the server
+	"""
 	return serve_static('favicon.ico')

@@ -1,8 +1,6 @@
 from datetime import timedelta
 from typing import Optional, FrozenSet
 
-import click
-
 # mime types the application send
 # for some strange reason
 MIME_TYPES = {
@@ -89,10 +87,6 @@ SERVICE_RESULTS_FORMAT = (
     ServiceResultsPrint('{:^12}', 'SERVICE', 'service_name'),
     ServiceResultsPrint('{:^12}', 'STATUS', 'result'),
     ServiceResultsPrint('{:^15}', 'TASK DURATION', 'duration', DURATION_OPTION_FLAG),
-)
-
-REDIS_DATABASE_OPERATIONS = click.types.Choice(
-    ('drop', 'create', 'reset')
 )
 
 ROLE_CHOICE_MAP = {
