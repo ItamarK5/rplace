@@ -54,7 +54,7 @@ def profile_ajax():
 		# you can only set 1 preference at a time
 		# detecting the key \ val of the submitted form
 		key, val = form.safe_first_hidden_fields()
-		# why we dont have switch
+		# why we don't have switch
 		if key == 'url':
 			current_user.url = val if val else None
 		elif key == 'x':

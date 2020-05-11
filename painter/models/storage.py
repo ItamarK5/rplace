@@ -87,7 +87,7 @@ class CacheTextMixin:
         """
         :param identity_string: value matched the identity string column
         :return: nothing
-        creates the table and submit it to the database, fastly
+        creates the table and submit it to the database, fast
         """
         storage_sql.session.add(cls(identity_column=identity_string))
         storage_sql.session.commit()

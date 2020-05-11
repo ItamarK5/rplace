@@ -5,7 +5,7 @@ from typing import Optional
 class Role(IntEnum):
     # https://docs.python.org/3/library/enum.html
     common = auto()  # role of a common user
-    admin = auto()  # role of an admin, a user who has some administeration abilites on use
+    admin = auto()  # role of an admin, a user who has some administration abilities on use
     superuser = auto()  # a user who controls the admins
 
     @property

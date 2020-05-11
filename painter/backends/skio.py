@@ -11,7 +11,7 @@ def socket_io_authenticated_only_connection(f: Callable[[Any], Any]) -> Callable
     """
     :param f: function to decorate
     :return: wraps the function with another function,
-    so the only allows clients that are have already login to connent the namespace
+    so the only allows clients that are have already login to connect the namespace
     """
 
     @wraps(f)
@@ -29,7 +29,7 @@ def socket_io_role_required_connection(role: Role, desc: Optional[str] = None) -
     :param desc: additional description of the error
     :param role: the required role to pass
     :return: wrapper decorator
-    creates new decorater function for the params (read the wrapper for more)
+    creates new decorator function for the params (read the wrapper for more)
     """
 
     def wrapper(f: Callable[[Any], Any]) -> Callable[[Any], Any]:
@@ -61,7 +61,7 @@ def socket_io_role_required_connection(role: Role, desc: Optional[str] = None) -
 
 def socket_io_authenticated_only_event(f: Callable[[Any], Any]) -> Callable[[Any], Any]:
     """
-    :param f: io event handeling
+    :param f: io event handling
     :return: wrapped function
     wraps the given f with function wrapped, such that bans the user if become not active
     not need to recheck user existing, because already check on connection

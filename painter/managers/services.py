@@ -38,7 +38,7 @@ def has_service_option(flags: Union[bool, List[str]], *options) -> bool:
 def parse_service_options(flags: Union[bool, List[str]]) -> FrozenSet[str]:
     """
     :param flags: the raw services flags options the user gave
-    :return: the flags as set of values the all the values there represent setted flags
+    :return: the flags as set of values the all the values there represent enabled flags
     """
     return frozenset(
         option
@@ -51,8 +51,8 @@ def check_service_flag(service_flag: Optional[bool], all_flag: bool) -> bool:
     """
     :param service_flag: if entered the flag of the service
     :param all_flag: if the check all flag passed
-    :return the value of the all flag if the user didnt passed an service flag but
-    if he d'idnt passed its the value that dont match to all flag
+    :return the value of the all flag if the user didn't passed an service flag but
+    if he d'idnt passed its the value that don't match to all flag
     """
     return all_flag if service_flag is None else service_flag ^ all_flag
 

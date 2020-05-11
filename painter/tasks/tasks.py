@@ -1,5 +1,5 @@
 """
-    containig celery tasks related to sending mails
+    containing celery tasks related to sending mails
 """
 
 from __future__ import absolute_import

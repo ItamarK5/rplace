@@ -2,6 +2,7 @@ amqp==2.5.2
 billiard==3.6.3.0
 blinker==1.4
 celery==4.4.2
+click==7.1.2
 dnspython==1.16.0
 dominate==2.5.1
 email-validator==1.0.5

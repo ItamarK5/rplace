@@ -33,7 +33,7 @@ class Note(storage_sql.Model):
     # the date the note was posted
     post_date = Column(DATETIME(), default=datetime.now, nullable=False)
 
-    # the id of the user who writed the note
+    # the id of the user who write the note
     user_writer_id = Column(Integer(), ForeignKey('user.id'), nullable=False)
 
     # if the note is a record (see down)
@@ -81,7 +81,7 @@ class Note(storage_sql.Model):
     def _json_format(self, user) -> Dict[str, Any]:
         """
         :param user: user
-        :return: the json data of the notes, the value of can_edit is determine by the passd user
+        :return: the json data of the notes, the value of can_edit is determine by the passed user
         """
         return {
             'id': self.id,
@@ -108,14 +108,14 @@ class Record(Note):
     """
     # identifier of the record -> to match for the note the contains the note related staff of the record
     id = Column(Integer(), ForeignKey('note.id'), primary_key=True)
-    # if the user is setted to not active in the records
+    # if the user can login or not
     active = Column(BOOLEAN(), nullable=False)
     # the date the record takes affect from, if null its the post date
     affect_from = Column(DATETIME(), nullable=True, default=None)
     # the reason for the record, displayed to the user when tries to log in
     reason = Column(String(), nullable=False)
     sqlite_autoincrement = True
-    # class inheritaces identity
+    # class inheritance identity
     __mapper_args__ = {
         'polymorphic_identity': 'record'
     }
@@ -145,7 +145,7 @@ class Record(Note):
     def _json_format(self, user) -> Dict:
         """
         :param user: user value
-        :return: just wraps the original _json_format of Note, for record related saff
+        :return: just wraps the original _json_format of Note, for record related staff
         """
         # get dictionary
         dictionary = super()._json_format(user)

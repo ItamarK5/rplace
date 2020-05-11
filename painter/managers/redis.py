@@ -36,7 +36,7 @@ def create(create_board=None, create_lock=None):
     """
     # first try making the board
     if not (create_lock or create_lock):
-        print("You didn\'t enter anything so creating both")
+        print("You didn't enter anything so creating both")
         create_lock = True
         create_board = True
     if try_connect_to_redis():
@@ -99,7 +99,7 @@ def reset(reset_board=None, reset_lock=None):
     """
     # first try making the board
     if not (reset_lock or reset_board) and prompt_bool("Are you sure to drop them both?"):
-        print("You didn\'t enter anything so creating both")
+        print("You didn't enter anything so creating both")
         reset_lock = True
         reset_board = True
     if try_connect_to_redis():

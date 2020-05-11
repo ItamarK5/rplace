@@ -1,6 +1,6 @@
 """
 place router
-the router handeling urls related to users/main app
+the router handling urls related to users/main app
 """
 
 from os import path

@@ -29,7 +29,7 @@ def login_response(flask_form: Type[FlaskForm], render_html: str) -> Response:
     """
     :param flask_form: form to validate the request
     :param render_html: the page to render
-    :return: login page response\refresh page
+    :return: login page response refresh page
     so similar that its 1 function
     """
     # extract data
@@ -37,7 +37,7 @@ def login_response(flask_form: Type[FlaskForm], render_html: str) -> Response:
     entire_form_error = []
     extra_error = None
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()  # usernames are unique
+        user = User.query.filter_by(username=form.username.data).first()  # user names are unique
         # validate if user exists and if the password the form is the same as the one saved
         # the one saved is hashed
         if user is None or User.encrypt_password(form.username.data, form.password.data) != user.password:
@@ -226,7 +226,7 @@ def confirm(token: str) -> Response:
             view_ref='auth.signup',
             token_action='Signing Up'
         )
-    # timouet error
+    # timeout error
     if not isinstance(extracted_token, dict):
         return render_template(
             'responses/token-expires.html',
