@@ -123,8 +123,7 @@ def check_sql_service(option_flags: FrozenSet[str]) -> Dict[str, Any]:
             print('Successfully connected to sql')
         result = True
     except Exception as e:
-        print("Fail to connect to SQL Alchemy")
-        raise e
+        print(f"Fail to connect to SQL Alchemy\n{str(e)}")
     finally:
         return {
             'service_name': 'SQL',

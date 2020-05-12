@@ -6,7 +6,7 @@ from __future__ import absolute_import
 
 from typing import Type
 
-from flask import render_template
+from flask import render_template, abort
 from flask_login import login_fresh
 from flask_login import logout_user, login_user, login_required
 from flask_wtf import FlaskForm
@@ -38,6 +38,7 @@ def login_response(flask_form: Type[FlaskForm], render_html: str) -> Response:
     extra_error = None
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()  # user names are unique
+        print(User.query.filter_by(username=form.username.data))
         # validate if user exists and if the password the form is the same as the one saved
         # the one saved is hashed
         if user is None or User.encrypt_password(form.username.data, form.password.data) != user.password:
@@ -199,8 +200,11 @@ def logout() -> Response:
     """
     logout response
     """
-    if not current_user.is_anonymous:
-        logout_user()
+    try:
+        if not current_user.is_anonymous:
+            logout_user()
+    except:
+        pass
     return redirect(url_for('auth.login'))
 
 
@@ -211,7 +215,11 @@ def confirm(token: str) -> Response:
     :param token: a token that holds user information (username, mail and password)
     :return: response view, if use registered or not
     """
-    extracted_token = MailTokens.extract_signature(token, SignupTokenForm, MailTokens.signup)
+    extracted_token = MailTokens.extract_signature(
+        token,
+        SignupTokenForm,
+        MailTokens.signup
+    )
     if extracted_token is None:
         return render_template(
             'responses/token-error.html',
@@ -239,25 +247,28 @@ def confirm(token: str) -> Response:
     name, pswd, email = extracted_token.pop('username'), extracted_token.pop('password'), extracted_token.pop('email')
     # check if user exists
     # https://stackoverflow.com/a/57925308
-    user = storage_sql.session.query(User).filter(
-        User.username == name, User.password == pswd,
-    ).first()
-    # check if user exists
-    if user is not None:
-        return render_template(
-            'responses/reconfirm-fail.html',
-            view_name='Login',
-            view_ref='auth.login',
+    try:
+        user = storage_sql.session.query(User).filter(
+            User.username == name, User.password == pswd,
+        ).first()
+        # check if user exists
+        if user is not None:
+            return render_template(
+                'responses/reconfirm-fail.html',
+                view_name='Login',
+                view_ref='auth.login',
+            )
+        # else create user
+        user = User(
+            username=name,
+            password=pswd,
+            email=email
         )
-    # else create user
-    user = User(
-        username=name,
-        password=pswd,
-        email=email
-    )
-    # save user
-    storage_sql.session.add(user)
-    storage_sql.session.commit()
+        # save user
+        storage_sql.session.add(user)
+        storage_sql.session.commit()
+    except:
+        abort(500, "Server has failed to create new user")
     # return message
     return render_template(
         'responses/complete-confirm.html',

@@ -1,5 +1,5 @@
 from os import path, listdir
-from typing import Optional
+from typing import Optional, Tuple
 
 from flask import current_app
 from flask import render_template, Response
@@ -13,7 +13,7 @@ MEME_PAGE_ERROR_CODES = {BadRequest.code, Forbidden.code, NotFound.code, Interna
 
 def has_matched_image(e: HTTPException) -> bool:
     """
-    :param e: e exception
+    :param e: an exception
     :return: if the httpException has meme images in the web/memes folder
     """
     return e.code in MEME_PAGE_ERROR_CODES
@@ -46,7 +46,7 @@ def is_ajax_request(request: Request) -> bool:
 def render_meme_error_page(e: exceptions.HTTPException,
                            case: Optional[str] = None,
                            page_title: Optional[str] = None,
-                           name: Optional[str] = None) -> Response:
+                           name: Optional[str] = None) -> Tuple[Response, int]:
     """
     :param e: the exception to render the page_error
     :param case: the name of the case for the error/code of the HTTPException
@@ -68,4 +68,4 @@ def render_meme_error_page(e: exceptions.HTTPException,
             title=name,
             description=e.description or name,
             page_title=case if page_title is None else page_title
-        )
+        ), e.code

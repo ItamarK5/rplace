@@ -271,6 +271,10 @@ class Vector2D {
 		this.subXY(other_vector.x, other_vector.y);
 		return this;
 	}
+	/**
+	 * @param {*} x any value hoped to be a number
+	 * @returns {*} any value if 
+	 */
 	subIfValidX(x){ this.setXIfValid(this.__x - Vector2D._evalSafe(x)) }
 	subIfValidY(y){ this.setYIfValid(this.__y - Vector2D._evalSafe(y)) }
 	subIfValidXY(x, y){ 
