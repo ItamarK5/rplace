@@ -1,4 +1,7 @@
 
+/** @const FETCH_BOARD_INTERVAL */
+const FETCH_BOARD_INTERVAL = 5000;
+
 /** @const BACKGROUND_COLOR */
 const BACKGROUND_COLOR = '#777777'
 
@@ -1786,10 +1789,9 @@ function DocumentKeyPress(key_event){
 /**
  * recursive function to get the board
  */
-function getBoard() {
+function fetchBoard() {
 	sock.emit('get-start', (data) => {
-		console.log(data)
-		if(!_.isUndefined(data)){
+		if(!(_.isUndefined(data) || _.isNull(data))){
 			progress.setTime(data.time)
 			board.buildBoard(new Uint8Array(data.board));
 			if (data.locked) {
@@ -1801,13 +1803,14 @@ function getBoard() {
 				title:'Fail',
 				text:'Fail to collect data from the server'
 			}).then(() =>{
+				// retry
 				_.delay(
 					() => {
 						// clear pixel queue to prevent long time pushing
 						board.pixelQueue = [];
-						getBoard();
-					},
-					5000	// wait 5 seconds before retry
+						fetchBoard();
+					}, FETCH_BOARD_INTERVAL
+					// wait 5 seconds before retry
 				);
 			});
 			// also clear board.queue
@@ -1816,7 +1819,7 @@ function getBoard() {
 }
 
 /**
- * Docuemnt event
+ * Document event
  */
 $(document).ready(function() {
 	// init all buildBoard releated objects
@@ -1826,7 +1829,7 @@ $(document).ready(function() {
 	pen.preRun();
 	sock.on('connect', function() {
 		// loop until get board
-		getBoard();
+		fetchBoard();
 	})
     // connect socket
     sock.connect()
@@ -1953,8 +1956,8 @@ $(document).ready(function() {
 		e.preventDefault();
 		let toolbox = $('#toolbox')[0];
 		// fade icons and move the toolbox down by setting its hide attribute to 1
-		if (toolbox.getAttribute('hide') == '1') {
-			$('.icon-button').fadeOut(500)
+		if (toolbox.getAttribute('hide') == '0') {
+			$('.icon-button').fadeOut(500);
 			toolbox.setAttribute('hide', '1')
 		}
 		else {
@@ -2056,6 +2059,7 @@ $(document).ready(function() {
 	}
 	// on resize
 	$(window).resize((e) => {
+		// update canvas zoom
 		board.updateCanvasZoom();
 	})
 });
