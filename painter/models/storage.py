@@ -31,12 +31,13 @@ ExpireModels = []
 
 
 # noinspection PyMethodParameters
-class CacheTextMixin:
+class CacheTextBase(storage_sql.Model):
     """
      An base for classes that inherit the flask_sqlalchemy model class
      that classes is a simple table cache, stores values for a limited amount of time
      the function mostly uses string for the checks
     """
+    __abstract__ = True
     # no need for id
     max_expires_seconds: int  # use default instead of configured
     identity_column_name: str  # name of the table
@@ -63,7 +64,7 @@ class CacheTextMixin:
         return to_small_case(cls.__name__)
 
     @classmethod
-    def get_identified(cls, identity_string: str) -> 'CacheTextMixin':
+    def get_identified(cls, identity_string: str) -> 'CacheTextBase':
         return cls.query.filter(cls.identity_column == identity_string).first()
 
     @classmethod
@@ -156,7 +157,7 @@ class CacheTextMixin:
             storage_sql.session.commit()
 
 
-class SignupMailRecord(storage_sql.Model, CacheTextMixin):
+class SignupMailRecord(CacheTextBase):
     """
         Used to cache a name of a new user.
         to prevent other users from using it
@@ -165,7 +166,7 @@ class SignupMailRecord(storage_sql.Model, CacheTextMixin):
     identity_max_length = 254
 
 
-class SignupNameRecord(storage_sql.Model, CacheTextMixin):
+class SignupNameRecord(CacheTextBase):
     """
         Used to cache a mail of a new user
         to prevent reuse of it and re-mailing over and over again
@@ -174,7 +175,7 @@ class SignupNameRecord(storage_sql.Model, CacheTextMixin):
     identity_max_length = 15
 
 
-class RevokeMailAttempt(storage_sql.Model, CacheTextMixin):
+class RevokeMailAttempt(CacheTextBase):
     identity_column_name = 'address'
     identity_max_length = 254
 
