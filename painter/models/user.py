@@ -72,18 +72,19 @@ class User(storage_sql.Model, UserMixin):
         super().__init__(password=password, **kwargs)
 
     related_notes = storage_sql.relationship(
-        'Notes',
-        backref=storage_sql.backref('user', lazy='dynamic'),
-        foreign_keys='Notes.user_subject_id',
-        order_by='desc(Note.post_date)'
+        'Note',
+        back_populates='user_subject',                  # relationship of the note child, implements one to many
+        foreign_keys='Note.user_subject_id',            # foreign key for the relationship
+        order_by='desc(Note.post_date)',                # order the result
+        cascade="all,delete-orphan",                    # delete orphans, just in case
+        lazy="dynamic"                                  # gets query
     )
 
+    """
     @property
     def related_notes(self) -> BaseQuery:
-        """
         :return: all notes related to the user
-        """
-        return Note.query.filter_by(user_subject_id=self.id).order_by(desc(Note.post_date))
+        return Note.query.filter_by(user_subject_id=self.id).order_by(desc(Note.post_date))"""
 
     def set_password(self, password: str) -> None:
         """

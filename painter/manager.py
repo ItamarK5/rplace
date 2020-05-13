@@ -16,7 +16,7 @@ from flask_script.commands import InvalidCommand
 
 # first import app to prevent some time related import bugs
 from .app import create_app, storage_sql, sio
-from .managers import redis_manager, check_services_command
+from .manage import redis_manager, check_services_command, shell_command
 from .models import Role, User, ExpireModels
 from .others.constants import ROLE_OPTIONS
 from .others.utils import (
@@ -45,7 +45,7 @@ manager.add_option('--d', '-debug', dest='import_class',
 # init from other files
 manager.add_command('redis', redis_manager)
 manager.add_command('check-services', check_services_command)
-
+manager.add_command('shell', shell_command)
 
 class RunServer(Server):
     """
@@ -223,9 +223,9 @@ def create_db(drop_first=False):
     """
     if drop_first and prompt_bool('Are you sure you want to drop the table'):
         storage_sql.drop_all()
-        print('database droped')
+        print('database dropped')
     storage_sql.create_all()
-    print('databse created successfully')
+    print('database created successfully')
 
 
 create_db_command = MyCommand(
@@ -245,7 +245,7 @@ manager.add_command('create-db', create_db_command)
 def drop_db():
     if prompt_bool('Are you sure to drop the database'):
         storage_sql.drop_all()
-        print('You should create a new superuser, see create-user command')
+        print('You should re-create the database, see the create-db command')
 
 
 drop_database_command = MyCommand(drop_db, 'drops the database entirely')

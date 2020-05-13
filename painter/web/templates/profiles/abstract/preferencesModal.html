@@ -43,8 +43,8 @@
     </div>
 </div>
 {% endmacro %}
-{{ simple_preference_modal(1, 'modal-change-x', form.x(class_="form-control-range col", value=user.x, min=0, max=1000, type="range"), form.x, user.x) }}
-{{ simple_preference_modal(2, 'modal-change-y', form.y(class_="form-control-range col", value=user.y, min=0, max=1000, type="range"), form.y, user.y) }}
+{{ simple_preference_modal(1, 'modal-change-x', form.x(class_="form-control-range col", value=user.x, min=0, max=999, type="range"), form.x, user.x) }}
+{{ simple_preference_modal(2, 'modal-change-y', form.y(class_="form-control-range col", value=user.y, min=0, max=999, type="range"), form.y, user.y) }}
 {{ simple_preference_modal(3, 'modal-change-scale', form.scale(class_="form-control-range col", value=user.scale, min=1, max=50, type="range"), form.scale, user.scale) }}
 {# color #}
 <div aria-hidden="true" aria-labelledby="#modal-change-color-title" class="modal" id="modal-change-color" role="dialog" tabindex="-4">
