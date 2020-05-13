@@ -11,7 +11,6 @@ from flask_sqlalchemy import BaseQuery
 from sqlalchemy import String, Column
 from sqlalchemy.dialects.sqlite import DATETIME
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm.exc import NoResultFound
 
 from painter.backends.extensions import storage_sql
 from painter.others.constants import DEFAULT_MAX_AGE_USER_TOKEN
@@ -84,14 +83,16 @@ class CacheTextBase(storage_sql.Model):
         return True
 
     @classmethod
-    def create_new(cls, identity_string: str) -> None:
+    def create_new(cls, identity_string: str, commit: bool = True) -> None:
         """
         :param identity_string: value matched the identity string column
+        :param commit: if to commit session
         :return: nothing
         creates the table and submit it to the database, fast
         """
         storage_sql.session.add(cls(identity_column=identity_string))
-        storage_sql.session.commit()
+        if commit:
+            storage_sql.session.commit()
 
     @classmethod
     def check_string(cls, identity_string: str) -> bool:
@@ -115,23 +116,19 @@ class CacheTextBase(storage_sql.Model):
         return False
 
     @classmethod
-    def force_add(cls, identity_string: str):
+    def new_or_refresh(cls, identity_string: str) -> None:
         """
         :param identity_string: value matched the identity string column
-        :return:
+        :return: None
         """
         forced_add = cls.get_identified(identity_string)
         if forced_add is None:
             # create new one
-            try:
-                storage_sql.session.remove()
-            # ignore already deleted result
-            except NoResultFound:
-                pass
+            cls.create_new(identity_string)
         else:
             # reset the
             forced_add.expires = datetime.utcnow()
-        storage_sql.session.commit()
+            storage_sql.session.commit()
 
     @classmethod
     def force_forget(cls, identity_string: str) -> bool:
@@ -182,8 +179,9 @@ class RevokeMailAttempt(CacheTextBase):
 
 def init_storage_models(app: Flask) -> None:
     """
-    :param app:
-    :return:
+    :param app: the flask application
+    :return: none
+    init the storage model
     """
     RevokeMailAttempt.max_expires_seconds = app.config.get('APP_MAX_AGE_USER_TOKEN', DEFAULT_MAX_AGE_USER_TOKEN)
     SignupNameRecord.max_expires_seconds = app.config.get('APP_MAX_AGE_USER_TOKEN', DEFAULT_MAX_AGE_USER_TOKEN)

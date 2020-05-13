@@ -1,6 +1,8 @@
-from typing import Optional, Tuple, Union
-from wtforms import Field
+from typing import Optional
+
 from flask_login import current_user
+from wtforms import Field
+
 from .forms import PreferencesForm
 
 

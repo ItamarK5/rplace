@@ -4,8 +4,8 @@ const MAX_STACK = 5;
 const DELAY_REFRESH_ATTEMPT = 5000;
 /** @const AppEnableSwitchTexts an array holding the texts of the the button depending its state*/
 const AppEnableSwitchTexts = [
-	'Turn Place Off',
 	'Turn Place On',
+	'Turn Place Off',
 	'<span class="spinner spinner-border spinner-border-md" role="status" aria-hidden="true"></span>',
 	'Error'
 ]
@@ -19,6 +19,15 @@ function changeLockState(new_state) {
 	lock_button.attr('state', new_state);
 	lock_button.children('h6').html(AppEnableSwitchTexts[new_state]);
 }
+
+/**
+ * @name isErrorResponse
+ * @param {Any} xhr anything but suppose to be xhr object
+ * @return {Boolean} if its a 404 response (not found)
+ * checks if response is XMLHttpResponse with status 404
+ */
+const isErrorResponse = (xhr) => (xhr instanceof XMLHttpRequest) && xhr.has(xhr, 'status') && (xhr.status % 100 == 4 || xhr.status % 100 == 5);
+
 
 let currently_refreshes = false;
 /**
@@ -187,6 +196,25 @@ $(document).ready(() => {
 					cancelButtonColor: '#d33',
 				}).then((result) => {
 					if (result.value) {
+						// post change
+						$.post({
+							url:'/change-lock-state',
+							contentType:'application/json;charset=UTF-8',
+							data:board_state,
+							success:function(message){
+								Swal.fire({
+									title: message.success ? `App is ${message.text ? 'paused' : 'unpause'}` : 'Error!',
+									icon: message.success ? 'success' : 'error',
+									text: message.success ? 'You lock/unlock board for all users' : message.text
+								});
+							},
+						}).catch((error) => {
+							Swal.fire({
+								icon:'error',
+								title:error.statusText ? '' : 'Error',
+								html:error.responseText
+							})
+						})
 					}
 				})		
 				break;	

@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from flask import render_template, abort, request, url_for, redirect, jsonify
 from flask.wrappers import Response
 from flask_login import current_user
@@ -58,8 +59,8 @@ def set_admin_button() -> Response:
     # else switch state
     lock.set_switch(new_state)
     # emit changes
-    sio.emit('change-lock-state', new_state, namespace=PAINT_NAMESPACE)
-    sio.emit('set-lock-state', new_state, namespace=ADMIN_NAMESPACE, include_self=False)
+    sio.emit('change-lock-state', new_state, namespace=PAINT_NAMESPACE, brodcast=True)
+    sio.emit('set-lock-state', int(new_state), namespace=ADMIN_NAMESPACE, brodcast=True)
     return json_response(True, new_state)
 
 
@@ -250,9 +251,11 @@ def change_note_description() -> Response:
         # checking for type
         if not (isinstance(description, str) or isinstance(note_index, int)):
             raise TypeError()
+    # converting errors
     except (exceptions.BadRequest, ValueError, TypeError, KeyError) as e:
         print(e)
         abort(exceptions.BadRequest.code, 'Not valid data')
+    # length error
     if len(description) > 512:
         abort(exceptions.BadRequest.code, 'Note/Record\'s description cannot be more '
                                           'then 512, you passed {0}'.format(len(description)))

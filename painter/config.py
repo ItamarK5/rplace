@@ -112,7 +112,7 @@ class FlaskApp(FlaskDefaultSettings):
 
 class DebugApp(FlaskApp):
     DEBUG = True
-    APP_HOST = 'search'
+
 
 
 class CelerySettings(ABC):

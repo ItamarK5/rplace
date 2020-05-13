@@ -495,11 +495,12 @@ $(document).ready(() => {
 		}).fail(ajaxErrorAlert);
 	});
 	// forms submitted
-	$('.submit-form').click(() => {
-		getModalParent()
-	});
 	$('#submit-note-form').click(() => {
 		$('#note-form').submit();
+	})
+	
+	$('#submit-record-form').click(() => {
+		$('#record-form').submit();
 	})
 	// affect from field in historyModal
 	$('#set-affect-from').click(function() {

@@ -243,6 +243,10 @@ manager.add_command('create-db', create_db_command)
 
 # drop database
 def drop_db():
+    """
+    :return: none
+    drops the database
+    """
     if prompt_bool('Are you sure to drop the database'):
         storage_sql.drop_all()
         print('You should re-create the database, see the create-db command')
@@ -269,15 +273,3 @@ def clear_cache():
 
 # adds clear cache command
 manager.add_command('clear-cache', Command(clear_cache))
-@manager.command
-def graph():
-    from sqlalchemy_schemadisplay import create_schema_graph
-
-    # create the pydot graph object by autoloading all tables via a bound metadata object
-    graph = create_schema_graph(metadata=storage_sql.metadata,
-                                show_datatypes=True,  # The image would get nasty big if we'd show the datatypes
-                                show_indexes=False,  # ditto for indexes
-                                rankdir='LR',  # From left to right (instead of top to bottom)
-                                concentrate=False  # Don't try to join the relation lines together
-                                )
-    graph.write_png('dbschema.png')  # write out the file

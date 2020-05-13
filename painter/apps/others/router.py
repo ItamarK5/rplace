@@ -6,7 +6,7 @@ static pages
 from flask import Blueprint
 
 other_router = Blueprint(
-	'other',
-	'other',
-	static_folder='/web',
+    'other',
+    'other',
+    static_folder='/web',
 )

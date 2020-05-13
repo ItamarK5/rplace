@@ -55,22 +55,6 @@ class User(storage_sql.Model, UserMixin):
     # default url
     url = Column(String(length=254), default=None, nullable=True)
 
-    # https://stackoverflow.com/a/11579347
-    sqlite_autoincrement = True
-
-    def __init__(self, password=None, decrypted_password=None, **kwargs) -> None:
-        """
-        :param password: raw password
-        :param hash_password: the password post hash
-        :param kwargs: the other arguments passed to the Modal constructor
-        to switch between init using hashed password or not
-        """
-        if decrypted_password is not None and password is None:
-            if 'username' not in kwargs:
-                raise KeyError("User constructor must have a username parameter")
-            password = self.encrypt_password(kwargs.get('username'), decrypted_password)
-        super().__init__(password=password, **kwargs)
-
     related_notes = storage_sql.relationship(
         'Note',
         back_populates='user_subject',                  # relationship of the note child, implements one to many
@@ -80,11 +64,23 @@ class User(storage_sql.Model, UserMixin):
         lazy="dynamic"                                  # gets query
     )
 
-    """
-    @property
-    def related_notes(self) -> BaseQuery:
-        :return: all notes related to the user
-        return Note.query.filter_by(user_subject_id=self.id).order_by(desc(Note.post_date))"""
+    # https://stackoverflow.com/a/11579347
+    sqlite_autoincrement = True
+
+    def __init__(self, password=None, decrypted_password=None, **kwargs) -> None:
+        """
+        :param password: raw password
+        :param decrypted_password: the password pre hashed
+        :param kwargs: the other arguments passed to the Modal constructor
+        to switch between init using hashed password or not
+        """
+        print(decrypted_password, password)
+        if decrypted_password is not None and password is None:
+            if 'username' not in kwargs:
+                raise KeyError("User constructor must have a username parameter")
+            password = self.encrypt_password(decrypted_password, kwargs.get('username'))
+        print(decrypted_password, password)
+        super().__init__(password=password, **kwargs)
 
     def set_password(self, password: str) -> None:
         """
@@ -153,7 +149,8 @@ class User(storage_sql.Model, UserMixin):
         :return: id of the user
         assumes that the notes are sorted by ids, that are auto
         """
-        record = self.related_notes.first()
+        record = self.related_notes.filter_by(is_record=True).first()
+        print(record)
         if record is None:
             return _NO_RECORD
         return record.id

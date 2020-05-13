@@ -5,10 +5,12 @@ urls of the accounts blueprint
 from __future__ import absolute_import
 
 from typing import Type
+
 from flask import render_template, abort
 from flask_login import login_fresh
 from flask_login import logout_user, login_user, login_required
 from flask_wtf import FlaskForm
+from sqlalchemy.exc import DBAPIError
 from werkzeug.wrappers import Response
 
 from painter.backends.extensions import storage_sql
@@ -39,7 +41,7 @@ def login_response(flask_form: Type[FlaskForm], render_html: str) -> Response:
         user = User.query.filter_by(username=form.username.data).first()  # user names are unique
         # validate if user exists and if the password the form is the same as the one saved
         # the one saved is hashed
-        if user is None or User.encrypt_password(form.username.data, form.password.data) != user.password:
+        if user is None or User.encrypt_password(form.password.data, form.username.data) != user.password:
             form.password.errors.append('username and password don\'t match')
             form.username.errors.append('username and password don\'t match')
         # the only other reason it can be is that if the user is banned
@@ -92,8 +94,8 @@ def signup() -> Response:
         # to hex to prevent any chance of decode the key and then changing it to SQL function
         pswd = User.encrypt_password(pswd, name)
         # adding records of the name and mail addresses
-        SignupNameRecord.force_add(name)
-        SignupMailRecord.force_add(email)
+        SignupNameRecord.new_or_refresh(name)
+        SignupMailRecord.new_or_refresh(email)
         # sending the mail
         send_signing_up_message(
             name,
@@ -138,7 +140,8 @@ def revoke() -> Response:
                     'mail_address': user.email
                 })
             )
-        return render_template('responses/complete-revoke.html', form=form)
+            return render_template('responses/complete-revoke.html',
+                                   form=form)
     return render_template('accounts/revoke.html', form=form)
 
 
@@ -176,20 +179,24 @@ def change_password(token: str) -> Response:
     user = User.query.filter_by(email=mail_address, password=pswd).first()
     if user is None or not RevokeMailAttempt.exists(mail_address):
         return render_template(
-            'responses/revoke-error-token.html',
+            'responses/token-error.html',
             view_name='Revoke Password',
-            view_ref='auth.revoke'
+            view_ref='auth.revoke',
+            token_action='revoke your password'
         )
     form = ChangePasswordForm()
     # if not valid new password
-    if not form.validate_on_submit():
-        return render_template('accounts/change-password.html', form=form)
-    else:
+    if form.validate_on_submit():
         new_password = form.password.data
         user.set_password(new_password)
         # then forget he mail address that was passed
         RevokeMailAttempt.force_forget(mail_address)
-    return render_template('responses/complete-change-password.html')
+        return render_template(
+            'responses/complete-change-password.html',
+            view_ref='auth.login',
+            view_name='login'
+        )
+    return render_template('accounts/change-password.html', form=form)
 
 
 @accounts_router.route('/logout', methods=('GET',))
@@ -221,6 +228,7 @@ def confirm(token: str) -> Response:
             'responses/token-error.html',
             view_name='Sign Up',
             view_ref='auth.signup',
+            token_action="re-signup"
         )
     # if got error while extracting that isn't timeout
     if extracted_token is None:
@@ -240,7 +248,8 @@ def confirm(token: str) -> Response:
         )
     # else get values
     # time.timezone is the different between local time to gm-time d=(gm-local) => d+local = gm
-    name, pswd, email = extracted_token.pop('username'), extracted_token.pop('password'), extracted_token.pop('email')
+    name, pswd, email = extracted_token.pop('username'), extracted_token.pop('password'), extracted_token.pop(
+        'mail_address')
     # check if user exists
     # https://stackoverflow.com/a/57925308
     try:
@@ -263,12 +272,11 @@ def confirm(token: str) -> Response:
         # save user
         storage_sql.session.add(user)
         storage_sql.session.commit()
-    except:
+    except DBAPIError:
         abort(500, "Server has failed to create new user")
     # return message
     return render_template(
         'responses/complete-confirm.html',
         view_name='Login',
-        view_ref='auth.login',
-
+        view_ref='auth.login'
     )

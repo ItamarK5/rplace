@@ -113,7 +113,7 @@ class Vector2D {
 	 * 
 	 * @param {*} x a value, hoping a number
 	 * @returns {Vector2D} itself for mass operation
-	 * sets the x if the value is valid (a number => not NaN) otherwise dont set
+	 * sets the x if the value is valid (a number => not NaN) otherwise don't set
 	 */
 	setXIfValid(x){
 		let safe_x = Vector2D._evalSafe(x);
@@ -126,7 +126,7 @@ class Vector2D {
 	 * 
 	 * @param {*} y a value, hoping a number
 	 * @returns {Vector2D} itself for mass operation
-	 * sets the x if the value is valid (a number => not NaN) otherwise dont set
+	 * sets the x if the value is valid (a number => not NaN) otherwise don't set
 	 */
 	setYIfValid(y){
 		let safe_y = Vector2D._evalSafe(y);
@@ -215,8 +215,8 @@ class Vector2D {
 	 * 
 	 * @param {*} x added x value 
 	 * @param {*} y added y value
-	 * added the values of x and y if there are valid, because the called methods dont
-	 * set for undefined its dont need to cal it
+	 * added the values of x and y if there are valid, because the called methods don't
+	 * set for undefined its don't need to cal it
 	 */
 	addXYIfValid(x, y){ 
 		this.addXIfValid(x);
@@ -226,6 +226,7 @@ class Vector2D {
 	/**
 	 * 
 	 * @param {Vector2DType} other vector object
+	 * @return {Vector2DType} this vector
 	 */
 	addVectorIfValid(other){
 		let other_vector = Vector2D.evalVector(other);
@@ -236,8 +237,8 @@ class Vector2D {
 	}
 	/**
 	 * 
-	 * @param {*} x any value, hoped x to substract from value
-	 * substracts x from current x value
+	 * @param {*} x any value, hoped x to subtract from value
+	 * subtract x from current x value
 	 */
 	subX(x){ this.__x -= Vector2D._evalSafe(x); return this;}
 		/**
@@ -273,15 +274,32 @@ class Vector2D {
 	}
 	/**
 	 * @param {*} x any value hoped to be a number
-	 * @returns {*} any value if 
+	 * @returns {Vector2D} any value if 
+	 * substracts this y from that safetly
 	 */
 	subIfValidX(x){ this.setXIfValid(this.__x - Vector2D._evalSafe(x)) }
+	/**
+	 * @param {*} y any value hoped to be a number
+	 * @returns {Vector2D} any value if 
+	 * substracts this y from that safetly
+	 */
 	subIfValidY(y){ this.setYIfValid(this.__y - Vector2D._evalSafe(y)) }
+		/**
+	 * @param {*} y any value hoped to be a number
+	 * @param {*} x any value hoped to be a number
+	 * @returns {Vector2D} this vector added
+	 * substracts this X and y from that object safety
+	 */
 	subIfValidXY(x, y){ 
 		this.subIdValidX(x);
 		this.subIfValidY(y);
 		return this;
 	}
+	/**
+	 * 
+	 * @param {Vector2D} other
+	 * @returns {Vector2D} this vector after subtraction 
+	 */
 	subIfValidVector(other){
 		let other_vector = Vector2D.evalVector(other);
 		if(!_.isNull(other_vector)){
@@ -292,16 +310,31 @@ class Vector2D {
 	/**
 	 * 
 	 * @param {*} mul any value hoping to be a number
-	 * multiples this.x by mul, if mul isnt a number its setted to NaN
+	 * @return {Vector2D} this
+	 * multiples this.x by mul, if mul isn't a number it would be set to NaN
 	 */
 	mulX(mul){
 		this.__x *= Vector2D._evalSafe(mul);
 		return this;
 	}
+	/**
+	 * 
+	 * @param {*} mul any value hoping to be a number
+	 * @return {Vector2D} this
+	 * multiples this.y by mul, if mul isn't a number it would be set to NaN
+	 */
 	mulY(mul){
 		this.__y *= Vector2D._evalSafe(mul);
 		return this;
 	}
+	/**
+	 * safety mul x and y
+	 * @param {*} mul any value hoping to be a number
+	 * @param {*} mul2 any value hoping to be a number
+	 * @return {Vector2D} this
+	 * multiples this.y by mul, if mul isn't a number it would be set to NaN
+	 * if mul2 isn't defined multiplies both
+	 */
 	mulXY(mul, mul2){
 		if(_.isUndefined(mul2)){
 			mul2 = mul;
@@ -310,14 +343,30 @@ class Vector2D {
 		__vector2ArgsOperationWrapper(this, this.mulX, mul2);
 		return this;
 	}
-	safeMulX(mul){
+	/**
+	 * @param {*} mul any value hoping to be a number
+	 * @return {Vector2D} this
+	 * multiples this.__x by mul, if mul isn't a number wont change
+	 */
+	mulIfValidX(mul){
 		this.setXIfValid(this.__x * Vector2D._evalSafe(mul));
 		return this;
 	}
+	/**
+	 * @param {*} mul any value hoping to be a number
+	 * @return {Vector2D} this
+	 * multiples this.__y by mul, if mul isn't a number wont change
+	 */
 	safeMulY(mul){
 		this.setYIfValid(this.__y * Vector2D._evalSafe(mul));
 		return this;
 	}
+	/**
+	 * @param {*} mul any value hoping to be a number
+	 * @param {*} mul2 any value hoping to be a number
+	 * @return {Vector2D} this
+	 * multiples this.x and this.y by mul and mul2 respective
+	 */
 	safeMulXY(mul, mul2){
 		if(_.isUndefined(mul2)){
 			mul2 = mul;

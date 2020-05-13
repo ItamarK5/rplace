@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 from typing import Any, Dict, Optional
 
+import redis
 from flask_login import current_user
 
 from painter.backends import lock, board
@@ -11,7 +12,6 @@ from painter.backends.skio import (
     socket_io_authenticated_only_connection,
     socket_io_authenticated_only_event,
 )
-import redis
 from painter.others.constants import COLOR_COOLDOWN
 
 

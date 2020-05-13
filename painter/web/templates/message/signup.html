@@ -1,9 +1,11 @@
-{% extends 'message//basemail.html' %}
-{% block body %}
+{% extends 'message/base.html' %}
+{% block content %}
 {{ super()  }}
-    <h2 style="margin:10.640;text-decoration: underline;">Hello, <b>{{ username }}</b></h2>
-    <img alt="Logo" src="cid:favicon" style="display:block" title="Logo">
-    <h4 style="margin:10.640;">Welcome to our Social Painter</h4>
-    <h4 style="margin:10.640;">to continue enter the following url</h4>
-    <a href="{{ url_for('auth.confirm', token=token , _external=True) }}" style="color:blue;text-decoration: solid;font-size:105%;">{{ url_for('auth.confirm', token=token , _external=True) }}</a>
+<h2 style="margin:10.640;text-decoration: underline;">Hello, <b>{{ username }}</b></h2>
+<img alt="Logo" src="cid:favicon" style="display:block" title="Logo">
+<h4 style="margin:10.640;">Welcome to our Social Painter</h4>
+<h4 style="margin:10.640;">to continue enter the following url</h4>
+<a href="{{ url_for('auth.confirm', token=token , _external=True) }}"
+   style="color:blue;text-decoration: solid;font-size:105%;">{{ url_for('auth.confirm', token=token , _external=True)
+    }}</a>
 {% endblock %}

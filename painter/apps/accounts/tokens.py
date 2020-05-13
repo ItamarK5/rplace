@@ -70,8 +70,6 @@ class MailTokens(object):
 		# check type
 		if not isinstance(token, dict):
 			return None
-		# check are valid
-		form.fast_validation(**token)[0].error_print()
 		if not form.are_valid(**token):
 			return None
 		# else

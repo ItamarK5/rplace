@@ -20,5 +20,3 @@ if __name__ == '__main__':
         # prints
         print(err, file=sys.stderr)
         sys.exit(1)
-
-

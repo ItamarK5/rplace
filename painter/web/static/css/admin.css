@@ -5,13 +5,13 @@ body, html {
     color:rgb(56, 221, 56);
 }
 /* button colors */
-#place-button[state="1"]{
+#place-button[state="0"]{
     background-color:greenyellow;
     color:green;
 }
-#place-button[state="0"]{
-    background-color:orangered;
-    color:red;
+#place-button[state="1"]{
+    background-color:rgb(228, 31, 31);
+    color:yellow;
 }
 #place-button[state="2"]{
     background-color:#999999;
