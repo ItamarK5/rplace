@@ -8,7 +8,7 @@ from redis.exceptions import (
     ConnectionError as RedisConnectionError
 )
 
-from painter.backends.extensions import redis, storage_sql
+from painter.backends.extensions import redis_store, storage_sql
 from painter.others.utils import MyCommand
 from ..others.constants import (
     DURATION_OPTION_FLAG,
@@ -70,10 +70,10 @@ def check_redis_service(option_flags: FrozenSet[str]) -> Dict[str, Any]:
     try:
         if DURATION_OPTION_FLAG in option_flags:
             current_time = time.time()
-            redis.ping()
+            redis_store.ping()
             duration = time.time() - current_time
         else:
-            redis.ping()
+            redis_store.ping()
         if PRINT_OPTION_FLAG in option_flags:
             print('Successfully ping to redis')
         result = True
@@ -134,6 +134,14 @@ def check_sql_service(option_flags: FrozenSet[str]) -> Dict[str, Any]:
 
 def check_services(all=False, rds=None, sql=None, options=None):
     """
+    :param all: if to check all services
+    :type all: boolean
+    :param sql: if to check sql services
+    :type all: boolean
+    :param rds: if to check rds services
+    :type rds: boolean
+    :param all: if to check all services
+    :type all: boolean
    checks if the service the app needs to run are active
    there are currently two:
    1) redis server

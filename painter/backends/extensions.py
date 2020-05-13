@@ -8,7 +8,7 @@ from sqlalchemy import create_engine
 
 # Flask-Mail extension
 mailbox = Mail()
-redis = FlaskRedis()
+redis_store = FlaskRedis()
 storage_sql = SQLAlchemy()
 csrf = CSRFProtect()
 cache = Cache()

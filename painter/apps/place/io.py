@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional
 
 from flask_login import current_user
 
@@ -11,6 +11,7 @@ from painter.backends.skio import (
     socket_io_authenticated_only_connection,
     socket_io_authenticated_only_event,
 )
+import redis
 from painter.others.constants import COLOR_COOLDOWN
 
 
@@ -39,7 +40,7 @@ def connect():
 
 @sio.on('get-start', PAINT_NAMESPACE)
 @socket_io_authenticated_only_event
-def get_start_data() -> Union[Dict[str, Any], str]:
+def get_start_data() -> Optional[Dict[str, Any]]:
     """
     :return: the start data of the user {
     board in pixels:bytes,
@@ -47,11 +48,14 @@ def get_start_data() -> Union[Dict[str, Any], str]:
     lock: if the board is locked
     }
     """
-    return {
-        'board': board.get_board(),
-        'locked': not lock.is_open(),
-        'time': str(current_user.next_time)
-    }
+    try:
+        return {
+            'board': board.get_board(),
+            'locked': not lock.is_open(),
+            'time': str(current_user.next_time)
+        }
+    except redis.exceptions.ConnectionError:
+        return None
 
 
 @sio.on('set-board', PAINT_NAMESPACE)

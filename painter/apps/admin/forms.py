@@ -46,7 +46,7 @@ class RecordForm(FlaskForm):
 		"""
 		# get field data
 		if field.data is not None:
-			#
+			# prevent 1 minute gap
 			if datetime.now() > field.data + timedelta(minutes=1):
 				raise ValidationError("You must select a day in the future, not now")
 

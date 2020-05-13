@@ -2,7 +2,7 @@ from flask_script import Manager
 from flask_script.cli import prompt_bool
 
 from painter.backends import board, lock
-from painter.backends.extensions import redis
+from painter.backends.extensions import redis_store
 
 
 def try_connect_to_redis() -> bool:
@@ -10,7 +10,7 @@ def try_connect_to_redis() -> bool:
     :return: if connected to redis successfully
     """
     try:
-        redis.ping()
+        redis_store.ping()
         print("redis works")
     except Exception as e:
         print('While Checking Redis encounter error')

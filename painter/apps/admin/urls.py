@@ -147,8 +147,11 @@ def get_active_state() -> Response:
     :return: json response
     get active state of the board, only for admins
     """
-    return jsonify(lock.is_open())
-
+    abort(500)
+    try:
+        return jsonify(lock.is_open())
+    except 400:
+        abort(500)
 
 @admin_router.route('/set-user-role/<string:name>', methods=('POST',))
 @only_if_superior

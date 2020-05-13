@@ -15,7 +15,7 @@ from flask_script.commands import InvalidCommand
 from painter.backends.extensions import (
     storage_sql, generate_engine,
     mailbox, login_manager, cache,
-    csrf, redis
+    csrf, redis_store
 )
 from painter.backends.skio import sio
 from painter.models import init_storage_models
@@ -53,9 +53,12 @@ def create_app(import_class: Optional[str] = None,
                              .format(import_object, e))
     # socketio, not socketio in celery
     if is_celery:
+        # set is celery
         celery.conf.update({'result_backend': app.config['CELERY_BROKER_URL']})
     else:
+        # init socketio with eventlet
         sio.init_app(app, async_mode='eventlet')
+    print(app.config['REDIS_URL'])
     # set debug
     # init Extensions
     storage_sql.init_app(app)
@@ -64,7 +67,7 @@ def create_app(import_class: Optional[str] = None,
     login_manager.init_app(app)
     cache.init_app(app)
     csrf.init_app(app)
-    redis.init_app(app)
+    redis_store.init_app(app)
     celery.conf.update(app.config)
     # add filters
     add_filters(app)

@@ -1,6 +1,6 @@
 
 /** @const FETCH_BOARD_INTERVAL */
-const FETCH_BOARD_INTERVAL = 5000;
+const FETCH_BOARD_INTERVAL = 2000;
 
 /** @const BACKGROUND_COLOR */
 const BACKGROUND_COLOR = '#777777'
@@ -261,26 +261,26 @@ class KeyDirection {
      */
     constructor(direction) {
         this.direction = direction;
-        this.__is_set = false;
+        this._is_set = false;
     }
 	/**
-	 * clears the __is_set property, if the property was set
-	 * @returns {boolean} if this.__is_set value was true before the function
+	 * clears the _is_set property, if the property was set
+	 * @returns {boolean} if this._is_set value was true before the function
 	 */
 	clearIfSet(){
-		if(this.__is_set){
-			this.__is_set = false;
+		if(this._is_set){
+			this._is_set = false;
 			return true;
 		}
 		return false;
 	}
 	/**
-	 * sets the __is_set property, if the property was cleared
-	 * @returns {boolean} if this.__is_set value was false before the function
+	 * sets the _is_set property, if the property was cleared
+	 * @returns {boolean} if this._is_set value was false before the function
 	 */
 	setIfCleared(){
-		if(!this.__is_set){
-			this.__is_set = true;
+		if(!this._is_set){
+			this._is_set = true;
 			return true;
 		}
 		return false;
@@ -312,7 +312,7 @@ const DirectionMap = {
  */
 class SimpleInterval {
     /**
-     * @name __work_handler
+     * @name _work_handler
      * @type {number} 
      * @desc created by the constructor, default null. the handler for the setInterval
      */
@@ -321,22 +321,22 @@ class SimpleInterval {
 	 * @param {number} time the time between each call
 	 */
 	constructor(work, time) { 
-		this.__work = work;
-		this.__time = time;
-		this.__work_handler = null;
+		this._work = work;
+		this._time = time;
+		this._work_handler = null;
 	}
 	/**
 	 * @desc start the worker
 	 */
 	start() {
-		this.__work_handler = setInterval(this.__work, this.__time);
+		this._work_handler = setInterval(this._work, this._time);
 	}
 	/**
 	 * @desc stops the worker
 	 */
 	stop() {
-		clearInterval(this.__work_handler)
-		this.__work_handler = null
+		clearInterval(this._work_handler)
+		this._work_handler = null
 	}
 	/**
 	 * @returns if the worker starts to work (and hasn't already worked)
@@ -364,7 +364,7 @@ class SimpleInterval {
 	 * checks if the worker is working at all using the handler
 	 */
 	get isWorking() {
-		return !_.isNull(this.__work_handler);
+		return !_.isNull(this._work_handler);
 	}
 }
 
@@ -492,19 +492,18 @@ const progress = {
 	 */
 	state: 0,
 	/**
-	 * @name __work
+	 * @name _work
 	 * @type {SimpleInterval}
 	 * @desc SimpleInterval for updating auto update the progress bar.  handler of progress update interval
 	 */
-	__work: null,
+	_work: null,
 	/**
-     * @private
-	 * @name __current_seconds
+	 * @name _current_seconds
 	 * @type {string}
      * @memberof progress
 	 * @desc to make progress text update event 1 seconds
 	 */
-	__current_seconds: null,
+	_current_seconds: null,
 	/**
      * @desc constructor, the object initialization sets his work
 	 */
@@ -514,14 +513,14 @@ const progress = {
             this.updateTimer,
             this
         )
-		this.__work = new SimpleInterval(bind_timer, PROGRESS_COOLDOWN)
+		this._work = new SimpleInterval(bind_timer, PROGRESS_COOLDOWN)
 	},
 	/**
      * @returns {boolean} if progress still works
      * @desc if progress isn't finished, user still cant place pixels
      */
 	hasFinished(){
-		return this.__work.isWorking;
+		return this._work.isWorking;
 	},
 	/**
 	 * @param {number} seconds_left number of seconds before the progress bar ends
@@ -553,13 +552,13 @@ const progress = {
 			$('#prog-fill').attr('state', 1); // prog-fill state is 9
 			$('#time-prog').attr('state', 0); // time progress set to 1
 			if (this.hasFinished()) { // stop work in case
-				this.__work.stop();
+				this._work.stop();
 			}
 		}
 		// when stops working
 		else if (!this.hasFinished()) {
-			this.__current_second = 300;
-			this.__work.start()
+			this._current_second = 300;
+			this._work.start()
 			// set cursor to be pen
 			cursor.setPen();
 		}
@@ -574,10 +573,10 @@ const progress = {
 	updateTimer() {
 		let seconds_left = Math.ceil(Math.max(this.when_cooldown_ends - getUTCTimestamp(), 0) / 1000);
 		// adjust progress
-		if (this.__current_second != seconds_left) {
+		if (this._current_second != seconds_left) {
 			this.adjustProgress(seconds_left);
 			// update current time
-			this.__current_second = seconds_left;
+			this._current_second = seconds_left;
 		}
 		// close for cooldown 0
 		if (seconds_left <= 0) {
@@ -589,7 +588,7 @@ const progress = {
 	 * @desc stops the progress bar
 	 */
 	stopProgress() {
-		this.__work.stop();
+		this._work.stop();
 		cursor.setPen();
 	}
 }
@@ -625,7 +624,7 @@ const mapFrags = {
      * @name fixHash
      * @memberof mapFrags
      * @desc
-     * wraps __fixHash function with _.throttle function
+     * wraps _fixHash function with _.throttle function
 	 * throttle executes the function once every x time, and if the function was called during the waited time,
 	 * it executes it when the time ends.
 	 * @see {@link https://underscorejs.org/#throttle}
@@ -637,8 +636,8 @@ const mapFrags = {
 	 */
 	preRun() {
 		// set window hash to be valid
-		this.fixHash = _.throttle(this.__fixHash, 1000);
-		let fragments = this.__determineFragments();
+		this.fixHash = _.throttle(this._fixHash, 1000);
+		let fragments = this._determineFragments();
 		this.cx = fragments.x;
 		this.cy = fragments.y;
 		this.scale = fragments.scale;
@@ -660,13 +659,13 @@ const mapFrags = {
 	 * @private
 	 * @returns {string} the raw path for the map
 	 */
-	__getFragsAsPathParams() {
+	_getFragsAsPathParams() {
 		return `x=${this.cx}&y=${this.cy}&scale=${this.scale}`
 	},
 	/**
 	 * @returns {string} hash params of the url with the same map position
 	 */	hash() {
-		return `#${this.__getFragsAsPathParams()}`
+		return `#${this._getFragsAsPathParams()}`
 	},
 	/**
 	 * @returns {string} arguments param of the url with the same map position
@@ -674,7 +673,7 @@ const mapFrags = {
      * @summary simple get
 	 */
 	getAsArgument() {
-		return `?${this.__getFragsAsPathParams}`
+		return `?${this._getFragsAsPathParams}`
 	},
 	/**
 	 * @param {Vector2D} vector represent the new center
@@ -689,7 +688,7 @@ const mapFrags = {
 	 * @returns {boolean} if the value can be the next cx value (next value means its different from current)
 	 * if value is valid 'new' center x
 	 */
-	__isValidNewX(new_x) {
+	_isValidNewX(new_x) {
 		return (!isNaN(new_x)) && isValidPos(new_x) && new_x != this.cx
 	},
 	/**
@@ -697,7 +696,7 @@ const mapFrags = {
 	 * @returns {boolean} if the param can be the next cy value (next value means its different from current)
 	 * if value is valid 'new' center y
 	 */
-	__isValidNewY(new_y) {
+	_isValidNewY(new_y) {
 		return (!isNaN(new_y)) && isValidPos(new_y) && new_y != this.cy
 	},
 	/**
@@ -705,7 +704,7 @@ const mapFrags = {
 	 * @returns {boolean} if the param can be the next cy value (next value means its different from current)
 	 * if value is valid 'new' scale
 	 */
-	__isValidNewScale(new_scale) {
+	_isValidNewScale(new_scale) {
 		return (!isNaN(new_scale)) && isValidScale(new_scale) && new_scale != this.scale
 	},
 	/**
@@ -718,7 +717,7 @@ const mapFrags = {
 	 * then checks for default
 	 * and in the end, returnd default DEFAULT_CENTER_AXIS (500)
 	 */
-	__determineX() {
+	_determineX() {
 		// first get from arguments
 		let x = getMapPos(window.location.search.match(reArgX));
 		if ((!isNaN(x)) && isValidPos(x)) {
@@ -748,7 +747,7 @@ const mapFrags = {
 	 * after the current scale (this.scale)
 	 * then checks for default
 	 * and in the end, returned default zoom level (4)	 */
-	__determineY() {
+	_determineY() {
 		// first get from arguments
 		let y = getMapPos(window.location.search.match(reArgY));
 		if ((!isNaN(y)) && isValidPos(y)) {
@@ -773,7 +772,7 @@ const mapFrags = {
 	 * @returns the y position the board suppose to be on the screen.
 	 * @desc the function first check by the arguments, then by the hash and finally by the favorable position
 	 */
-	__determineScale() {
+	_determineScale() {
 		let scale = getMapScale(window.location.search.match(reArgScale));
 		if ((!isNaN(scale)) && isValidScale(scale)) {
 			return scale;
@@ -803,11 +802,11 @@ const mapFrags = {
 	 * @returns the fields of the object
 	 * @desc determine the current fragments and update board
 	 */
-	__determineFragments() {
+	_determineFragments() {
 		return {
-			x: this.__determineX(),
-			y: this.__determineY(),
-			scale: this.__determineScale()
+			x: this._determineX(),
+			y: this._determineY(),
+			scale: this._determineScale()
 		};
 	},
 	/**
@@ -822,11 +821,11 @@ const mapFrags = {
 		// if any undefined it returns NaN
 		x = this.scale >= 1 ? Math.round(x) : CANVAS_SIZE / 2;
 		y = this.scale >= 1 ? Math.round(y) : CANVAS_SIZE / 2;
-		if (this.__isValidNewX(x)) {
+		if (this._isValidNewX(x)) {
 			flag = true;
 			this.cx = x;
 		}
-		if (this.__isValidNewY(y)) {
+		if (this._isValidNewY(y)) {
 			flag = true;
 			this.cy = y;
 		}
@@ -842,7 +841,7 @@ const mapFrags = {
 	 * @desc if the scale level is less then 0.5
 	 */
 	setScale(scale, to_update = true) {
-		if (this.__isValidNewScale(scale)) {
+		if (this._isValidNewScale(scale)) {
 			this.scale = scale;
 			if (1 > this.scale) {
 				this.setCenter(CANVAS_SIZE / 2, CANVAS_SIZE / 2, false);
@@ -857,18 +856,18 @@ const mapFrags = {
 	/**
 	 * @returns if any changes to the view
 	 * handling changes to the fragments 
-     * wraps this.__refreshFrags
-     * @see {@link mapFrags#__refreshFrags}
+     * wraps this._refreshFrags
+     * @see {@link mapFrags#_refreshFrags}
 	 */
 	refreshFragments() {
 		/*  refreshFragments(bool) -> void
 		 *  refresh the mapFrags object by the current hash values if they are valid
 		 */
-		let frags = this.__determineFragments();
+		let frags = this._determineFragments();
 		let any_changes = frags.x != this.cx || frags.y != this.cy || frags.scale != this.scale;
 		if(any_changes){
-			this.setCenter(frags.x, frags.y, this.__isValidNewScale(frags.scale));
-			if (this.__isValidNewScale(frags.scale)) {
+			this.setCenter(frags.x, frags.y, this._isValidNewScale(frags.scale));
+			if (this._isValidNewScale(frags.scale)) {
 				this.scale = frags.scale;
 				board.updateZoom();
 			}
@@ -881,7 +880,7 @@ const mapFrags = {
 	 * function handling fixing the hash displayed
 	 * another function wraps it to make it only be only x time after the last the function was called
 	 */
-	__fixHash() {
+	_fixHash() {
 		//  update location
 		// first tried to update event set
 		// now lets try using setTimeout
@@ -1043,12 +1042,12 @@ const pen = {
 	 */
 	y: -1,
 	/**
-	 * @name __color
+	 * @name _color
      * @memberof pen
 	 * @type {?number}
 	 * @desc the color of the pen
 	 */
-	__color: null,
+	_color: null,
 	/**
 	 * @name last_mouse_pos
      * @memberof pen
@@ -1064,12 +1063,12 @@ const pen = {
 	 */
 	is_in_center_mode: true,
 	/**
-	 * @name __disable
+	 * @name _disable
      * @memberof pen
 	 * @type {boolean}
 	 * @desc if the pen is in disabled mode, invincible
 	 */
-	__disable: false,
+	_disable: false,
 	/**
 	 * @name cursor_style
      * @memberof pen
@@ -1117,8 +1116,8 @@ const pen = {
 	 */
 	disable() {
 		// if not disabled don't do anything
-		if (!this.__disable) {
-			this.__disable = true;
+		if (!this._disable) {
+			this._disable = true;
 			board.drawBoard();
 		}
 	},
@@ -1126,8 +1125,8 @@ const pen = {
 	 * resets the canvas pen and updates the board
 	 */
 	enable() {
-		if (this.__disable) {
-			this.__disable = false;
+		if (this._disable) {
+			this._disable = false;
 			board.drawBoard();
 		}
 	},
@@ -1219,22 +1218,22 @@ const pen = {
      * @returns {boolean} if has color
      */
 	hasColor() {
-		return isValidColor(this.__color);
+		return isValidColor(this._color);
 	},
 	/**
      * @returns {number} index of pen color 
 	 * gets the color index value
 	*/
 	get color() {
-		return this.__color;
+		return this._color;
 	},
 	/**
 	 * @param {number} value
 	 * sets the color
 	 */
 	set color(value) {
-		if (value >= 0 && value < 16 && this.__color != value) {
-			this.__color = value;
+		if (value >= 0 && value < 16 && this._color != value) {
+			this._color = value;
 			board.drawBoard()
 		}
 	},
@@ -1249,7 +1248,7 @@ const pen = {
 	 * can se pixel if pen isn't disabled, has color, is at board and board is ready (loaded data from server)
 	 */
 	canDrawPen() {
-		return (!this.__disable) && this.hasColor() && this.isAtBoard && board.is_ready;
+		return (!this._disable) && this.hasColor() && this.isAtBoard && board.is_ready;
 	},
 	/**
 	 * <p>set a pixel on board (emits to server)</p>
@@ -1309,7 +1308,7 @@ const pen = {
 		}
 		else {
 			sock.emit('set-board', {
-				'color': this.__color,
+				'color': this._color,
 				'x': this.x,
 				'y': this.y,
 			}, (value) => {
@@ -1414,7 +1413,7 @@ const board = {
 	 * also uses the updateZoom method to set the position
 	 */
 	preRun() {
-		this.buildBoard = _.once(this.__buildBoard);
+		this.buildBoard = _.once(this._buildBoard);
 		this.canvas = $('#board');
 		this.img_canvas = document.createElement('canvas');
 		this.img_canvas.width = CANVAS_SIZE;
@@ -1454,7 +1453,7 @@ const board = {
 		/**
 		 * reset values for board build
 		 */
-		this.buildBoard = _.once(this.__buildBoard);
+		this.buildBoard = _.once(this._buildBoard);
 		board.is_ready = false
 	},
 	/**
@@ -1483,7 +1482,7 @@ const board = {
 	 * @param {Uint8Array} buffer buffer of bytes represent the board
 	 * builds the board first time
 	 */
-	__buildBoard(buffer) {
+	_buildBoard(buffer) {
 		// creates new image to display
 		let image_data = new ImageData(CANVAS_SIZE, CANVAS_SIZE);
 		// loads the buffers of the image data
@@ -1505,7 +1504,7 @@ const board = {
 	 * @param {number} y position of pixel
 	 * @param {string} color color to draw the pixel
 	 */
-	__setAt(x, y, color) {
+	_setAt(x, y, color) {
 		let image_context = this.getImageContext()
 		// set pixel color
 		image_context.fillStyle = color;
@@ -1537,7 +1536,7 @@ const board = {
 			let color = colors[color_idx].css_format();
 			// check if board is ready
 			if (this.is_ready) {
-				this.__setAt(x, y, color)
+				this._setAt(x, y, color)
 			}
 			// if not push to pixelQueue
 			else {
@@ -1555,14 +1554,14 @@ const board = {
 	loadPixelQueue() {
 		while (this.pixelQueue.length != 0) {
 			let top_pixel = this.pixelQueue.shift(); // remove
-			this.__setAt(top_pixel.x, top_pixel.y, top_pixel.color);
+			this._setAt(top_pixel.x, top_pixel.y, top_pixel.color);
 		}
 		this.is_ready = true;
 		// case of set during setting board is_ready, 
 		// (tiny chance of colliding but its very little)
 		if(this.pixelQueue.length != 0){
 			let top_pixel = this.pixelQueue.shift(); // remove
-			this.__setAt(top_pixel.x, top_pixel.y, top_pixel.color);
+			this._setAt(top_pixel.x, top_pixel.y, top_pixel.color);
 		}
 		// then draw board
 		this.drawBoard();
@@ -1674,13 +1673,13 @@ const lockedState = {
      * @type {boolean}
      * @desc if board is locked
      */
-	__locked: false,
+	_locked: false,
 	/**
-	 * @returns {boolean} __locked vaule
+	 * @returns {boolean} _locked vaule
 	 * returns if the board is locked, simple get function
 	 */
 	get locked() {
-		return this.__locked;
+		return this._locked;
 	},
 	/**
 	 * 
@@ -1688,7 +1687,7 @@ const lockedState = {
 	 * locks the board 
 	 */
 	lock(alert=false) {
-		this.__locked = true;
+		this._locked = true;
 		$('#lock-colors').attr('lock', 1);
 		if(alert){
 			Swal.fire({
@@ -1702,7 +1701,7 @@ const lockedState = {
 	 * handles the execution
 	 */
 	unlock(alert) {
-		this.__locked = false;
+		this._locked = false;
 		$('#lock-colors').attr('lock', 0);
 		if(alert){
 			Swal.fire({
@@ -1801,7 +1800,8 @@ function fetchBoard() {
 			Swal.fire({
 				icon:'warning',
 				title:'Fail',
-				text:'Fail to collect data from the server'
+				text:'Fail to collect data from the server',
+				allowOutsideClick: false
 			}).then(() =>{
 				// retry
 				_.delay(
@@ -2040,7 +2040,8 @@ $(document).ready(function() {
 	});
 	// go to new window
 	//https://stackoverflow.com/a/11384018
-	$('#chat-button').click((function(e) {
+	$('#chat-button').click((function() {
+		// gets the refernese
 		window.open(this.getAttribute('href'), '_black')
 	}));
 	// screen button -> fullscreen exit or enter
@@ -2058,7 +2059,7 @@ $(document).ready(function() {
 		$('#screen-button').attr('state', not_state);
 	}
 	// on resize
-	$(window).resize((e) => {
+	$(window).resize(() => {
 		// update canvas zoom
 		board.updateCanvasZoom();
 	})

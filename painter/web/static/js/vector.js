@@ -1,6 +1,6 @@
 /**
  * @summary Type defections
- * @typedef {Vector2D|number[]|Object{string:number}} Vector2DType type for function that require 2d vector object @see {@link:Vector2D}
+ * @typedef {Vector2D|number[]|Object.{x:number, y:number:number}} Vector2DType type for function that require 2d vector object @see {@link:Vector2D}
  */
 
 /** 

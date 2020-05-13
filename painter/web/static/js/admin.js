@@ -1,8 +1,11 @@
-const SPINNER_DOM = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>'
-
+/** @const MAX_SIZE the maximum number of attempt before considers fail */
+const MAX_STACK = 1;
+/** @const DELAY_REFRESH_ATTEMPT the number of ms between each retry to refresh */
+const DELAY_REFRESH_ATTEMPT = 5000;
+/** @const PlaceButtonTexts an array holding the texts of the the button depending its state*/
 const PlaceButtonTexts = [
 	'Turn Place Off',
-	'Turn Place Off',
+	'Turn Place On',
 	'<span class="spinner spinner-border spinner-border-md" role="status" aria-hidden="true"></span>',
 	'Error'
 ]
@@ -26,7 +29,8 @@ function ChangeLockButton(new_state) {
 let currently_refreshes = false;
 /**
  * @function
- * @param {_repeat} number to repeat the tas
+ * @param {number} _stack the number of times called the command
+ * @param {boolean} _ignore_refresh if to ignore refresh attempt
  * @returns checks again the button state
  * sends ajax request to check if the lock state
  */
@@ -35,15 +39,29 @@ const refreshButtonState = (_stack=0, _ignore_refresh=false) => {
 		return;
 	}
 	if(!currently_refreshes){
+		// prevent multiple attempts
 		currently_refreshes = true;
 	}
-	function _refreshAgain(){
+	/**
+	 * @private
+	 * @function
+	 * a utility function of new refresh attempt 
+	 */
+	function _refreshAgain(e){
+		console.log(e)
 		// change lock button
-		if(_stack > 5){
+		if(_stack > MAX_STACK){
 			// if its null
-			_.delay(
-				10000,	// 10000 ms
-				() => refreshButtonState(_stack + 1, true)
+			Swal.fire({
+				icon:'warning',
+				title:'Fail',
+				text:'Fail to collect data from the server',
+				allowOutsideClick: false // prevent outside clicks
+			}).then(
+				_.delay(
+					() => refreshButtonState(_stack + 1, true),
+					DELAY_REFRESH_ATTEMPT
+				)
 			)
 		} else {
 			// change lock button

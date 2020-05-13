@@ -19,3 +19,4 @@ config.ini
 *.docx
 /painter/web/docs/
 itamar.zip
+nginx.conf
