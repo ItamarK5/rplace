@@ -58,7 +58,6 @@ def create_app(import_class: Optional[str] = None,
     else:
         # init socketio with eventlet
         sio.init_app(app, async_mode='eventlet')
-    print(app.config['REDIS_URL'])
     # set debug
     # init Extensions
     storage_sql.init_app(app)
