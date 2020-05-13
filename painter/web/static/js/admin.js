@@ -1,9 +1,9 @@
 /** @const MAX_SIZE the maximum number of attempt before considers fail */
-const MAX_STACK = 1;
+const MAX_STACK = 5;
 /** @const DELAY_REFRESH_ATTEMPT the number of ms between each retry to refresh */
 const DELAY_REFRESH_ATTEMPT = 5000;
-/** @const PlaceButtonTexts an array holding the texts of the the button depending its state*/
-const PlaceButtonTexts = [
+/** @const AppEnableSwitchTexts an array holding the texts of the the button depending its state*/
+const AppEnableSwitchTexts = [
 	'Turn Place Off',
 	'Turn Place On',
 	'<span class="spinner spinner-border spinner-border-md" role="status" aria-hidden="true"></span>',
@@ -14,28 +14,21 @@ const PlaceButtonTexts = [
  * @param {Number} new_state 
  * @summary updates the place_button for its new state
  */
-function ChangeLockButton(new_state) {
-	let lock_button = $('#place-button')
-	if(_.isNull(new_state)){
-		lock_button.children('h6').text('Tries again in 10 seconds');
-		lock_button.attr('state', 2);
-
-	} else {
-		lock_button.attr('state', new_state ? 1 : 0);
-		lock_button.children('h6').text(new_state ? 'Turn Place Off' : 'Turn Place On');
-	}
+function changeLockState(new_state) {
+	let lock_button = $('#place-button')	
+	lock_button.attr('state', new_state);
+	lock_button.children('h6').html(AppEnableSwitchTexts[new_state]);
 }
 
 let currently_refreshes = false;
 /**
  * @function
  * @param {number} _stack the number of times called the command
- * @param {boolean} _ignore_refresh if to ignore refresh attempt
  * @returns checks again the button state
  * sends ajax request to check if the lock state
  */
-const refreshButtonState = (_stack=0, _ignore_refresh=false) => {
-	if(currently_refreshes || !_ignore_refresh){
+const refreshButtonState = (_stack=0) => {
+	if(currently_refreshes){
 		return;
 	}
 	if(!currently_refreshes){
@@ -45,17 +38,18 @@ const refreshButtonState = (_stack=0, _ignore_refresh=false) => {
 	/**
 	 * @private
 	 * @function
+	 * @param {XMLHttpRequest} error the xml http object of the error response
 	 * a utility function of new refresh attempt 
 	 */
-	function _refreshAgain(e){
-		console.log(e)
+	function _refreshAgain(error){
+		console.log(error)
 		// change lock button
 		if(_stack > MAX_STACK){
 			// if its null
 			Swal.fire({
 				icon:'warning',
-				title:'Fail',
-				text:'Fail to collect data from the server',
+				title:  error.statusText ? error.statusText : 'Fail to connect',
+				text: error.responseText ? error.responseText : 'Fail to collect data from the server',
 				allowOutsideClick: false // prevent outside clicks
 			}).then(
 				_.delay(
@@ -65,22 +59,23 @@ const refreshButtonState = (_stack=0, _ignore_refresh=false) => {
 			)
 		} else {
 			// change lock button
-			ChangeLockButton(3);
+			changeLockState(3);
 			currently_refreshes = false;
 		}
 	}
 	// change lock button state to 2;
-	ChangeLockButton(2)
+	changeLockState(2)
 
 	$.ajax({
-		url:'/get-active-state',
+		url:'/is-board-locked',
 		method:'GET',
 		contentType:'application/json;charset=UTF-8',
-		success: function(lock_state){
-			if(_.isNull(lock_state)){
-				ChangeLockButton(2);
-			} else {
-				ChangeLockButton(new_state ? 1 : 0);
+		success: function(response){
+			if(isErrorResponse(response)){
+				_refreshAgain(response)
+			}
+			else {
+				changeLockState(response ? 1 : 0);
 			}
 			
 		}
@@ -104,19 +99,19 @@ sock.on('connect', () => {
  * @summary sets the lock state of the board
  */
 sock.on('set-lock-state', (callback) => {
-	ChangeLockButton(callback)
+	changeLockState(callback)
 });
-/**
- * @name reconnect
- * @summary sets the lock state of the board
- */
-
-
 /**
  * @const throttleIOMessageTimeout timeout in milliseconds until need to call again that found no connection
  */
 const throttleIOMessageTimeout = 5000;
-
+/**
+ * @name hasEncounteredError
+ * @param {XMLHttpRequest} xhr 
+ * @return {Boolean} if its an error response
+ * checks if response is XMLHttpResponse, error xml responses have status codes 4xx and 5xx
+ */
+const isErrorStatus = (xhr) => xhr instanceof XMLHttpRequest && _.has(xhr, 'status') && xhr.status % 100 == 4 && xhr.status % 100 == 5;
 
 /**
  * @namespace
@@ -168,7 +163,7 @@ $(document).ready(() => {
 	$('[data-toggle="tooltip"]').tooltip();
 
 	// click row
-	$('tr').click(function() {
+	$('tr:parent(#users-table)').click(function() {
 		let name = $(this).children('.name-col').text();
 		if(name){
 			window.location.href = `/edit/${$(this).children('.name-col').text()}`
@@ -177,44 +172,51 @@ $(document).ready(() => {
 	// click place
 	$('#place-button').click(function(){
 		let board_state = $(this).attr('state');
+		console.log(parseInt(board_state))
 		// swal message to check if user is sure
-		if(board_state == '2'){
-			Swal.fire({
-				icon:'error',
-				title:"Waiting for request answer",
-				text:"Waiting for server give the data about the lock"
+		switch(parseInt(board_state)){
+			// has value
+			case 1:
+			case 0:{
+				Swal.fire({
+					title: 'Are you sure?',
+					text: `You want to ${board_state == "1" ? "pause" : "unpause"} the place`,
+					icon: 'warning',
+					showCancelButton: true,
+					confirmButtonColor: '#3085d6',
+					cancelButtonColor: '#d33',
+				}).then((result) => {
+					if (result.value) {
+					}
+				})		
+				break;	
+			}
+			case 2:{
+				Swal.fire({
+					icon:'info',
+					title:'Wait',
+					text:'some internet issues with the server or in your side/if the message will fail, you will be informed.'
+				})
+				break;
+			}
+			// if got error\fai;ed message
+			default:{
+				Swal.fire({
+					icon:'error',
+					title:"Waiting for request answer",
+					text:"Waiting for server give the data about the lock. Please press OK to retry",
+					showCancelButton: true,
+					confirmButtonColor: '#3085d6',
+					cancelButtonColor: '#d33',
+				}).then(result => {
+					if(result.value){
+						changeLockState(2);
+						refreshButtonState()
+					}
+				});
+				break;
+			}
 
-			})
-		} else {
-			Swal.fire({
-				title: 'Are you sure?',
-				text: `You want to ${board_state == "1" ? "pause" : "unpause"} the place`,
-				icon: 'warning',
-				showCancelButton: true,
-				confirmButtonColor: '#3085d6',
-				cancelButtonColor: '#d33',
-			}).then((result) => {
-				if (result.value) {
-					$.post({
-						url:'/change-lock-state',
-						contentType:'application/json;charset=UTF-8',
-						data:board_state,
-						success:function(message){
-							Swal.fire({
-								title: message.success ? `App is ${message.text ? 'paused' : 'unpause'}` : 'Error!',
-								icon:  message.success ? 'success' : 'error',
-								text: message.success ? 'You lock/unlock board for all users' : message.text
-							});
-						},
-					}).catch((error) => {
-						Swal.fire({
-							icon:'error',
-							title:error.statusText ? '' : 'Error',
-							html:error.responseText
-						})
-					})
-				}
-			})
-		}
+		}			
 	})
 });

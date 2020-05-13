@@ -5,7 +5,6 @@ urls of the accounts blueprint
 from __future__ import absolute_import
 
 from typing import Type
-
 from flask import render_template, abort
 from flask_login import login_fresh
 from flask_login import logout_user, login_user, login_required
@@ -38,7 +37,6 @@ def login_response(flask_form: Type[FlaskForm], render_html: str) -> Response:
     extra_error = None
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()  # user names are unique
-        print(User.query.filter_by(username=form.username.data))
         # validate if user exists and if the password the form is the same as the one saved
         # the one saved is hashed
         if user is None or User.encrypt_password(form.username.data, form.password.data) != user.password:
@@ -199,12 +197,10 @@ def change_password(token: str) -> Response:
 def logout() -> Response:
     """
     logout response
+    :return Response
     """
-    try:
-        if not current_user.is_anonymous:
-            logout_user()
-    except:
-        pass
+    if not current_user.is_anonymous:
+        logout_user()
     return redirect(url_for('auth.login'))
 
 

@@ -728,13 +728,13 @@ const mapFrags = {
 		if ((!isNaN(x)) && isValidPos(x)) {
 			return x;
 		}
-		if(_.isNumber(this.cx)){
-			return this.cx;
-		}
 		// else search for value in body
 		x = parseInt($('body').attr('x'))
 		if ((!isNaN(x)) && isValidPos(x)) {
 			return x;
+		}
+		if(_.isNumber(this.cx)){
+			return this.cx;
 		}
 		return DEFAULT_START_AXIS;
 	},
@@ -759,14 +759,14 @@ const mapFrags = {
 			return y;
 		}
 		// else search for value in body
-		if(_.isNumber(this.cy)){
-			return this.cy;
-		}
 		y = parseInt($('body').attr('y'))
 		if ((!isNaN(y)) && isValidPos(y)) {
 			return y;
 		}
-		return ZOOMED_OUT_DEFAULT_LEVEL;
+		if(_.isNumber(this.cy)){
+			return this.cy;
+		}
+		return DEFAULT_START_AXIS;
 	},
 	/**
 	 * @returns the y position the board suppose to be on the screen.
@@ -782,13 +782,13 @@ const mapFrags = {
 		if ((!isNaN(scale)) && isValidScale(scale)) {
 			return scale;
 		}
-		if(_.isNumber(this.scale)){
-			return this.scale;
-		}
 		// else search for value in body
 		scale = parseFloat($('body').attr('scale'))
 		if ((!isNaN(scale)) && isValidScale(scale)) {
 			return scale;
+		}
+		if(_.isNumber(this.scale)){
+			return this.scale;
 		}
 		return ZOOMED_OUT_DEFAULT_LEVEL;
 	},

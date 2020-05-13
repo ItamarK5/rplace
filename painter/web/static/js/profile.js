@@ -17,14 +17,13 @@ const COLORS = [
  * @return {string|number} converted the value
  * @desc handles color option and url option to fix for specific options
  */
-const valueConvertor = (id, val) => {
-    switch(id){
+const convertFieldValueByName = (name, val) => {
+    switch(name){
         case 'color':
             // number
-            return COLORS[val]  // select spcific colro
-        case 'url':
-            // strings
-            return val ? val : 'None'   // nothing becomes null
+            return COLORS[val]  // select specific color
+        case 'chat_url':
+            return COLORS[val] // dopper
         default:
             // number
             return val
@@ -105,10 +104,11 @@ $(document).ready(() =>{
         })
     })
     $('.setting-form').submit(function(e){
-        console.log(5)
         e.preventDefault();
         let form = $(this);
+        // get parent model
         let parent = getModalParent(form);
+        // div 
         let success_div = getModalMessageElement(parent, 'success');
         let error_div = getModalMessageElement(parent, 'error');
         success_div.addClass('d-none');
@@ -122,8 +122,9 @@ $(document).ready(() =>{
             success: (response) => {
                 message_element = response.success ? success_div : error_div;
                 message_element.removeClass('d-none')
+                // if success
                 if(response.success){
-                    $(`*[aria-describedat='#${response.id}']`).text(valueConvertor(response.id, response.val));
+                    $(`*[aria-describedat='#${response.id}']`).text(convertFieldValueByName(response.name, response.val));
                     error_div.addClass('d-none')
                     success_div.removeClass('d-none')
                 } else {

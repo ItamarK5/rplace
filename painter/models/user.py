@@ -7,7 +7,6 @@ from flask_login import UserMixin
 from flask_sqlalchemy import BaseQuery
 from sqlalchemy import Column, Integer, String, desc, Enum
 from sqlalchemy.dialects.sqlite import DATETIME, SMALLINT
-
 from painter.backends.extensions import login_manager
 from painter.backends.extensions import storage_sql, cache
 from .notes import Record, Note
@@ -35,7 +34,7 @@ class User(storage_sql.Model, UserMixin):
     # password of the user -> saved as hash by the sha512 algorithem with the username as salt
     password = Column(String(128), nullable=False)
     # the user's email address, to send mails
-    email = Column(String(254), unique=True, nullable=False)
+    email = Column(String(length=254), unique=True, nullable=False)
     # the next time the user can draw on the bodr
     next_time = Column(DATETIME(), default=datetime.utcnow, nullable=False)
     # when the user was created
@@ -54,7 +53,7 @@ class User(storage_sql.Model, UserMixin):
     color = Column(SMALLINT(), default=1, nullable=False)
 
     # default url
-    url = Column(String(), default=None, nullable=True)
+    url = Column(String(length=254), default=None, nullable=True)
 
     # https://stackoverflow.com/a/11579347
     sqlite_autoincrement = True
@@ -71,6 +70,13 @@ class User(storage_sql.Model, UserMixin):
                 raise KeyError("User constructor must have a username parameter")
             password = self.encrypt_password(kwargs.get('username'), decrypted_password)
         super().__init__(password=password, **kwargs)
+
+    related_notes = storage_sql.relationship(
+        'Notes',
+        backref=storage_sql.backref('user', lazy='dynamic'),
+        foreign_keys='Notes.user_subject_id',
+        order_by='desc(Note.post_date)'
+    )
 
     @property
     def related_notes(self) -> BaseQuery:

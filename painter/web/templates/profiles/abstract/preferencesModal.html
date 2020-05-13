@@ -77,7 +77,7 @@
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </div>
-                    {{ form.chat_url(class_="form-control", value=user.url) }}
+                    {{ form.chat_url(class_="form-control", value=user.url | is_not_none) }}
                </div>
            </form>
            {{ alerts() }}

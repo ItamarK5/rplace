@@ -5,7 +5,6 @@ from wtforms import *
 from wtforms.compat import text_type as text_field_types
 from wtforms.fields.html5 import IntegerField
 from wtforms.widgets import HiddenInput
-
 from painter.others.constants import COLORS
 
 
@@ -18,7 +17,7 @@ class PreferencesForm(FlaskForm):
 		'X start',
 		validators=[
 			validators.Optional(),
-			validators.NumberRange(min=0, max=999, message='axis out of range')
+			validators.NumberRange(min=0, max=999, message='axis out of range'),
 		],
 	)
 
@@ -26,16 +25,13 @@ class PreferencesForm(FlaskForm):
 		'Y start',
 		validators=[
 			validators.Optional(),
-			validators.NumberRange(min=0, max=999, message='coord out of range')
+			validators.NumberRange(min=0, max=999, message='coord out of range'),
 		],
 	)
 	scale = IntegerField(
 		'Scale start',
 		default=None,
-		validators=[
-			validators.Optional(),
-			validators.NumberRange(min=1, max=50, message='axis out of range')
-		],
+		validators=[validators.Optional()]
 	)
 	color = SelectField(
 		label='Select Color',
@@ -43,9 +39,7 @@ class PreferencesForm(FlaskForm):
 		choices=tuple(
 			[(i, COLORS[i].title()) for i in range(len(COLORS))]
 		),
-		validators=[
-			validators.Optional(),
-		]
+		validators=[validators.Optional()]
 	)
 
 	chat_url = StringField(
@@ -55,16 +49,3 @@ class PreferencesForm(FlaskForm):
 			validators.URL(message="Not valid URL")
 		]
 	)
-
-	def safe_first_hidden_fields(self) -> Tuple[Optional[str], Optional[Any]]:
-		"""
-		:return: the fields that aren't hidden
-		inspired by flask_wtf.form.hidden_tag
-		"""
-		for f in self.__iter__():
-			if isinstance(f, text_field_types):
-				f = getattr(self, f, None)
-			if f is None or isinstance(f.widget, HiddenInput) or (not f.raw_data) or f.id in self.errors:
-				continue
-			return f.id, f.data
-		return None, None

@@ -21,7 +21,8 @@ $(document).ready(function(){
 		$(this).children('i').removeClass('fa-eye').addClass('fa-eye-slash');
 	  }
   });
-  $('.form-control').keypress((e) => {
+  /** on keypress */
+  $('#submit-form .form-control').keypress((e) => {
 	if(e.charCode == 13 && !e.shiftkey){  // enter key
 	  e.preventDefault();
 	  let form_controls = $('.form-control');
@@ -33,5 +34,6 @@ $(document).ready(function(){
 	  }
 	}
   });
-  $('.form-control').first().focus();
+  // focus on first form control shown
+  $('#submit-form .form-control').first().focus();
 });

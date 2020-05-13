@@ -4,13 +4,12 @@ filters used in html rendering
 from __future__ import absolute_import
 
 from datetime import datetime
-from typing import Optional, Union, List
+from typing import Optional, Any, Union, List
 
 from flask import Flask
 
 from painter.models import User, Role
-from painter.others.constants import COLORS
-from painter.others.constants import COLOR_COOLDOWN
+from painter.others.constants import COLORS, COLOR_COOLDOWN
 
 
 def draw_time(user: User) -> str:
@@ -66,6 +65,14 @@ def date(tm: datetime) -> str:
     return tm.strftime('%a, %x')
 
 
+def is_not_none(value: Optional[Any]) -> str:
+    """
+    :param value: any value
+    :return: if the value is none return empty string else returns the value itself in string
+    """
+    return str(value) if value is not None else ""
+
+
 def add_filters(flask_app: Flask) -> None:
     """
     :param flask_app: the application
@@ -77,3 +84,4 @@ def add_filters(flask_app: Flask) -> None:
     flask_app.add_template_filter(class_ftr, 'class_ftr')
     flask_app.add_template_filter(color, 'color')
     flask_app.add_template_filter(date, 'date')
+    flask_app.add_template_filter(is_not_none, 'is_not_none')

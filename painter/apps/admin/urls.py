@@ -1,5 +1,4 @@
 from datetime import datetime
-
 from flask import render_template, abort, request, url_for, redirect, jsonify
 from flask.wrappers import Response
 from flask_login import current_user
@@ -26,11 +25,71 @@ def admin() -> Response:
     """
     # pagination
     pagination = User.query.paginate(
-        per_page=5,
-        max_per_page=5
+        per_page=1,
+        max_per_page=1
     )
     # try get page
     return render_template('profiles/admin.html', pagination=pagination)
+
+
+@admin_router.route('/is-board-locked', methods=('GET',))
+@admin_only
+def get_active_state() -> Response:
+    """
+    :return: json response
+    get active state of the board, only for admins
+    """
+    is_lock_opened = lock.is_open()
+    if is_lock_opened is None:
+        abort(500, "Cannot get the board")
+    # else
+    return jsonify(is_lock_opened)
+
+
+@admin_router.route('/change-lock-state', methods=('POST',))
+@superuser_only
+def set_admin_button() -> Response:
+    """
+    :return: json response
+    """
+    if request.data not in (b'1', b'0'):
+        return json_response(False, 'Unknown data')
+    new_state = request.data == b'0'
+    # else switch state
+    lock.set_switch(new_state)
+    # emit changes
+    sio.emit('change-lock-state', new_state, namespace=PAINT_NAMESPACE)
+    sio.emit('set-lock-state', new_state, namespace=ADMIN_NAMESPACE, include_self=False)
+    return json_response(True, new_state)
+
+
+@admin_router.route('/edit/<string:name>', methods=('GET',))
+@admin_only
+def edit_user(name: str) -> Response:
+    """
+    :param: name of user
+    :returns: the web-page to edit the matched user (to the name) data
+    """
+    if UsernamePattern.match(name) is None:
+        abort(exceptions.BadRequest.code, 'Name isn\'t good')
+    # get page of edit user
+    user = User.query.filter_by(username=name).first_or_404()
+    if user == current_user:
+        return redirect(url_for('place.profile'))
+    # allow only for superior users
+    if not current_user.is_superior_to(user):
+        # forbidden error
+        abort(exceptions.Forbidden.code, f"You are not allowed to edit the user {user.username}")
+    # create new record form/note_form for submitting new ones
+    record_form = RecordForm(set_banned=user.is_active)
+    note_form = NoteForm()
+    return render_template(
+        'profiles/edit.html',
+        user=user,
+        record_form=record_form,
+        note_form=note_form,
+        Role=Role
+    )
 
 
 @admin_router.route('/add-record', methods=('POST',))
@@ -93,65 +152,6 @@ def add_note(user: User) -> Response:
         errors=dict([(field.name, field.errors) for field in iter(form) if field.id != 'csrf_token'])
     )
 
-
-@admin_router.route('/change-lock-state', methods=('POST',))
-@superuser_only
-def set_admin_button() -> Response:
-    """
-    :return: json response
-    """
-    if request.data not in (b'1', b'0'):
-        return json_response(False, 'Unknown data')
-    new_state = request.data == b'0'
-    # else switch state
-    lock.set_switch(new_state)
-    # emit changes
-    sio.emit('change-lock-state', new_state, namespace=PAINT_NAMESPACE)
-    sio.emit('set-lock-state', new_state, namespace=ADMIN_NAMESPACE, include_self=False)
-    return json_response(True, new_state)
-
-
-@admin_router.route('/edit/<string:name>', methods=('GET',))
-@admin_only
-def edit_user(name: str) -> Response:
-    """
-    :param: name of user
-    :returns: the web-page to edit the matched user (to the name) data
-    """
-    if UsernamePattern.match(name) is None:
-        abort(exceptions.BadRequest.code, 'Name isn\'t good')
-    # get page of edit user
-    user = User.query.filter_by(username=name).first_or_404()
-    if user == current_user:
-        return redirect(url_for('place.profile'))
-    # allow only for superior users
-    if not current_user.is_superior_to(user):
-        # forbidden error
-        abort(exceptions.Forbidden.code, f"You are not allowed to edit the user {user.username}")
-    # create new record form/note_form for submitting new ones
-    record_form = RecordForm(set_banned=user.is_active)
-    note_form = NoteForm()
-    return render_template(
-        'profiles/edit.html',
-        user=user,
-        record_form=record_form,
-        note_form=note_form,
-        Role=Role
-    )
-
-
-@admin_router.route('/get-active-state', methods=('GET',))
-@admin_only
-def get_active_state() -> Response:
-    """
-    :return: json response
-    get active state of the board, only for admins
-    """
-    abort(500)
-    try:
-        return jsonify(lock.is_open())
-    except 400:
-        abort(500)
 
 @admin_router.route('/set-user-role/<string:name>', methods=('POST',))
 @only_if_superior

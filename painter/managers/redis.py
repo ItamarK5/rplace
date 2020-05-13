@@ -5,9 +5,10 @@ from painter.backends import board, lock
 from painter.backends.extensions import redis_store
 
 
-def try_connect_to_redis() -> bool:
+def try_ping_redis() -> bool:
     """
     :return: if connected to redis successfully
+    just tries to ping to the redis server, check if connection is good
     """
     try:
         redis_store.ping()
@@ -39,7 +40,7 @@ def create(create_board=None, create_lock=None):
         print("You didn't enter anything so creating both")
         create_lock = True
         create_board = True
-    if try_connect_to_redis():
+    if try_ping_redis():
         if create_board:
             if not board.create():
                 print('board already created, use reset or drop to clear board')
@@ -72,7 +73,7 @@ def drop(drop_board=None, drop_lock=None):
         drop_lock = True
         drop_board = True
     # try connect
-    if try_connect_to_redis():
+    if try_ping_redis():
         if drop_board:
             if not board.drop():
                 print('Error while dropping board')
@@ -102,7 +103,7 @@ def reset(reset_board=None, reset_lock=None):
         print("You didn't enter anything so creating both")
         reset_lock = True
         reset_board = True
-    if try_connect_to_redis():
+    if try_ping_redis():
         if reset_board:
             if not board.drop():
                 print('Found Error while dropping board')

@@ -10,11 +10,14 @@ body, html {
     color:green;
 }
 #place-button[state="0"]{
-    background-color:rgb(170, 36, 36);
+    background-color:orangered;
     color:red;
 }
-#place-button[state="2"],[state="3"]{
+#place-button[state="2"]{
     background-color:#999999;
+}
+#place-button[state="3"]{
+    background-color:rgb(170, 36, 36);
 }
 /* thread colors - col headers */
 th {
@@ -26,48 +29,45 @@ th {
 tr:hover td{
     background-color:yellowgreen !important; color:black;
 }
-tr {
+#users-table tr {
     cursor:pointer;
 }
 .fit-column {
     width:1 !important;
     white-space:nowrap !important;
 }
-.table th, .table tr {
+#users-table th, tr {
     padding:8px !important;
 }
-.user-row > * {
+.user-row * {
     font-weight:bold;
 }
-tr td .fa-user-shield {
-    color:#e884e8;
+/** admin */
+#users-table tr td .fa-user-shield {
+    color:rgb(93, 228, 93);
 }
-tr:hover td .fa-user-shield {
-    color:#af42af;
+#users-table tr:hover td .fa-user-shield {
+    color:rgb(102, 24, 102);
 }
-tr, td, th {
-    user-select:none;
+/** superuser */
+
+#users-table tr td .fa-user-secret {
+    color:lime;
 }
+#users-table tr:hover td .fa-user-secret {
+    color:darkred;
+}
+
+
+/** prevent press event on any table child object */
 .user-select-none {
     user-select:none;
 }
+.user-select-none * {
+    user-select:none;
+}
 /* page list*/
-#page-list > a {
-    background-color:#888888;
-    color:#DDDDDD;
-}
-#page-list > a.disabled {
-    background-color:#AAAAAA;
-    color:#DDDDDD;
-}
-#page-list > a:hover {
-    background-color:#666666;
-    color:lime
-}
-#page-list > a.active {
-    background-color:#666666; 
-    color:lime;
-}
-a .list-group-item-action {
-    cursor: pointer;
+
+#page-list a.active {
+    cursor: auto;
 }

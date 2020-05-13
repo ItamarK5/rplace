@@ -33,7 +33,7 @@
         </button>
     </div>
     <div class="row justify-context-center mt-3">
-        <table class="table table-bordered table-dark">
+        <table class="table table-bordered table-dark" id="users-table">
             <thead>
             <tr>
                 <th class="text-center fit-column" scope="col">Privilege</th>
@@ -59,20 +59,20 @@
     </div>
     <!-- Page List -->
     <div class="row justify-content-center">
-        <div class="list-group list-group-horizontal" id="page-list">
-            <a class='list-group-item {% if pagination.has_prev %}list-group-item-action{% else %}disabled{% endif %}'{% if pagination.has_prev %}href='{{ url_for("admin.admin", page=pagination.prev_num) }}'{% endif %}>Prev</a>
+        <div class="list-group list-group-horizontal" id="page-list" class="user-select-none">
+            <a class='list-group-item {% if pagination.has_prev %}list-group-item-action {% else %}disabled {% endif %}list-group-item-dark'{% if pagination.has_prev %}href='{{ url_for("admin.admin", page=pagination.prev_num) }}'{% endif %}>Prev</a>
             <!-- if has next or prev, means any pages -->
             {% if pagination.has_prev or pagination.has_next %}
-            {% for page in pagination.iter_pages() %}
-            {% if page %}
-            <a class="list-group-item list-group-action{% if page == pagination.page %} active{% endif %}"
-               href="{{ url_for('admin.admin', page=page) }}">{{ page }}</a>
-            {% else %}
-            <a class="list-group-item disabled">...</a>
+                {% for page in pagination.iter_pages() %}
+                    {% if page %}
+                        <a class="list-group-item list-group-item-action {% if page == pagination.page %}active {% endif %}list-group-item-dark"
+                        href="{{ url_for('admin.admin', page=page) }}">{{ page }}</a>
+                    {% else %}
+                        <a class="list-group-item disabled">...</a>
+                    {% endif %}
+                {% endfor %}
             {% endif %}
-            {% endfor %}
-            {% endif %}
-            <a class='list-group-item {% if pagination.has_next %}list-group-item-action{% else %}disabled{% endif %}'{% if pagination.has_next %}href='{{ url_for("admin.admin", page=pagination.next_num) }}'{% endif %}>Next</a>
+            <a class='list-group-item {% if pagination.has_next %}list-group-item-action {% else %}disabled {% endif %}list-group-item-dark'{% if pagination.has_next %}href='{{ url_for("admin.admin", page=pagination.next_num) }}'{% endif %}>Next</a>
         </div>
     </div>
     <!-- CSRF Protection -->
@@ -89,11 +89,11 @@
     <script crossorigin="anonymous"
             integrity="sha256-NLINqBk3iRBQfTFKCFqlWEXfKlk7GfR45ZuSp6nJ/yw=" src="https://cdn.jsdelivr.net/npm/sweetalert2@9.10.1/dist/sweetalert2.all.min.js"></script>
     <!-- Document said to put it here so it be faster -->
-    <!-- popper.js - needed for bootstarp -->
+    <!-- popper.js - needed for Bootstrap -->
     <script crossorigin="anonymous"
             integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
             src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
-    <!-- bootstarp -->
+    <!-- Bootstrap -->
     <script crossorigin="anonymous"
             integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
             src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>

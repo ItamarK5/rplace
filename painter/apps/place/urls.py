@@ -5,6 +5,7 @@ from painter.backends.extensions import storage_sql
 from painter.others.utils import auto_redirect
 from .forms import PreferencesForm
 from .router import place_router
+from .utils import update_user_preferences
 
 
 @place_router.route('/place', methods=('GET',))
@@ -13,8 +14,6 @@ def place():
 	"""
 	:return: view for the main application
 	"""
-	if not current_user:
-		return render_template('place.html')
 	return render_template('place.html')
 
 
@@ -50,36 +49,23 @@ def profile_ajax():
 	to change a preference value by the user
 	"""
 	form = PreferencesForm()
+	print(form.chat_url, form.x)
 	if form.validate_on_submit():
 		# you can only set 1 preference at a time
 		# detecting the key \ val of the submitted form
-		key, val = form.safe_first_hidden_fields()
 		# why we don't have switch
-		if key == 'url':
-			current_user.url = val if val else None
-		elif key == 'x':
-			current_user.x = val
-		elif key == 'y':
-			current_user.y = val
-		elif key == 'scale':
-			current_user.scale = val
-		elif key == 'color':
-			current_user.color = val
-		else:
+		preference_field = update_user_preferences(form)
+		if preference_field is None:
 			# otherwise set key as null
-			key = None
-		# save check in user
-		if key is not None:
-			storage_sql.session.add(current_user)
-			storage_sql.session.commit()
-			# https://stackoverflow.com/a/26080784
-			return jsonify({'success': True, 'id': key, 'val': val})
-		else:
-			# return errors
 			return jsonify({
 				'success': False,
-				'errors': ['Not valid parameter {}'.format(key)]
+				'errors': ['You passed no valid value']
 			})
+		# save check in user
+		storage_sql.session.add(current_user)
+		storage_sql.session.commit()
+		# https://stackoverflow.com/a/26080784
+		return jsonify({'success': True, 'id': preference_field.name, 'val': preference_field.data})
 	# return errors
 	return jsonify({
 		'success': False,
