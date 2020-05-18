@@ -6,7 +6,7 @@ from redis.exceptions import RedisError
 from .extensions import redis_store, cache
 
 # the key for the board in redis database
-REDIS_KEY = 'board'
+KEY = 'board'
 
 BOARD_BYTES_SIZE = 1000 * 500
 
@@ -18,8 +18,8 @@ def create() -> bool:
     if not creates new one
     """
     try:
-        if not redis_store.exists(REDIS_KEY):
-            return bool(redis_store.set(REDIS_KEY, '\00' * BOARD_BYTES_SIZE))
+        if not redis_store.exists(KEY):
+            return bool(redis_store.set(KEY, '\00' * BOARD_BYTES_SIZE))
         return True
     except RedisError:
         return False
@@ -31,7 +31,7 @@ def get_board() -> str:
     :return: the board from the database
     cached for 1 second because of timeout
     """
-    return redis_store.get(REDIS_KEY)
+    return redis_store.get(KEY)
 
 
 def set_at(x: int, y: int, color: int) -> None:
@@ -42,7 +42,7 @@ def set_at(x: int, y: int, color: int) -> None:
     :return: nothing
     set a pixel on the board copy in the redis server
     """
-    bitfield = redis_store.bitfield(REDIS_KEY)
+    bitfield = redis_store.bitfield(KEY)
     # need to count for little endian
     x_endian = x + (-1) ** (x % 2)
     bitfield.set('u4', (y * 1000 + x_endian) * 4, color)
@@ -55,9 +55,9 @@ def drop() -> bool:
     :return: if the board was deleted completely
     """
     try:
-        if not redis_store.exists(REDIS_KEY):
+        if not redis_store.exists(KEY):
             return False
-        return bool(redis_store.delete(REDIS_KEY))
+        return bool(redis_store.delete(KEY))
     except RedisError:
         return False
 
