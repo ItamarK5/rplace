@@ -108,9 +108,7 @@ class RunServer(Server):
         )
 
 
-""" Create User """
-
-
+# Create User
 def create_user(username, password, mail_address, role):
     """
     :param  username: name of the new user
