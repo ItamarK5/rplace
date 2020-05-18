@@ -10,6 +10,8 @@ from painter.app import create_app, celery
 from . import tasks
 from celery import Celery
 from ..models import ExpireModels
+
+
 app = create_app(
     import_class='CeleryApp',
     is_celery=True

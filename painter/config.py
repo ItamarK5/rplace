@@ -187,6 +187,7 @@ class CelerySettings(ABC):
     # the timeout between each clear
     PERIODIC_CLEAR_CACHE_SECONDS = 600
 
+
 class CeleryApp(FlaskApp, CelerySettings):
     """
     simple class for celery worker with the configuration of celery and app
