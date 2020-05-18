@@ -23,6 +23,7 @@ from .others.utils import (
     NewUserForm, MyCommand
 )
 
+
 manager = Manager(
     create_app,
     description='Social Painter CMD Service',
@@ -46,6 +47,7 @@ manager.add_option('--d', '-debug', dest='import_class',
 manager.add_command('redis', redis_manager)
 manager.add_command('check-services', check_services_command)
 manager.add_command('shell', shell_command)
+
 
 class RunServer(Server):
     """
@@ -78,7 +80,7 @@ class RunServer(Server):
         :type:  host: int
         :param  port: port to listen on the ip
         :type   port: int
-        :param  use_debugger: if to use debbugger while running the application
+        :param  use_debugger: if to use debugger while running the application
         :type   use_debugger: bool
         :param  use_reloader: if to use the reloader option of flask
         :type   use_reloader: bool
@@ -108,6 +110,7 @@ class RunServer(Server):
 
 """ Create User """
 
+
 def create_user(username, password, mail_address, role):
     """
     :param  username: name of the new user
@@ -124,7 +127,7 @@ def create_user(username, password, mail_address, role):
     if username is None:
         username = prompt('enter a username address of the user\n[username]')
     if password is None:
-        password = prompt('you forgeot entering a password, pless enter 1\n[Password]')
+        password = prompt('you forget entering a password, please enter 1\n[Password]')
     if mail_address is None:
         mail_address = prompt('enter a mail address of the user\n[Mail]')
     if role is None:
@@ -138,7 +141,7 @@ def create_user(username, password, mail_address, role):
     role_matched = Role.get_member_or_none(role)
     # if user given a role but isnt valid
     if role_matched is None:
-        raise InvalidCommand('Pless enter a valid role, not: {0}'.format(role))
+        raise InvalidCommand('Please enter a valid role, not: {0}'.format(role))
     # check valid role
     form, is_valid = NewUserForm.fast_validation(
         username=username,

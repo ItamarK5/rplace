@@ -5,7 +5,6 @@ from ..models import (
 )
 from ..backends import board, lock
 from flask import current_app
-from ..others.utils import MyCommand
 from ..backends.extensions import storage_sql
 
 

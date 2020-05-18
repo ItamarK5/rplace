@@ -44,9 +44,9 @@ def superuser_only(f: Callable) -> Callable:
 def only_if_superior(f: Callable[[User], Response]) -> Callable[[str], Response]:
     """
     :param f: a view which the url get a name parameter represent the name of a user and need to pass a User object
-    :return: a wrapped function of the view that prevent the user if not suprier to the given user with name
+    :return: a wrapped function of the view that prevent the user if not superior to the given user with name
                 also passes the user with the name to the function
-    check if the user is superier to the user with the name, also passes the user to the function
+    check if the user is superior to the user with the name, also passes the user to the function
     """
 
     @wraps(f)

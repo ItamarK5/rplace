@@ -9,8 +9,8 @@ from flask_login import current_user
 
 def anonymous_required(f: Callable) -> Callable[[Any], Any]:
 	"""
-	:return: if the user is logined, redirects the user to another url
-	decorator for a url, redirects the user if he is logined to home
+	:return: if the user has login, redirects the user to another url
+	decorator for a url, redirects the user if he had login to home
 	"""
 
 	@wraps(f)

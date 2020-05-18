@@ -1,12 +1,11 @@
 from os import path, listdir
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 from flask import current_app
 from flask import render_template, Response
 from werkzeug import Request
 from werkzeug import exceptions
 from werkzeug.exceptions import BadRequest, Forbidden, NotFound, HTTPException, InternalServerError
-
 # a set containing all valid HTTPExceptions that have answer in web\memes except CSRFError
 MEME_PAGE_ERROR_CODES = {BadRequest.code, Forbidden.code, NotFound.code, InternalServerError.code}
 
@@ -46,13 +45,13 @@ def is_ajax_request(request: Request) -> bool:
 def render_meme_error_page(e: exceptions.HTTPException,
                            case: Optional[str] = None,
                            page_title: Optional[str] = None,
-                           name: Optional[str] = None) -> Tuple[Response, int]:
+                           name: Optional[str] = None) -> Union[Tuple[Response, int], Exception]:
     """
     :param e: the exception to render the page_error
     :param case: the name of the case for the error/code of the HTTPException
     :param page_title: the title of the page
     :param name: name of the error/default the HTTPException.name
-    :return:
+    :return: either the exception or a new response
     """
     case = case or str(e.code)
     name = name or str(e.name)

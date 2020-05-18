@@ -4,8 +4,7 @@ from typing import Optional, Union
 
 from flask import Markup, current_app
 from flask_login import UserMixin
-from flask_sqlalchemy import BaseQuery
-from sqlalchemy import Column, Integer, String, desc, Enum
+from sqlalchemy import Column, Integer, String, Enum
 from sqlalchemy.dialects.sqlite import DATETIME, SMALLINT
 from painter.backends.extensions import login_manager
 from painter.backends.extensions import storage_sql, cache
@@ -13,7 +12,7 @@ from .notes import Record, Note
 from .role import Role
 
 """
-    only defiend for the current model to user
+    only defined for the current model to user
 """
 _NO_RECORD = 'none'
 
@@ -23,7 +22,7 @@ class User(storage_sql.Model, UserMixin):
     User model
     represent the data of a user of the app,
     inherits the UserMixin of flask_login so it will be supported by its methods
-    inherits from the datastore.Model to have SQL values
+    inherits from the sql_storage.Model to have SQL values
     """
     __tablename__ = 'user'
 
@@ -31,11 +30,11 @@ class User(storage_sql.Model, UserMixin):
     id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
     # the name of the user
     username = Column(String(15), unique=True, nullable=False)
-    # password of the user -> saved as hash by the sha512 algorithem with the username as salt
+    # password of the user -> saved as hash by the sha512 algorithm with the username as salt
     password = Column(String(128), nullable=False)
     # the user's email address, to send mails
     email = Column(String(length=254), unique=True, nullable=False)
-    # the next time the user can draw on the bodr
+    # the next time the user can draw on the board
     next_time = Column(DATETIME(), default=datetime.utcnow, nullable=False)
     # when the user was created
     creation_date = Column(DATETIME(), default=datetime.utcnow, nullable=False)
@@ -95,7 +94,7 @@ class User(storage_sql.Model, UserMixin):
         :param password: encrypts the password
         :param username:
         :return: the encrypted password of the user
-        must run only after app initilize
+        must run only after app initialize
         """
         return pbkdf2_hmac(
             'sha512',
@@ -112,7 +111,7 @@ class User(storage_sql.Model, UserMixin):
 
     def has_required_status(self, role: Role) -> bool:
         """
-        :param role: Enum represting the users current rule
+        :param role: Enum represnting the users current rule
         :return: if the user is the level of the rule or above
         """
         return self.role >= role  # role is IntEnum
@@ -157,7 +156,7 @@ class User(storage_sql.Model, UserMixin):
 
     def get_last_record(self) -> Optional[Record]:
         """
-        :return: the last record written for the user, None if there arent any record
+        :return: the last record written for the user, None if there aren't any record
         it uses the method __get_last_record for caching the result to handle less requirements
         """
         identifier = self.__get_last_record()
@@ -175,7 +174,7 @@ class User(storage_sql.Model, UserMixin):
             # if started to take effect
             return not last_record.active  # replace the active
         # else
-        return last_record.active  # isnt expired, so must has the other status
+        return last_record.active  # isn't expired, so must has the other status
 
     def forget_last_record(self):
         """

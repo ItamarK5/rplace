@@ -36,7 +36,7 @@ ABC_OR_DIGITS_VALIDATOR = validators.Regexp(
 )
 
 """
-    check if all characters are valid character in string that each char represent a byte using rgex
+    check if all characters are valid character in string that each char represent a byte using regex
     used to check hashes
 """
 HEX_STRING_VALIDATOR = validators.Regexp(

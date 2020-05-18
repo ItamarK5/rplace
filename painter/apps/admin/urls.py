@@ -144,7 +144,7 @@ def add_note(user: User) -> Response:
         )
         storage_sql.session.add(note)
         storage_sql.session.commit()
-        # forget last record for refinding
+        # forget last record for refresh
         user.forget_last_record()
         return jsonify({'valid': True})
     # else
@@ -179,7 +179,7 @@ def set_role(user: User) -> Response:
     # save data
     storage_sql.session.add(user)
     storage_sql.session.commit()
-    return json_response(True, 'Pless refresh the page to see changes')
+    return json_response(True, 'Plesase refresh the page to see changes')
 
 
 @admin_router.route('/get-notes', methods=('GET',))
@@ -188,7 +188,7 @@ def get_user_notes(user: User):
     """
 
     :param user:
-    :return: JSON response contaiing:
+    :return: JSON response containing:
     query: group of notes
     prev_ref: previous page to the asked one
     next_ref: next page to the to the asked one displayed

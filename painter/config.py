@@ -27,7 +27,7 @@ def redis_uri(
     """
     password = password if password else ''
     if not 0 < port < 2 ** 16:
-        raise ValueError(f"Unvalid port, value is {port} that isnt between 1 to 65535")
+        raise ValueError(f"Invalid port, value is {port} that isnt between 1 to 65535")
     return f'redis://:{password}@{host}:{port}/{database}'
 
 
@@ -40,12 +40,12 @@ class FlaskDefaultSettings(ABC):
     MAIL_DEBUG: bool = False
     # default sender for mail
     MAIL_DEFAULT_SENDER: str = 'Social Painter Dash'
-    # max number of mails to send per conncetion with the gmail server
+    # max number of mails to send per connection with a gmail server
     MAIL_MAX_EMAILS: datetime.timedelta = datetime.timedelta(seconds=43200)
     # password to the email account to send mails from it
     MAIL_USERNAME: str = 'socialpainterdash@gmail.com'
     MAIL_PASSWORD: str = 'EFnsDY8>.r^9n~u5FRT/%@n^'
-    # port to send the mail to the mail serevr
+    # port to send the mail to the mail server
     MAIL_PORT: int = 465
     # address of the mail server
     MAIL_SERVER: str = 'smtp.gmail.com'
@@ -53,7 +53,7 @@ class FlaskDefaultSettings(ABC):
     MAIL_USE_SSL: bool = True
     # if to use tls connection for sending the mail
     MAIL_USE_TLS: bool = False
-    # max age per token creating by the TokerSerializer (Seconds
+    # max age per token creating by the TokenSerializer (Seconds
     MAX_AGE_USER_TOKEN: int = 3600
     # message sending to non logined app uses
     APP_NON_LOGIN_MESSAGE: str = 'You were redirected from pages that are for non authenticated users'
@@ -112,7 +112,6 @@ class FlaskApp(FlaskDefaultSettings):
 
 class DebugApp(FlaskApp):
     DEBUG = True
-
 
 
 class CelerySettings(ABC):

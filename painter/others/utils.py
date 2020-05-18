@@ -1,7 +1,7 @@
 """
     Name: utils.py
-    Auther: Itamar Kanne
-    utilies for mostly the manager.py
+    Author: Itamar Kanne
+    utilities for mostly the manager.py
 """
 from __future__ import absolute_import
 
