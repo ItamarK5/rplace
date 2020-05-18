@@ -5,16 +5,17 @@ to remember simple staff easily
 """
 import re
 from datetime import datetime, timedelta
+from typing import Optional
 
 from flask import Flask
 from flask_sqlalchemy import BaseQuery
-from sqlalchemy import String, Column
-from sqlalchemy.dialects.sqlite import DATETIME
+from sqlalchemy import String, Column, DateTime
 from sqlalchemy.ext.declarative import declared_attr
 
 from painter.backends.extensions import storage_sql
 from painter.others.constants import DEFAULT_MAX_AGE_USER_TOKEN
 
+# pattern for lowercase
 catch_pattern = re.compile(r'((?:^[a-z]|[A-Z])(?:[a-z]+)?)')
 
 
@@ -42,15 +43,30 @@ class CacheTextBase(storage_sql.Model):
     identity_column_name: str  # name of the table
     identity_max_length: int  # max length of the string
     query: BaseQuery
-    creation_date = Column(DATETIME(), default=datetime.utcnow)  # now
 
-    def __init_subclass__(cls, **kwargs):
+    @declared_attr
+    def creation_date(self) -> Column:
+        """
+        :return: return the creation date column
+        """
+        return Column(DateTime(), default=datetime.utcnow)  # now
+
+    def __init_subclass__(cls, **kwargs) -> None:
+        """
+        :param kwargs: class arguments
+        :return: none
+        on init class
+        """
         ExpireModels.append(cls)
+        super().__init_subclass__()
 
     # its a class method
 
     @declared_attr
     def identity_column(cls) -> Column:
+        """
+        :return: column of the identity
+        """
         return Column(
             cls.identity_column_name,
             String(cls.identity_max_length),
@@ -59,11 +75,15 @@ class CacheTextBase(storage_sql.Model):
         )
 
     @declared_attr
-    def __tablename__(cls):
+    def __tablename__(cls) -> str:
         return to_small_case(cls.__name__)
 
     @classmethod
-    def get_identified(cls, identity_string: str) -> 'CacheTextBase':
+    def get_identified(cls, identity_string: str) -> Optional['CacheTextBase']:
+        """
+        :param identity_string: get the object matched to the identity string
+        :return: the object or None
+        """
         return cls.query.filter(cls.identity_column == identity_string).first()
 
     @classmethod

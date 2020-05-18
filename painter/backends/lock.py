@@ -9,7 +9,7 @@ from .extensions import redis_store
 
 _DISABLE = b'0'  # False
 _ENABLE = b'1'  # True
-KEY = 'enable-edit-board'
+REDIS_KEY = 'enable-edit-board'
 
 
 def create() -> bool:
@@ -18,8 +18,8 @@ def create() -> bool:
     don't check for errors
     :return: if lock created
     """
-    if not redis_store.exists(KEY):
-        return bool(redis_store.set(KEY, _ENABLE))  # default allow
+    if not redis_store.exists(REDIS_KEY):
+        return bool(redis_store.set(REDIS_KEY, _ENABLE))  # default allow
     return False
 
 
@@ -29,8 +29,8 @@ def drop() -> bool:
     :rtype drop lock
     """
     try:
-        if redis_store.exists(KEY):
-            return bool(redis_store.delete(KEY, _ENABLE))  # default allow
+        if redis_store.exists(REDIS_KEY):
+            return bool(redis_store.delete(REDIS_KEY, _ENABLE))  # default allow
         return False
     except RedisError:
         return False
@@ -49,7 +49,7 @@ def is_open() -> Optional[bool]:
     :return: is lock open  | None if cant get the server
     """
     try:
-        return is_open_val(redis_store.get(KEY))
+        return is_open_val(redis_store.get(REDIS_KEY))
     except RedisError:
         return None
 
@@ -59,7 +59,7 @@ def open_lock() -> bool:
     enable setting pixel on board
     :return: if changed the redis value
     """
-    return bool(redis_store.set(KEY, _ENABLE))
+    return bool(redis_store.set(REDIS_KEY, _ENABLE))
 
 
 def close_lock() -> bool:
@@ -67,7 +67,7 @@ def close_lock() -> bool:
     disable setting pixel on board
     :return: if changed the redis value
     """
-    return bool(redis_store.set(KEY, _DISABLE))
+    return bool(redis_store.set(REDIS_KEY, _DISABLE))
 
 
 def set_switch(set_active: bool) -> bool:

@@ -206,7 +206,7 @@ class CeleryWorker(MyCommand):
         """
         ret = subprocess.call(
             ['venv/scripts/celery.exe', 'worker',
-             '-A', 'painter.tasks.worker.celery', '-P', 'eventlet'] + argv
+             '-A', 'painter.tasks.periodic_worker.celery', '-P', 'eventlet'] + argv
         )
         sys.exit(ret)
 

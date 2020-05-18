@@ -4,8 +4,7 @@ from typing import Optional, Union
 
 from flask import Markup, current_app
 from flask_login import UserMixin
-from sqlalchemy import Column, Integer, String, Enum
-from sqlalchemy.dialects.sqlite import DATETIME, SMALLINT
+from sqlalchemy import Column, Integer, String, Enum, DateTime, SmallInteger
 from painter.backends.extensions import login_manager
 from painter.backends.extensions import storage_sql, cache
 from .notes import Record, Note
@@ -24,7 +23,7 @@ class User(storage_sql.Model, UserMixin):
     inherits the UserMixin of flask_login so it will be supported by its methods
     inherits from the sql_storage.Model to have SQL values
     """
-    __tablename__ = 'user'
+    __tablename__ = 'users'
 
     # id (identifier) integer the identify the object between others - for fast filtering uses integer
     id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
@@ -35,25 +34,26 @@ class User(storage_sql.Model, UserMixin):
     # the user's email address, to send mails
     email = Column(String(length=254), unique=True, nullable=False)
     # the next time the user can draw on the board
-    next_time = Column(DATETIME(), default=datetime.utcnow, nullable=False)
+    next_time = Column(DateTime(), default=datetime.utcnow, nullable=False)
     # when the user was created
-    creation_date = Column(DATETIME(), default=datetime.utcnow, nullable=False)
+    creation_date = Column(DateTime(), default=datetime.utcnow, nullable=False)
     # the role of the user
     role = Column(Enum(Role), default=Role.common, nullable=False)
     # start x position
-    x = Column(SMALLINT(), default=500, nullable=False)
+    x = Column(SmallInteger(), default=500, nullable=False)
     # start y position
-    y = Column(SMALLINT(), default=500, nullable=False)
+    y = Column(SmallInteger(), default=500, nullable=False)
 
     # default scale value, 4
-    scale = Column(SMALLINT(), default=4, nullable=False)
+    scale = Column(SmallInteger(), default=4, nullable=False)
 
     # default color when entering, black
-    color = Column(SMALLINT(), default=1, nullable=False)
+    color = Column(SmallInteger(), default=1, nullable=False)
 
     # default url
     url = Column(String(length=254), default=None, nullable=True)
 
+    # relationship
     related_notes = storage_sql.relationship(
         'Note',
         back_populates='user_subject',                  # relationship of the note child, implements one to many

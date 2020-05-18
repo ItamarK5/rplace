@@ -31,6 +31,43 @@ def redis_uri(
     return f'redis://:{password}@{host}:{port}/{database}'
 
 
+def sql_server_uri(
+    dialect: str,
+    driver: str,
+    host: str,
+    port: int,
+    username: str,
+    password: str,
+    database: str
+):
+    """
+    :param dialect: the type of server to connect to, mysql, postgres
+    :param driver: the python library for the interface between sqlalchemy
+    :param host: the ip\address of the sql server
+    :param port: port to connect to the sql server
+    :param username: the username with to connect to the system
+    :param database: name of the database to connect
+    :param password: password to connect to the system
+    :return: sql uri for sqlalchemy
+    """
+    # type validation and port
+    if not isinstance(dialect, str):
+        raise TypeError("dialect must be a string, not {}".format(type(dialect)))
+    if not isinstance(driver, str):
+        raise TypeError("driver must be a string, not {}".format(type(driver)))
+    if not isinstance(host, str):
+        raise TypeError("host must be a string, not {}".format(type(host)))
+    if not isinstance(port, int):
+        raise TypeError("Port must be a number, not {}".format(type(port)))
+    if not 0 < port < 2 ** 16:
+        raise ValueError(f"Invalid port, value is {port} that isnt between 1 to 65535")
+    if not isinstance(username, str):
+        raise TypeError("username must be a string, not {}".format(type(username)))
+    if not isinstance(password, str):
+        raise TypeError("password must be a string, not {}".format(type(password)))
+    return f'{dialect}+{driver}://{username}:{password}@{host}:{port}/{database}'
+
+
 # endregion
 
 class FlaskDefaultSettings(ABC):
@@ -78,7 +115,16 @@ class FlaskDefaultSettings(ABC):
     # session protection of the username data for flask-loginn
     SESSION_PROTECTION: str = 'basic'
     # sqlalchemy database uri
-    SQLALCHEMY_DATABASE_URI: str = r'sqlite:///C:\Cyber\2020\rplace\database.db'
+    SQLALCHEMY_DATABASE_URI: str = sql_server_uri(
+        dialect='postgresql',
+        driver='psycopg2',
+        host="192.168.252.13",
+        port=5432,
+        username="postgres",
+        password="QWEASDZXC123",
+        database="SPDatabase"
+    )
+    # r'sqlite:///C:\Cyber\2020\rplace\database.db'
     # if to track modification of sqlalchemy
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     # salt for token serializer
@@ -105,7 +151,7 @@ class FlaskApp(FlaskDefaultSettings):
     configuration for app
     """
     # app host running
-    APP_HOST: str = '192.168.1.23'
+    APP_HOST: str = '192.168.252.13'
     # app port running
     APP_PORT: int = 8080
 
@@ -123,7 +169,7 @@ class CelerySettings(ABC):
     IS_CELERY_WORKER: bool = True
     # broker for celery, the message queue
     CELERY_BROKER_URL: str = redis_uri(
-        host='192.168.1.25',
+        host='192.168.252.13',
         # default port 6379
         database=1,
         password='UmPWoMqjGXVY7MI15rTHVKmTNRIroxcEPMVN'
@@ -138,7 +184,8 @@ class CelerySettings(ABC):
     timezone = 'UTC',
     # If enabled dates and times in messages will be converted to use the UTC timezone.
     enable_utc = True
-
+    # the timeout between each clear
+    PERIODIC_CLEAR_CACHE_SECONDS = 600
 
 class CeleryApp(FlaskApp, CelerySettings):
     """

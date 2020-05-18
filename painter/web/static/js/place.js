@@ -180,7 +180,7 @@ function openFullscreen() {
  * close full screen (use also for non support)
  * @see {@link https://www.w3schools.com/howto/howto_js_fullscreen.asp}
  */
- function CloseFullscreen() {
+ function closeFullScreen() {
 	if (document.exitFullscreen) {
 		document.exitFullscreen();
 	}
@@ -2050,7 +2050,7 @@ $(document).ready(function() {
 			openFullscreen();
 		}
 		else {
-			CloseFullscreen();
+			closeFullScreen();
 		}
 	})
 	// on fullscreen state changed

@@ -1,8 +1,7 @@
 from datetime import datetime
 from typing import Dict, Any
 
-from sqlalchemy import Column, ForeignKey, Integer, String, case
-from sqlalchemy.dialects.sqlite import DATETIME, BOOLEAN
+from sqlalchemy import Column, ForeignKey, Integer, String, case, SmallInteger, DateTime, Boolean
 from sqlalchemy.orm import relationship
 
 from ..backends.extensions import storage_sql
@@ -25,19 +24,19 @@ class Note(storage_sql.Model):
     id = Column(Integer(), primary_key=True, unique=True, autoincrement=True)
 
     # the user the note was written about
-    user_subject_id = Column(Integer(), ForeignKey('user.id'), nullable=False)
+    user_subject_id = Column(SmallInteger(), ForeignKey('users.id'), nullable=False)
 
     # description about the user
     description = Column(String(), nullable=False)
 
     # the date the note was posted
-    post_date = Column(DATETIME(), default=datetime.now, nullable=False)
+    post_date = Column(DateTime(), default=datetime.now, nullable=False)
 
     # the id of the user who write the note
-    user_writer_id = Column(Integer(), ForeignKey('user.id'), nullable=False)
+    user_writer_id = Column(SmallInteger(), ForeignKey('users.id'), nullable=False)
 
     # if the note is a record (see down)
-    is_record = Column(BOOLEAN(), nullable=True)
+    is_record = Column(Boolean(), nullable=True)
 
     # relationships
     user_subject = relationship('User', foreign_keys='Note.user_subject_id', uselist=False,
@@ -110,9 +109,9 @@ class Record(Note):
     # identifier of the record -> to match for the note the contains the note related staff of the record
     id = Column(Integer(), ForeignKey('note.id'), primary_key=True)
     # if the user can login or not
-    active = Column(BOOLEAN(), nullable=False)
+    active = Column(Boolean(), nullable=False)
     # the date the record takes affect from, if null its the post date
-    affect_from = Column(DATETIME(), nullable=True, default=None)
+    affect_from = Column(DateTime(), nullable=True, default=None)
     # the reason for the record, displayed to the user when tries to log in
     reason = Column(String(), nullable=False)
     sqlite_autoincrement = True
