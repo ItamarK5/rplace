@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import *
 from wtforms.fields.html5 import EmailField
-
+from flask import request
 from painter.models import User, SignupNameRecord, SignupMailRecord, RevokeMailAttempt
 from painter.others.wtforms_mixins import (
     ABC_OR_DIGITS_VALIDATOR,
@@ -12,6 +12,8 @@ from painter.others.wtforms_mixins import (
     HashPasswordFieldMixin,
     QuickForm
 )
+import math
+
 
 """
 FlaskForms Mixin
@@ -170,8 +172,28 @@ class RevokePasswordForm(BaseForm,
         :return: none
         extra validation for the email field, check if exists in the system
         """
-        if RevokeMailAttempt.exists(field.data):
-            raise ValidationError('You need to wait 15 minutes before you can use revoke mail again')
+        revoke_attempt = RevokeMailAttempt.get_identified(field.data)
+        if revoke_attempt is None:
+            interval_between_attempts_text = ''
+            hours_between_each_attempt = RevokeMailAttempt.max_expires_seconds // 3600
+            minutes_between_each_attempt = RevokeMailAttempt.max_expires_seconds // 60 % 60
+            seconds_between_each_attempt = RevokeMailAttempt.max_expires_seconds % 60
+            # hours
+            if hours_between_each_attempt:
+                interval_between_attempts_text += f'{hours_between_each_attempt} hours'
+            # minutes
+            if minutes_between_each_attempt:
+                if interval_between_attempts_text:
+                    interval_between_attempts_text += f', '
+                    if not seconds_between_each_attempt:
+                        interval_between_attempts_text += ', and'
+                interval_between_attempts_text += f'{minutes_between_each_attempt} minutes'
+            # seconds
+            if seconds_between_each_attempt:
+                interval_between_attempts_text += f'{seconds_between_each_attempt} seconds'
+            raise ValidationError(f'You need to wait {interval_between_attempts_text} between each revoke attempt')
+        else:
+            RevokeMailAttempt.create_new(field.data)
 
 
 class ChangePasswordForm(BaseForm, FlaskConfirmPasswordMixin):

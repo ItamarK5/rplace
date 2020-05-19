@@ -97,15 +97,18 @@ class RunServer(Server):
                 use_debugger = True
         if use_reloader is None:
             use_reloader = app.debug or not app.config.get('WERKZEUG_RUN_MAIN', True)
-        # runs the socketio server
-        sio.run(
-            app,
-            host=host,
-            port=port,
-            debug=use_debugger,
-            use_reloader=use_reloader,
-            **self.server_options
-        )
+        try:
+            # runs the socketio server
+            sio.run(
+                app,
+                host=host,
+                port=port,
+                debug=use_debugger,
+                use_reloader=use_reloader,
+                **self.server_options
+            )
+        except KeyboardInterrupt:
+            pass
 
 
 """ Create User """

@@ -6,10 +6,9 @@ to remember simple staff easily
 import re
 from datetime import datetime, timedelta
 from typing import Optional
-
 from flask import Flask
 from flask_sqlalchemy import BaseQuery
-from sqlalchemy import String, Column, DateTime
+from sqlalchemy import String, Column, DATETIME
 from sqlalchemy.ext.declarative import declared_attr
 
 from painter.backends.extensions import storage_sql
@@ -44,12 +43,15 @@ class CacheTextBase(storage_sql.Model):
     identity_max_length: int  # max length of the string
     query: BaseQuery
 
+    creation_date = Column(DATETIME(), default=datetime.utcnow)
+
+
     @declared_attr
     def creation_date(self) -> Column:
         """
         :return: return the creation date column
         """
-        return Column(DateTime(), default=datetime.utcnow)  # now
+        return Column(DATETIME(), default=datetime.utcnow)  # now
 
     def __init_subclass__(cls, **kwargs) -> None:
         """
@@ -83,6 +85,8 @@ class CacheTextBase(storage_sql.Model):
         """
         :param identity_string: get the object matched to the identity string
         :return: the object or None
+        :param identity_string: a string identifing the object
+        :return: The matched cached object, if not None
         """
         return cls.query.filter(cls.identity_column == identity_string).first()
 
@@ -153,7 +157,8 @@ class CacheTextBase(storage_sql.Model):
     @classmethod
     def force_forget(cls, identity_string: str) -> bool:
         """
-        :return:
+        :return: if the object existed before it tried to forget
+        forcing to forget the cached data
         """
         model = cls.get_identified(identity_string)
         if model is None:
@@ -161,6 +166,7 @@ class CacheTextBase(storage_sql.Model):
         # otherwise
         storage_sql.session.delete(model)
         storage_sql.session.commit()
+        return True
 
     def has_expired(self) -> bool:
         return (datetime.utcnow() - self.creation_date).seconds > self.max_expires_seconds

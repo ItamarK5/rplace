@@ -39,7 +39,7 @@ class Note(storage_sql.Model):
     is_record = Column(Boolean(), nullable=True)
 
     # relationships
-    user_subject = relationship('User', foreign_keys='Note.user_subject_id', uselist=False,
+    user_subject = relationship('User', foreign_keys='Note.user_subject_id',
                                 back_populates='related_notes')
     user_writer = relationship('User', foreign_keys='Note.user_writer_id', uselist=False)
 

@@ -7,14 +7,14 @@ it can send mails using the flask-mail extension
 from __future__ import absolute_import
 from painter.app import create_app, celery
 from . import tasks
+from eventlet import monkey_patch
+
 
 
 app = create_app(
     import_class='CeleryApp',
     is_celery=True
 )
-
-print(celery)
 
 app.app_context().push()
 
