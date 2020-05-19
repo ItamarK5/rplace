@@ -37,7 +37,7 @@
 #}
 {% macro render_error(err, style) %}
 <div class="form-row mb-1">
-    <div class="col rounded alert-{{ style }} text-justify ml-3 mr-3" style="text-anchor:middle;">{{ err  }}</div>
+    <div class="col rounded alert-{{ style }} text-justify ml-3 mr-3" style="text-anchor:middle;">{{ err }}</div>
 </div>
 {% endmacro %}
 {#
@@ -48,7 +48,7 @@
 {% macro render_errors(errors, style='danger') %}
     {% if errors %}
         {% for err in errors %}
-            {{ render_error(err, style)  }}
+            {{ render_error(err, style) }}
         {% endfor %}
     {% endif %}
 {% endmacro %}

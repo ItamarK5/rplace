@@ -51,13 +51,13 @@ class User(storage_sql.Model, UserMixin):
     # default color when entering, black
     color = Column(SMALLINT(), default=1, nullable=False)
 
-    # default url
+    # default chat URL
     url = Column(String(length=254), default=None, nullable=True)
 
     related_notes = storage_sql.relationship(
         'Note',
+        foreign_keys='Note.user_subject_id',
         back_populates='user_subject',                  # relationship of the note child, implements one to many
-        foreign_keys='Note.user_subject_id',            # foreign key for the relationship
         order_by='desc(Note.post_date)',                # order the result
         cascade="all,delete-orphan",                    # delete orphans, just in case
         lazy="dynamic"                                  # gets query
@@ -73,12 +73,10 @@ class User(storage_sql.Model, UserMixin):
         :param kwargs: the other arguments passed to the Modal constructor
         to switch between init using hashed password or not
         """
-        print(decrypted_password, password)
         if decrypted_password is not None and password is None:
             if 'username' not in kwargs:
                 raise KeyError("User constructor must have a username parameter")
             password = self.encrypt_password(decrypted_password, kwargs.get('username'))
-        print(decrypted_password, password)
         super().__init__(password=password, **kwargs)
 
     def set_password(self, password: str) -> None:
@@ -149,7 +147,6 @@ class User(storage_sql.Model, UserMixin):
         assumes that the notes are sorted by ids, that are auto
         """
         record = self.related_notes.filter_by(is_record=True).first()
-        print(record)
         if record is None:
             return _NO_RECORD
         return record.id
@@ -203,7 +200,7 @@ def load_user(user_token: str) -> Optional[User]:
     :param user_token: the string value saved in a cookie/session of the user.
     :return: the matched user for the token
     token is in the form of: id&password
-    flask encrypts it so I dont worry
+    flask encrypts it so I d'ont worry
     """
     # first get the id
     identity_keys = user_token.split('&')  # password hash, email, user_id

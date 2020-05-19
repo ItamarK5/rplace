@@ -54,7 +54,10 @@ def create_app(import_class: Optional[str] = None,
     # socketio, not socketio in celery
     if is_celery:
         # set is celery
-        celery.conf.update({'result_backend': app.config['CELERY_BROKER_URL']})
+        celery.conf.update({
+            'broker_url': app.config['CELERY_BROKER_URL'],
+        })
+        pass
     else:
         # init socketio with eventlet
         sio.init_app(app, async_mode='eventlet')

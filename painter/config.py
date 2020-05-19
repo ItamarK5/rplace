@@ -110,10 +110,6 @@ class FlaskApp(FlaskDefaultSettings):
     APP_PORT: int = 8080
 
 
-class DebugApp(FlaskApp):
-    DEBUG = True
-
-
 class CelerySettings(ABC):
     """
     celery configuration to add options to it
@@ -138,6 +134,7 @@ class CelerySettings(ABC):
     timezone = 'UTC',
     # If enabled dates and times in messages will be converted to use the UTC timezone.
     enable_utc = True
+
 
 
 class CeleryApp(FlaskApp, CelerySettings):
