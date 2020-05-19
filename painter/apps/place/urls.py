@@ -34,9 +34,7 @@ def profile() -> Response:
     """
     form = PreferencesForm()
     return render_template(
-        'profiles/profile.html', xstart=current_user.x, ystart=current_user.y,
-        scalestart=current_user.scale, colorstart=current_user.color, form=form,
-        chaturl=current_user.url
+        'profiles/profile.html', form=form,
     )
 
 
@@ -49,7 +47,6 @@ def profile_ajax():
     to change a preference value by the user
     """
     form = PreferencesForm()
-    print(form.chat_url, form.x)
     if form.validate_on_submit():
         # you can only set 1 preference at a time
         # detecting the key \ val of the submitted form
@@ -65,7 +62,7 @@ def profile_ajax():
         storage_sql.session.add(current_user)
         storage_sql.session.commit()
         # https://stackoverflow.com/a/26080784
-        return jsonify({'success': True, 'id': preference_field.name, 'val': preference_field.data})
+        return jsonify({'success': True, 'id': preference_field.id, 'val': preference_field.data})
     # return errors
     return jsonify({
         'success': False,

@@ -25,7 +25,7 @@
     <script src="{{ url_for('other.serve_static', filename='place.js') }}"></script>
 </head>
 <!-- favor location as html parameters-->
-<body scale={{ current_user.scale }} x={{ current_user.x }} y={{ current_user.y }}>
+<body scale={{ current_user.fav_scale }} x={{ current_user.fav_x }} y={{ current_user.fav_y }}>
 <canvas class='pixelate' height='1000' id="board" width='1000'>Wait, Loading...</canvas>
 <div class="select-none" hide='0' id="toolbox">
     <div class='center-x' id='toggle-toolbox-button' state='1'></div>
@@ -33,7 +33,7 @@
     <div id="color-table-box">
         <div class='center' id=colorTable>
             {% for i in range(16) %}
-            <div class='colorButton' picked="{{ (i == current_user.color) | int }}" value='{{ i }}'></div>
+            <div class='colorButton' picked="{{ (i == current_user.fav_color) | int }}" value='{{ i }}'></div>
             {% endfor %}
             <div id="lock-colors" lock="0">
                 <i class="fa fa-lock"></i>
@@ -48,8 +48,8 @@
         </div>
         {{ render_link('home-button', 'home') }}
         {{ render_link('logout-button', 'sign-out-alt') }}
-        {% if current_user.url %}
-        <div class="icon-button" href={{ current_user.url }} id="chat-button">
+        {% if current_user.chat_url %}
+        <div class="icon-button" href={{ current_user.chat_url }} id="chat-button">
             <span class="fas fa-comment-dots"></span>
         </div>
         {% endif %}

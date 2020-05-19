@@ -19,11 +19,11 @@ const COLORS = [
  */
 const convertFieldValueByName = (name, val) => {
     switch(name){
-        case 'color':
+        case 'chat_url':
+            return val ? val : 'None'
+        case 'fav_color':
             // number
             return COLORS[val]  // select specific color
-        case 'chat_url':
-            return COLORS[val] // dopper
         default:
             // number
             return val
@@ -72,6 +72,7 @@ const updatePickColor = () => {
     })
 }
 
+// ready
 $(document).ready(() =>{
     //tooltips       
     //submit form
@@ -124,7 +125,8 @@ $(document).ready(() =>{
                 message_element.removeClass('d-none')
                 // if success
                 if(response.success){
-                    $(`*[aria-describedat='#${response.id}']`).text(convertFieldValueByName(response.name, response.val));
+                    console.log(response.id)
+                    $(`*[aria-describedat='#${response.id}']`).text(convertFieldValueByName(response.id, response.val));
                     error_div.addClass('d-none')
                     success_div.removeClass('d-none')
                 } else {

@@ -68,9 +68,9 @@ def date(tm: datetime) -> str:
 def is_not_none(value: Optional[Any]) -> str:
     """
     :param value: any value
-    :return: if the value is none return empty string else returns the value itself in string
+    :return: if the value is none return None else returns the value itself in string
     """
-    return str(value) if value is not None else ""
+    return str(value) if value is not None else "None"
 
 
 def add_filters(flask_app: Flask) -> None:

@@ -5,8 +5,8 @@
 </div>
 {% endmacro %}
 {{ edit_title('Preferences') }}
-{{ preference_row('X', user.x) }}
-{{ preference_row('Y', user.y) }}
-{{ preference_row('Scale', user.scale) }}
-{{ preference_row('Color', user.color) }}
-{{ preference_row('Chat', user.url) }}
+{{ preference_row('X', user.fav_x) }}
+{{ preference_row('Y', user.fav_y) }}
+{{ preference_row('Scale', user.fav_scale) }}
+{{ preference_row('Color', user.fav_color) }}
+{{ preference_row('Chat', user.chat_url | is_not_none) }}

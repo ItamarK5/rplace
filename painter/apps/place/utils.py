@@ -13,23 +13,23 @@ def update_user_preferences(form: PreferencesForm) -> Optional[Field]:
     in the following order that was submitted
     """
     # x
-    if form.x.data is not None:
-        current_user.x = form.x.data
-        return form.x
+    if form.fav_x.data is not None:
+        current_user.fav_x = form.fav_x.data
+        return form.fav_x
     # y
-    elif form.y.data is not None:
-        current_user.y = form.y.data
-        return form.y
+    elif form.fav_y.data is not None:
+        current_user.fav_y = form.fav_y.data
+        return form.fav_y
     # scale
-    elif form.scale.data is not None:
-        current_user.scale = form.scale.data
-        return form.scale
+    elif form.fav_scale.data is not None:
+        current_user.fav_scale = form.fav_scale.data
+        return form.fav_scale
     # color
-    elif form.color.data is not None:
-        current_user.color = form.color.data
-        return form.color
+    elif form.fav_color.data is not None:
+        current_user.fav_color = form.fav_color.data
+        return form.fav_color
     # elif chat_url
     elif form.chat_url.data is not None:
-        current_user.url = form.chat_url.data
+        current_user.chat_url = form.chat_url.data
         return form.chat_url
     return None

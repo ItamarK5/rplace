@@ -10,7 +10,7 @@ class PreferencesForm(FlaskForm):
     Preference form
     handling validating changes in the user preferences
     """
-    x = IntegerField(
+    fav_x = IntegerField(
         'X start',
         validators=[
             validators.Optional(),
@@ -18,19 +18,19 @@ class PreferencesForm(FlaskForm):
         ],
     )
 
-    y = IntegerField(
+    fav_y = IntegerField(
         'Y start',
         validators=[
             validators.Optional(),
             validators.NumberRange(min=0, max=999, message='coord out of range'),
         ],
     )
-    scale = IntegerField(
+    fav_scale = IntegerField(
         'Scale start',
         default=None,
         validators=[validators.Optional()]
     )
-    color = SelectField(
+    fav_color = SelectField(
         label='Select Color',
         coerce=int,
         choices=tuple(

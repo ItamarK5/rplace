@@ -45,14 +45,6 @@ class CacheTextBase(storage_sql.Model):
 
     creation_date = Column(DATETIME(), default=datetime.utcnow)
 
-
-    @declared_attr
-    def creation_date(self) -> Column:
-        """
-        :return: return the creation date column
-        """
-        return Column(DATETIME(), default=datetime.utcnow)  # now
-
     def __init_subclass__(cls, **kwargs) -> None:
         """
         :param kwargs: class arguments

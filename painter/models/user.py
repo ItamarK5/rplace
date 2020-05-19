@@ -41,18 +41,18 @@ class User(storage_sql.Model, UserMixin):
     # the role of the user
     role = Column(Enum(Role), default=Role.common, nullable=False)
     # start x position
-    x = Column(SMALLINT(), default=500, nullable=False)
+    fav_x = Column(SMALLINT(), default=500, nullable=False)
     # start y position
-    y = Column(SMALLINT(), default=500, nullable=False)
+    fav_y = Column(SMALLINT(), default=500, nullable=False)
 
     # default scale value, 4
-    scale = Column(SMALLINT(), default=4, nullable=False)
+    fav_scale = Column(SMALLINT(), default=4, nullable=False)
 
     # default color when entering, black
-    color = Column(SMALLINT(), default=1, nullable=False)
+    fav_color = Column(SMALLINT(), default=1, nullable=False)
 
     # default chat URL
-    url = Column(String(length=254), default=None, nullable=True)
+    chat_url = Column(String(length=254), default=None, nullable=True)
 
     related_notes = storage_sql.relationship(
         'Note',
