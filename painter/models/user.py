@@ -1,11 +1,10 @@
 from datetime import datetime
 from hashlib import pbkdf2_hmac
-from typing import Optional, Union
+from typing import Optional
 
 from flask import Markup, current_app
 from flask_login import UserMixin
-from sqlalchemy import Column, Integer, String, Enum
-from sqlalchemy.dialects.sqlite import DATETIME, SMALLINT
+from sqlalchemy import Column, Integer, String, Enum, SmallInteger, DateTime
 from painter.backends.extensions import login_manager
 from painter.backends.extensions import storage_sql, cache
 from .notes import Record, Note
@@ -14,7 +13,6 @@ from .role import Role
 """
     only defined for the current model to user
 """
-_NO_RECORD = 'none'
 
 
 class User(storage_sql.Model, UserMixin):
@@ -33,23 +31,23 @@ class User(storage_sql.Model, UserMixin):
     # password of the user -> saved as hash by the sha512 algorithm with the username as salt
     password = Column(String(128), nullable=False)
     # the user's email address, to send mails
-    email = Column(String(length=254), unique=True, nullable=False)
+    email = Column(String(254), unique=True, nullable=False)
     # the next time the user can draw on the board
-    next_time = Column(DATETIME(), default=datetime.utcnow, nullable=False)
+    next_time = Column(DateTime(), default=datetime.utcnow, nullable=False)
     # when the user was created
-    creation_date = Column(DATETIME(), default=datetime.utcnow, nullable=False)
+    creation_date = Column(DateTime(), default=datetime.utcnow, nullable=False)
     # the role of the user
     role = Column(Enum(Role), default=Role.common, nullable=False)
     # start x position
-    fav_x = Column(SMALLINT(), default=500, nullable=False)
+    fav_x = Column(SmallInteger(), default=500, nullable=False)
     # start y position
-    fav_y = Column(SMALLINT(), default=500, nullable=False)
+    fav_y = Column(SmallInteger(), default=500, nullable=False)
 
     # default scale value, 4
-    fav_scale = Column(SMALLINT(), default=4, nullable=False)
+    fav_scale = Column(SmallInteger(), default=4, nullable=False)
 
     # default color when entering, black
-    fav_color = Column(SMALLINT(), default=1, nullable=False)
+    fav_color = Column(SmallInteger(), default=1, nullable=False)
 
     # default chat URL
     chat_url = Column(String(length=254), default=None, nullable=True)
@@ -57,10 +55,10 @@ class User(storage_sql.Model, UserMixin):
     related_notes = storage_sql.relationship(
         'Note',
         foreign_keys='Note.user_subject_id',
-        back_populates='user_subject',                  # relationship of the note child, implements one to many
-        order_by='desc(Note.post_date)',                # order the result
-        cascade="all,delete-orphan",                    # delete orphans, just in case
-        lazy="dynamic"                                  # gets query
+        back_populates='user_subject',  # relationship of the note child, implements one to many
+        order_by='desc(Note.post_date)',  # order the result
+        cascade="all,delete-orphan",  # delete orphans, just in case
+        lazy="dynamic"  # gets query
     )
 
     # https://stackoverflow.com/a/11579347
@@ -141,14 +139,33 @@ class User(storage_sql.Model, UserMixin):
         return super().get_id() + '&' + self.password
 
     @cache.memoize(timeout=300)
-    def __get_last_record(self) -> Union[str, int]:
+    def __get_last_record(self) -> int:
         """
-        :return: id of the user
+        :return: id of the user or -1 if doesnt found anything
         assumes that the notes are sorted by ids, that are auto
         """
-        record = self.related_notes.filter_by(is_record=True).first()
+        current_time = datetime.utcnow()
+        # the storage format of the DATETIME Column
+        _storage_format = (
+            "%(year)04d-%(month)02d-%(day)02d "
+            "%(hour)02d:%(minute)02d:%(second)02d.%(microsecond)06d"
+        )
+        current_time_text = _storage_format % {
+            "year": current_time.year,
+            "month": current_time.month,
+            "day": current_time.day,
+            "hour": current_time.hour,
+            "minute": current_time.minute,
+            "second": current_time.second,
+            "microsecond": current_time.microsecond,
+        }
+        # filter record
+        record = self.related_notes.filter(
+            Note.is_record.__eq__(True),
+        ).first()
+        # if is None, return -1
         if record is None:
-            return _NO_RECORD
+            return -1
         return record.id
 
     def get_last_record(self) -> Optional[Record]:
@@ -157,7 +174,7 @@ class User(storage_sql.Model, UserMixin):
         it uses the method __get_last_record for caching the result to handle less requirements
         """
         identifier = self.__get_last_record()
-        return None if isinstance(identifier, str) else Record.query.get(identifier)
+        return None if identifier == -1 else Record.query.get(identifier)
 
     @property
     def is_active(self) -> bool:

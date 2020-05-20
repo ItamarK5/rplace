@@ -1,6 +1,6 @@
 from flask_script import Shell
 from ..models import (
-    SignupNameRecord, SignupMailRecord, RevokeMailAttempt,
+    SignupNameRecord, SignupMailRecord, RevokePasswordMailRecord,
     Role, Record, User, Note
 )
 from ..backends import board, lock
@@ -23,7 +23,7 @@ def _make_context():
         'User': User,
         'SignupNameRecord': SignupNameRecord,
         'SignupMailRecord': SignupMailRecord,
-        'RevokeMailAttempt': RevokeMailAttempt,
+        'RevokeMailAttempt': RevokePasswordMailRecord,
         'storage_sql': storage_sql
     }
 

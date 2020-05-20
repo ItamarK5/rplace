@@ -14,7 +14,7 @@ from sqlalchemy.exc import DBAPIError
 from werkzeug.wrappers import Response
 
 from painter.backends.extensions import storage_sql
-from painter.models import SignupNameRecord, SignupMailRecord, RevokeMailAttempt, User
+from painter.models import SignupNameRecord, SignupMailRecord, RevokePasswordMailRecord, User
 from painter.others.utils import redirect_next
 from .forms import (
     LoginForm, SignUpForm, RevokePasswordForm,
@@ -130,7 +130,7 @@ def revoke() -> Response:
         if user is None:
             form.email.errors.append('Unknown Mail Address')
         else:
-            RevokeMailAttempt.create_new(form.email.data)
+            RevokePasswordMailRecord.create_new(form.email.data)
             # error handling
             send_revoke_password_message(
                 user.username,
@@ -177,7 +177,8 @@ def change_password(token: str) -> Response:
     mail_address, pswd = extracted_token.pop('mail_address'), extracted_token.pop('password')
     # check timestamp
     user = User.query.filter_by(email=mail_address, password=pswd).first()
-    if user is None or not RevokeMailAttempt.exists(mail_address):
+    # if user don't exist
+    if user is None or not RevokePasswordMailRecord.exists(mail_address):
         return render_template(
             'responses/token-error.html',
             view_name='Revoke Password',
@@ -190,7 +191,7 @@ def change_password(token: str) -> Response:
         new_password = form.password.data
         user.set_password(new_password)
         # then forget he mail address that was passed
-        RevokeMailAttempt.force_forget(mail_address)
+        RevokePasswordMailRecord.force_forget(mail_address)
         return render_template(
             'responses/complete-change-password.html',
             view_ref='auth.login',

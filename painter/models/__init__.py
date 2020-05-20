@@ -1,10 +1,10 @@
-from painter.models.storage import *
+from painter.models.cache_model import *
 from .notes import Note, Record
 from .role import Role
 from .user import User, load_user
-
+RevokePasswordMailRecord = None
 __all__ = [
     'Note', 'Record', 'Role', 'User',
-    'SignupNameRecord', 'SignupMailRecord', 'RevokeMailAttempt',
+    'SignupNameRecord', 'SignupMailRecord', 'RevokePasswordMailRecord',
     'Record', 'ExpireModels', 'init_storage_models'
 ]

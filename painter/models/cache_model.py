@@ -7,8 +7,7 @@ import re
 from datetime import datetime, timedelta
 from typing import Optional
 from flask import Flask
-from flask_sqlalchemy import BaseQuery
-from sqlalchemy import String, Column, DATETIME
+from sqlalchemy import String, Column, DateTime
 from sqlalchemy.ext.declarative import declared_attr
 
 from painter.backends.extensions import storage_sql
@@ -41,9 +40,8 @@ class CacheTextBase(storage_sql.Model):
     max_expires_seconds: int  # use default instead of configured
     identity_column_name: str  # name of the table
     identity_max_length: int  # max length of the string
-    query: BaseQuery
 
-    creation_date = Column(DATETIME(), default=datetime.utcnow)
+    creation_date = Column(DateTime(), default=datetime.utcnow)
 
     def __init_subclass__(cls, **kwargs) -> None:
         """
@@ -174,8 +172,8 @@ class CacheTextBase(storage_sql.Model):
 
 class SignupMailRecord(CacheTextBase):
     """
-        Used to cache a name of a new user.
-        to prevent other users from using it
+    Used to cache a name of a new user.
+    to prevent reuse of it and re-mailing over and over again
     """
     identity_column_name = 'mail_address'
     identity_max_length = 254
@@ -183,14 +181,18 @@ class SignupMailRecord(CacheTextBase):
 
 class SignupNameRecord(CacheTextBase):
     """
-        Used to cache a mail of a new user
-        to prevent reuse of it and re-mailing over and over again
+    Used to cache a mail of a new user
+    to prevent reuse of it and re-mailing over and over again
     """
     identity_column_name = 'username'
     identity_max_length = 15
 
 
-class RevokeMailAttempt(CacheTextBase):
+class RevokePasswordMailRecord(CacheTextBase):
+    """
+    model to cache a the mail field for a revoke password attempt
+    to prevent re-mailing and mass the system
+    """
     identity_column_name = 'address'
     identity_max_length = 254
 
@@ -201,7 +203,7 @@ def init_storage_models(app: Flask) -> None:
     :return: none
     init the storage model
     """
-    RevokeMailAttempt.max_expires_seconds = app.config.get('APP_MAX_AGE_USER_TOKEN', DEFAULT_MAX_AGE_USER_TOKEN)
+    RevokePasswordMailRecord.max_expires_seconds = app.config.get('APP_MAX_AGE_USER_TOKEN', DEFAULT_MAX_AGE_USER_TOKEN)
     SignupNameRecord.max_expires_seconds = app.config.get('APP_MAX_AGE_USER_TOKEN', DEFAULT_MAX_AGE_USER_TOKEN)
     SignupMailRecord.max_expires_seconds = app.config.get('APP_MAX_AGE_USER_TOKEN', DEFAULT_MAX_AGE_USER_TOKEN)
 
@@ -209,7 +211,7 @@ def init_storage_models(app: Flask) -> None:
 __all__ = [
     'SignupMailRecord',
     'SignupNameRecord',
-    'RevokeMailAttempt',
+    'RevokePasswordMailRecord',
     'ExpireModels',
     'init_storage_models'
 ]

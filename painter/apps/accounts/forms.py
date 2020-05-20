@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import *
 from wtforms.fields.html5 import EmailField
 from flask import request
-from painter.models import User, SignupNameRecord, SignupMailRecord, RevokeMailAttempt
+from painter.models import User, SignupNameRecord, SignupMailRecord, RevokePasswordMailRecord
 from painter.others.wtforms_mixins import (
     ABC_OR_DIGITS_VALIDATOR,
     USERNAME_LENGTH_VALIDATOR,
@@ -172,12 +172,12 @@ class RevokePasswordForm(BaseForm,
         :return: none
         extra validation for the email field, check if exists in the system
         """
-        revoke_attempt = RevokeMailAttempt.get_identified(field.data)
+        revoke_attempt = RevokePasswordMailRecord.get_identified(field.data)
         if revoke_attempt is None:
             interval_between_attempts_text = ''
-            hours_between_each_attempt = RevokeMailAttempt.max_expires_seconds // 3600
-            minutes_between_each_attempt = RevokeMailAttempt.max_expires_seconds // 60 % 60
-            seconds_between_each_attempt = RevokeMailAttempt.max_expires_seconds % 60
+            hours_between_each_attempt = RevokePasswordMailRecord.max_expires_seconds // 3600
+            minutes_between_each_attempt = RevokePasswordMailRecord.max_expires_seconds // 60 % 60
+            seconds_between_each_attempt = RevokePasswordMailRecord.max_expires_seconds % 60
             # hours
             if hours_between_each_attempt:
                 interval_between_attempts_text += f'{hours_between_each_attempt} hours'
@@ -193,7 +193,7 @@ class RevokePasswordForm(BaseForm,
                 interval_between_attempts_text += f'{seconds_between_each_attempt} seconds'
             raise ValidationError(f'You need to wait {interval_between_attempts_text} between each revoke attempt')
         else:
-            RevokeMailAttempt.create_new(field.data)
+            RevokePasswordMailRecord.create_new(field.data)
 
 
 class ChangePasswordForm(BaseForm, FlaskConfirmPasswordMixin):

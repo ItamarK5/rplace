@@ -1,18 +1,12 @@
 from datetime import datetime
 from typing import Dict, Any
 
-from sqlalchemy import Column, ForeignKey, Integer, String, case
-from sqlalchemy.dialects.sqlite import DATETIME, BOOLEAN
+from sqlalchemy import (
+    Column, ForeignKey, Integer, String, DateTime, Boolean, case
+)
 from sqlalchemy.orm import relationship
 
 from ..backends.extensions import storage_sql
-
-"""
-    need to ask what is better:
-    1) Note and subclass of Note named Record
-    2) Note with variations
-    3) other Notes
-"""
 
 
 class Note(storage_sql.Model):
@@ -31,17 +25,18 @@ class Note(storage_sql.Model):
     description = Column(String(), nullable=False)
 
     # the date the note was posted
-    post_date = Column(DATETIME(), default=datetime.now, nullable=False)
+    post_date = Column(DateTime(), default=datetime.now, nullable=False)
 
     # the id of the user who write the note
     user_writer_id = Column(Integer(), ForeignKey('user.id'), nullable=False)
 
     # if the note is a record (see down)
-    is_record = Column(BOOLEAN(), nullable=True)
+    is_record = Column(Boolean(), nullable=True)
 
     # relationships
     user_subject = relationship('User', foreign_keys='Note.user_subject_id',
                                 back_populates='related_notes')
+    
     user_writer = relationship('User', foreign_keys='Note.user_writer_id', uselist=False)
 
     # autoincrement of sqlite
@@ -110,9 +105,9 @@ class Record(Note):
     # identifier of the record -> to match for the note the contains the note related staff of the record
     id = Column(Integer(), ForeignKey('note.id'), primary_key=True)
     # if the user can login or not
-    active = Column(BOOLEAN(), nullable=False)
+    active = Column(Boolean(), nullable=False)
     # the date the record takes affect from, if null its the post date
-    affect_from = Column(DATETIME(), nullable=True, default=None)
+    affect_from = Column(DateTime(), nullable=True)
     # the reason for the record, displayed to the user when tries to log in
     reason = Column(String(), nullable=False)
     sqlite_autoincrement = True
@@ -128,6 +123,7 @@ class Record(Note):
         just adds a is_record to the init, so that it would be considered as record
         """
         super().__init__(is_record=True, *args, **kwargs)
+        # if set affect_from as None, it becomes post date become
 
     def __get_note_type(self):
         """
@@ -153,7 +149,7 @@ class Record(Note):
         # update by values
         dictionary.update({
             'type': self.__get_note_type(),
-            'affect_from': self.affect_from if self.affect_from is not None else None,
+            'affect_from': self.affect_from,
             'reason': str(self.reason),
             'active': self.active
         })
