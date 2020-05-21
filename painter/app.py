@@ -43,27 +43,23 @@ def create_app(import_class: Optional[str] = None,
         template_folder=path.join('web', 'templates'),
     )
     # The Application Configuration, import default
-    import_object = import_class if import_class is not None else 'FlaskApp' if not is_celery else 'CeleryApp'
+    import_object = import_class if import_class is not None else 'FlaskApp'
     # first checks if its from directly
-    object_configuration = 'painter.config.' + import_object
-    try:
-        app.config.from_object(object_configuration)
-    except Exception as e:
-        raise InvalidCommand("Cannot import configuration named {} from config.py because\n{}"
-                             .format(import_object, e))
+    ref_object = 'painter.config.' + import_object
+    # try import object
+    app.config.from_object(ref_object)
     # socketio, not socketio in celery
-    if is_celery:
-        # set is celery
-        celery.conf.update({
-            'broker_url': app.config['CELERY_BROKER_URL'],
-        })
-        pass
-    else:
+    if not is_celery:
         # init socketio with eventlet
         sio.init_app(app, async_mode='eventlet')
-    # set debug
+    # configure is celery worker configuration value
+    celery.conf.update(app.config)
+    # set broker url if exists in app
+    # celery broker url must be set directly
+    celery.conf.broker_url = app.config.get('CELERY_BROKER_URL', None)
     # init Extensions
     storage_sql.init_app(app)
+    celery.conf.broker_transport_options = {'visibility_timeout': 3600}  # 1 hour.
     generate_engine(app)
     mailbox.init_app(app)
     login_manager.init_app(app)

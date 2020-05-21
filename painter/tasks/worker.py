@@ -8,13 +8,10 @@ from __future__ import absolute_import
 from painter.app import create_app, celery
 from . import tasks
 
-
-app = create_app(
-    import_class='CeleryApp',
-    is_celery=True
-)
+# create app context
+app = create_app(is_celery=True)
 
 app.app_context().push()
-
+print(celery.conf.broker_url)
 # preventing unused import statement
 __all__ = ['app', 'celery', 'tasks']

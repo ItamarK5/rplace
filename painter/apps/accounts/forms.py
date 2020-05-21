@@ -172,8 +172,7 @@ class RevokePasswordForm(BaseForm,
         :return: none
         extra validation for the email field, check if exists in the system
         """
-        revoke_attempt = RevokePasswordMailRecord.get_identified(field.data)
-        if revoke_attempt is None:
+        if RevokePasswordMailRecord.exists(field.data):
             interval_between_attempts_text = ''
             hours_between_each_attempt = RevokePasswordMailRecord.max_expires_seconds // 3600
             minutes_between_each_attempt = RevokePasswordMailRecord.max_expires_seconds // 60 % 60
@@ -192,8 +191,6 @@ class RevokePasswordForm(BaseForm,
             if seconds_between_each_attempt:
                 interval_between_attempts_text += f'{seconds_between_each_attempt} seconds'
             raise ValidationError(f'You need to wait {interval_between_attempts_text} between each revoke attempt')
-        else:
-            RevokePasswordMailRecord.create_new(field.data)
 
 
 class ChangePasswordForm(BaseForm, FlaskConfirmPasswordMixin):

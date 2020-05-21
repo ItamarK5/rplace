@@ -92,52 +92,17 @@ class FlaskDefaultSettings(ABC):
     WERKZEUG_RUN_MAIN: bool = True
     # protects session from being access to external sites, Lax
     SESSION_COOKIE_SAMESITE: str = 'Lax'
-    # if its a celery worker
-    IS_CELERY_WORKER: bool = False
-    # search host by default
-    APP_HOST: str = 'search'
-    # 8080 port by default
-    APP_PORT: bool = 8080
-
-
-class FlaskApp(FlaskDefaultSettings):
-    """
-    configuration for app
-    """
-    # app host running
-    APP_HOST: str = '192.168.252.13'
-    # app port running
-    APP_PORT: int = 8080
-
-
-class CelerySettings(ABC):
-    """
-    celery configuration to add options to it
-    I d'idnt wanted to add any options so just pass
-    """
-    # a must
-    IS_CELERY_WORKER: bool = True
-    # broker for celery, the message queue
+    # celery configuration, the broker uri, where to send configuration
     CELERY_BROKER_URL: str = redis_uri(
         host='192.168.1.25',
         # default port 6379
         database=1,
         password='UmPWoMqjGXVY7MI15rTHVKmTNRIroxcEPMVN'
     )
-    task_serializer = 'json',
-    # content accepting serializer to allow
-    accept_content = ['json'],  # Ignore other content
-    # how to send back the results
-    result_serializer = 'json',
-    # Configure Celery to use a custom time zone.
-    # The timezone value can be any time zone supported by the pytz library.
-    timezone = 'UTC',
-    # If enabled dates and times in messages will be converted to use the UTC timezone.
-    enable_utc = True
 
 
-class CeleryApp(FlaskApp, CelerySettings):
-    """
-    simple class for celery worker with the configuration of celery and app
-    """
-    pass
+class FlaskApp(FlaskDefaultSettings):
+    # default host for the app
+    APP_HOST = '127.0.0.1'
+    # default port running the app
+    APP_POTT = 8080

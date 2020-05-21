@@ -109,27 +109,6 @@ class CacheTextBase(storage_sql.Model):
             storage_sql.session.commit()
 
     @classmethod
-    def check_string(cls, identity_string: str) -> bool:
-        """
-        :param identity_string: value matched the identity string column
-        :return: if the value isn't "cached" in the database.
-        first check if exists, by getting if there is any non unique object
-        if exists, recreate it and add it.
-        """
-        record = cls.get_identified(identity_string)
-        # if expires
-        if record is None:
-            # create one
-            return True
-        if record.has_expired():
-            # error handling
-            try:
-                storage_sql.session.delete(record)
-            finally:
-                return True
-        return False
-
-    @classmethod
     def new_or_refresh(cls, identity_string: str) -> None:
         """
         :param identity_string: value matched the identity string column
@@ -159,10 +138,17 @@ class CacheTextBase(storage_sql.Model):
         return True
 
     def has_expired(self) -> bool:
+        """
+        :return: if has expires
+        """
         return (datetime.utcnow() - self.creation_date).seconds > self.max_expires_seconds
 
     @classmethod
-    def clear_cache(cls, save_session: bool):
+    def clear_cache(cls, save_session: bool) -> None:
+        """
+        :param save_session: if to save the session in command
+        :return: None
+        """
         cache_expires = datetime.utcnow() + timedelta(seconds=cls.max_expires_seconds)
         for row in cls.query.filter(cls.creation_date < cache_expires).all():
             storage_sql.session.delete(row)
@@ -193,7 +179,7 @@ class RevokePasswordMailRecord(CacheTextBase):
     model to cache a the mail field for a revoke password attempt
     to prevent re-mailing and mass the system
     """
-    identity_column_name = 'address'
+    identity_column_name = 'mail_address'
     identity_max_length = 254
 
 
