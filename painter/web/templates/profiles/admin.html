@@ -66,13 +66,13 @@
                 {% for page in pagination.iter_pages() %}
                     {% if page %}
                         <a class="list-group-item list-group-item-action {% if page == pagination.page %}active {% endif %}list-group-item-dark"
-                        href="{{ url_for('admin.admin', page=page) }}">{{ page }}</a>
+                        href="{{ url_for('admin.admin_page', page=page) }}">{{ page }}</a>
                     {% else %}
                         <a class="list-group-item disabled">...</a>
                     {% endif %}
                 {% endfor %}
             {% endif %}
-            <a class='list-group-item {% if pagination.has_next %}list-group-item-action {% else %}disabled {% endif %}list-group-item-dark'{% if pagination.has_next %}href='{{ url_for("admin.admin", page=pagination.next_num) }}'{% endif %}>Next</a>
+            <a class='list-group-item {% if pagination.has_next %}list-group-item-action {% else %}disabled {% endif %}list-group-item-dark'{% if pagination.has_next %}href='{{ url_for("admin.admin_page", page=pagination.next_num) }}'{% endif %}>Next</a>
         </div>
     </div>
     <!-- CSRF Protection -->

@@ -56,7 +56,7 @@ const ZOOMED_OUT_DEFAULT_LEVEL = 4;
 /** @const {number} DEFAULT_START_AXIS the center of the board 500, where starting if no other arguments are found {@link mapFrags} */
 const DEFAULT_START_AXIS = 500;
 
-/** @const {io.SocketIO} sock socket.io object to talk with the server */
+/** @const {socketIO} sock socket.io object to talk with the server */
 const sock = io('/paint', {
 	autoConnect: false,
 	transports: ['websocket'] // or [ 'websocket', 'polling' ], which is the same thing
@@ -647,14 +647,13 @@ const mapFrags = {
 		return mapFrags.hash() != window.location.hash;
 	},
 	/**
-	 * @returns {number} size of step (amount of window pixels that fit 1 board pixel) in pixels
 	 * calculates size of step, used for other functions
      * == 50/this.scale
+	 * @returns {number} size of step (amount of window pixels that fit 1 board pixel) in pixels
 	 */
 	getStepSize() {
 		return MAX_SCALE / mapFrags.scale;
 	},
-
 	/**
 	 * @private
 	 * @returns {string} the raw path for the map
@@ -672,7 +671,7 @@ const mapFrags = {
 	 * the value for location's hash field to set mapFrags as current
      * @summary simple get
 	 */
-	getAsArgument() {
+	asArgument() {
 		return `?${this._getFragsAsPathParams}`
 	},
 	/**
@@ -1433,15 +1432,15 @@ const board = {
 		this.updateZoom(); // also centers and adjust for devicePixelRatio
 	},
 	/**
+	 * simple get
 	 * @returns {CanvasRenderingContext2D} the context of the displayed board
-	 * returns the context of the display board
 	 */
 	getCanvasContext(){
 		return this.canvas[0].getContext('2d');
 	},
 	/**
-	 * @returns {CanvasRenderingContext2D} the context of the canvas that contains the full board
 	 * returns the context of the display board
+	 * @returns {CanvasRenderingContext2D} the context of the canvas that contains the full board
 	 */
 	getImageContext(){
 		return this.img_canvas.getContext('2d');
@@ -1450,17 +1449,13 @@ const board = {
 	 * resets board build by setting the buildBoard method is_ready to false
 	 */
 	resetBoardBuild() {
-		/**
-		 * reset values for board build
-		 */
 		this.buildBoard = _.once(this._buildBoard);
 		board.is_ready = false
 	},
 	/**
-	 * 
-	 * @param {Vector2D} dir direction to move the board
 	 * adds the vector to the move vector property
 	 * also starts moving the board if didnt work
+	 * @param {Vector2D} dir direction to move the board
 	 */
 	addMovement(dir) {
 		this.move_vector.addVector(dir);
@@ -1478,9 +1473,8 @@ const board = {
 		}
 	},
 	/**
-	 * 
-	 * @param {Uint8Array} buffer buffer of bytes represent the board
 	 * builds the board first time
+	 * @param {Uint8Array} buffer buffer of bytes represent the board
 	 */
 	_buildBoard(buffer) {
 		// creates new image to display
@@ -1521,7 +1515,6 @@ const board = {
 	 * validates a values
 	 */
 	setAt(x, y, color_idx) {
-
 		// set a pixel at a position
 		// x: number (0 < x < 1000)
 		// y: number (0 < x < 1000)
@@ -1979,7 +1972,7 @@ $(document).ready(function() {
 	}, false);
 	// copy coords - https://stackoverflow.com/a/37449115
 	let clipboard = new ClipboardJS('#coordinates', {
-		text: function() { return window.location.origin + window.location.pathname + mapFrags.getAsArgument()(); }
+		text: function() { return window.location.origin + window.location.pathname + mapFrags.asArgument()(); }
 	});
 	// clipboard to copy board
 	clipboard.on('success', function() {

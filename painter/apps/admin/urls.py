@@ -20,7 +20,7 @@ from .utils import only_if_superior, role_required, json_response, validate_get_
 
 @admin_router.route('/admin', methods=('GET',))
 @role_required(Role.admin)
-def admin() -> Response:
+def admin_page() -> Response:
     """
     :return: return's admin template
     """

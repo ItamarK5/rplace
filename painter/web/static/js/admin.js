@@ -93,7 +93,7 @@ const refreshButtonState = (_stack=0) => {
 // creates the io object
 /**
  * @const {SocketIO} sock
- * socket
+ * socket connected to admin namespace
  */
 const sock = io('/admin');
 /**
@@ -175,7 +175,7 @@ $(document).ready(() => {
 	$('tr:parent(#users-table)').click(function() {
 		let name = $(this).children('.name-col').text();
 		if(name){
-			window.location.href = `/edit/${$(this).children('.name-col').text()}`
+			window.location.href = `/edit-user/${$(this).children('.name-col').text()}`
 		};
 	});
 	// click place

@@ -90,7 +90,7 @@ const MakeNoteRow = (note) => {
 const hasNotFoundResponse = (xhr) => _.has(xhr, 'status') && xhr.status == 404;
 
 /**
- * @param {?{number|string}} num represent the number of the page
+ * @param {?number|?string}} num represent the number of the page
  * @param {?string} text text of he number
  * @returns {HTMLButtonElement} new button
  * create page button from page data

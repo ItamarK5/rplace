@@ -23,7 +23,6 @@ from .others.utils import (
     NewUserForm, MyCommand
 )
 
-
 manager = Manager(
     create_app,
     description='Social Painter CMD Service',
@@ -52,6 +51,8 @@ manager.add_command('shell', shell_command)
 class RunServer(Server):
     """
     Starts a production server
+
+    overrides the default start server option so it would run with runserver
     """
 
     def get_options(self) -> Iterable[Option]:
@@ -85,7 +86,7 @@ class RunServer(Server):
         :param  use_reloader: if to use the reloader option of flask
         :type   use_reloader: bool
         :return: nothing
-        override the default runserver command to start a Socket.IO server
+        override the default runserver command to start a Socket.IO eventlet server
         """
         host = host if host is not None else app.config.get('APP_HOST', '127.0.0.1')
         port = port if port is not None else app.config.get('APP_PORT', 8080)
@@ -186,7 +187,6 @@ create_user_command.add_option(Option('--m', '-mail', '-addr', dest='mail_addres
 create_user_command.add_option(Option('--r', '-role', dest='role',
                                       choices=tuple(set(map(lambda i: i[1], ROLE_OPTIONS))),
                                       help="the user\'s role would be admin"))
-
 
 manager.add_command('create-user', create_user_command)
 
