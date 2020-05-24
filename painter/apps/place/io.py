@@ -1,10 +1,10 @@
 import json
 from datetime import datetime
 from typing import Any, Dict, Optional
-
+from painter.backends.extensions import cache
 import redis
 from flask_login import current_user
-
+from typing import Callable
 from painter.backends import lock, board
 from painter.backends.extensions import storage_sql
 from painter.backends.skio import (
@@ -13,6 +13,7 @@ from painter.backends.skio import (
     socket_io_authenticated_only_event,
 )
 from painter.others.constants import COLOR_COOLDOWN
+from functools import wraps
 
 
 def task_set_board(x: int, y: int, color: int) -> None:
@@ -48,18 +49,56 @@ def get_start_data() -> Optional[Dict[str, Any]]:
     lock: if the board is locked
     }
     """
-    try:
-        return {
-            'board': board.get_board(),
-            'locked': not lock.is_open(),
-            'time': str(current_user.next_time)
-        }
-    except redis.exceptions.ConnectionError:
-        return None
+    return {
+        'locked': not lock.is_open(),
+        'board': board.get_board(),
+        'time': str(current_user.next_time)
+    }
+
+
+def limit_user_calls(timeout_between_request: int,
+                     response_result: Callable,
+                     wrapper_cache_key: Optional[str] = None,
+                     ) -> Callable:
+    """
+    :param timeout_between_request: the time to cache
+    :param wrapper_cache_key: key prefix for user
+    :param response_result: the response sent when fail to capture
+    :return: the function result
+    """
+    def wrapper(route: Callable, _cache_prefix: Optional[str]) -> Callable:
+        """
+        :param route: io wrapper
+        :param _cache_prefix: the cached key format
+        :return: the wrapped function
+        a wrapped function to prevent user exploits of timing
+        using the cache module prevents the user to access the function
+        """
+        _cache_prefix = _cache_prefix if _cache_prefix is not None else route.__name__ + ':%d'
+
+        # first default key prefix is the function name:id
+        @wraps(route)
+        def wrapped(*args, **kwargs):
+            # first cache
+            cached_key = _cache_prefix % current_user.id
+            if cache.get(cached_key) is None:
+                # set
+                cache.set(cached_key, True, timeout=timeout_between_request)
+                result = route(*args, **kwargs)
+                # delete cached key
+                cache.delete(cached_key)
+                return result
+            else:
+                return response_result
+        return wrapped
+    return lambda func: wrapper(func, wrapper_cache_key)
 
 
 @sio.on('set-board', PAINT_NAMESPACE)
 @socket_io_authenticated_only_event
+@limit_user_calls(
+    5, None
+)
 def set_board(params: Any) -> str:
     """
     :param params: params given to the Dictionary
@@ -67,6 +106,8 @@ def set_board(params: Any) -> str:
     or undefined if couldn't update the screen
     """
     # try
+    # first set user in cache
+    # give 15 seconds cooldown between each request to prevent re-auto clicking
     try:
         # get current_time in utc
         current_time = datetime.utcnow()

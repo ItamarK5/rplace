@@ -1265,7 +1265,7 @@ const pen = {
 				imageUrl:'https://i.chzbgr.com/full/570936064/hF75ECDD4/error-404-server-not-found',
 				imageAlt:'Server Not Found and Also this image, maybe you out of numberernet',
 				text:'The Server Cannot be Found, if you wait a little it might be found',
-				confirmButtonText: 'To Waiting'
+				confirmButtonText: 'Back to Wait'
 			})
 			// also again check with server if 5 seconds after didn't load
 			try_reconnect()	
@@ -1316,10 +1316,22 @@ const pen = {
 				}
 				// else it must be json
 				let data = JSON.parse(value);
-				if (data.code == 'lock' && data.status == 'true') {
-					lockedState.lock()
-				} else if (data.code == 'time') {
-					progress.setTime(data.status)
+				if(_.isNull(data)){
+					Swal.fire({
+						icon:'danger',
+						title:'Erorr',
+						text:'An Error occurred in the server'
+					})
+				}
+				switch(data.code){
+					case 'lock': {
+						if(data.status.data == 'true'){
+							lockedState.lock()
+						}
+					}	
+					case 'time': {
+						progress.setTime(data.status)
+					}
 				}
 			});
 		}
@@ -1874,7 +1886,7 @@ $(document).ready(function() {
 		wheel_event.preventDefault();
 		mapFrags.setScale(
 			clamp(
-				mapFrags.scale + Math.sign(e.originalEvent.wheelDelta) * 1,
+				mapFrags.scale + Math.sign(wheel_event.originalEvent.wheelDelta) * 1,
 				MAX_SCALE,
 				MIN_SCALE
 			)

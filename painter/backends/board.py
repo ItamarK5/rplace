@@ -4,7 +4,8 @@
 from redis.exceptions import RedisError
 
 from .extensions import redis_store, cache
-
+from redis.exceptions import ConnectionError as RedisConnectionError
+from typing import Optional
 # the key for the board in redis database
 KEY = 'board'
 
@@ -25,13 +26,14 @@ def create() -> bool:
         return False
 
 
-@cache.cached(timeout=1)
-def get_board() -> str:
+def get_board() -> Optional[str]:
     """
     :return: the board from the database
-    cached for 1 second because of timeout
     """
-    return redis_store.get(KEY)
+    try:
+        return redis_store.get(KEY)
+    except RedisConnectionError:
+        return None
 
 
 def set_at(x: int, y: int, color: int) -> None:

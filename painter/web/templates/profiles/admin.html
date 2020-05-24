@@ -60,7 +60,7 @@
     <!-- Page List -->
     <div class="row justify-content-center">
         <div class="list-group list-group-horizontal" id="page-list" class="user-select-none">
-            <a class='list-group-item {% if pagination.has_prev %}list-group-item-action {% else %}disabled {% endif %}list-group-item-dark'{% if pagination.has_prev %}href='{{ url_for("admin.admin", page=pagination.prev_num) }}'{% endif %}>Prev</a>
+            <a class='list-group-item {% if pagination.has_prev %}list-group-item-action {% else %}disabled {% endif %}list-group-item-dark'{% if pagination.has_prev %}href='{{ url_for("admin.admin_page", page=pagination.prev_num) }}'{% endif %}>Prev</a>
             <!-- if has next or prev, means any pages -->
             {% if pagination.has_prev or pagination.has_next %}
                 {% for page in pagination.iter_pages() %}

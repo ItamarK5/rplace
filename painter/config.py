@@ -1,5 +1,5 @@
 """
-Configuration file
+    Configuration file
 """
 import datetime
 from typing import Optional
@@ -63,7 +63,7 @@ class FlaskDefaultSettings:
     APP_NON_LOGIN_ROUTE: str = 'place.home'
     # url for redis
     REDIS_URL: str = redis_uri(
-        host='192.168.252.17',
+        host='192.168.1.25',
         # default port 6379
         # default database 0
         password='UmPWoMqjGXVY7MI15rTHVKmTNRIroxcEPMVN'
@@ -96,7 +96,7 @@ class FlaskDefaultSettings:
     SESSION_COOKIE_SAMESITE: str = 'Lax'
     # celery configuration, the broker uri, where to send configuration
     BROKER_URL: str = redis_uri(
-        host='192.168.252.17',
+        host='192.168.1.25',
         # default port 6379
         database=1,
         password='UmPWoMqjGXVY7MI15rTHVKmTNRIroxcEPMVN'
@@ -109,6 +109,6 @@ class FlaskApp(FlaskDefaultSettings):
     build for the modal of future planning
     """
     # default host for the app
-    APP_HOST = '192.168.252.13'
+    APP_HOST = '192.168.1.23'
     # default port running the app
     APP_PORT = 8080

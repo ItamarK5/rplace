@@ -223,14 +223,12 @@ class SignUpForm(BaseForm,
         # check if name is duplication
         is_dup_name = (
                 User.query.filter_by(username=self.username.data).first() is not None
-                and
-                SignupNameRecord.exists(self.username.data)
+                or SignupNameRecord.exists(self.username.data)
         )
         # check if email is duplication
         is_dup_email = (
                 User.query.filter_by(email=self.email.data).first() is not None
-                and
-                not SignupMailRecord.exists(self.email.data)
+                or SignupMailRecord.exists(self.email.data)
         )
         if is_dup_name or is_dup_name:
             if is_dup_name:

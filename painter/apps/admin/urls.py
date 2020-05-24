@@ -7,7 +7,6 @@ from flask_login import current_user
 from flask_wtf.csrf import CSRFError
 from sqlalchemy.orm.exc import NoResultFound
 from werkzeug import exceptions
-
 from painter.backends import lock
 from painter.backends.extensions import storage_sql
 from painter.backends.skio import ADMIN_NAMESPACE, PAINT_NAMESPACE, sio
@@ -196,7 +195,6 @@ def get_user_notes(user: User):
     current_page: the current page
     """
     page = validate_get_notes_param('page')
-    # get notes for page
     pagination = user.related_notes.paginate(page=page, max_per_page=5)
     return jsonify(
         query=[item.json_format(current_user) for item in pagination.items],

@@ -3,9 +3,11 @@ represents working with lock object with the redis database
 """
 from typing import Optional
 
-from redis.exceptions import RedisError
+from redis.exceptions import ConnectionError as RedisConnectionError
 
 from .extensions import redis_store
+from typing import Optional
+
 
 _DISABLE = b'0'  # False
 _ENABLE = b'1'  # True
@@ -32,11 +34,11 @@ def drop() -> bool:
         if redis_store.exists(KEY):
             return bool(redis_store.delete(KEY, _ENABLE))  # default allow
         return False
-    except RedisError:
+    except RedisConnectionError:
         return False
 
 
-def is_open_val(val: bytes) -> bool:
+def _is_open(val: bytes) -> bool:
     """
     :param val: a val represent redis representation of lock
     :return: if lock is open, enabled
@@ -49,8 +51,8 @@ def is_open() -> Optional[bool]:
     :return: is lock open  | None if cant get the server
     """
     try:
-        return is_open_val(redis_store.get(KEY))
-    except RedisError:
+        return _is_open(redis_store.get(KEY))
+    except RedisConnectionError:
         return None
 
 
@@ -83,4 +85,4 @@ def set_switch(set_active: bool) -> bool:
     return close_lock()
 
 
-__all__ = ['open_lock', 'close_lock', 'is_open', 'set_switch', 'create', 'is_open_val']
+__all__ = ['open_lock', 'close_lock', 'is_open', 'set_switch', 'create']

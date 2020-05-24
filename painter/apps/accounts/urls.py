@@ -10,7 +10,7 @@ from flask import render_template, abort
 from flask_login import login_fresh
 from flask_login import logout_user, login_user, login_required
 from flask_wtf import FlaskForm
-from sqlalchemy.exc import DBAPIError
+from sqlalchemy.exc import InterfaceError
 from werkzeug.wrappers import Response
 
 from painter.backends.extensions import storage_sql
@@ -258,7 +258,7 @@ def confirm(token: str) -> Response:
             User.username == name, User.password == pswd,
         ).first()
         # check if user exists
-        if user is not None:
+        if user is not None or (not SignupNameRecord.exists(name)) or (not SignupMailRecord.exists(email)):
             return render_template(
                 'responses/reconfirm-fail.html',
                 view_name='Login',
@@ -270,10 +270,13 @@ def confirm(token: str) -> Response:
             password=pswd,
             email=email
         )
+        SignupMailRecord.force_forget(name)
+        SignupNameRecord.force_forget(email)
+
         # save user
         storage_sql.session.add(user)
         storage_sql.session.commit()
-    except DBAPIError:
+    except InterfaceError:
         abort(500, "Server has failed to create new user")
     # return message
     return render_template(
