@@ -16,8 +16,8 @@ class MailTokens(object):
 		to generate and convert itsdangerous tokens
 	"""
 	# https://realpython.com/handling-email-confirmation-in-flask/
-	signup: URLSafeTimedSerializer
-	revoke: URLSafeTimedSerializer
+	signup_serializer: URLSafeTimedSerializer
+	revoke_serializer: URLSafeTimedSerializer
 
 	@classmethod
 	def init_app(cls, app: Flask) -> None:
@@ -26,12 +26,12 @@ class MailTokens(object):
 		:return: None
 		initialize the token serializer backend with the application configuration
 		"""
-		cls.signup = URLSafeTimedSerializer(
+		cls.signup_serializer = URLSafeTimedSerializer(
 			secret_key=app.config['SECRET_KEY'],
 			salt=app.config['APP_TOKEN_SIGNUP_SALT'],
 
 		)
-		cls.revoke = URLSafeTimedSerializer(
+		cls.revoke_serializer = URLSafeTimedSerializer(
 			secret_key=app.config['SECRET_KEY'],
 			salt=app.config['APP_TOKEN_REVOKE_SALT'],
 		)
@@ -79,6 +79,7 @@ class MailTokens(object):
 @accounts_router.before_app_first_request
 def init_tokens() -> None:
 	"""
-	:return: init the token generator object
+	:return: None
+	SignupTokenForm
 	"""
 	MailTokens.init_app(current_app)

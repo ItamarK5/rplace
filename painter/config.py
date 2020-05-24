@@ -2,7 +2,6 @@
 Configuration file
 """
 import datetime
-from abc import ABC
 from typing import Optional
 
 # region utilities
@@ -33,7 +32,7 @@ def redis_uri(
 
 # endregion
 
-class FlaskDefaultSettings(ABC):
+class FlaskDefaultSettings:
     # simple cache, because I use it in the file system
     CACHE_TYPE: str = 'simple'
     # if to send mails (True) or (Not) debug mode for mail
@@ -93,7 +92,7 @@ class FlaskDefaultSettings(ABC):
     # protects session from being access to external sites, Lax
     SESSION_COOKIE_SAMESITE: str = 'Lax'
     # celery configuration, the broker uri, where to send configuration
-    CELERY_BROKER_URL: str = redis_uri(
+    BROKER_URL: str = redis_uri(
         host='192.168.1.25',
         # default port 6379
         database=1,
@@ -105,4 +104,4 @@ class FlaskApp(FlaskDefaultSettings):
     # default host for the app
     APP_HOST = '127.0.0.1'
     # default port running the app
-    APP_POTT = 8080
+    APP_PORT = 8080

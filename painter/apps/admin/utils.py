@@ -10,35 +10,27 @@ from painter.models import Role, User
 from painter.others.wtforms_mixins import UsernamePattern
 
 
-def admin_only(f: Callable) -> Callable:
+def role_required(role: Role) -> Callable:
     """
-    :param f: decorator, which decorates a view, make it admin only used
-    :return: a route that aborts 404 non-admin users that enter, all actions of admin must be with refreshed login
+    :param role: a minimal role required to enter
+    :return: if the user has the required status to enter
     """
-
-    @wraps(f)
-    def wrapped(*args, **kwargs):
-        if (not current_user.is_authenticated) or (not current_user.has_required_status(Role.admin)):
-            # abort 404
-            abort(404)
-        # else
-        else:
-            # decorated by flesh_login_required, so that it user isnt refreshed and prevent seeing the site
-            return fresh_login_required(f)(*args, **kwargs)
-
-    return wrapped
-
-
-def superuser_only(f: Callable) -> Callable:
-    def wrapped(*args, **kwargs):
-        if current_user.is_authenticated and current_user.has_required_status(Role.superuser):
-            # decorated by flesh_login_required, so that it user isnt refreshed and prevent seeing the site
-            return fresh_login_required(f)(*args, **kwargs)
-        # else
-        else:
-            abort(404)
-
-    return admin_only(wrapped)
+    def wrapper(f: Callable) -> Callable:
+        """
+            :param f: decorator, which decorates a view, make it role only used
+            :return: a route that aborts 404 non-admin users that enter, all actions of admin must be with refreshed login
+        """
+        @wraps(f)
+        def wrapped(*args, **kwargs):
+            if not (current_user.is_authenticated and current_user.has_required_status(role)):
+                # abort 404
+                abort(404)
+            # else
+            else:
+                # decorated by flesh_login_required, so that it user isnt refreshed and prevent seeing the site
+                return fresh_login_required(f)(*args, **kwargs)
+        return wrapped
+    return wrapper
 
 
 def only_if_superior(f: Callable[[User], Response]) -> Callable[[str], Response]:
@@ -67,7 +59,8 @@ def only_if_superior(f: Callable[[User], Response]) -> Callable[[str], Response]
             abort(403, 'Cannot access user')  # Forbidden
         return f(user=user, *args, **kwargs)
 
-    return admin_only(wrapped)  # uses admin_only to check if the user is authenticated and at least admin
+    # uses role_reuqired to check if the user is authenticated and at least admin
+    return role_required(Role.admin)(wrapped)
 
 
 def json_response(success: bool, text: str) -> Response:

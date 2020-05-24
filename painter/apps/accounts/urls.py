@@ -100,7 +100,7 @@ def signup() -> Response:
         send_signing_up_message(
             name,
             email,
-            MailTokens.signup.dumps(
+            MailTokens.signup_serializer.dumps(
                 {
                     'mail_address': email,
                     'username': name,
@@ -135,7 +135,7 @@ def revoke() -> Response:
             send_revoke_password_message(
                 user.username,
                 form.email.data,
-                MailTokens.revoke.dumps({
+                MailTokens.revoke_serializer.dumps({
                     'password': user.password,
                     'mail_address': user.email
                 })
@@ -155,7 +155,7 @@ def change_password(token: str) -> Response:
     extracted_token = MailTokens.extract_signature(
         token,
         RevokeTokenForm,
-        MailTokens.revoke,
+        MailTokens.revoke_serializer,
     )
     # validated if any token
     if extracted_token is None:
@@ -222,7 +222,7 @@ def confirm(token: str) -> Response:
     extracted_token = MailTokens.extract_signature(
         token,
         SignupTokenForm,
-        MailTokens.signup
+        MailTokens.signup_serializer
     )
     if extracted_token is None:
         return render_template(

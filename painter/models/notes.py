@@ -31,7 +31,7 @@ class Note(storage_sql.Model):
     user_writer_id = Column(Integer(), ForeignKey('user.id'), nullable=False)
 
     # if the note is a record (see down)
-    is_record = Column(Boolean(), nullable=True)
+    is_record = Column(Boolean(), nullable=False)
 
     # relationships
     user_subject = relationship('User', foreign_keys='Note.user_subject_id',

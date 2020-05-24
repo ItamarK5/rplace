@@ -29,7 +29,7 @@ ExpireModels = []
 
 
 # noinspection PyMethodParameters
-class CacheTextBase(storage_sql.Model):
+class AbstractCacheTable(storage_sql.Model):
     """
      An base for classes that inherit the flask_sqlalchemy model class
      that classes is a simple table cache, stores values for a limited amount of time
@@ -71,7 +71,7 @@ class CacheTextBase(storage_sql.Model):
         return to_small_case(cls.__name__)
 
     @classmethod
-    def get_identified(cls, identity_string: str) -> Optional['CacheTextBase']:
+    def get_identified(cls, identity_string: str) -> Optional['AbstractCacheTable']:
         """
         :param identity_string: get the object matched to the identity string
         :return: the object or None
@@ -156,7 +156,7 @@ class CacheTextBase(storage_sql.Model):
             storage_sql.session.commit()
 
 
-class SignupMailRecord(CacheTextBase):
+class SignupMailRecord(AbstractCacheTable):
     """
     Used to cache a name of a new user.
     to prevent reuse of it and re-mailing over and over again
@@ -165,7 +165,7 @@ class SignupMailRecord(CacheTextBase):
     identity_max_length = 254
 
 
-class SignupNameRecord(CacheTextBase):
+class SignupNameRecord(AbstractCacheTable):
     """
     Used to cache a mail of a new user
     to prevent reuse of it and re-mailing over and over again
@@ -174,7 +174,7 @@ class SignupNameRecord(CacheTextBase):
     identity_max_length = 15
 
 
-class RevokePasswordMailRecord(CacheTextBase):
+class RevokePasswordMailRecord(AbstractCacheTable):
     """
     model to cache a the mail field for a revoke password attempt
     to prevent re-mailing and mass the system

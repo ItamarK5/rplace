@@ -1,3 +1,6 @@
+"""
+Shell for testing
+"""
 from flask_script import Shell
 from ..models import (
     SignupNameRecord, SignupMailRecord, RevokePasswordMailRecord,
@@ -27,6 +30,10 @@ def _make_context():
         'storage_sql': storage_sql
     }
 
+
+"""
+creates a command shell,
+"""
 
 shell_command = Shell(make_context=_make_context)
 

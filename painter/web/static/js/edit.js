@@ -47,7 +47,7 @@ class Note {
  * @name GetUserName
  * @returns {string} name of the user in url
  * gets the user name
- * url build in as http://127.0.0.1:8080/edit/{name}
+ * url build in as http://127.0.0.1:8080/edit-user/{name}
  */
 const GetUserName = () => window.location.pathname.split('/')[2];
 /**

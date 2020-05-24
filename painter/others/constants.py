@@ -55,7 +55,7 @@ FLAG_SERVICES_OPTIONS = {
 DEFAULT_MAX_AGE_USER_TOKEN = 3600
 
 
-class ServiceResultsPrint:
+class ServiceResultsFlags:
     """
     object used to save options for check-service command
     """
@@ -84,9 +84,9 @@ class ServiceResultsPrint:
 
 # the formats
 SERVICE_RESULTS_FORMAT = (
-    ServiceResultsPrint('{:^12}', 'SERVICE', 'service_name'),
-    ServiceResultsPrint('{:^12}', 'STATUS', 'result'),
-    ServiceResultsPrint('{:^15}', 'TASK DURATION', 'duration', DURATION_OPTION_FLAG),
+    ServiceResultsFlags('{:^12}', 'SERVICE', 'service_name'),
+    ServiceResultsFlags('{:^12}', 'STATUS', 'result'),
+    ServiceResultsFlags('{:^15}', 'TASK DURATION', 'duration', DURATION_OPTION_FLAG),
 )
 
 ROLE_CHOICE_MAP = {

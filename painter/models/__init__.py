@@ -1,4 +1,4 @@
-from painter.models.cache_model import *
+from painter.models.cache_table import *
 from .notes import Note, Record
 from .role import Role
 from .user import User, load_user

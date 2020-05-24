@@ -45,7 +45,7 @@ def is_ajax_request(request: Request) -> bool:
 def render_meme_error_page(e: exceptions.HTTPException,
                            case: Optional[str] = None,
                            page_title: Optional[str] = None,
-                           name: Optional[str] = None) -> Union[Tuple[Response, int], Exception]:
+                           name: Optional[str] = None) -> Union[Tuple[Response, int], HTTPException]:
     """
     :param e: the exception to render the page_error
     :param case: the name of the case for the error/code of the HTTPException

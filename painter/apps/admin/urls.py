@@ -15,11 +15,11 @@ from painter.models import Record, Note, Role, User
 from painter.others.wtforms_mixins import UsernamePattern
 from . import admin_router
 from .forms import RecordForm, NoteForm
-from .utils import only_if_superior, admin_only, superuser_only, json_response, validate_get_notes_param
+from .utils import only_if_superior, role_required, json_response, validate_get_notes_param
 
 
 @admin_router.route('/admin', methods=('GET',))
-@admin_only
+@role_required(Role.admin)
 def admin() -> Response:
     """
     :return: return's admin template
@@ -34,7 +34,7 @@ def admin() -> Response:
 
 
 @admin_router.route('/is-board-locked', methods=('GET',))
-@admin_only
+@role_required(Role.admin)
 def get_active_state() -> Response:
     """
     :return: json response
@@ -48,7 +48,7 @@ def get_active_state() -> Response:
 
 
 @admin_router.route('/change-lock-state', methods=('POST',))
-@superuser_only
+@role_required(Role.admin)
 def set_admin_button() -> Response:
     """
     :return: json response
@@ -64,8 +64,8 @@ def set_admin_button() -> Response:
     return json_response(True, new_state)
 
 
-@admin_router.route('/edit/<string:name>', methods=('GET',))
-@admin_only
+@admin_router.route('/edit-user/<string:name>', methods=('GET',))
+@role_required(Role.admin)
 def edit_user(name: str) -> Response:
     """
     :param: name of user
