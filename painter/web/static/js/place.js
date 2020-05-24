@@ -519,7 +519,7 @@ const progress = {
      * @returns {boolean} if progress still works
      * @desc if progress isn't finished, user still cant place pixels
      */
-	hasFinished(){
+	isWorking(){
 		return this._work.isWorking;
 	},
 	/**
@@ -545,19 +545,19 @@ const progress = {
 	 */
 	setTime(time) {
 		// handles starting the timer waiting
+		console.log(time)
 		this.when_cooldown_ends = Date.parse(time + ' UTC');
 		// if current time is after end of cooldown
 		if (this.when_cooldown_ends < getUTCTimestamp()) {
 			$('prog-text').text('0:00'); // set text 0
 			$('#prog-fill').attr('state', 1); // prog-fill state is 9
 			$('#time-prog').attr('state', 0); // time progress set to 1
-			if (this.hasFinished()) { // stop work in case
-				this._work.stop();
-			}
+			this._work.safeStop()
 		}
 		// when stops working
-		else if (!this.hasFinished()) {
-			this._current_second = 300;
+		else if (!this.isWorking()) {
+			// to be changeable
+			this._current_second = -1;
 			this._work.start()
 			// set cursor to be pen
 			cursor.setPen();
@@ -963,7 +963,7 @@ const cursor = {
 	 * sets the cursor to pen or wait state, depending if the progress bar is waiting
 	 */
 	setPen() {
-		this.updateCursor(progress.isWorking || lockedState.locked ? Cursors.wait : Cursors.pen)
+		this.updateCursor(progress.isWorking() || lockedState.locked ? Cursors.wait : Cursors.pen)
 	},
 	/**
 	 * sets the cursor state to grab state
@@ -1278,7 +1278,7 @@ const pen = {
 			});
 		}
 		// progress working -> waits for the next time the player can draw
-		else if (progress.hasFinished()) {
+		else if (progress.isWorking()) {
 			Swal.fire({
 				title: 'You have 2 wait',
 				imageUrl: 'https://aadityapurani.files.wordpress.com/2016/07/2.png',
@@ -1795,7 +1795,7 @@ function DocumentKeyPress(key_event){
  */
 function fetchBoard() {
 	sock.emit('get-start', (data) => {
-		if(!(_.isUndefined(data) || _.isNull(data))){
+		if(!(_.isUndefined(data) || _.isNull(data) || _.isNull(data.locked) || _.isNull(data.board))){
 			progress.setTime(data.time)
 			board.buildBoard(new Uint8Array(data.board));
 			if (data.locked) {

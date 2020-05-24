@@ -560,7 +560,6 @@ $(document).ready(() => {
 	$('#remove-note-button').click(() => {
 		let targeted_row = GetTargetRow();
 		let note_idx = parseInt(targeted_row.attr('data-item'))
-		console.log(targeted_row)
 		if(targeted_row){
 			$.post({
 				url:`/delete-note`,

@@ -39,6 +39,13 @@ def connect():
     pass
 
 
+def dispatch_lock(lock_val: Optional[bool]) -> None:
+    """
+    :return: dispatch a lock value
+    """
+    return not lock_val if lock_val is not None else None
+
+
 @sio.on('get-start', PAINT_NAMESPACE)
 @socket_io_authenticated_only_event
 def get_start_data() -> Optional[Dict[str, Any]]:
@@ -49,11 +56,15 @@ def get_start_data() -> Optional[Dict[str, Any]]:
     lock: if the board is locked
     }
     """
-    return {
-        'locked': not lock.is_open(),
+    requested_keys = {
+        'locked': dispatch_lock(lock.is_open()),
         'board': board.get_board(),
         'time': str(current_user.next_time)
     }
+    if any(key is None for key in requested_keys):
+        return None
+    return requested_keys
+
 
 
 def limit_user_calls(timeout_between_request: int,
@@ -66,6 +77,7 @@ def limit_user_calls(timeout_between_request: int,
     :param response_result: the response sent when fail to capture
     :return: the function result
     """
+
     def wrapper(route: Callable, _cache_prefix: Optional[str]) -> Callable:
         """
         :param route: io wrapper
@@ -90,7 +102,9 @@ def limit_user_calls(timeout_between_request: int,
                 return result
             else:
                 return response_result
+
         return wrapped
+
     return lambda func: wrapper(func, wrapper_cache_key)
 
 
