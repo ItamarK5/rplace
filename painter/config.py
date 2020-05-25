@@ -57,9 +57,9 @@ class FlaskDefaultSettings:
     MAIL_USE_TLS: bool = False
     # max age per token creating by the TokenSerializer (Seconds
     MAX_AGE_USER_TOKEN: int = 3600
-    # message sending to non logined app uses
+    # message sending to non login app uses
     APP_NON_LOGIN_MESSAGE: str = 'You were redirected from pages that are for non authenticated users'
-    # default route for non logined users that try access logined material
+    # default route for non authenticated users that try access authenticated only material
     APP_NON_LOGIN_ROUTE: str = 'place.home'
     # url for redis
     REDIS_URL: str = redis_uri(
@@ -68,7 +68,6 @@ class FlaskDefaultSettings:
         # default database 0
         password='UmPWoMqjGXVY7MI15rTHVKmTNRIroxcEPMVN'
     )
-    #        'redis://:UmPWoMqjGXVY7MI15rTHVKmTNRIroxcEPMVN@192.168.1.25:6379/0'
     # if use remember me cookie only in http
     REMEMBER_COOKIE_HTTPONLY: bool = False
     # remember cookie name => where to save the username key for the remember me feature
@@ -80,7 +79,7 @@ class FlaskDefaultSettings:
     # session protection of the username data for flask-loginn
     SESSION_PROTECTION: str = 'basic'
     # sqlalchemy database uri
-    SQLALCHEMY_DATABASE_URI: str = r'sqlite:///C:\Cyber\2020\rplace\database.db'
+    SQLALCHEMY_DATABASE_URI: str = r'sqlite:///./database.db'
     # if to track modification of sqlalchemy
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     # salt for token serializer
@@ -93,9 +92,9 @@ class FlaskDefaultSettings:
     # prevent double calling of flask application on the start
     WERKZEUG_RUN_MAIN: bool = True
     # protects session from being access to external sites, Lax
-    SESSION_COOKIE_SAMESITE: str = 'Lax'
-    # celery configuration, the broker uri, where to send configuration
-    BROKER_URL: str = redis_uri(
+    SESSION_COOKIE_SAME_SITE: str = 'Lax'
+    # celery configuration, the broker url, where to send configuration
+    broker_url: str = redis_uri(
         host='192.168.1.25',
         # default port 6379
         database=1,

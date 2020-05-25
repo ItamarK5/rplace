@@ -3,6 +3,8 @@
     the manager module decorates the app by command line parameter
     the module is based of flask_script module
     https://flask-script.readthedocs.io/en/latest/
+    many of the scripts in the files are based of function made in
+    https://github.com/miguelgrinberg/flack/blob/master/manage.py
 """
 from __future__ import absolute_import
 
@@ -51,7 +53,7 @@ manager.add_command('shell', shell_command)
 class RunServer(Server):
     """
     Starts a production server
-
+    https://github.com/miguelgrinberg/flack
     overrides the default start server option so it would run with runserver
     """
 
@@ -77,6 +79,7 @@ class RunServer(Server):
 
     def __call__(self, app, host, port, use_debugger, use_reloader):
         """
+        https://github.com/miguelgrinberg/flack
         :param  host: host the ip to run the server
         :type:  host: int
         :param  port: port to listen on the ip

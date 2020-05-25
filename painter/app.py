@@ -10,7 +10,6 @@ from typing import Optional
 
 from celery import Celery
 from flask import Flask
-from flask_script.commands import InvalidCommand
 
 from painter.backends.extensions import (
     storage_sql, generate_engine,
@@ -54,9 +53,8 @@ def create_app(import_class: Optional[str] = None,
         sio.init_app(app, async_mode='eventlet')
     # configure is celery worker configuration value
     celery.conf.update(app.config)
+    print(celery.conf)
     # set broker url if exists in app
-    # celery broker url must be set directly
-    celery.conf.broker_url = app.config.get('CELERY_BROKER_URL', None)
     # init Extensions
     storage_sql.init_app(app)
     celery.conf.broker_transport_options = {'visibility_timeout': 3600}  # 1 hour.
