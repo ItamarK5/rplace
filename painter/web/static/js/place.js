@@ -432,7 +432,7 @@ class Color {
 	/**
 	 * @returns {number} abgr values
 	 * calculates abgr value
-	 * caluclates abgr value of color, opposite order to rgba because bit position
+	 * calculates abgr value of color, opposite order to rgba because bit position
 	 */
 	getAbgr() {
 		return (0xFF000000 | this.red | this.green << 8 | this.blue << 16) << 0;
