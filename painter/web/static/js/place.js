@@ -1325,7 +1325,7 @@ const pen = {
 				}
 				switch(data.code){
 					case 'lock': {
-						if(data.status.data == 'true'){
+						if(data.status == 'true'){
 							lockedState.lock()
 						}
 						break;
