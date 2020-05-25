@@ -2,7 +2,6 @@ import json
 from datetime import datetime
 from typing import Any, Dict, Optional
 from painter.backends.extensions import cache
-import redis
 from flask_login import current_user
 from typing import Callable
 from painter.backends import lock, board
@@ -66,7 +65,6 @@ def get_start_data() -> Optional[Dict[str, Any]]:
     return requested_keys
 
 
-
 def limit_user_calls(timeout_between_request: int,
                      response_result: Callable,
                      wrapper_cache_key: Optional[str] = None,
@@ -111,7 +109,7 @@ def limit_user_calls(timeout_between_request: int,
 @sio.on('set-board', PAINT_NAMESPACE)
 @socket_io_authenticated_only_event
 @limit_user_calls(
-    5, None
+    7, None
 )
 def set_board(params: Any) -> str:
     """

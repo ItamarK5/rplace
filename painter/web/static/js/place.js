@@ -1319,8 +1319,8 @@ const pen = {
 				if(_.isNull(data)){
 					Swal.fire({
 						icon:'danger',
-						title:'Erorr',
-						text:'An Error occurred in the server'
+						title:'Error',
+						text:'You need to wait a couple of seconds between each set'
 					})
 				}
 				switch(data.code){
@@ -1328,9 +1328,15 @@ const pen = {
 						if(data.status.data == 'true'){
 							lockedState.lock()
 						}
+						break;
 					}	
 					case 'time': {
 						progress.setTime(data.status)
+						break;
+					}
+					default: {
+						// simple break
+						break;
 					}
 				}
 			});
