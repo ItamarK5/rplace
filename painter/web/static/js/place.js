@@ -403,7 +403,7 @@ class CursorState {
  */
 const Cursors = {
 	pen: new CursorState('crosshair', false),
-	wait: new CursorState('wait', false),
+	wait: new CursorState('wait', true),
 	grabbing: new CursorState('grabbing', true),
 }
 
