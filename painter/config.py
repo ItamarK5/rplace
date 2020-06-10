@@ -1,5 +1,6 @@
 """
     Configuration file
+    python file containing the default configuration for the app
 """
 import datetime
 from typing import Optional
@@ -43,7 +44,7 @@ class FlaskDefaultSettings:
     # default sender for mail
     MAIL_DEFAULT_SENDER: str = 'Social Painter Dash'
     # max number of mails to send per connection with a gmail server
-    MAIL_MAX_EMAILS: datetime.timedelta = datetime.timedelta(seconds=43200)
+    MAIL_MAX_EMAILS: int = 10
     # password to the email account to send mails from it
     MAIL_USERNAME: str = 'socialpainterdash@gmail.com'
     MAIL_PASSWORD: str = 'EFnsDY8>.r^9n~u5FRT/%@n^'
@@ -63,12 +64,11 @@ class FlaskDefaultSettings:
     APP_NON_LOGIN_ROUTE: str = 'place.home'
     # url for redis
     REDIS_URL: str = redis_uri(
-        host='192.168.1.25',
+        host='192.168.1.47',
         # default port 6379
         # default database 0
         password='UmPWoMqjGXVY7MI15rTHVKmTNRIroxcEPMVN'
     )
-    #        'redis://:UmPWoMqjGXVY7MI15rTHVKmTNRIroxcEPMVN@192.168.1.25:6379/0'
     # if use remember me cookie only in http
     REMEMBER_COOKIE_HTTPONLY: bool = False
     # remember cookie name => where to save the username key for the remember me feature
@@ -80,12 +80,12 @@ class FlaskDefaultSettings:
     # session protection of the username data for flask-loginn
     SESSION_PROTECTION: str = 'basic'
     # sqlalchemy database uri
-    SQLALCHEMY_DATABASE_URI: str = r'sqlite:///C:\Cyber\2020\rplace\database.db'
+    SQLALCHEMY_DATABASE_URI: str = r'sqlite:///../database.db'
     # if to track modification of sqlalchemy
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     # salt for token serializer
     APP_TOKEN_REVOKE_SALT: bytes = b'MmxUQ0tPZ2pNUEpMQ1FVdHB4aEF2N3Vyb0lScEZ3d1g='
-    APP_TOKEN_SIGNUP_SALT = b'TXNUMEZjVWdTT3phcEppN1JBYkRpNXE1WFdkelMzTkM='
+    APP_TOKEN_SIGNUP_SALT: bytes = b'TXNUMEZjVWdTT3phcEppN1JBYkRpNXE1WFdkelMzTkM='
     # number of rounds to apply hash on password
     APP_USER_PASSWORD_ROUNDS: int = 4493
     # salt for password generator
@@ -96,7 +96,7 @@ class FlaskDefaultSettings:
     SESSION_COOKIE_SAMESITE: str = 'Lax'
     # celery configuration, the broker uri, where to send configuration
     BROKER_URL: str = redis_uri(
-        host='192.168.1.25',
+        host='192.168.1.47',
         # default port 6379
         database=1,
         password='UmPWoMqjGXVY7MI15rTHVKmTNRIroxcEPMVN'

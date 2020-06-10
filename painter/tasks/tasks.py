@@ -1,5 +1,7 @@
 """
-    containing celery tasks related to sending mails
+    Author: Itamar Kanne
+    File: tasks.py
+    contains all the tasks in the system to execute by the celery worker
 """
 
 from __future__ import absolute_import

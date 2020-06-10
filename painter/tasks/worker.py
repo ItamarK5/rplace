@@ -12,6 +12,5 @@ from . import tasks
 app = create_app(is_celery=True)
 
 app.app_context().push()
-print(celery.conf.broker_url)
 # preventing unused import statement
 __all__ = ['app', 'celery', 'tasks']
