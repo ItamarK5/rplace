@@ -464,6 +464,7 @@ $(document).ready(() => {
 			},
 		}).catch(ajaxErrorAlert)
 	});
+
 	$('#note-form').submit(function(e) {
 		let success_message = $('#note-form .success-message')[0];
 		if (!success_message.hasAttribute('hidden')) {
