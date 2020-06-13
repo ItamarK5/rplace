@@ -1,3 +1,8 @@
+/**
+ * @auther Itamar Kanne
+ * @file the main project file, includes all javascript code of the painter app
+ */
+
 
 /** @const FETCH_BOARD_INTERVAL */
 const FETCH_BOARD_INTERVAL = 2000;
@@ -676,6 +681,7 @@ const mapFrags = {
 	},
 	/**
 	 * @param {Vector2D} vector represent the new center
+	 * center the board at the vector (represents a point)
 	 */
 	centerOn(vector){
 		x = isNaN(vector.x) ? mapFrags.cx : clamp(vector.x, CANVAS_SIZE, 0);
@@ -835,7 +841,7 @@ const mapFrags = {
 		return flag;
 	},
 	/**
-	 * @param {number} scale 
+	 * @param {number} scale the new scale value to view the page
 	 * @param {boolean} to_update if to update the
 	 * @desc if the scale level is less then 0.5
 	 */
@@ -854,14 +860,9 @@ const mapFrags = {
 	},
 	/**
 	 * @returns if any changes to the view
-	 * handling changes to the fragments 
-     * wraps this._refreshFrags
-     * @see {@link mapFrags#_refreshFrags}
+	 * @desc refreshes the page position variables and fixes them
 	 */
 	refreshFragments() {
-		/*  refreshFragments(bool) -> void
-		 *  refresh the mapFrags object by the current hash values if they are valid
-		 */
 		let frags = this._determineFragments();
 		let any_changes = frags.x != this.cx || frags.y != this.cy || frags.scale != this.scale;
 		if(any_changes){
@@ -875,7 +876,6 @@ const mapFrags = {
 		
 	},
 	/**
-     * @desc
 	 * function handling fixing the hash displayed
 	 * another function wraps it to make it only be only x time after the last the function was called
 	 */
@@ -1829,9 +1829,7 @@ function fetchBoard() {
 	});
 }
 
-/**
- * Document event
- */
+
 $(document).ready(function() {
 	// init all buildBoard releated objects
 	mapFrags.preRun();

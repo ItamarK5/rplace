@@ -1,3 +1,8 @@
+/**
+ * @auther Itamar Kanne
+ * @file this file includes all javascript code that runs in the edit user page.
+ */
+
 /** @const history_table jquery reference */
 const history_table = $('#history-table');
 // map for note type
@@ -25,7 +30,7 @@ class Note {
 	 * @param {boolean} can_edit if user has permission to edit the note
 	 * @param {?string} affect_form the date the note taken effect (if its record), if its a simple note its value is null
 	 * @param {?string} reason message to the user why he was banned (if its record), if its a simple note its value is null
-	 * @param {boolean} active if the user was active after the note taken effect (if its record), if its a simple note its value is null
+	 * @param {?boolean} active if the user was active after the note taken effect (if its record), if its a simple note its value is null
 	 */
 	constructor(id, type, post_date, writer, description, can_edit,
 		affect_from, reason, active){
@@ -407,10 +412,6 @@ $.fn.serializeForm = function() {
 	return output;
 };
 
-/**
- * @name ready
- * event apply when DOM can be changed via javascript safely
- */
 // run when ready, when its safe to edit html elements 
 $(document).ready(() => {
 	$('[data-toggle="tooltip"]').tooltip()

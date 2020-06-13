@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: vector.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: vector.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @auther Itamar Kanne
+ * @file code containing my own implementation of a vector class
+ */
+
+
+/**
+ * @summary Type defections
+ * @typedef Vector2DType type for function that require 2d vector object @see {@link:Vector2D}
+ * @property {number} x x axis vector
+ * @property {number} y y axis of vector
+ */
+
+/** 
+ * @param {*} caller of the function
+ * @param {function} call function to that gets 1 arguments and returns nothing
+ * @param {*} val value passed as parameter
+ * executes the function only  
+*/
+const __vector2ArgsOperationWrapper = (caller, call, val) => {
+	if(!_.isUndefined(val)){
+		call.apply(caller, [val]);
+	}
+}
+
+/**
+ * @class Vector2D
+ * @classdesc class representing a 2d vector
+ * a class with simple operations between vectors
+ * the class suppose massive operations, using 1 code line chained function to return 1 object.
+ */
+class Vector2D {
+	/**
+	 * @returns {Vector2D} returns zero vector, Vector(0,0)
+	 * the zero of vector
+	 */
+	static zero(){
+		return new Vector2D(0, 0);
+	}
+	/**
+	 * @param {Vector2DType} v a vector object
+	 * @returns {Vector2D} 2d vector type
+	 * evaluates the object as 2D vector
+	 */
+	static evalVector(v){
+		if(v instanceof Vector2D){
+			return v;
+		// if array
+		} else if(v instanceof Array &amp;&amp; v.length == 2){
+			return new Vector2D(v[0], v[1]);
+		// if object
+		} else if(v instanceof Object &amp;&amp; _.keys(v) == ["x", "y"]){
+			return new Vector2D(v.x, v.y)
+		}
+		// else
+		return undefined;
+	}
+	/**
+	 * @param {number} x - x value
+	 * @param {numBer} y - y value
+	 */
+	constructor(x, y){
+		this.__x = x;
+		this.__y = y;
+	}
+	/**
+	 * gets the x value of the instance
+	 * @returns {number} x
+	 */
+	get x(){
+		return this.__x;
+	}
+	/**
+	 * gets the y value of the instance
+	 * @returns {number} y
+	 */
+	get y(){
+		return this.__y;
+	}
+	/**
+	 * @param {*} val a value
+	 * @returns {NaN|Number} NaN if val isnt a number otherwise returns
+	 * utility function to check if value is number of not, if the value is SET to NaN all values become NaN
+	 */
+	static _evalSafe(val){
+		return _.isNumber(val) ? val : NaN
+	}
+	/**
+	 * 
+	 * @param {*} x value
+	 * @returns {Vector2D} itself for mass operation
+	 * set current x, if x param isn't a number its sets to NaN
+	 */
+	setX(x){
+		this.__x = Vector2D._evalSafe(x)
+		return this;
+	}
+	/**
+	 * 
+	 * @param {*} y value
+	 * @returns {Vector2D} itself for mass operation
+	 * set current y, if y param isn't a number its sets to NaN
+	 */
+	setY(y){
+		this.__y = Vector2D._evalSafe(y)
+		return this;
+	}
+	/**
+	 * x and y can be anything but we hope they are numbers
+	 * @param {*} x x value
+	 * @param {*} y y value
+	 * @returns {Vector2D} itself for mass operation
+	 * sets x and y but also
+	 */
+	setXY(x, y){
+		__vector2ArgsOperationWrapper(this, this.setX, x);
+		__vector2ArgsOperationWrapper(this, this.setY, y);
+		return this;
+	}
+	/**
+	 * 
+	 * @param {*} x a value, hoping a number
+	 * @returns {Vector2D} itself for mass operation
+	 * sets the x if the value is valid (a number => not NaN) otherwise don't set
+	 */
+	setXIfValid(x){
+		let safe_x = Vector2D._evalSafe(x);
+		if(!isNaN(safe_x)){
+			this.__x = safe_x
+		}
+		return this;
+	}
+	/**
+	 * 
+	 * @param {*} y a value, hoping a number
+	 * @returns {Vector2D} itself for mass operation
+	 * sets the x if the value is valid (a number => not NaN) otherwise don't set
+	 */
+	setYIfValid(y){
+		let safe_y = Vector2D._evalSafe(y);
+		if(!isNaN(safe_y)){
+			this.__y = safe_y
+		}
+		return this;
+	}
+	/**
+	 * 
+	 * @param {*} x x value to set
+	 * @param {*} y y value to set
+	 * sets the x and y if x and y are valid numbers
+	 * can use the simple functions because it doesn't set them if undefined
+	 */
+	setXYIfValid(x, y){
+		this.setXIfValid(x);
+		this.setYIfValid(y);
+		return this;
+	}
+	/**
+	 * 
+	 * @param {*} x object, hoping to be a number
+	 * adds the value to the x property (if isn't a number sets to NaN)
+	 */
+	addX(x){ 
+		this.__x += Vector2D._evalSafe(x); 
+		return this; 
+	}
+	/**
+	 * 
+	 * @param {*} y object, hoping to be a number
+	 * adds the value to the x property (if isn't a number sets to NaN)
+	 */
+	addY(y){ 
+		this.__y +=  Vector2D._evalSafe(y);
+		return this; 
+	}
+	/**
+	 * 
+	 * @param {*} x object, hoping to be a number
+	 * @param {*} y object, hoping to be a number
+	 * adds the value to the x, y properties (if they aren't each number sets to NaN)
+	 * also if they undefined don't try to set
+	 */
+	addXY(x, y) {
+		__vector2ArgsOperationWrapper(this, this.addX, x);
+		__vector2ArgsOperationWrapper(this, this.addY, y);
+		return this;
+	}
+	/**
+	 * 
+	 * @param {Vector2DType} other another vector object
+	 * adds the object in unsafe mode, if the other object cant be evaled as vector, x and y become NaN
+	 */
+	addVector(other) {
+		let other_vector = Vector2D.evalVector(other);
+		if(!other_vector){
+			this.x = NaN;
+			this.y = NaN;
+		}
+		this.addXY(other_vector.x, other_vector.y);
+		return this;
+	}
+	/**
+	 * 
+	 * @param {*} x a value, hoping a number
+	 * @returns {Vector2D} itself for mass operation
+	 * adds the x if the value is valid (a number => not NaN) otherwise don't add
+	 */
+	addXIfValid(x){ 
+		this.setXIfValid(Vector2D._evalSafe(x) + this.__x);
+		return this; 
+	}
+	/**
+	 * 
+	 * @param {*} y a value, hoping a number
+	 * @returns {Vector2D} itself for mass operation
+	 * adds the y if the value is valid (a number => not NaN) otherwise don't add
+	 */
+	addYIfValid(y){ 
+		this.setYIfValid(Vector2D._evalSafe(y) + this.__y);
+		return this; 
+	}
+	/**
+	 * 
+	 * @param {*} x added x value 
+	 * @param {*} y added y value
+	 * added the values of x and y if there are valid, because the called methods don't
+	 * set for undefined its don't need to cal it
+	 */
+	addXYIfValid(x, y){ 
+		this.addXIfValid(x);
+		this.addYIfValid(y);
+		return this;
+	}
+	/**
+	 * 
+	 * @param {Vector2DType} other vector object
+	 * @return {Vector2DType} this vector
+	 */
+	addVectorIfValid(other){
+		let other_vector = Vector2D.evalVector(other);
+		if(!_.isNull(other_vector)){
+			this.addXYIfValid(other_vector.x, other_vector.y);
+		}
+		return this;
+	}
+	/**
+	 * 
+	 * @param {*} x any value, hoped x to subtract from value
+	 * subtract x from current x value
+	 */
+	subX(x){ this.__x -= Vector2D._evalSafe(x); return this;}
+		/**
+	 * 
+	 * @param {*} y any value, hoped y to subtract from value
+	 * subtract y from current y value
+	 */
+	subY(y){
+		this.__y -=  Vector2D._evalSafe(y);
+		return this;
+	}
+	/**
+	 * 
+	 * @param {*} x any value, hoped number to subtract from value
+	 * @param {*} y any value, hoped number to subtract from value
+	 * substracts x from vector.x and y from vector.y, except if the specific values (x, y) are undefined
+	 */
+	subXY(x, y) {
+		__vector2ArgsOperationWrapper(this, this.subX, x);
+		__vector2ArgsOperationWrapper(this, this.subY, y);
+		return this;
+	}
+	/**
+	 * 
+	 * @param {Vector2DType} other other object
+	 * @returns {Vector2DType} other other object
+	 * evaluates the other object as Vector2D, then substracts
+	 */
+	subVector(other) {
+		let other_vector = Vector2D.evalVector(other);
+		this.subXY(other_vector.x, other_vector.y);
+		return this;
+	}
+	/**
+	 * @param {*} x any value hoped to be a number
+	 * @returns {Vector2D} any value if 
+	 * substracts this y from that safetly
+	 */
+	subIfValidX(x){ this.setXIfValid(this.__x - Vector2D._evalSafe(x)) }
+	/**
+	 * @param {*} y any value hoped to be a number
+	 * @returns {Vector2D} any value if 
+	 * substracts this y from that safetly
+	 */
+	subIfValidY(y){ this.setYIfValid(this.__y - Vector2D._evalSafe(y)) }
+		/**
+	 * @param {*} y any value hoped to be a number
+	 * @param {*} x any value hoped to be a number
+	 * @returns {Vector2D} this vector added
+	 * substracts this X and y from that object safety
+	 */
+	subIfValidXY(x, y){ 
+		this.subIdValidX(x);
+		this.subIfValidY(y);
+		return this;
+	}
+	/**
+	 * 
+	 * @param {Vector2D} other
+	 * @returns {Vector2D} this vector after subtraction 
+	 */
+	subIfValidVector(other){
+		let other_vector = Vector2D.evalVector(other);
+		if(!_.isNull(other_vector)){
+			this.subIfSafeXY(other_vector.x, other_vector.y);
+		}
+		return this;
+	}
+	/**
+	 * 
+	 * @param {*} mul any value hoping to be a number
+	 * @return {Vector2D} this
+	 * multiples this.x by mul, if mul isn't a number it would be set to NaN
+	 */
+	mulX(mul){
+		this.__x *= Vector2D._evalSafe(mul);
+		return this;
+	}
+	/**
+	 * 
+	 * @param {*} mul any value hoping to be a number
+	 * @return {Vector2D} this
+	 * multiples this.y by mul, if mul isn't a number it would be set to NaN
+	 */
+	mulY(mul){
+		this.__y *= Vector2D._evalSafe(mul);
+		return this;
+	}
+	/**
+	 * safety mul x and y
+	 * @param {*} mul any value hoping to be a number
+	 * @param {*} mul2 any value hoping to be a number
+	 * @return {Vector2D} this
+	 * multiples this.y by mul, if mul isn't a number it would be set to NaN
+	 * if mul2 isn't defined multiplies both
+	 */
+	mulXY(mul, mul2){
+		if(_.isUndefined(mul2)){
+			mul2 = mul;
+		}
+		__vector2ArgsOperationWrapper(this, this.mulX, mul);
+		__vector2ArgsOperationWrapper(this, this.mulX, mul2);
+		return this;
+	}
+	/**
+	 * @param {*} mul any value hoping to be a number
+	 * @return {Vector2D} this
+	 * multiples this.__x by mul, if mul isn't a number wont change
+	 */
+	mulIfValidX(mul){
+		this.setXIfValid(this.__x * Vector2D._evalSafe(mul));
+		return this;
+	}
+	/**
+	 * @param {*} mul any value hoping to be a number
+	 * @return {Vector2D} this
+	 * multiples this.__y by mul, if mul isn't a number wont change
+	 */
+	safeMulY(mul){
+		this.setYIfValid(this.__y * Vector2D._evalSafe(mul));
+		return this;
+	}
+	/**
+	 * @param {*} mul any value hoping to be a number
+	 * @param {*} mul2 any value hoping to be a number
+	 * @return {Vector2D} this
+	 * multiples this.x and this.y by mul and mul2 respective
+	 */
+	safeMulXY(mul, mul2){
+		if(_.isUndefined(mul2)){
+			mul2 = mul;
+		}
+		__vector2ArgsOperationWrapper(this, this.safeMulY, mul);
+		__vector2ArgsOperationWrapper(this, this.safeMulX, mul2);
+		return this;
+	}
+	/**
+	 * 
+	 * @param {*} div number to div y
+	 * @returns {Vector} this
+	 */
+	divX(div){
+		this.__x /= Vector2D._evalSafe(div);
+		return this;
+	}
+	/**
+	 * 
+	 * @param {*} div number to div y
+	 * @returns {Vector} this
+	 */
+	divY(div){
+		this.__y /= Vector2D._evalSafe(div);
+		return this;
+	}
+	/**
+	 * 
+	 * @param {*} div  number to div
+	 * @param {*} div2 number to div2
+	 * @returns {Vector} this
+	 * div X and Y by numbers,if they aren't numbers divide by NaN, if div2 is undefined divides both by div2
+	 */
+	divXY(div, div2){
+		if(_.isUndefined(div2)){
+			div2 = div;
+		}
+		__vector2ArgsOperationWrapper(this, this.divX, div);
+		__vector2ArgsOperationWrapper(this, this.divY, div2);
+		return this;
+	}
+	/**
+	 * 
+	 * @param {*} div hopefully a number to divide x
+	 * @returns {Vector} this
+	 * divides x if not safe
+	 */
+	safeDivX(div){
+		this.setXIfValid(this.__x / Vector2D._evalSafe(div));
+		return this;
+	}
+	/**
+	 * @param {*} div hopefully a number to divide y
+	 * @return {Vector} vector
+	 */
+	safeDivY(div){
+		this.setYIfValid(this.__y / Vector2D._evalSafe(div));
+		return this;
+    }
+    /**
+     * 
+     * @param {*} div anything hoping to be a number to divide
+     * @param {*} div2 anything hoping to be a number
+	 * @return {Vector} vector
+     */
+	safeDivXY(div, div2){
+		if(_.isUndefined(div2)){
+			div2 = div;
+		}
+		this.safeDivX(this, this.safeDivY, div);
+		this.safeDivY(this, this.safeDivX, div2);
+		return this;
+	}
+	/**
+	 * @return {Vector} vector
+	 */
+	neg(){
+		return new Vector2D(-this.__x, -this.__y);
+	}
+	/**
+	 * clones the vector as new object, to prevent 
+	 * @returns {Vector} clone of this object
+	 */
+	clone(){
+		return new Vector2D(this.__x, this.__y);
+	}
+	/**
+	 * @returns {string} a string representing of the instance
+	 */
+	toString(){
+		return `Vector2D[${this.x},${this.y}]`;
+	}
+	/**
+	 * @param {Vector2DType} other other object
+	 * @returns {boolean} if equals to current vector
+	 * the first checks if other is valid vector (if so returns null) otherwise compares the x and y 
+	 */
+	equals(other){
+		// evaluate the objects as arrays
+		let other_vector = Vector2D.evalVector(other);
+		if(_.isNull(other_vector)){
+			return false;
+		}
+		// else
+		return this.__x == other_vector.x &amp;&amp; this.__y == other_vector.__y
+	}
+	/**
+	 * @returns array representation of the 2d vector
+	 * just returns the vector as array
+	 */
+	array() {
+		return [this.x, this.y]
+	}
+	/**
+	 * @returns {boolean} if vector is zero
+	 * vector zero means empty value, used in statements
+	 */
+	isZero(){
+		return !this.equals(Vector2D.zero());
+    }
+    /**
+     * @returns {boolean} if vector isNaN
+     * a vector is nan if either x or y of the vector are NaN
+     */
+	isNaN(){
+		return isNaN(this.__x) || isNaN(this.__y);
+	}
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="board.html">board</a></li><li><a href="cursor.html">cursor</a></li><li><a href="lockedState.html">lockedState</a></li><li><a href="mapFrags.html">mapFrags</a></li><li><a href="notes.html">notes</a></li><li><a href="pen.html">pen</a></li><li><a href="progress.html">progress</a></li><li><a href="ServerReporter.html">ServerReporter</a></li></ul><h3>Classes</h3><ul><li><a href="Color.html">Color</a></li><li><a href="CursorState.html">CursorState</a></li><li><a href="DragData.html">DragData</a></li><li><a href="KeyDirection.html">KeyDirection</a></li><li><a href="Note.html">Note</a></li><li><a href="SimpleInterval.html">SimpleInterval</a></li><li><a href="Vector2D.html">Vector2D</a></li></ul><h3>Global</h3><ul><li><a href="global.html#__vector2ArgsOperationWrapper">__vector2ArgsOperationWrapper</a></li><li><a href="global.html#_work">_work</a></li><li><a href="global.html#_work_handler">_work_handler</a></li><li><a href="global.html#ajaxErrorAlert">ajaxErrorAlert</a></li><li><a href="global.html#AjaxGetPage">AjaxGetPage</a></li><li><a href="global.html#AppEnableSwitchTexts">AppEnableSwitchTexts</a></li><li><a href="global.html#BACKGROUND_COLOR">BACKGROUND_COLOR</a></li><li><a href="global.html#BLACK_INDEX">BLACK_INDEX</a></li><li><a href="global.html#CANVAS_SIZE">CANVAS_SIZE</a></li><li><a href="global.html#changeLockState">changeLockState</a></li><li><a href="global.html#clamp">clamp</a></li><li><a href="global.html#CloseFullscreen">CloseFullscreen</a></li><li><a href="global.html#ColorPicker">ColorPicker</a></li><li><a href="global.html#colors">colors</a></li><li><a href="global.html#COLORS">COLORS</a></li><li><a href="global.html#connect">connect</a></li><li><a href="global.html#convertFieldValueByName">convertFieldValueByName</a></li><li><a href="global.html#ConvertJSONToNotes">ConvertJSONToNotes</a></li><li><a href="global.html#Cursors">Cursors</a></li><li><a href="global.html#DEFAULT_START_AXIS">DEFAULT_START_AXIS</a></li><li><a href="global.html#DELAY_REFRESH_ATTEMPT">DELAY_REFRESH_ATTEMPT</a></li><li><a href="global.html#DirectionMap">DirectionMap</a></li><li><a href="global.html#DocumentKeyPress">DocumentKeyPress</a></li><li><a href="global.html#DRAW_COOLDOWN">DRAW_COOLDOWN</a></li><li><a href="global.html#FETCH_BOARD_INTERVAL">FETCH_BOARD_INTERVAL</a></li><li><a href="global.html#fetchBoard">fetchBoard</a></li><li><a href="global.html#fix_size">fix_size</a></li><li><a href="global.html#FocusNoteRow">FocusNoteRow</a></li><li><a href="global.html#getFirstIfAny">getFirstIfAny</a></li><li><a href="global.html#getMapPos">getMapPos</a></li><li><a href="global.html#getMapScale">getMapScale</a></li><li><a href="global.html#getModalMessageElement">getModalMessageElement</a></li><li><a href="global.html#getModalParent">getModalParent</a></li><li><a href="global.html#GetTargetRow">GetTargetRow</a></li><li><a href="global.html#GetUserName">GetUserName</a></li><li><a href="global.html#getUTCTimestamp">getUTCTimestamp</a></li><li><a href="global.html#hasEncounteredError">hasEncounteredError</a></li><li><a href="global.html#hasNotFoundResponse">hasNotFoundResponse</a></li><li><a href="global.html#history_table">history_table</a></li><li><a href="global.html#isErrorResponse">isErrorResponse</a></li><li><a href="global.html#isSwalClose">isSwalClose</a></li><li><a href="global.html#isValidColor">isValidColor</a></li><li><a href="global.html#isValidPos">isValidPos</a></li><li><a href="global.html#isValidScale">isValidScale</a></li><li><a href="global.html#LOADING_HTML_TEXT">LOADING_HTML_TEXT</a></li><li><a href="global.html#LoseFocusNoteRow">LoseFocusNoteRow</a></li><li><a href="global.html#MakeNoteRow">MakeNoteRow</a></li><li><a href="global.html#makePageButton">makePageButton</a></li><li><a href="global.html#MAX_SCALE">MAX_SCALE</a></li><li><a href="global.html#MAX_SIZE">MAX_SIZE</a></li><li><a href="global.html#MIN_SCALE">MIN_SCALE</a></li><li><a href="global.html#nonSweetClick">nonSweetClick</a></li><li><a href="global.html#NoteTypeEnums">NoteTypeEnums</a></li><li><a href="global.html#openFullscreen">openFullscreen</a></li><li><a href="global.html#PROGRESS_COOLDWN">PROGRESS_COOLDWN</a></li><li><a href="global.html#refreshButtonState">refreshButtonState</a></li><li><a href="global.html#reHashScale">reHashScale</a></li><li><a href="global.html#reHashX">reHashX</a></li><li><a href="global.html#reHashY">reHashY</a></li><li><a href="global.html#RememberMeMessage">RememberMeMessage</a></li><li><a href="global.html#serializeFormserializeaform,returnsdictionaryofallfieldsfromserializearray">serializeFormserialize a form, returns dictionary of all fields fromserialize array</a></li><li><a href="global.html#set-lock-state">set-lock-state</a></li><li><a href="global.html#setColorSelector">setColorSelector</a></li><li><a href="global.html#ShowNoteDetails">ShowNoteDetails</a></li><li><a href="global.html#sock">sock</a></li><li><a href="global.html#throttleIOMessageTimeout">throttleIOMessageTimeout</a></li><li><a href="global.html#throw_message">throw_message</a></li><li><a href="global.html#try_reconnect">try_reconnect</a></li><li><a href="global.html#updatePickColor">updatePickColor</a></li><li><a href="global.html#waitToFixImageSize">waitToFixImageSize</a></li><li><a href="global.html#ZOOMED_IN_DEFAULT_LEVEL">ZOOMED_IN_DEFAULT_LEVEL</a></li><li><a href="global.html#ZOOMED_OUT_DEFAULT_LEVEL">ZOOMED_OUT_DEFAULT_LEVEL</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Sat Jun 13 2020 21:38:42 GMT+0300 (GMT+03:00)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

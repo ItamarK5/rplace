@@ -1,3 +1,9 @@
+/**
+ * @auther Itamar Kanne
+ * @file the profile javascript code
+ */
+
+
 /** @constant BLACK_INDEX index of the black color, special one */
 const BLACK_INDEX = 1;
 /** @constant {jQuery} ColorPicker jquery reference to color picker */

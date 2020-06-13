@@ -1,3 +1,8 @@
+/**
+ * @auther Itamar Kanne
+ * @file this file includes all staff related to the admin page
+ */
+
 /** @const MAX_SIZE the maximum number of attempt before considers fail */
 const MAX_STACK = 5;
 /** @const DELAY_REFRESH_ATTEMPT the number of ms between each retry to refresh */

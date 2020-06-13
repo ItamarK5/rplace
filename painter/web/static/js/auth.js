@@ -1,3 +1,7 @@
+/**
+ * @auther Itamar Kanne
+ * @file this file includes all javascript code in an authentication page (sign in, sign up, forgot password, revoke password and more)
+ */
 /**  @const LOADING_HTML_TEXT spinner of html text, while sending a request*/
 const LOADING_HTML_TEXT = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Loading...'
 

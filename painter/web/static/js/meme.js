@@ -1,4 +1,10 @@
 /**
+ * @auther Itamar Kanne
+ * @file all files and includes all javascript code of the meme page
+ */
+
+
+/**
  * @param {HTMImageElement} image image displayed the meme
  */
 const fix_size = (image) => {

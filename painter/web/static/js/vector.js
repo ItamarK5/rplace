@@ -1,4 +1,10 @@
 /**
+ * @auther Itamar Kanne
+ * @file code containing my own implementation of a vector class
+ */
+
+
+/**
  * @summary Type defections
  * @typedef Vector2DType type for function that require 2d vector object @see {@link:Vector2D}
  * @property {number} x x axis vector

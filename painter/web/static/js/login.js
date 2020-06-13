@@ -1,6 +1,11 @@
+/**
+ * @auther Itamar Kanne
+ * @file contain extra code for the login page specific
+ */
 
 /**
- * @param {HTMLCheckboxButton} button 
+	* @param {HTMLCheckboxButton} button button html object pressed
+	* shows an message related to the remember me button
  */
 function RememberMeMessage(button) {
   // if cookies are enabled message
